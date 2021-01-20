@@ -1,0 +1,15 @@
+[
+  {
+    "hyper_v": false,
+    "id": "{{ output.resource_id.value }}",
+    "is_spot": false,
+    "is_xenon": false,
+    "kind": "Windows",
+    "name": "{{resourceName}}",
+    "per_site_scaling": false,
+    "region": "East US",
+    "reserved": false,
+    "resource_group": "{{resourceName}}",
+    "type": "Microsoft.Web/serverfarms"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "lock_level": "ReadOnly",
+    "name": "{{resourceName}}",
+    "notes": "This Resource Group is Read-Only",
+    "resource_group": "{{resourceName}}",
+    "scope": "{{ output.resource_group_id.value }}",
+    "type": "Microsoft.Authorization/locks"
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "account_name": "{{resourceName}}",
+    "database_colls": "colls/",
+    "database_id": "{{resourceName}}",
+    "database_users": "users/",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "East US",
+    "resource_group": "{{resourceName}}",
+    "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases"
+  }
+]

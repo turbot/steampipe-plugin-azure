@@ -1,0 +1,16 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "name": "{{resourceName}}",
+    "sku_name": "AZFW_VNet",
+    "sku_tier": "Standard",
+    "tags": {
+      "name": "{{resourceName}}"
+    },
+    "threat_intel_mode": "Alert",
+    "title": "{{resourceName}}"
+  }
+]

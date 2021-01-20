@@ -1,0 +1,15 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "name": "{{resourceName}}",
+    "public_ip_allocation_method": "Static",
+    "sku_name": "Basic",
+    "tags": {
+      "name": "{{resourceName}}"
+    },
+    "title": "{{resourceName}}"
+  }
+]

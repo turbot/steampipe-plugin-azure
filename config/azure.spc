@@ -1,0 +1,3 @@
+connection "azure" {
+  plugin    = "azure"                 
+}

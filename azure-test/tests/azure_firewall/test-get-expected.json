@@ -1,0 +1,22 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "ip_configurations": [
+      {
+        "privateIPAddress": "10.0.1.4",
+        "provisioningState": "Succeeded",
+        "publicIPAddress": {
+          "id": "{{ output.public_ip_id.value }}"
+        },
+        "subnet": {
+          "id": "{{ output.subnet_id.value }}"
+        }
+      }
+    ],
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "sku_tier": "Standard",
+    "type": "Microsoft.Network/azureFirewalls"
+  }
+]

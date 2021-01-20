@@ -1,0 +1,9 @@
+[
+  {
+    "cors_rules": [],
+    "id": "{{ output.resource_id.value }}",
+    "name": "default",
+    "storage_account_name": "{{resourceName}}",
+    "type": "Microsoft.Storage/storageAccounts/blobServices"
+  }
+]

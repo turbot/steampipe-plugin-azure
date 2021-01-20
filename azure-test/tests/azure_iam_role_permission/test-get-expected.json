@@ -1,0 +1,17 @@
+[
+  {
+    "actions": [
+      "microsoft.authorization/*/read",
+      "microsoft.compute/*/read",
+      "microsoft.compute/availabilitysets/*"
+    ],
+    "data_actions": [
+      "microsoft.storage/storageaccounts/blobservices/containers/blobs/delete",
+      "microsoft.storage/storageaccounts/blobservices/containers/blobs/read",
+      "microsoft.storage/storageaccounts/blobservices/containers/blobs/write"
+    ],
+    "not_actions": [],
+    "not_data_actions": [],
+    "permissions": "[{\"actions\":[\"Microsoft.Authorization/*/read\",\"Microsoft.Compute/*/read\",\"Microsoft.Compute/availabilitySets/*\"],\"dataActions\":[\"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete\",\"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read\",\"Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write\"],\"notActions\":[],\"notDataActions\":[]}]"
+  }
+]

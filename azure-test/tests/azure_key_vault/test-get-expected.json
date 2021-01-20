@@ -1,0 +1,15 @@
+[
+  {
+    "enabled_for_deployment": false,
+    "enabled_for_disk_encryption": false,
+    "enabled_for_template_deployment": false,
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "sku_name": "standard",
+    "tenant_id": "{{ output.tenant_id.value }}",
+    "type": "Microsoft.KeyVault/vaults",
+    "vault_uri": "https://{{resourceName}}.vault.azure.net/"
+  }
+]

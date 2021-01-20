@@ -1,0 +1,10 @@
+[
+  {
+    "access_tier": "Cool",
+    "id": "{{ output.resource_id.value }}",
+    "kind": "StorageV2",
+    "name": "{{resourceName}}",
+    "sku_name": "Standard_LRS",
+    "sku_tier": "Standard"
+  }
+]

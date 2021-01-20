@@ -1,0 +1,18 @@
+[
+  {
+    "hyper_v": false,
+    "id": "{{ output.resource_id.value }}",
+    "is_spot": false,
+    "is_xenon": false,
+    "kind": "Windows",
+    "name": "{{resourceName}}",
+    "per_site_scaling": false,
+    "region": "East US",
+    "reserved": false,
+    "resource_group": "{{resourceName}}",
+    "sku_capacity": 1,
+    "sku_size": "S1",
+    "sku_tier": "Standard",
+    "type": "Microsoft.Web/serverfarms"
+  }
+]

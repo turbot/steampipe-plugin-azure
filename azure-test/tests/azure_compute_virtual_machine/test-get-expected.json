@@ -1,0 +1,28 @@
+[
+  {
+    "admin_user_name": "testadmin",
+    "computer_name": "hostname",
+    "disable_password_authentication": false,
+    "id": "{{ output.resource_id.value }}",
+    "image_exact_version": "16.04.202101120",
+    "image_offer": "UbuntuServer",
+    "image_publisher": "Canonical",
+    "image_sku": "16.04-LTS",
+    "image_version": "latest",
+    "managed_disk_storage_account_type": "Standard_LRS",
+    "name": "{{resourceName}}",
+    "os_disk_caching": "ReadWrite",
+    "os_disk_create_option": "FromImage",
+    "os_disk_name": "{{resourceName}}",
+    "os_disk_size_gb": 30,
+    "os_type": "Linux",
+    "priority": "",
+    "provision_vm_agent": true,
+    "region": "eastus",
+    "require_guest_provision_signal": true,
+    "resource_group": "{{resourceName}}",
+    "size": "Standard_DS1_v2",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.Compute/virtualMachines"
+  }
+]

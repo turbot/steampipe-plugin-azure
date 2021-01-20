@@ -1,0 +1,6 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ output.resource_id.value.split('/').pop() }}"
+  }
+]

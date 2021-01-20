@@ -1,0 +1,7 @@
+[
+  {
+    "access_tier": "Cool",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ output.resource_name_upper.value }}/providers/Microsoft.Compute/disks/{{resourceName}}",
+    "name": "{{resourceName}}",
+    "type": "Microsoft.Compute/disks"
+  }
+]

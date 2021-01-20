@@ -1,0 +1,10 @@
+[
+  {
+    "akas": [
+      "azure:///subscriptions/{{ output.subscription_id.value }}/providers/Microsoft.Authorization",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/providers/microsoft.authorization"
+    ],
+    "namespace": "Microsoft.Authorization",
+    "title": "Microsoft.Authorization"
+  }
+]

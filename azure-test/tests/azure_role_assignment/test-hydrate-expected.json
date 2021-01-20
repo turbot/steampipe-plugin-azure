@@ -1,0 +1,10 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "id": "{{ output.resource_id.value }}",
+    "title": "{{ output.resource_id.value.split('/').pop() }}"
+  }
+]

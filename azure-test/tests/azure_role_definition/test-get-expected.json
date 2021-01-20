@@ -1,0 +1,23 @@
+[
+  {
+    "assignable_scopes": [
+      "/subscriptions/{{ output.subscription_id.value }}"
+    ],
+    "description": "This is a custom role created via Terraform",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ output.resource_id.value.split('/').pop() }}",
+    "permissions": [
+      {
+       "actions": [
+        "*"
+       ],
+       "dataActions": [],
+       "notActions": [],
+       "notDataActions": []
+      }
+     ],
+    "role_name": "{{resourceName}}",
+    "role_type": "CustomRole",
+    "type": "Microsoft.Authorization/roleDefinitions"
+  }
+]

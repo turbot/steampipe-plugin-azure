@@ -1,0 +1,29 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "security_rules": [
+      {
+        "id": "{{ output.resource_id.value }}/securityRules/{{resourceName}}",
+        "name": "{{resourceName}}",
+        "properties": {
+          "access": "Allow",
+          "destinationAddressPrefix": "*",
+          "destinationAddressPrefixes": [],
+          "destinationPortRange": "*",
+          "destinationPortRanges": [],
+          "direction": "Inbound",
+          "priority": 100,
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "*",
+          "sourceAddressPrefixes": [],
+          "sourcePortRange": "*",
+          "sourcePortRanges": []
+        }
+      }
+    ],
+    "type": "Microsoft.Network/networkSecurityGroups"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ output.resource_id.value.split('/').pop() }}",
+    "principal_id": "{{ output.principal_id.value }}",
+    "role_definition_id": "{{ output.role_definition_id.value }}",
+    "scope": "/subscriptions/{{ output.subscription_id.value }}",
+    "type": "Microsoft.Authorization/roleAssignments"
+  }
+]

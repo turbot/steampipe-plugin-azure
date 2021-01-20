@@ -1,0 +1,9 @@
+[
+  {
+    "akas": [
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{resourceName}}/providers/Microsoft.Storage/storageAccounts/{{resourceName}}/queueServices/default/queues/{{resourceName}}",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{resourceName}}/providers/microsoft.storage/storageaccounts/{{resourceName}}/queueservices/default/queues/{{resourceName}}"
+    ],
+    "title": "{{resourceName}}"
+  }
+]

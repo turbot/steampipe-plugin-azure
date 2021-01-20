@@ -1,0 +1,13 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{resourceName}}"
+    ],
+    "name": "{{resourceName}}",
+    "tags": {
+      "name": "{{resourceName}}"
+    },
+    "title": "{{resourceName}}"
+  }
+]

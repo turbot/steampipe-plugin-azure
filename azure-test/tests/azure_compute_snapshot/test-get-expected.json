@@ -1,0 +1,15 @@
+[
+  {
+    "create_option": "Copy",
+    "disk_size_bytes": 10737418240,
+    "disk_size_gb": 10,
+    "id": "{{ output.resource_id.value }}",
+    "incremental": false,
+    "name": "{{resourceName}}snapshot",
+    "region": "eastus",
+    "resource_group": "{{resourceName}}",
+    "sku_name": "Standard_LRS",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.Compute/snapshots"
+  }
+]

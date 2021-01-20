@@ -1,0 +1,11 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "lock_level": "ReadOnly",
+    "name": "{{resourceName}}",
+    "title": "{{resourceName}}"
+  }
+]

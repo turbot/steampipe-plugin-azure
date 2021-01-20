@@ -1,0 +1,3 @@
+select name, id, type, size, admin_user_name, computer_name, disable_password_authentication, image_exact_version, image_offer, image_publisher, image_sku, image_version, managed_disk_storage_account_type, os_disk_caching, os_disk_create_option, os_disk_name, os_disk_size_gb, os_type, priority, provision_vm_agent, require_guest_provision_signal, region, resource_group, subscription_id
+from azure.azure_compute_virtual_machine
+where name = '{{resourceName}}' and resource_group = '{{resourceName}}'

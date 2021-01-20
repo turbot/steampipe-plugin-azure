@@ -1,0 +1,6 @@
+[
+  {
+    "id": "/subscriptions/{{ output.subscription_id.value }}/providers/Microsoft.Authorization",
+    "namespace": "Microsoft.Authorization"
+  }
+]

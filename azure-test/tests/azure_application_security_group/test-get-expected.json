@@ -1,0 +1,9 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "type": "Microsoft.Network/applicationSecurityGroups"
+  }
+]

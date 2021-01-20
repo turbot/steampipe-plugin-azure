@@ -1,0 +1,20 @@
+[
+  {
+    "disable_bgp_route_propagation": false,
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "routes": [
+      {
+        "id": "{{ output.resource_id.value }}/routes/{{resourceName}}",
+        "name": "{{resourceName}}",
+        "properties": {
+          "addressPrefix": "10.1.0.0/16",
+          "nextHopType": "VnetLocal"
+        }
+      }
+    ],
+    "type": "Microsoft.Network/routeTables"
+  }
+]

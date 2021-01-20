@@ -1,0 +1,6 @@
+[
+  {
+    "name": "{{resourceName}}",
+    "sku_name": "Developer"
+  }
+]

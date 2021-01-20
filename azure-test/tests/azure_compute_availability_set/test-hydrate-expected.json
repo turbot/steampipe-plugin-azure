@@ -1,0 +1,13 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "platform_fault_domain_count": 3,
+    "platform_update_domain_count": 5,
+    "region": "eastus",
+    "resource_group": "{{resourceName}}",
+    "sku_name": "Classic",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.Compute/availabilitySets"
+  }
+]

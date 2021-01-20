@@ -1,0 +1,19 @@
+[
+  {
+    "consistency_policy_max_interval": 600,
+    "consistency_policy_max_staleness_prefix": 200000,
+    "database_account_offer_type": "Standard",
+    "default_consistency_level": "BoundedStaleness",
+    "disable_key_based_metadata_write_access": false,
+    "document_endpoint": "https://{{resourceName}}.documents.azure.com:443/",
+    "enable_automatic_failover": true,
+    "enable_multiple_write_locations": false,
+    "id": "{{ output.resource_id.value }}",
+    "is_virtual_network_filter_enabled": false,
+    "kind": "GlobalDocumentDB",
+    "name": "{{resourceName}}",
+    "region": "East US",
+    "resource_group": "{{resourceName}}",
+    "type": "Microsoft.DocumentDB/databaseAccounts"
+  }
+]
