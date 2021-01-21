@@ -4,7 +4,7 @@ A function app is the container that hosts the execution of individual functions
 
 ## Examples
 
-#### List of app functions which accepts HTTP traffic
+### List of app functions which accepts HTTP traffic
 
 ```sql
 select
