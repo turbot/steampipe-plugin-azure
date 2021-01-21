@@ -1,8 +1,8 @@
 ---
-org: Turbot
+organization: Turbot
 category: ["public cloud"]
 icon_url: "/images/plugins/turbot/azure.svg"
-brand_color: "#FF9900"
+brand_color: "#0089D6"
 display_name: "Azure"
 name: "azure"
 description: "Steampipe plugin for 30+ Azure services and resource types."
