@@ -1,4 +1,4 @@
-# Table: azure_key_vault
+# Table: azure_compute_resource_sku
 
 Types of sku available for azure compute resources.
 
@@ -18,7 +18,7 @@ from
 ```
 
 
-### Azure compute resources capacity info
+### Azure compute resources and their capacity
 
 ```sql
 select
@@ -31,7 +31,7 @@ from
 ```
 
 
-### List of all premium type disks and location info
+### List of all premium type disks and location
 
 ```sql
 select
