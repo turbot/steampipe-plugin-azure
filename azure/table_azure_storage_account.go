@@ -79,7 +79,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			{
 				Name:        "creation_time",
 				Description: "Creation date and time of the storage account",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Account.AccountProperties.CreationTime").Transform(convertDateToTime),
 			},
 			{
@@ -183,7 +183,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			{
 				Name:        "encryption_key_vault_properties_last_rotation_time",
 				Description: "Timestamp of last rotation of the Key Vault Key",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.LastKeyRotationTimestamp"),
 			},
 			{

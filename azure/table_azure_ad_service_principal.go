@@ -56,7 +56,7 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 			{
 				Name:        "deletion_timestamp",
 				Description: "The time at which the directory object was deleted",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 			},
 			{
 				Name:        "error_url",

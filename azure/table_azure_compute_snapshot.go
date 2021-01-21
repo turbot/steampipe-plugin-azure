@@ -180,7 +180,7 @@ func tableAzureComputeSnapshot(_ context.Context) *plugin.Table {
 			{
 				Name:        "time_created",
 				Description: "The time when the snapshot was created",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("SnapshotProperties.TimeCreated").Transform(convertDateToTime),
 			},
 			{

@@ -66,7 +66,7 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 			{
 				Name:        "time_created",
 				Description: "The time when the disk was created",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("DiskProperties.TimeCreated").Transform(convertDateToTime),
 			},
 			{

@@ -55,7 +55,7 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 			{
 				Name:        "created_at_utc",
 				Description: "Creation UTC date of the API Management service",
-				Type:        proto.ColumnType_DATETIME,
+				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("ServiceProperties.CreatedAtUtc").Transform(convertDateToTime),
 			},
 			{
