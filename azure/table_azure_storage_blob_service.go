@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-type blobInfo = struct {
+type blobServiceInfo = struct {
 	Blob          storage.BlobServiceProperties
 	Account       *string
 	ResourceGroup *string
@@ -19,18 +19,18 @@ type blobInfo = struct {
 
 //// TABLE DEFINITION ////
 
-func tableAzureStorageBlob(_ context.Context) *plugin.Table {
+func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_storage_blob",
-		Description: "Azure Storage Blob",
+		Name:        "azure_storage_blob_service",
+		Description: "Azure Storage Blob Service",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "resource_group"}),
-			Hydrate:           getStorageBlob,
+			Hydrate:           getStorageBlobService,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
-			Hydrate:       listStorageBlobs,
+			Hydrate:       listStorageBlobServices,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -156,7 +156,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 
 //// FETCH FUNCTIONS ////
 
-func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listStorageBlobServices(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
@@ -174,8 +174,8 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		return nil, err
 	}
 
-	for _, blob := range *result.Value {
-		d.StreamLeafListItem(ctx, &blobInfo{blob, account.Name, account.ResourceGroup, account.Account.Location})
+	for _, blobService := range *result.Value {
+		d.StreamLeafListItem(ctx, &blobServiceInfo{blobService, account.Name, account.ResourceGroup, account.Account.Location})
 	}
 
 	return nil, err
@@ -183,8 +183,8 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 //// HYDRATE FUNCTIONS ////
 
-func getStorageBlob(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getStorageBlob")
+func getStorageBlobService(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getStorageBlobService")
 
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
@@ -220,5 +220,5 @@ func getStorageBlob(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		return nil, err
 	}
 
-	return &blobInfo{op, &accountName, &resourceGroup, location}, nil
+	return &blobServiceInfo{op, &accountName, &resourceGroup, location}, nil
 }
