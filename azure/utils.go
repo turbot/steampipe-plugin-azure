@@ -35,12 +35,16 @@ func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData)
 }
 
 func convertDateToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	dateValue := d.Value
+	dateValue := d.Value.(*date.Time)
 
-	// convert from *date.Time to *date.Time
-	timeValue := dateValue.(*date.Time).ToTime().Format(time.RFC3339)
+	if dateValue != nil {
+		// convert from *date.Time to *date.Time
+		timeValue := dateValue.ToTime().Format(time.RFC3339)
 
-	return timeValue, nil
+		return timeValue, nil
+	}
+
+	return nil, nil
 }
 
 func resourceInterfaceDescription(key string) string {
