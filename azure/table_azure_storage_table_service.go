@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-type tableInfo = struct {
+type tableServiceInfo = struct {
 	Table         storage.TableServiceProperties
 	Account       *string
 	Name          *string
@@ -20,29 +20,28 @@ type tableInfo = struct {
 
 //// TABLE DEFINITION ////
 
-func tableAzureStorageTable(_ context.Context) *plugin.Table {
+func tableAzureStorageTableService(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_storage_table",
-		Description: "Azure Storage Table",
+		Name:        "azure_storage_table_service",
+		Description: "Azure Storage Table Service",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "resource_group"}),
-			ItemFromKey:       tableDataFromKey,
-			Hydrate:           getStorageTable,
+			Hydrate:           getStorageTableService,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
-			Hydrate:       listStorageTables,
+			Hydrate:       listStorageTableServices,
 		},
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the table",
+				Description: "The friendly name that identifies the table service",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a table uniquely",
+				Description: "Contains ID to identify a table service uniquely",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Table.ID"),
 			},
@@ -99,22 +98,9 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func tableDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	resourceGroup := quals["resource_group"].GetStringValue()
-	accountName := quals["storage_account_name"].GetStringValue()
-	item := &tableInfo{
-		Account:       &accountName,
-		ResourceGroup: &resourceGroup,
-	}
-	return item, nil
-}
-
 //// FETCH FUNCTIONS ////
 
-func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listStorageTableServices(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
@@ -132,8 +118,8 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		return nil, err
 	}
 
-	for _, table := range *result.Value {
-		d.StreamLeafListItem(ctx, &tableInfo{table, account.Name, table.Name, account.ResourceGroup, account.Account.Location})
+	for _, tableService := range *result.Value {
+		d.StreamLeafListItem(ctx, &tableServiceInfo{tableService, account.Name, tableService.Name, account.ResourceGroup, account.Account.Location})
 	}
 
 	return nil, err
@@ -141,8 +127,11 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 //// HYDRATE FUNCTIONS ////
 
-func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	tableData := h.Item.(*tableInfo)
+func getStorageTableService(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getStorageTableService")
+
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
 
 	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
 	if err != nil {
@@ -153,7 +142,7 @@ func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	storageDetails, err := storageClient.GetProperties(context.Background(), *tableData.ResourceGroup, *tableData.Account, "")
+	storageDetails, err := storageClient.GetProperties(context.Background(), resourceGroup, accountName, "")
 
 	if err != nil {
 		return nil, err
@@ -164,10 +153,10 @@ func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	tableClient := storage.NewTableServicesClient(subscriptionID)
 	tableClient.Authorizer = session.Authorizer
 
-	op, err := tableClient.GetServiceProperties(context.Background(), *tableData.ResourceGroup, *tableData.Account)
+	op, err := tableClient.GetServiceProperties(context.Background(), resourceGroup, accountName)
 	if err != nil {
 		return nil, err
 	}
 
-	return &tableInfo{op, tableData.Account, op.Name, tableData.ResourceGroup, location}, nil
+	return &tableServiceInfo{op, &accountName, op.Name, &resourceGroup, location}, nil
 }
