@@ -23,6 +23,7 @@ type blobInfo = struct {
 	ResourceGroup  *string
 	SubscriptionID *string
 	Location       *string
+	IsSnapshot     bool
 }
 
 //// TABLE DEFINITION
@@ -58,6 +59,11 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Description: "Type of the blob",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(transform.ToString),
+			},
+			{
+				Name:        "is_snapshot",
+				Description: "Specifies whether the resource is snapshot of a blob, or not.",
+				Type:        proto.ColumnType_BOOL,
 			},
 			{
 				Name:        "access_tier",
@@ -287,12 +293,12 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Name"),
 			},
-			// {
-			// 	Name:        "akas",
-			// 	Description: resourceInterfaceDescription("akas"),
-			// 	Type:        proto.ColumnType_JSON,
-			// 	Transform:   transform.FromField("Blob.ID").Transform(idToAkas),
-			// },
+			{
+				Name:        "akas",
+				Description: resourceInterfaceDescription("akas"),
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(blobDataToAka),
+			},
 			{
 				Name:        "region",
 				Description: "The Azure region in which the resource is located",
@@ -381,7 +387,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	for item := range blobCh {
 		for _, data := range item {
-			d.StreamLeafListItem(ctx, &blobInfo{data.Blob, data.Name, account.Name, data.Container, account.ResourceGroup, &subscriptionID, account.Account.Location})
+			d.StreamLeafListItem(ctx, &blobInfo{data.Blob, data.Name, account.Name, data.Container, account.ResourceGroup, &subscriptionID, account.Account.Location, data.IsSnapshot})
 		}
 	}
 
@@ -406,8 +412,6 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 
 	// Create Service URL
 	serviceURL := azblob.NewServiceURL(*primaryURL, p)
-
-	// TODO :: List blobs for all containers
 	containerURL := serviceURL.NewContainerURL(*container.Name)
 
 	var items []blobInfo
@@ -418,13 +422,13 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 		// Get a result segment starting with the blob indicated by the current Marker.
 		listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{
 			Details: azblob.BlobListingDetails{
-				Copy:             true,
-				Metadata:         true,
+				Copy:             false,
+				Metadata:         false,
 				Snapshots:        true,
-				UncommittedBlobs: true,
-				Deleted:          true,
-				Tags:             true,
-				Versions:         true,
+				UncommittedBlobs: false,
+				Deleted:          false,
+				Tags:             false,
+				Versions:         false,
 			},
 		})
 		if err != nil {
@@ -434,11 +438,29 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 		// ListBlobs returns the start of the next segment; you MUST use this to get
 		// the next segment (after processing the current result segment).
 		marker = listBlob.NextMarker
+		isSnapshot := true
 
 		for _, blob := range listBlob.Segment.BlobItems {
-			items = append(items, blobInfo{blob, blob.Name, account.Name, container.Name, account.ResourceGroup, &subscriptionID, account.Account.Location})
+			// Snapshot of a blob has same configuration,
+			// only difference is that the snapshot has a property which specifies
+			// the time, when the snapshot was taken
+			if len(blob.Snapshot) < 1 {
+				isSnapshot = false
+			}
+			items = append(items, blobInfo{blob, blob.Name, account.Name, container.Name, account.ResourceGroup, &subscriptionID, account.Account.Location, isSnapshot})
 		}
 	}
 
 	return items, nil
+}
+
+//// TRANSFORM FUNCTIONS
+
+func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	blob := d.HydrateItem.(*blobInfo)
+
+	// /subscriptions/{subscription-id}/resourceGroups/res9871/providers/Microsoft.Storage/storageAccounts/sto6217/blobServices/default/containers/container1634
+	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + *blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + *blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(*blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(*blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
+
+	return akas, nil
 }
