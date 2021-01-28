@@ -1,23 +1,23 @@
-# Table: azure_storage_table
+# Table: azure_storage_table_service
 
-Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design.
+The properties of a storage account’s Table service endpoint, including properties for Storage Analytics and CORS (Cross-Origin Resource Sharing) rules.
 
 ## Examples
 
-### Storage table basic info
+### Storage table service basic info
 
 ```sql
 select
   name,
   storage_account_name,
-  location,
+  region,
   resource_group
 from
-  azure_storage_table;
+  azure_storage_table_service;
 ```
 
 
-### CORS rules info of each storage table
+### CORS rules info of each storage table service
 
 ```sql
 select
@@ -29,6 +29,6 @@ select
   cors -> 'exposedHeaders' as exposed_eaders,
   cors -> 'maxAgeInSeconds' as max_age_in_seconds
 from
-  azure_storage_table,
+  azure_storage_table_service,
   jsonb_array_elements(cors_rules) as cors;
 ```
