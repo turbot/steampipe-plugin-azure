@@ -1,6 +1,6 @@
-# Table: azure_storage_blob
+# Table: azure_storage_blob_service
 
-A Binary Large OBject (BLOB) is a collection of binary data stored as a single entity in a database management system. Blobs are typically images, audio or other multimedia objects, though sometimes binary executable code is stored as a blob.
+The properties of a storage account's Blob service endpoint, including properties for Storage Analytics, CORS (Cross-Origin Resource Sharing) rules and soft delete settings.
 
 ## Examples
 
@@ -14,11 +14,11 @@ select
   sku_name,
   sku_tier
 from
-  azure_storage_blob;
+  azure_storage_blob_service;
 ```
 
 
-### List of storage blobs where delete retention policy is not enabled
+### List of storage blob service where delete retention policy is not enabled
 
 ```sql
 select
@@ -26,13 +26,13 @@ select
   storage_account_name,
   delete_retention_policy -> 'enabled' as delete_retention_policy_enabled
 from
-  azure_storage_blob
+  azure_storage_blob_service
 where
   delete_retention_policy -> 'enabled' = 'false';
 ```
 
 
-### List of storage blobs where versioning is not enabled
+### List of storage blob service where versioning is not enabled
 
 ```sql
 select
@@ -40,13 +40,13 @@ select
   storage_account_name,
   is_versioning_enabled
 from
-  azure_storage_blob
+  azure_storage_blob_service
 where
   not is_versioning_enabled;
 ```
 
 
-### CORS rules info for storage blob
+### CORS rules info for storage blob service
 
 ```sql
 select
@@ -58,6 +58,6 @@ select
   cors -> 'exposedHeaders' as exposed_headers,
   cors -> 'maxAgeInSeconds' as max_age_in_seconds
 from
-  azure_storage_blob
+  azure_storage_blob_service
   cross join jsonb_array_elements(cors_rules) as cors;
 ```
