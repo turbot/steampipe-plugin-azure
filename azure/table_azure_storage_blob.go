@@ -37,26 +37,27 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 			Hydrate:       listStorageBlobs,
 		},
 		Columns: []*plugin.Column{
+			// Basic info
 			{
 				Name:        "name",
+				Description: "The friendly name that identifies the blob.",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the blob",
 			},
 			{
 				Name:        "storage_account_name",
-				Description: "A unique read-only string that changes whenever the resource is updated",
+				Description: "The friendly name that identifies the storage account, in which the blob is located.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "container_name",
-				Description: "A unique read-only string that changes whenever the resource is updated",
+				Description: "The friendly name that identifies the container, in which the blob has been uploaded.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Container"),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the blob",
+				Description: "Specifies the type of the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(transform.ToString),
 			},
@@ -65,41 +66,50 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Description: "Specifies whether the resource is snapshot of a blob, or not.",
 				Type:        proto.ColumnType_BOOL,
 			},
+
+			// Other details
 			{
 				Name:        "access_tier",
-				Description: "The tier of the blob",
+				Description: "The tier of the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.AccessTier").Transform(transform.ToString),
 			},
 			{
+				Name:        "creation_time",
+				Description: "Indicates the time, when the blob was uploaded.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("Blob.Properties.CreationTime"),
+			},
+			{
+				Name:        "deleted",
+				Description: "Specifies whether the blob was deleted, or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Blob.Deleted"),
+				Default:     false,
+			},
+			{
+				Name:        "deleted_time",
+				Description: "Specifies the deletion time of blob container.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("Blob.Properties.DeletedTime"),
+			},
+			{
 				Name:        "etag",
-				Description: "Type of the resource",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.Etag").Transform(transform.ToString),
 			},
 			{
-				Name:        "deleted",
-				Description: "Specifies whether the blob container was deleted, or not.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("Blob.Deleted"),
+				Name:        "last_modified",
+				Description: "Specifies the date and time the container was last modified.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("Blob.Properties.LastModified"),
 			},
 			{
 				Name:        "snapshot",
-				Description: "Specifies the snapshot.",
+				Description: "Specifies the time, when the snapshot is taken.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Snapshot"),
-			},
-			{
-				Name:        "destination_snapshot",
-				Description: "Specifies the snapshot.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.DestinationSnapshot"),
-			},
-			{
-				Name:        "creation_time",
-				Description: "Contains ID to identify a blob uniquely",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Blob.Properties.CreationTime"),
 			},
 			{
 				Name:        "version_id",
@@ -109,7 +119,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "server_encrypted",
-				Description: "Checks whether there are at least one existing tag, or not. If set to false, all existing legal hold tags are cleared out.",
+				Description: "Indicates whether the blob is encrypted on the server, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Blob.Properties.ServerEncrypted"),
 			},
@@ -120,164 +130,164 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Blob.Properties.EncryptionScope"),
 			},
 			{
+				Name:        "encryption_key_sha256",
+				Description: "The SHA-256 hash of the provided encryption key.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Blob.Properties.CustomerProvidedKeySha256"),
+			},
+			{
 				Name:        "is_current_version",
 				Description: "Specifies whether the blob container was deleted, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Blob.IsCurrentVersion"),
 			},
 			{
-				Name:        "deleted_time",
-				Description: "Specifies the deletion time of blob container.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Blob.Properties.DeletedTime"),
-			},
-			{
-				Name:        "last_modified",
-				Description: "Specifies the date and time the container was last modified.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Blob.Properties.LastModified"),
-			},
-			{
 				Name:        "access_tier_change_time",
-				Description: "Default the container to use specified encryption scope for all writes.",
+				Description: "Species the time, when the access tier has been updated.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Blob.Properties.AccessTierChangeTime"),
 			},
 			{
 				Name:        "access_tier_inferred",
-				Description: "Block override of encryption scope from the container default.",
+				Description: "Indicates whether the access tier was inferred by the service.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Blob.Properties.AccessTierInferred"),
 			},
 			{
 				Name:        "blob_sequence_number",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Specifies the sequence number for page blob used for coordinating concurrent writes.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Blob.Properties.BlobSequenceNumber"),
 			},
 			{
 				Name:        "content_length",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Specifies the size of the content returned.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Blob.Properties.ContentLength"),
 			},
 			{
 				Name:        "cache_control",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Indicates the cache control specified for the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CacheControl"),
 			},
 			{
 				Name:        "content_disposition",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Specifies additional information about how to process the response payload, and also can be used to attach additional metadata.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.ContentDisposition"),
 			},
 			{
 				Name:        "content_encoding",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Indicates content encoding specified for the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.ContentEncoding"),
 			},
 			{
 				Name:        "content_language",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Indicates content language specified for the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.ContentLanguage"),
 			},
 			{
 				Name:        "content_md5",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "If the content_md5 has been set for the blob, this response header is stored so that the client can check for message content integrity.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.Properties.ContentMD5"),
 			},
 			{
 				Name:        "content_type",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Specifies the content type specified for the blob. If no content type was specified, the default content type is application/octet-stream.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.ContentType"),
 			},
 			{
 				Name:        "copy_completion_time",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Conclusion time of the last attempted Copy Blob operation where this blob was the destination blob.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Blob.Properties.CopyCompletionTime"),
 			},
 			{
 				Name:        "copy_id",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "A String identifier for the last attempted Copy Blob operation where this blob was the destination blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CopyID"),
 			},
 			{
 				Name:        "copy_progress",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Contains the number of bytes copied and the total bytes in the source in the last attempted Copy Blob operation where this blob was the destination blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CopyProgress"),
 			},
 			{
 				Name:        "copy_source",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "An URL up to 2 KB in length that specifies the source blob used in the last attempted Copy Blob operation where this blob was the destination blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CopySource"),
 			},
 			{
 				Name:        "copy_status",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Specifies the state of the copy operation identified by Copy ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CopyStatus"),
 			},
 			{
 				Name:        "copy_status_description",
-				Description: "Indicates whether any ImmutabilityPolicy has been created for this container, or not.",
+				Description: "Describes cause of fatal or non-fatal copy operation failure.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.CopyStatusDescription"),
 			},
 			{
+				Name:        "destination_snapshot",
+				Description: "Included if the blob is incremental copy blob or incremental copy snapshot, if x-ms-copy-status is success. Snapshot time of the last successful incremental copy snapshot for this blob.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Blob.Properties.DestinationSnapshot"),
+			},
+			{
 				Name:        "lease_duration",
-				Description: "Specifies whether the lease on a container is of infinite or fixed duration, only when the container is leased.",
+				Description: "Specifies whether the lease is of infinite or fixed duration, when a blob is leased.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.LeaseDuration").Transform(transform.ToString),
 			},
 			{
 				Name:        "lease_state",
-				Description: "Specifies lease state of the container.",
+				Description: "Specifies lease state of the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.LeaseState").Transform(transform.ToString),
 			},
 			{
 				Name:        "lease_status",
-				Description: "Specifies lease status of the container.",
+				Description: "Specifies the lease status of the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.LeaseStatus").Transform(transform.ToString),
 			},
 			{
 				Name:        "incremental_copy",
-				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Description: "Copies the snapshot of the source page blob to a destination page blob. The snapshot is copied such that only the differential changes between the previously copied snapshot are transferred to the destination.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Blob.Properties.IncrementalCopy"),
 			},
 			{
 				Name:        "is_sealed",
-				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Description: "Indicate if the append blob is sealed or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Blob.Properties.IsSealed"),
 			},
 			{
 				Name:        "remaining_retention_days",
-				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Description: "The number of days that the blob will be retained before being permanently deleted by the service.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Blob.Properties.RemainingRetentionDays"),
 			},
 			{
 				Name:        "archive_status",
-				Description: "The version of the deleted blob container.",
+				Description: "Specifies the archive status of the blob.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Properties.ArchiveStatus").Transform(transform.ToString),
 			},
 			{
 				Name:        "blob_tag_set",
-				Description: "The LegalHold property of the container.",
+				Description: "A list of blob tags.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.BlobTags.BlobTagSet"),
 			},
@@ -287,6 +297,8 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.Metadata"),
 			},
+
+			// Standard steampipe columns
 			{
 				Name:        "title",
 				Description: resourceInterfaceDescription("title"),
@@ -299,20 +311,22 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(blobDataToAka),
 			},
+
+			// Standard azure columns
 			{
 				Name:        "region",
-				Description: "The Azure region in which the resource is located",
+				Description: "The Azure region in which the resource is located.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Location"),
 			},
 			{
 				Name:        "resource_group",
-				Description: "Name of the resource group, the blob is created at",
+				Description: "Name of the resource group, the blob is created at.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: "The Azure Subscription ID in which the resource is located.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SubscriptionID"),
 			},
@@ -422,12 +436,12 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 		// Get a result segment starting with the blob indicated by the current Marker.
 		listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{
 			Details: azblob.BlobListingDetails{
-				Copy:             false,
-				Metadata:         false,
+				Copy:             true,
+				Metadata:         true,
 				Snapshots:        true,
-				UncommittedBlobs: false,
-				Deleted:          false,
-				Tags:             false,
+				UncommittedBlobs: true,
+				Deleted:          true,
+				Tags:             true,
 				Versions:         false,
 			},
 		})
@@ -459,7 +473,7 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	blob := d.HydrateItem.(*blobInfo)
 
-	// /subscriptions/{subscription-id}/resourceGroups/res9871/providers/Microsoft.Storage/storageAccounts/sto6217/blobServices/default/containers/container1634
+	// Build resource aka
 	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + *blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + *blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(*blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(*blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
 
 	return akas, nil
