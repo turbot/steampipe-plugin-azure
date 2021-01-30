@@ -10,10 +10,13 @@ Azure Virtual Machines (VM) is one of several types of on-demand, scalable compu
 ```sql
 select
   name,
+  power_state,
+  private_ips,
+  public_ips,
   vm_id,
   size,
   os_type,
-  os_disk_size_gb image_offer,
+  image_offer,
   image_sku
 from
   azure_compute_virtual_machine;
@@ -89,3 +92,39 @@ from
 where
   priority = 'Spot';
 ```
+
+
+### Disk Storage Summary, by VM
+```sql
+select 
+  vm.name,
+  count(d) as num_disks,
+  sum(d.disk_size_gb) as total_disk_size_gb
+from 
+  azure.azure_compute_virtual_machine as vm
+  left join azure_compute_disk as d on lower(vm.id) = lower(d.managed_by)
+group by 
+  vm.name
+order by
+  vm.name;
+```
+
+
+
+### View Network Security Group Rules for a VM
+
+```sql
+select 
+  vm.name,
+  nsg.name,
+  jsonb_pretty(security_rules)
+from 
+  azure.azure_compute_virtual_machine as vm,
+  jsonb_array_elements(vm.network_interfaces) as vm_nic,
+  azure_network_security_group as nsg,
+  jsonb_array_elements(nsg.network_interfaces) as nsg_int
+where
+  lower(vm_nic ->> 'id') = lower(nsg_int ->> 'id')
+  and vm.name = 'warehouse-01';
+```
+

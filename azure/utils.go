@@ -30,7 +30,7 @@ func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData)
 	// Common resource properties
 	splitID := strings.Split(id, "/")
 	resourceGroup := splitID[4]
-
+	resourceGroup = strings.ToLower(resourceGroup)
 	return resourceGroup, nil
 }
 

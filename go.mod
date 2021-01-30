@@ -11,4 +11,5 @@ require (
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v0.1.0
 	github.com/turbot/steampipe-plugin-sdk v0.1.0
+	google.golang.org/grpc v1.33.1
 )
