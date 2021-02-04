@@ -47,18 +47,6 @@ func convertDateToTime(ctx context.Context, d *transform.TransformData) (interfa
 	return nil, nil
 }
 
-func resourceInterfaceDescription(key string) string {
-	switch key {
-	case "akas":
-		return "Array of globally unique identifier strings (also known as) for the resource."
-	case "tags":
-		return "A map of tags for the resource."
-	case "title":
-		return "Title of the resource."
-	}
-	return ""
-}
-
 // Constants for Standard Column Descriptions
 const (
 	ColumnDescriptionAkas          = "Array of globally unique identifier strings (also known as) for the resource."
