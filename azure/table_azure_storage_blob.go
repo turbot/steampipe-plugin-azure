@@ -301,13 +301,13 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 			// Standard steampipe columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(blobDataToAka),
 			},
@@ -315,18 +315,19 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 			// Standard azure columns
 			{
 				Name:        "region",
-				Description: "The Azure region in which the resource is located.",
+				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location"),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
-				Description: "Name of the resource group, the blob is created at.",
+				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located.",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SubscriptionID"),
 			},
