@@ -1,0 +1,17 @@
+[
+  {
+    "access_tier": "Cool",
+    "container_name": "{{ resourceName }}",
+    "content_length": "225",
+    "deleted": "false",
+    "is_snapshot": "false",
+    "lease_state": "available",
+    "name": "{{ resourceName }}",
+    "region": "eastus",
+    "resource_group": "{{ resourceName }}",
+    "server_encrypted": "true",
+    "storage_account_name": "{{ resourceName }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "BlockBlob"
+  }
+]

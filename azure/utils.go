@@ -58,3 +58,19 @@ func resourceInterfaceDescription(key string) string {
 	}
 	return ""
 }
+
+// Constants for Standard Column Descriptions
+const (
+	ColumnDescriptionAkas          = "Array of globally unique identifier strings (also known as) for the resource."
+	ColumnDescriptionRegion        = "The Azure region/location in which the resource is located."
+	ColumnDescriptionResourceGroup = "The resource group which holds this resource."
+	ColumnDescriptionSubscription  = "The Azure Subscription identifier in which the resource is located."
+	ColumnDescriptionTags          = "A map of tags for the resource."
+	ColumnDescriptionTitle         = "Title of the resource."
+)
+
+// convert string to lower case
+func toLower(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	valStr := types.SafeString(d.Value)
+	return strings.ToLower(valStr), nil
+}
