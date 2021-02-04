@@ -31,8 +31,7 @@ select
   container_name,
   storage_account_name,
   resource_group,
-  region,
-
+  region
 from
   azure_storage_blob
 where
