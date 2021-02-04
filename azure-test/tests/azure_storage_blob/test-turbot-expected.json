@@ -1,0 +1,9 @@
+[
+  {
+    "akas": [
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}/blobServices/default/containers/{{ resourceName }}/blobs/{{ resourceName }}",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{ resourceName }}/providers/microsoft.storage/storageaccounts/{{ resourceName }}/blobservices/default/containers/{{ resourceName }}/blobs/{{ resourceName }}"
+    ],
+    "title": "{{ resourceName }}"
+  }
+]
