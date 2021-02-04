@@ -56,36 +56,36 @@ func tableAzureNetworkWatcher(_ context.Context) *plugin.Table {
 			// Standard columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "tags",
-				Description: resourceInterfaceDescription("tags"),
+				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 			{
 				Name:        "region",
-				Description: "The Azure region in which the resource is located",
+				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location"),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
-				Description: "The name of the resource group in which the network watcher is created",
+				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},

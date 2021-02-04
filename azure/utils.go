@@ -47,24 +47,12 @@ func convertDateToTime(ctx context.Context, d *transform.TransformData) (interfa
 	return nil, nil
 }
 
-func resourceInterfaceDescription(key string) string {
-	switch key {
-	case "akas":
-		return "Array of globally unique identifier strings (also known as) for the resource."
-	case "tags":
-		return "A map of tags for the resource."
-	case "title":
-		return "Title of the resource."
-	}
-	return ""
-}
-
 // Constants for Standard Column Descriptions
 const (
 	ColumnDescriptionAkas          = "Array of globally unique identifier strings (also known as) for the resource."
 	ColumnDescriptionRegion        = "The Azure region/location in which the resource is located."
 	ColumnDescriptionResourceGroup = "The resource group which holds this resource."
-	ColumnDescriptionSubscription  = "The Azure Subscription identifier in which the resource is located."
+	ColumnDescriptionSubscription  = "The Azure Subscription ID in which the resource is located."
 	ColumnDescriptionTags          = "A map of tags for the resource."
 	ColumnDescriptionTitle         = "Title of the resource."
 )

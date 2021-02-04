@@ -74,19 +74,19 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleDefinitionProperties.RoleName"),
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},
