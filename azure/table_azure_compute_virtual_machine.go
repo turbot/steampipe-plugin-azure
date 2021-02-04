@@ -2,9 +2,13 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
+
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -24,12 +28,42 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeVirtualMachines,
 		},
+		HydrateDependencies: []plugin.HydrateDependencies{
+			{
+				Func:    getNicPublicIPs,
+				Depends: []plugin.HydrateFunc{getVMNics},
+			},
+		},
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the virtual machine",
 				Type:        proto.ColumnType_STRING,
 			},
+
+			{
+				Name:        "power_state",
+				Description: "Specifies the power state of the vm",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getAzureComputeVirtualMachineStatuses,
+				Transform:   transform.FromField("Statuses").Transform(getPowerState),
+			},
+
+			{
+				Name:        "private_ips",
+				Description: "An array of private ip addesses associated with the vm.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getVMNics,
+				Transform:   transform.FromValue().Transform(getPrivateIpsFromIpconfig),
+			},
+			{
+				Name:        "public_ips",
+				Description: "An array of public ip addesses associated with the vm.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getNicPublicIPs,
+				Transform:   transform.FromValue(),
+			},
+
 			{
 				Name:        "id",
 				Description: "The unique id identifying the resource in subscription",
@@ -156,12 +190,6 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk.ID"),
 			},
 			{
-				Name:        "managed_disk_storage_account_type",
-				Description: "Specifies the storage account type for the managed disk used by the virtual machine",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk.StorageAccountType").Transform(transform.ToString),
-			},
-			{
 				Name:        "os_disk_caching",
 				Description: "Specifies the caching requirements of the operating system disk used by the virtual machine",
 				Type:        proto.ColumnType_STRING,
@@ -178,12 +206,6 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Description: "Specifies the name of the operating system disk used by the virtual machine",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Name"),
-			},
-			{
-				Name:        "os_disk_size_gb",
-				Description: "Specifies the size of an empty data disk in gigabytes",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.DiskSizeGB"),
 			},
 			{
 				Name:        "os_type",
@@ -245,45 +267,48 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureComputeVirtualMachineStatuses,
 			},
+
 			{
 				Name:        "zones",
 				Description: "A list of virtual machine zones",
 				Type:        proto.ColumnType_JSON,
 			},
 
-			// Standard columns
+			// Standard steampipe columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "tags",
-				Description: resourceInterfaceDescription("tags"),
+				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Standard azure columns
 			{
 				Name:        "region",
-				Description: "The Azure region in which the resource is located",
+				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location"),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
-				Description: "The name of the resource group where the virtual machine is located",
+				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},
@@ -371,4 +396,126 @@ func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryD
 	}
 
 	return op, nil
+}
+
+func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	logger := plugin.Logger(ctx)
+	logger.Trace("getVMNics")
+
+	vm := h.Item.(compute.VirtualMachine)
+	var ipConfigs []network.InterfaceIPConfiguration
+
+	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	networkClient := network.NewInterfacesClient(subscriptionID)
+	networkClient.Authorizer = session.Authorizer
+
+	for _, nicRef := range *vm.NetworkProfile.NetworkInterfaces {
+		pathParts := strings.Split(string(*nicRef.ID), "/")
+		resourceGroupName := pathParts[4]
+		nicName := pathParts[len(pathParts)-1]
+
+		nic, err := networkClient.Get(ctx, resourceGroupName, nicName, "")
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ipConfig := range *nic.IPConfigurations {
+			ipConfigs = append(ipConfigs, ipConfig)
+		}
+	}
+
+	return ipConfigs, nil
+}
+
+func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	logger := plugin.Logger(ctx)
+	logger.Trace("getNicPublicIPs")
+
+	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
+
+	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+
+	var publicIPs []string
+	for _, ipConfig := range ipConfigs {
+		if ipConfig.PublicIPAddress != nil && ipConfig.PublicIPAddress.ID != nil {
+			publicIP, err := getNicPublicIP(ctx, session, *ipConfig.PublicIPAddress.ID)
+
+			if err != nil {
+				return nil, err
+			}
+			if publicIP.IPAddress != nil {
+				publicIPs = append(publicIPs, *publicIP.IPAddress)
+			}
+		}
+	}
+
+	return publicIPs, nil
+}
+
+func getNicPublicIP(ctx context.Context, session *Session, id string) (network.PublicIPAddress, error) {
+	logger := plugin.Logger(ctx)
+	logger.Trace("getNicPublicIPs")
+
+	pathParts := strings.Split(id, "/")
+	resourceGroup := pathParts[4]
+	name := pathParts[len(pathParts)-1]
+
+	subscriptionID := session.SubscriptionID
+	networkClient := network.NewPublicIPAddressesClient(subscriptionID)
+	networkClient.Authorizer = session.Authorizer
+
+	return networkClient.Get(ctx, resourceGroup, name, "")
+}
+
+// TRANSFORM FUNCTIONS
+
+func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getPowerState", "d.Value", d.Value)
+
+	if d.Value == nil {
+		return nil, nil
+	}
+	statuses, ok := d.Value.(*[]compute.InstanceViewStatus)
+	if ok != true {
+		return nil, fmt.Errorf("Conversion failed for virtual machine statuses")
+	}
+
+	return getStatusFromCode(statuses, "PowerState"), nil
+}
+
+func getPrivateIpsFromIpconfig(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getPrivateIpsFromIpconfig", "d.Value", d.Value)
+	if d.Value == nil {
+		return nil, nil
+	}
+
+	var ips []string
+	ipConfigs, ok := d.Value.([]network.InterfaceIPConfiguration)
+	if ok != true {
+		return nil, fmt.Errorf("Conversion failed for virtual machine ip configs")
+	}
+	for _, ipConfig := range ipConfigs {
+		ips = append(ips, *ipConfig.PrivateIPAddress)
+	}
+
+	return ips, nil
+}
+
+// UTILITY FUNCTIONS
+func getStatusFromCode(statuses *[]compute.InstanceViewStatus, codeType string) string {
+	for _, status := range *statuses {
+		statusCode := types.SafeString(status.Code)
+
+		if strings.HasPrefix(statusCode, codeType+"/") {
+			return strings.SplitN(statusCode, "/", 2)[1]
+		}
+	}
+	return ""
 }
