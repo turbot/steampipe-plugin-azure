@@ -128,24 +128,25 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 			// Standard columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Subnet.ID").Transform(idToAkas),
 			},
 			{
 				Name:        "resource_group",
-				Description: "Name of the resource group, the subnet is created at",
+				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Subnet.ID").Transform(idToSubscriptionID),
 			},

@@ -110,13 +110,13 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 			// Standard columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromP(getAdUserTurbotData, "TurbotTitle"),
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromP(getAdUserTurbotData, "TurbotAkas"),
 			},

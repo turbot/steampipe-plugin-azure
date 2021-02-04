@@ -52,11 +52,6 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account"),
 			},
 			{
-				Name:        "location",
-				Description: "Contains the location where the blob is created",
-				Type:        proto.ColumnType_STRING,
-			},
-			{
 				Name:        "type",
 				Description: "Type of the resource",
 				Type:        proto.ColumnType_STRING,
@@ -129,24 +124,31 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 			// Standard columns
 			{
 				Name:        "title",
-				Description: resourceInterfaceDescription("title"),
+				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.Name"),
 			},
 			{
 				Name:        "akas",
-				Description: resourceInterfaceDescription("akas"),
+				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.ID").Transform(idToAkas),
 			},
 			{
-				Name:        "resource_group",
-				Description: "Name of the resource group, the blob is created at",
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Location").Transform(toLower),
+			},
+			{
+				Name:        "resource_group",
+				Description: ColumnDescriptionResourceGroup,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Blob.ID").Transform(extractResourceGroupFromID),
 			},
 			{
 				Name:        "subscription_id",
-				Description: "The Azure Subscription ID in which the resource is located",
+				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.ID").Transform(idToSubscriptionID),
 			},
