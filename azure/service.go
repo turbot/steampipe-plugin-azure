@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"strings"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -65,12 +66,21 @@ func GetNewSession(ctx context.Context, connectionManager *connection.Manager, t
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+
+			// In case the password got changed, and the session token stored in the system, or the CLI is outdated
+			if strings.Contains(err.Error(), "invalid_grant") {
+				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+			}
 			return nil, err
 		}
 	default:
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+
+			if strings.Contains(err.Error(), "invalid_grant") {
+				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+			}
 			return nil, err
 		}
 	}
