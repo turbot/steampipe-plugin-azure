@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	sqlv "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -28,95 +29,102 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The friendly name that identifies the firewall",
+				Description: "The friendly name that identifies the SQS server",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a firewall uniquely",
+				Description: "Contains ID to identify a SQS server uniquely",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
-				Description: "The resource type of the firewall",
+				Description: "The resource type of the SQS server",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "kind",
-				Description: "The resource type of the firewall",
+				Description: "The Kind of sql server",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "Location",
-				Description: "The resource type of the firewall",
+				Description: "The resource location",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "administrator_login",
-				Description: "The resource type of the firewall",
+				Description: "The Administrator username for the server",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
 			{
 				Name:        "administrator_login_password",
-				Description: "The resource type of the firewall",
+				Description: "The administrator login password",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "version",
-				Description: "The resource type of the firewall",
+				Description: "The version of the server",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.Version"),
 			},
 			{
 				Name:        "state",
-				Description: "The resource type of the firewall",
+				Description: "The state of the server",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.State"),
 			},
 			{
 				Name:        "fully_qualified_domain_name",
-				Description: "The resource type of the firewall",
+				Description: "The fully qualified domain name of the server",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.FullyQualifiedDomainName"),
 			},
 			{
-				Name:        "firewall_rules",
-				Description: "The resource type of the firewall",
+				Name:        "audit_policy",
+				Description: "Audit policies of server",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getFirewallRules,
-				Transform:   transform.FromValue(),
-			},
-			{
-				Name:        "encryption_protector",
-				Description: "The resource type of the firewall",
-				Type:        proto.ColumnType_JSON,
-				Hydrate:     getEncryptionProtector,
+				Hydrate:     getAuditPolicy,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "server_security_alert_policy",
-				Description: "The resource type of the firewall",
+				Description: "Server security alert policy",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getServerSecurityAlertPolicy,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "server_azure_ad_administrator",
-				Description: "The resource type of the firewall",
+				Description: "Server Active Directory Administrator",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getServerAzureADAdministrator,
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "audit_policy",
-				Description: "The resource type of the firewall",
+				Name:        "firewall_rules",
+				Description: "he list of server firewall rules",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getAuditPolicy,
+				Hydrate:     getFirewallRules,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "encryption_protector",
+				Description: "The server encryption protector",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getEncryptionProtector,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "tags_src",
+				Description: "Tags Attached to server",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Tags"),
+			},
+
 			// Standard columns
 			{
 				Name:        "title",
@@ -238,7 +246,6 @@ func getFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	return op, nil
 }
 
-
 func getEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getEncryptionProtector")
 
@@ -261,7 +268,6 @@ func getEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	return op, nil
 }
-
 
 func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getServerSecurityAlertPolicy")
@@ -286,7 +292,6 @@ func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *p
 	return op, nil
 }
 
-
 func getServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getServerAzureADAdministrator")
 
@@ -304,6 +309,9 @@ func getServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *
 
 	op, err := ServerAzureADAdministratorClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
+		if strings.Contains(err.Error(), "NotFound") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -326,6 +334,29 @@ func getAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	AuditPolicyClient.Authorizer = session.Authorizer
 
 	op, err := AuditPolicyClient.Get(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func getServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getServerVulnerabilityAssessment")
+
+	server := h.Item.(sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	ServerVulnerabilityAssessmentClient := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
+	ServerVulnerabilityAssessmentClient.Authorizer = session.Authorizer
+
+	op, err := ServerVulnerabilityAssessmentClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}

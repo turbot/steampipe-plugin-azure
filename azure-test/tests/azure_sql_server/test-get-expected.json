@@ -1,0 +1,19 @@
+[
+  {
+    "address_prefix": "10.0.1.0/24",
+    "delegations": [
+      {
+        "id": "{{ output.resource_id.value }}/delegations/delegation",
+        "name": "delegation",
+        "properties": {
+          "serviceName": "Microsoft.ContainerInstance/containerGroups"
+        }
+      }
+    ],
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "resource_group": "{{resourceName}}",
+    "type": "Microsoft.Network/subnets",
+    "virtual_network_name": "{{resourceName}}"
+  }
+]
