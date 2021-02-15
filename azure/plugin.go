@@ -51,6 +51,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_role_assignment":             tableAzureIamRoleAssignment(ctx),
 			"azure_role_definition":             tableAzureIamRoleDefinition(ctx),
 			"azure_route_table":                 tableAzureRouteTable(ctx),
+			"azure_sql_server":                  tableAzureSQLServer(ctx),
 			"azure_storage_account":             tableAzureStorageAccount(ctx),
 			"azure_storage_blob":                tableAzureStorageBlob(ctx),
 			"azure_storage_blob_service":        tableAzureStorageBlobService(ctx),
