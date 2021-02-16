@@ -34,7 +34,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a SQS server uniquely",
+				Description: "Contains ID to identify a SQL server uniquely",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
