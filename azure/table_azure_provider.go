@@ -85,7 +85,7 @@ func providerNamespaceFromKey(ctx context.Context, d *plugin.QueryData, _ *plugi
 //// LIST FUNCTION
 
 func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 func getProvider(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	provider := h.Item.(*resources.Provider)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

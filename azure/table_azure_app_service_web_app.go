@@ -162,7 +162,7 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS ////
 
 func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +204,7 @@ func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
