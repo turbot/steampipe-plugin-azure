@@ -117,7 +117,7 @@ If connection arguments are provided, they will always take precedence over [Azu
     ```
 
 
-5. If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` cli (as used in the [Azure Default Connection](#azure-default-connection)).
+5. If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` cli (as used in the [Azure Default Connection](#azure-default-connection)).  You can run `az login` to set up these credentials.
 
     ```hcl
     connection "azure" {
