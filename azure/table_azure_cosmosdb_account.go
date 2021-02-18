@@ -277,7 +277,7 @@ func databaseAccountDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plu
 //// FETCH FUNCTIONS ////
 
 func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +305,7 @@ func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	databaseAccountData := h.Item.(*databaseAccountInfo)
 	plugin.Logger(ctx).Trace("getCosmosDBAccount")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

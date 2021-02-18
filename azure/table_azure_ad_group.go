@@ -106,7 +106,7 @@ func groupObjectIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 //// LIST FUNCTION ////
 
 func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 func getAdGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	group := h.Item.(*graphrbac.ADGroup)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}

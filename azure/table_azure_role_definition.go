@@ -108,7 +108,7 @@ func roleDefinitionNameFromKey(ctx context.Context, d *plugin.QueryData, _ *plug
 //// LIST FUNCTION
 
 func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 func getIamRoleDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	roleDefinition := h.Item.(*authorization.RoleDefinition)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

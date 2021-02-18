@@ -176,7 +176,7 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	virtualNetwork := h.Item.(network.VirtualNetwork)
 	resourceGroupName := &strings.Split(string(*virtualNetwork.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	// defaultRegion := GetDefaultRegion()
 	subnet := h.Item.(*subnetInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

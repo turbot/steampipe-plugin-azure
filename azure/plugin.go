@@ -17,7 +17,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		DefaultGetConfig: &plugin.GetConfig{
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound"}),
 		},
-
+		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
+			NewInstance: ConfigInstance,
+			Schema:      ConfigSchema,
+		},
 		TableMap: map[string]*plugin.Table{
 			"azure_ad_group":                    tableAzureAdGroup(ctx),
 			"azure_ad_service_principal":        tableAzureAdServicePrincipal(ctx),

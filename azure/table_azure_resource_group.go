@@ -102,7 +102,7 @@ func resourceGroupNameFromKey(ctx context.Context, d *plugin.QueryData, _ *plugi
 //// LIST FUNCTION
 
 func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 func getResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	resourceGroup := h.Item.(*resources.Group)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
