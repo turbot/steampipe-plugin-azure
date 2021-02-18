@@ -1,11 +1,10 @@
-## v0.2.0 [2021-02-04]
+## v0.2.0 [2021-02-18]
 
 _What's new?_
 
-- New Tables added
+- Added support for [connection configuration](https://github.com/turbot/steampipe-plugin-azure/blob/main/docs/index.md#connection-configuration). You may specify azure `tenant_id`, `subscription_id`, `client_id`, `client_secret`, `client_certificate_path`, `client_certificate_password`, `username` and `password` for each connection in a configuration file. You can have multiple azure connections, each configured for a different azure subscription.
 
-  - azure_storage_blob ([#15](https://github.com/turbot/steampipe-plugin-azure/pull/15))
-  - azure_storage_table ([#12](https://github.com/turbot/steampipe-plugin-azure/pull/12))
+_Enhancements_
 
 - Updates
   - Added columns power_state, private_ips and public_ips to azure_compute_virtual_machine table ([#17](https://github.com/turbot/steampipe-plugin-azure/pull/17))
