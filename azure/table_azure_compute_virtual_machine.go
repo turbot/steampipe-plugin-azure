@@ -320,7 +320,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 
 func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +354,7 @@ func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +382,7 @@ func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryD
 	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +405,7 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	vm := h.Item.(compute.VirtualMachine)
 	var ipConfigs []network.InterfaceIPConfiguration
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +437,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

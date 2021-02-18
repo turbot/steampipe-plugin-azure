@@ -102,7 +102,7 @@ func roleAssignmentIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin
 //// LIST FUNCTION
 
 func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 func getIamRoleAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	roleAssignment := h.Item.(*authorization.RoleAssignment)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

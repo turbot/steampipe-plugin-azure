@@ -153,7 +153,7 @@ func servicePrincipalObjectIDFromKey(ctx context.Context, d *plugin.QueryData, _
 //// FETCH FUNCTIONS ////
 
 func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin
 func getAdServicePrincipal(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	servicePrincipal := h.Item.(*graphrbac.ServicePrincipal)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}

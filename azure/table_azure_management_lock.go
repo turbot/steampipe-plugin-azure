@@ -120,7 +120,7 @@ func managementLockDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plug
 //// LIST FUNCTION
 
 func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func getManagementLock(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	managementLock := h.Item.(*managementLockInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

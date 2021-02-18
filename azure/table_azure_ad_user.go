@@ -138,7 +138,7 @@ func userObjectIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 //// LIST FUNCTION ////
 
 func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 func getAdUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	user := h.Item.(*graphrbac.User)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "GRAPH")
+	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}

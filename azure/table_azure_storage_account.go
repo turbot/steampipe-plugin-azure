@@ -414,7 +414,7 @@ func storageAccountDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plug
 //// FETCH FUNCTIONS ////
 
 func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +446,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +466,7 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -491,7 +491,7 @@ func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryDa
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +518,7 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 	// Original Error: autorest/azure: Service returned an error. Status=400 Code="FeatureNotSupportedForAccount" Message="File is not supported for the account."
 	if accountData.Account.Sku.Tier == "Standard" && (accountData.Account.Kind == "Storage" || accountData.Account.Kind == "StorageV2") {
 		// Create session
-		session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+		session, err := GetNewSession(ctx, d, "MANAGEMENT")
 		if err != nil {
 			return nil, err
 		}

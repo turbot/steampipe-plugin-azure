@@ -105,7 +105,7 @@ func listStorageTableServices(ctx context.Context, d *plugin.QueryData, h *plugi
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func getStorageTableService(ctx context.Context, d *plugin.QueryData, h *plugin.
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
