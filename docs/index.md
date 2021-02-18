@@ -32,7 +32,7 @@ Connection configurations are defined using HCL in one or more Steampipe config 
 
 ### Scope
 
-An azure connection is scoped to a single Azure Subscription, with a single set of credentials.
+An azure connection is scoped to a single Azure Subscription, with a single set of credentials.  If no subscription id is specified, the current active subscription per the `az` cli will be used.
 
 The `az` CLI and Azure APIS are inherently global - while resources are created in a region, the commands to manage them are not limited to a single region. The Azure Steampipe plugin will query all Azure regions for the subscription.
 
