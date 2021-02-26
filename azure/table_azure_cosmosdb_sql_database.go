@@ -170,7 +170,7 @@ func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugi
 	// Get the details of cosmos db account
 	account := h.Item.(databaseAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugi
 func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	sqlDatabaseData := h.Item.(*sqlDatabaseInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

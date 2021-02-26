@@ -166,7 +166,7 @@ func tableAzureAppServiceEnvironment(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS ////
 
 func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func getAppServiceEnvironment(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
