@@ -12,7 +12,7 @@ import (
 	sqlv "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureSQLServer(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -20,7 +20,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 		Description: "Azure SQL Server",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getServer,
+			Hydrate:           getSQLServer,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 		},
 		List: &plugin.ListConfig{
@@ -44,94 +44,95 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "state",
+				Description: "The state of the server.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.State"),
+			},
+			{
 				Name:        "kind",
 				Description: "The Kind of sql server",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "Location",
+				Name:        "location",
 				Description: "The resource location",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "administrator_login",
-				Description: "The Administrator username for the server",
+				Description: "Specifies the username of the Administrator for this server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
 			{
 				Name:        "administrator_login_password",
-				Description: "The administrator login password",
+				Description: "The administrator login password.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "version",
-				Description: "The version of the server",
+				Description: "The version of the server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.Version"),
 			},
 			{
-				Name:        "state",
-				Description: "The state of the server",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.State"),
-			},
-			{
 				Name:        "fully_qualified_domain_name",
-				Description: "The fully qualified domain name of the server",
+				Description: "The fully qualified domain name of the server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.FullyQualifiedDomainName"),
 			},
 			{
-				Name:        "audit_policy",
-				Description: "Audit policies of server",
+				Name:        "server_audit_policy",
+				Description: "Specifies the audit policy configuration for server.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getAuditPolicy,
+				Hydrate:     getSQLServerAuditPolicy,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "server_security_alert_policy",
-				Description: "Server security alert policy",
+				Description: "Specifies the security alert policy configuration for server.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getServerSecurityAlertPolicy,
+				Hydrate:     getSQLServerSecurityAlertPolicy,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "server_azure_ad_administrator",
+				Description: "Specifies the active directory administrator",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSQLServerAzureADAdministrator,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "server_vulnerability_assessment",
 				Description: "Server Active Directory Administrator",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getServerAzureADAdministrator,
+				Hydrate:     getSQLServerVulnerabilityAssessment,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "firewall_rules",
-				Description: "he list of server firewall rules",
+				Description: "A list of firewall rules fro this server.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getFirewallRules,
+				Hydrate:     listSQLServerFirewallRules,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "encryption_protector",
-				Description: "The server encryption protector",
+				Description: "The server encryption protector.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getEncryptionProtector,
+				Hydrate:     getSQLServerEncryptionProtector,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "tags_src",
-				Description: "Tags Attached to server",
+				Description: "Specifies the set of tags attached to the server.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Tags"),
 			},
 
-			// Standard columns
-			{
-				Name:        "title",
-				Description: ColumnDescriptionTitle,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Name"),
-			},
+			// steampipe standard columns
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
@@ -143,6 +144,14 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name"),
+			},
+
+			// azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -165,7 +174,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 	}
 }
 
-//// LIST FUNCTIONS ////
+//// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -174,12 +183,12 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	serverClient := sql.NewServersClient(subscriptionID)
-	serverClient.Authorizer = session.Authorizer
+	client := sql.NewServersClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
 	pagesLeft := true
 	for pagesLeft {
-		result, err := serverClient.List(context.Background())
+		result, err := client.List(context.Background())
 		if err != nil {
 			return nil, err
 		}
@@ -192,10 +201,10 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
-func getServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getServer")
+func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServer")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
@@ -206,103 +215,92 @@ func getServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	}
 	subscriptionID := session.SubscriptionID
 
-	serverClient := sql.NewServersClient(subscriptionID)
-	serverClient.Authorizer = session.Authorizer
+	client := sql.NewServersClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := serverClient.Get(ctx, resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
-}
-
-func getFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getFirewallRules")
-
-	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
-	firewallRulesClient := sql.NewFirewallRulesClient(subscriptionID)
-	firewallRulesClient.Authorizer = session.Authorizer
-
-	op, err := firewallRulesClient.ListByServer(ctx, resourceGroupName, *server.Name)
-	if err != nil {
-		return nil, err
-	}
+	// // In some cases resource does not give any notFound error
+	// // instead of notFound error, it returns empty data
+	// if op.ID != nil {
+	// 	return op, nil
+	// }
 
 	return op, nil
 }
 
-func getEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getEncryptionProtector")
+func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerAuditPolicy")
 
 	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	encryptionProtectorsClient := sql.NewEncryptionProtectorsClient(subscriptionID)
-	encryptionProtectorsClient.Authorizer = session.Authorizer
+	client := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := encryptionProtectorsClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return op, nil
+	auditPolicyData := map[string]interface{}{
+		"id":         op.ID,
+		"name":       op.Name,
+		"type":       op.Type,
+		"properties": op.ServerBlobAuditingPolicyProperties,
+	}
+	return auditPolicyData, nil
 }
 
-func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getServerSecurityAlertPolicy")
+func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
 
 	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	serverSecurityAlertPoliciesClient := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
-	serverSecurityAlertPoliciesClient.Authorizer = session.Authorizer
+	client := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := serverSecurityAlertPoliciesClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return op, nil
+	securityAlertPolicyData := map[string]interface{}{
+		"id":         op.ID,
+		"name":       op.Name,
+		"type":       op.Type,
+		"properties": op.SecurityAlertPolicyProperties,
+	}
+	return securityAlertPolicyData, nil
 }
 
-func getServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getServerAzureADAdministrator")
+func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerAzureADAdministrator")
 
 	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	serverAzureADAdministratorClient := sql.NewServerAzureADAdministratorsClient(subscriptionID)
 	serverAzureADAdministratorClient.Authorizer = session.Authorizer
@@ -315,51 +313,101 @@ func getServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *
 		return nil, err
 	}
 
-	return op, nil
+	administratorData := map[string]interface{}{
+		"id":         op.ID,
+		"name":       op.Name,
+		"type":       op.Type,
+		"properties": op.ServerAdministratorProperties,
+	}
+	return administratorData, nil
 }
 
-func getAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAuditPolicy")
+func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerEncryptionProtector")
 
 	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	auditPolicyClient := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
-	auditPolicyClient.Authorizer = session.Authorizer
+	client := sql.NewEncryptionProtectorsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := auditPolicyClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return op, nil
+	encryptionData := map[string]interface{}{
+		"id":            op.ID,
+		"name":          op.Name,
+		"kind":          op.Kind,
+		"subRegion":     op.EncryptionProtectorProperties.Subregion,
+		"serverKeyName": op.EncryptionProtectorProperties.ServerKeyName,
+		"serverKeyType": string(op.ServerKeyType),
+		"uri":           op.URI,
+		"thumbPrint":    op.Thumbprint,
+	}
+
+	return encryptionData, nil
 }
 
-func getServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getServerVulnerabilityAssessment")
+func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerVulnerabilityAssessment")
 
 	server := h.Item.(sql.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	serverVulnerabilityAssessmentClient := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
-	serverVulnerabilityAssessmentClient.Authorizer = session.Authorizer
+	client := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := serverVulnerabilityAssessmentClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return op, nil
+	vulnerabilityAssessmentData := map[string]interface{}{
+		"id":         op.ID,
+		"name":       op.Name,
+		"type":       op.Type,
+		"properties": op.ServerVulnerabilityAssessmentProperties,
+	}
+	return vulnerabilityAssessmentData, nil
+}
+
+func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSQLServerFirewallRules")
+
+	server := h.Item.(sql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := sql.NewFirewallRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if op.Value != nil {
+		return op.Value, nil
+	}
+
+	return nil, nil
 }
