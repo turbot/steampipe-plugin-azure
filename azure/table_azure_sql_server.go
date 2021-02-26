@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	sqlv "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
 )
 
 //// TABLE DEFINITION ////
@@ -168,7 +168,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 //// LIST FUNCTIONS ////
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func getServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -229,16 +229,16 @@ func getFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	FirewallRulesClient := sql.NewFirewallRulesClient(subscriptionID)
-	FirewallRulesClient.Authorizer = session.Authorizer
+	firewallRulesClient := sql.NewFirewallRulesClient(subscriptionID)
+	firewallRulesClient.Authorizer = session.Authorizer
 
-	op, err := FirewallRulesClient.ListByServer(ctx, resourceGroupName, *server.Name)
+	op, err := firewallRulesClient.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -252,16 +252,16 @@ func getEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	EncryptionProtectorsClient := sql.NewEncryptionProtectorsClient(subscriptionID)
-	EncryptionProtectorsClient.Authorizer = session.Authorizer
+	encryptionProtectorsClient := sql.NewEncryptionProtectorsClient(subscriptionID)
+	encryptionProtectorsClient.Authorizer = session.Authorizer
 
-	op, err := EncryptionProtectorsClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := encryptionProtectorsClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -275,16 +275,16 @@ func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *p
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	ServerSecurityAlertPoliciesClient := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
-	ServerSecurityAlertPoliciesClient.Authorizer = session.Authorizer
+	serverSecurityAlertPoliciesClient := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
+	serverSecurityAlertPoliciesClient.Authorizer = session.Authorizer
 
-	op, err := ServerSecurityAlertPoliciesClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := serverSecurityAlertPoliciesClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -298,16 +298,16 @@ func getServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	ServerAzureADAdministratorClient := sql.NewServerAzureADAdministratorsClient(subscriptionID)
-	ServerAzureADAdministratorClient.Authorizer = session.Authorizer
+	serverAzureADAdministratorClient := sql.NewServerAzureADAdministratorsClient(subscriptionID)
+	serverAzureADAdministratorClient.Authorizer = session.Authorizer
 
-	op, err := ServerAzureADAdministratorClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := serverAzureADAdministratorClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		if strings.Contains(err.Error(), "NotFound") {
 			return nil, nil
@@ -324,16 +324,16 @@ func getAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	AuditPolicyClient := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
-	AuditPolicyClient.Authorizer = session.Authorizer
+	auditPolicyClient := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
+	auditPolicyClient.Authorizer = session.Authorizer
 
-	op, err := AuditPolicyClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := auditPolicyClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -347,16 +347,16 @@ func getServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, 
 	server := h.Item.(sql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	ServerVulnerabilityAssessmentClient := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
-	ServerVulnerabilityAssessmentClient.Authorizer = session.Authorizer
+	serverVulnerabilityAssessmentClient := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
+	serverVulnerabilityAssessmentClient.Authorizer = session.Authorizer
 
-	op, err := ServerVulnerabilityAssessmentClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := serverVulnerabilityAssessmentClient.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
