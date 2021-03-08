@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureAdGroup(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,7 +18,6 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 		Description: "Azure AD Group",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("object_id"),
-			ItemFromKey:       groupObjectIDFromKey,
 			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
 			Hydrate:           getAdGroup,
 		},
@@ -30,48 +29,48 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 			{
 				Name:        "object_id",
 				Type:        proto.ColumnType_STRING,
-				Description: "The unique ID that identifies a group",
+				Description: "The unique ID that identifies a group.",
 				Transform:   transform.FromField("ObjectID"),
 			},
 			{
 				Name:        "object_type",
-				Description: "A string that identifies the object type",
+				Description: "A string that identifies the object type.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ObjectType").Transform(transform.ToString),
 			},
 			{
 				Name:        "display_name",
-				Description: "A friendly name that identifies a group",
+				Description: "A friendly name that identifies a group.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "mail",
-				Description: "The primary email address of the group",
+				Description: "The primary email address of the group.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "mail_enabled",
-				Description: "Indicates whether the group is mail-enabled. Must be false. This is because only pure security groups can be created using the Graph API",
+				Description: "Indicates whether the group is mail-enabled. Must be false. This is because only pure security groups can be created using the Graph API.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
 				Name:        "mail_nickname",
-				Description: "The mail alias for the group",
+				Description: "The mail alias for the group.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "deletion_timestamp",
-				Description: "The time at which the directory object was deleted",
+				Description: "The time at which the directory object was deleted.",
 				Type:        proto.ColumnType_TIMESTAMP,
 			},
 			{
 				Name:        "security_enabled",
-				Description: "Specifies whether the group is a security group",
+				Description: "Specifies whether the group is a security group.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
 				Name:        "additional_properties",
-				Description: "A list of unmatched properties from the message are deserialized this collection",
+				Description: "A list of unmatched properties from the message are deserialized this collection.",
 				Type:        proto.ColumnType_JSON,
 			},
 
@@ -92,18 +91,7 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 	}
 }
 
-//// ITEM FROM KEY ////
-
-func groupObjectIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	objectID := quals["object_id"].GetStringValue()
-	item := &graphrbac.ADGroup{
-		ObjectID: &objectID,
-	}
-	return item, nil
-}
-
-//// LIST FUNCTION ////
+//// LIST FUNCTION
 
 func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "GRAPH")
@@ -132,21 +120,22 @@ func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getAdGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	group := h.Item.(*graphrbac.ADGroup)
+	plugin.Logger(ctx).Trace("getAdGroup")
 
 	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}
 	tenantID := session.TenantID
+	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
 
 	graphClient := graphrbac.NewGroupsClient(tenantID)
 	graphClient.Authorizer = session.Authorizer
 
-	op, err := graphClient.Get(ctx, *group.ObjectID)
+	op, err := graphClient.Get(ctx, objectID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +143,7 @@ func getAdGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	return op, nil
 }
 
-//// TRANSFORM FUNCTIONS ////
+//// TRANSFORM FUNCTIONS
 
 func getAdGroupTurbotData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(graphrbac.ADGroup)

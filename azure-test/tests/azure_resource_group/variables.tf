@@ -5,16 +5,6 @@ variable "resource_name" {
   description = "Name of the resource used throughout the test."
 }
 
-variable "azure_resource_group" {
-  type        = string
-  default     = "integration_test_rg"
-  description = "Name of the resource group used throughout the test."
-}
-
-data "azurerm_resource_group" "data_resource_group" {
-  name = var.azure_resource_group
-}
-
 variable "azure_environment" {
   type        = string
   default     = "public"
