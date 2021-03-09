@@ -29,18 +29,18 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The friendly name that identifies the SQS server",
+				Description: "The friendly name that identifies the SQL server.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a SQL server uniquely",
+				Description: "Contains ID to identify a SQL server uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
-				Description: "The resource type of the SQS server",
+				Description: "The resource type of the SQL server.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -51,12 +51,12 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "kind",
-				Description: "The Kind of sql server",
+				Description: "The Kind of sql server.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "location",
-				Description: "The resource location",
+				Description: "The resource location.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -99,14 +99,14 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "server_azure_ad_administrator",
-				Description: "Specifies the active directory administrator",
+				Description: "Specifies the active directory administrator.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSQLServerAzureADAdministrator,
 				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "server_vulnerability_assessment",
-				Description: "Server Active Directory Administrator",
+				Description: "Specifies the server's vulnerability assessment.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSQLServerVulnerabilityAssessment,
 				Transform:   transform.FromValue(),
@@ -223,18 +223,17 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 		return nil, err
 	}
 
-	// // In some cases resource does not give any notFound error
-	// // instead of notFound error, it returns empty data
-	// if op.ID != nil {
-	// 	return op, nil
-	// }
+	// In some cases resource does not give any notFound error
+	// instead of notFound error, it returns empty data
+	if op.ID != nil {
+		return op, nil
+	}
 
-	return op, nil
+	return nil, nil
 }
 
 func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAuditPolicy")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -263,7 +262,6 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -292,7 +290,6 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAzureADAdministrator")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -324,7 +321,6 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 
 func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerEncryptionProtector")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -358,7 +354,6 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerVulnerabilityAssessment")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -387,7 +382,6 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 
 func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerFirewallRules")
-
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
