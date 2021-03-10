@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureProvider(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,7 +18,6 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 		Description: "Azure Provider",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("namespace"),
-			ItemFromKey:       providerNamespaceFromKey,
 			Hydrate:           getProvider,
 			ShouldIgnoreError: isNotFoundError([]string{"InvalidResourceNamespace"}),
 		},
@@ -29,22 +28,22 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 			{
 				Name:        "namespace",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the resource provider",
+				Description: "The friendly name that identifies the resource provider.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a resource provider uniquely",
+				Description: "Contains ID to identify a resource provider uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "registration_state",
-				Description: "Contains the current registration state of the resource provider",
+				Description: "Contains the current registration state of the resource provider.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "resource_types",
-				Description: "A list of provider resource types",
+				Description: "A list of provider resource types.",
 				Type:        proto.ColumnType_JSON,
 			},
 
@@ -69,17 +68,6 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 			},
 		},
 	}
-}
-
-//// BUILD HYDRATE INPUT ////
-
-func providerNamespaceFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	namespace := quals["namespace"].GetStringValue()
-	item := &resources.Provider{
-		Namespace: &namespace,
-	}
-	return item, nil
 }
 
 //// LIST FUNCTION
@@ -111,21 +99,22 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getProvider(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	provider := h.Item.(*resources.Provider)
+	plugin.Logger(ctx).Trace("getProvider")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	namespace := d.KeyColumnQuals["namespace"].GetStringValue()
 
 	resourcesClient := resources.NewProvidersClient(subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
 
-	op, err := resourcesClient.Get(ctx, *provider.Namespace, "")
+	op, err := resourcesClient.Get(ctx, namespace, "")
 	if err != nil {
 		return nil, err
 	}

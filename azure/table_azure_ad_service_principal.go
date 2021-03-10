@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,7 +18,6 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 		Description: "Azure AD Service Principal",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("object_id"),
-			ItemFromKey:       servicePrincipalObjectIDFromKey,
 			Hydrate:           getAdServicePrincipal,
 			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
 		},
@@ -29,96 +28,96 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 			{
 				Name:        "object_id",
 				Type:        proto.ColumnType_STRING,
-				Description: "The unique ID that identifies a service principal",
+				Description: "The unique ID that identifies a service principal.",
 				Transform:   transform.FromField("ObjectID"),
 			},
 			{
 				Name:        "object_type",
-				Description: "A string that identifies the object type",
+				Description: "A string that identifies the object type.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ObjectType").Transform(transform.ToString),
 			},
 			{
 				Name:        "display_name",
-				Description: "A friendly name that identifies a service principal",
+				Description: "A friendly name that identifies a service principal.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "account_enabled",
-				Description: "Indicates whether or not the service principal account is enabled",
+				Description: "Indicates whether or not the service principal account is enabled.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
 				Name:        "app_role_assignment_required",
-				Description: "Specifies whether an AppRoleAssignment to a user or group is required before Azure AD will issue a user or access token to the application",
+				Description: "Specifies whether an AppRoleAssignment to a user or group is required before Azure AD will issue a user or access token to the application.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
 				Name:        "deletion_timestamp",
-				Description: "The time at which the directory object was deleted",
+				Description: "The time at which the directory object was deleted.",
 				Type:        proto.ColumnType_TIMESTAMP,
 			},
 			{
 				Name:        "error_url",
-				Description: "An URL provided by the author of the associated application to report errors when using the application",
+				Description: "An URL provided by the author of the associated application to report errors when using the application.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ErrorURL"),
 			},
 			{
 				Name:        "homepage",
-				Description: "The URL to the homepage of the associated application",
+				Description: "The URL to the homepage of the associated application.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "logout_url",
-				Description: "An URL provided by the author of the associated application to logout",
+				Description: "An URL provided by the author of the associated application to logout.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("LogoutURL"),
 			},
 			{
 				Name:        "saml_metadata_url",
-				Description: "The URL to the SAML metadata of the associated application",
+				Description: "The URL to the SAML metadata of the associated application.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SamlMetadataURL"),
 			},
 			{
 				Name:        "additional_properties",
-				Description: "A list of unmatched properties from the message are deserialized this collection",
+				Description: "A list of unmatched properties from the message are deserialized this collection.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "alternative_names",
-				Description: "A list of alternative names",
+				Description: "A list of alternative names.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "app_roles",
-				Description: "A list of application roles that an application may declare. These roles can be assigned to users, groups or service principals",
+				Description: "A list of application roles that an application may declare. These roles can be assigned to users, groups or service principals.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "key_credentials",
-				Description: "A list of key credentials associated with the service principal",
+				Description: "A list of key credentials associated with the service principal.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "oauth2_permissions",
-				Description: "The OAuth 2.0 permissions exposed by the associated application",
+				Description: "The OAuth 2.0 permissions exposed by the associated application.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "password_credentials",
-				Description: "A list of password credentials associated with the service principal",
+				Description: "A list of password credentials associated with the service principal.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "reply_urls",
-				Description: "The URLs that user tokens are sent to for sign in with the associated application.  The redirect URIs that the oAuth 2.0 authorization code and access tokens are sent to for the associated application",
+				Description: "The URLs that user tokens are sent to for sign in with the associated application. The redirect URIs that the oAuth 2.0 authorization code and access tokens are sent to for the associated application.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "service_principal_names",
-				Description: "A list of service principal names",
+				Description: "A list of service principal names.",
 				Type:        proto.ColumnType_JSON,
 			},
 
@@ -139,18 +138,7 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func servicePrincipalObjectIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	objectID := quals["object_id"].GetStringValue()
-	item := &graphrbac.ServicePrincipal{
-		ObjectID: &objectID,
-	}
-	return item, nil
-}
-
-//// FETCH FUNCTIONS ////
+//// FETCH FUNCTIONS
 
 func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "GRAPH")
@@ -179,21 +167,22 @@ func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getAdServicePrincipal(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	servicePrincipal := h.Item.(*graphrbac.ServicePrincipal)
+	plugin.Logger(ctx).Trace("getAdServicePrincipal")
 
 	session, err := GetNewSession(ctx, d, "GRAPH")
 	if err != nil {
 		return nil, err
 	}
 	tenantID := session.TenantID
+	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
 
 	graphClient := graphrbac.NewServicePrincipalsClient(tenantID)
 	graphClient.Authorizer = session.Authorizer
 
-	op, err := graphClient.Get(ctx, *servicePrincipal.ObjectID)
+	op, err := graphClient.Get(ctx, objectID)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +190,7 @@ func getAdServicePrincipal(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	return op, nil
 }
 
-//// TRANSFORM FUNCTIONS ////
+//// TRANSFORM FUNCTIONS
 
 func getAdServicePrincipalTurbotData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(graphrbac.ServicePrincipal)
