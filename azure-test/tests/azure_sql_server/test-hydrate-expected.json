@@ -1,0 +1,60 @@
+[
+	{
+		"encryption_protector": {
+			"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/encryptionProtector/current",
+			"kind": "servicemanaged",
+			"name": "current",
+			"serverKeyName": "ServiceManaged",
+			"serverKeyType": "ServiceManaged",
+			"subRegion": null,
+			"thumbPrint": null,
+			"uri": null
+		},
+		"firewall_rules": [],
+		"name": "{{ resourceName }}",
+		"server_audit_policy": {
+			"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/auditingSettings/Default",
+			"name": "Default",
+			"properties": {
+				"auditActionsAndGroups": [
+					"SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+					"FAILED_DATABASE_AUTHENTICATION_GROUP",
+					"BATCH_COMPLETED_GROUP"
+				],
+				"isAzureMonitorTargetEnabled": true,
+				"isStorageSecondaryKeyInUse": true,
+				"retentionDays": 6,
+				"state": "Enabled",
+				"storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000",
+				"storageEndpoint": "https://{{ resourceName }}.blob.core.windows.net/"
+			},
+			"type": "Microsoft.Sql/servers/auditingSettings"
+		},
+		"server_azure_ad_administrator": {},
+		"server_security_alert_policy": {
+			"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/securityAlertPolicies/Default",
+			"name": "Default",
+			"properties": {
+				"disabledAlerts": [""],
+				"emailAccountAdmins": false,
+				"emailAddresses": [""],
+				"retentionDays": 0,
+				"state": "Disabled",
+				"storageAccountAccessKey": "",
+				"storageEndpoint": ""
+			},
+			"type": "Microsoft.Sql/servers/securityAlertPolicies"
+		},
+		"server_vulnerability_assessment": {
+			"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/vulnerabilityAssessments/Default",
+			"name": "Default",
+			"properties": {
+				"recurringScans": {
+					"emailSubscriptionAdmins": true,
+					"isEnabled": false
+				}
+			},
+			"type": "Microsoft.Sql/servers/vulnerabilityAssessments"
+		}
+	}
+]
