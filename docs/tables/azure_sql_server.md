@@ -4,7 +4,7 @@ An Azure SQL server is a relational database management system. As a database se
 
 ## Examples
 
-### List of server for which Auditing is not enabled
+### List of servers that have auditing disabled
 
 ```sql
 select
@@ -18,7 +18,7 @@ where
   audit -> 'properties' ->> 'state' = 'Disabled';
 ```
 
-### List of server for which Auditing retention is greater than 90 days
+### List of servers with an audit log retention period that is less than 90 days
 
 ```sql
 select
@@ -29,10 +29,10 @@ from
   azure_sql_server,
   jsonb(server_audit_policy) as audit
 where
-  audit -> 'properties' ->> 'retentionDays' >= '90';
+  audit -> 'properties' ->> 'retentionDays' < '90';
 ```
 
-### List of server for which Advanced Data Security is not enabled
+### List of servers that have advanced data security disabled
 
 ```sql
 select
@@ -46,7 +46,7 @@ where
   security -> 'properties' ->> 'state' = 'Disabled';
 ```
 
-### List of server for which Threat Detection types is set to All
+### List of servers that have Advanced Threat Protection types set to All
 
 ```sql
 select
@@ -63,7 +63,7 @@ where
   and disabled_alerts = '';
 ```
 
-### List of server for which Active Directory Admin is not configured
+### List of servers that do not have an Active Directory admin set
 
 ```sql
 select
@@ -75,7 +75,7 @@ where
   server_azure_ad_administrator is null;
 ```
 
-### List of server for which TDE protector is encrypted with Service-managed key
+### List of servers for which TDE protector is encrypted with the service-managed key
 
 ```sql
 select
