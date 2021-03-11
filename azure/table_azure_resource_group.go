@@ -18,7 +18,6 @@ func tableAzureResourceGroup(ctx context.Context) *plugin.Table {
 		Description: "Azure Resource Group",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			ItemFromKey:       resourceGroupNameFromKey,
 			Hydrate:           getResourceGroup,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound"}),
 		},
@@ -29,28 +28,28 @@ func tableAzureResourceGroup(ctx context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the resource group",
+				Description: "The friendly name that identifies the resource group.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a resource group uniquely",
+				Description: "Contains ID to identify a resource group uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Current state of the resource group",
+				Description: "Current state of the resource group.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
 			{
 				Name:        "managed_by",
-				Description: "Contains ID of the resource that manages this resource group",
+				Description: "Contains ID of the resource that manages this resource group.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource group",
+				Description: "Type of the resource group.",
 				Type:        proto.ColumnType_STRING,
 			},
 
@@ -88,17 +87,6 @@ func tableAzureResourceGroup(ctx context.Context) *plugin.Table {
 	}
 }
 
-//// ITEM FROM KEY
-
-func resourceGroupNameFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	item := &resources.Group{
-		Name: &name,
-	}
-	return item, nil
-}
-
 //// LIST FUNCTION
 
 func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -131,18 +119,19 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 //// HYDRATE FUNCTIONS
 
 func getResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	resourceGroup := h.Item.(*resources.Group)
+	plugin.Logger(ctx).Trace("getResourceGroup")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	resourceGroupClient := resources.NewGroupsClient(subscriptionID)
 	resourceGroupClient.Authorizer = session.Authorizer
 
-	op, err := resourceGroupClient.Get(ctx, *resourceGroup.Name)
+	op, err := resourceGroupClient.Get(ctx, name)
 	if err != nil {
 		return nil, err
 	}

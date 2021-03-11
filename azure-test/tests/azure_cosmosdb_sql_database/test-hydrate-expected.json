@@ -6,7 +6,7 @@
     "database_users": "users/",
     "id": "{{ output.resource_id.value }}",
     "name": "{{resourceName}}",
-    "region": "East US",
+    "region": "east us",
     "resource_group": "{{resourceName}}",
     "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases"
   }

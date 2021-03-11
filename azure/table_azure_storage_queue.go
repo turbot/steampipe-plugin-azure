@@ -18,7 +18,7 @@ type queueInfo = struct {
 	Location      *string
 }
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -26,7 +26,6 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		Description: "Azure Storage Queue",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
-			ItemFromKey:       queueDataFromKey,
 			Hydrate:           getStorageQueue,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
 		},
@@ -38,29 +37,29 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the queue",
+				Description: "The friendly name that identifies the queue.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a queue uniquely",
+				Description: "Contains ID to identify a queue uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Queue.ID"),
 			},
 			{
 				Name:        "storage_account_name",
-				Description: "An unique read-only string that changes whenever the resource is updated",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Queue.Type"),
 			},
 			{
 				Name:        "metadata",
-				Description: "A name-value pair that represents queue metadata",
+				Description: "A name-value pair that represents queue metadata.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Queue.ListQueueProperties.Metadata"),
 			},
@@ -100,22 +99,7 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func queueDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	resourceGroup := quals["resource_group"].GetStringValue()
-	accountName := quals["storage_account_name"].GetStringValue()
-	item := &queueInfo{
-		Account:       &accountName,
-		Name:          &name,
-		ResourceGroup: &resourceGroup,
-	}
-	return item, nil
-}
-
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
@@ -142,10 +126,10 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	queueData := h.Item.(*queueInfo)
+	plugin.Logger(ctx).Trace("getStorageQueue")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -153,10 +137,14 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
+
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	storageDetails, err := storageClient.GetProperties(context.Background(), *queueData.ResourceGroup, *queueData.Account, "")
+	storageDetails, err := storageClient.GetProperties(context.Background(), resourceGroup, accountName, "")
 
 	if err != nil {
 		return nil, err
@@ -167,13 +155,13 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	queueClient := storage.NewQueueClient(subscriptionID)
 	queueClient.Authorizer = session.Authorizer
 
-	op, err := queueClient.Get(context.Background(), *queueData.ResourceGroup, *queueData.Account, *queueData.Name)
+	op, err := queueClient.Get(context.Background(), resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}
 
 	if op.QueueProperties != nil {
-		queueData = &queueInfo{
+		return &queueInfo{
 			Queue: storage.ListQueue{
 				Name: op.Name,
 				ID:   op.ID,
@@ -182,12 +170,11 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 					Metadata: op.QueueProperties.Metadata,
 				},
 			},
-			Account:       queueData.Account,
-			Name:          queueData.Name,
-			ResourceGroup: queueData.ResourceGroup,
+			Account:       &accountName,
+			Name:          &name,
+			ResourceGroup: &resourceGroup,
 			Location:      location,
-		}
-		return queueData, nil
+		}, nil
 	}
 
 	return nil, nil

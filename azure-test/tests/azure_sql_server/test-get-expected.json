@@ -1,0 +1,17 @@
+[
+	{
+		"administrator_login": "mradministrator",
+		"fully_qualified_domain_name": "{{ resourceName }}.database.windows.net",
+		"kind": "v12.0",
+		"location": "eastus",
+		"name": "{{ resourceName }}",
+		"region": "eastus",
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"tags_src": {
+			"name": "{{ resourceName }}"
+		},
+		"type": "Microsoft.Sql/servers",
+		"version": "12.0"
+	}
+]
