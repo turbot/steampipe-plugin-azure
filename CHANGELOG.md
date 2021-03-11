@@ -1,3 +1,14 @@
+## v0.3.0 [2021-03-11]
+
+_What's new?_
+
+- New tables added
+  - [azure_sql_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_sql_server)
+
+_Bug fixes_
+
+- Removed use of deprecated `ItemFromKey` function from all tables
+
 ## v0.2.2 [2021-03-02]
 
 _Bug fixes_
