@@ -23,7 +23,7 @@ select
   name,
   https_only,
   kind,
-  location
+  region
 from
   azure_app_service_web_app
 where
@@ -38,7 +38,7 @@ select
   name,
   client_cert_enabled,
   kind,
-  location
+  region
 from
   azure_app_service_web_app
 where
@@ -53,7 +53,7 @@ select
   name,
   host_names,
   kind,
-  location,
+  region,
   resource_group
 from
   azure_app_service_web_app;
