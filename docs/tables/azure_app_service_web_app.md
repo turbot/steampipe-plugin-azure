@@ -16,7 +16,7 @@ from
 ```
 
 
-### List of web app which accepts HTPP traffics (i.e HTTPS only is disabled)
+### List of web app which accepts HTTP traffics (i.e HTTPS only is disabled)
 
 ```sql
 select
@@ -31,7 +31,7 @@ where
 ```
 
 
-### List of web app where client certificate mode is disabled.
+### List of web app where client certificate mode is disabled
 
 ```sql
 select
