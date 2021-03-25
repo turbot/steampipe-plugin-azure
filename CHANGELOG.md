@@ -6,7 +6,7 @@ _Enhancements_
 
 _Documentation_
 
-- Fixed various example queries in `azure_app_service_web_app` table document. ([#59](https://github.com/turbot/steampipe-plugin-azure/pull/59))
+- Fixed various example queries in `azure_app_service_web_app` table document ([#59](https://github.com/turbot/steampipe-plugin-azure/pull/59))
 
 ## v0.3.0 [2021-03-11]
 
