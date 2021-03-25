@@ -16,14 +16,14 @@ from
 ```
 
 
-### List of web app which accepts HTPP traffics (i.e HTTPS only is disabled)
+### List of web app which accepts HTTP traffics (i.e HTTPS only is disabled)
 
 ```sql
 select
   name,
   https_only,
   kind,
-  location
+  region
 from
   azure_app_service_web_app
 where
@@ -31,14 +31,14 @@ where
 ```
 
 
-### List of web app where client certificate mode is disabled.
+### List of web app where client certificate mode is disabled
 
 ```sql
 select
   name,
   client_cert_enabled,
   kind,
-  location
+  region
 from
   azure_app_service_web_app
 where
@@ -53,7 +53,7 @@ select
   name,
   host_names,
   kind,
-  location,
+  region,
   resource_group
 from
   azure_app_service_web_app;
