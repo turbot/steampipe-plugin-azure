@@ -1,3 +1,13 @@
+## v0.3.1 [2021-03-25]
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v0.2.6](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v026-2021-03-18)
+
+_Documentation_
+
+- Fixed various example queries in `azure_app_service_web_app` table document. ([#59](https://github.com/turbot/steampipe-plugin-azure/pull/59))
+
 ## v0.3.0 [2021-03-11]
 
 _What's new?_
