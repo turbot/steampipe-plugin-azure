@@ -55,44 +55,44 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated.",
-				Type:        proto.ColumnType_STRING,
-			},
-			{
 				Name:        "type",
 				Description: "The resource type of the flow log.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "flowlog_format_type",
-				Description: "The file type of flow log. Possible values include: 'JSON'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FlowLogPropertiesFormat.Format.Type").Transform(transform.ToString),
-			},
-			{
-				Name:        "flowlog_retention_days",
-				Description: "Specifies the number of days to retain flow log records.",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("FlowLogPropertiesFormat.RetentionPolicy.Days"),
-			},
-			{
-				Name:        "flowlog_retention_enabled",
-				Description: "Indicates whether flow log retention is enabled, or not.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("FlowLogPropertiesFormat.RetentionPolicy.Enabled"),
-			},
-			{
-				Name:        "flowlog_version",
+				Name:        "version",
 				Description: "The version (revision) of the flow log.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("FlowLogPropertiesFormat.Format.Version"),
+			},
+			{
+				Name:        "etag",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "file_type",
+				Description: "The file type of flow log. Possible values include: 'JSON'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("FlowLogPropertiesFormat.Format.Type").Transform(transform.ToString),
 			},
 			{
 				Name:        "provisioning_state",
 				Description: "The provisioning state of the flow log.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("FlowLogPropertiesFormat.ProvisioningState").Transform(transform.ToString),
+			},
+			{
+				Name:        "retention_policy_days",
+				Description: "Specifies the number of days to retain flow log records.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("FlowLogPropertiesFormat.RetentionPolicy.Days"),
+			},
+			{
+				Name:        "retention_policy_enabled",
+				Description: "Indicates whether flow log retention is enabled, or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("FlowLogPropertiesFormat.RetentionPolicy.Enabled"),
 			},
 			{
 				Name:        "storage_id",
@@ -113,7 +113,7 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("FlowLogPropertiesFormat.TargetResourceGUID"),
 			},
 			{
-				Name:        "flow_log_traffic_analytics_configuration",
+				Name:        "traffic_analytics",
 				Description: "Defines the configuration of flow log traffic analytics.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("FlowLogPropertiesFormat.FlowAnalyticsConfiguration.NetworkWatcherFlowAnalyticsConfiguration"),

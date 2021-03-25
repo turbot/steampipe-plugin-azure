@@ -1,25 +1,25 @@
 [
 	{
 		"enabled": true,
-		"flow_log_traffic_analytics_configuration": {
+		"file_type": "JSON",
+		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Network/networkWatchers/{{ resourceName }}/flowLogs/Microsoft.Network{{ resourceName }}{{ resourceName }}",
+		"name": "Microsoft.Network{{ resourceName }}{{ resourceName }}",
+		"network_watcher_name": "{{ resourceName }}",
+		"region": "eastus",
+		"resource_group": "{{ resourceName }}",
+		"retention_policy_days": 7,
+		"retention_policy_enabled": true,
+		"storage_id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"target_resource_id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Network/networkSecurityGroups/{{ resourceName }}",
+		"traffic_analytics": {
 			"enabled": true,
 			"trafficAnalyticsInterval": 10,
 			"workspaceId": "{{ output.workspace_id.value }}",
 			"workspaceRegion": "eastus",
 			"workspaceResourceId": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.OperationalInsights/workspaces/{{ resourceName }}"
 		},
-		"flowlog_format_type": "JSON",
-		"flowlog_retention_days": 7,
-		"flowlog_retention_enabled": true,
-		"flowlog_version": 1,
-		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Network/networkWatchers/{{ resourceName }}/flowLogs/Microsoft.Network{{ resourceName }}{{ resourceName }}",
-		"name": "Microsoft.Network{{ resourceName }}{{ resourceName }}",
-		"network_watcher_name": "{{ resourceName }}",
-		"region": "eastus",
-		"resource_group": "{{ resourceName }}",
-		"storage_id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}",
-		"subscription_id": "{{ output.subscription_id.value }}",
-		"target_resource_id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Network/networkSecurityGroups/{{ resourceName }}",
-		"type": "Microsoft.Network/networkWatchers/flowLogs"
+		"type": "Microsoft.Network/networkWatchers/flowLogs",
+		"version": 1
 	}
 ]

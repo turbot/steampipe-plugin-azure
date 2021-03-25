@@ -37,11 +37,11 @@ select
   name,
   region,
   enabled,
-  flowlog_retention_days
+  retention_policy_days
 from
   azure_network_watcher_flow_log
 where
-  enabled and flowlog_retention_days < 90;
+  enabled and retention_policy_days < 90;
 ```
 
 ### Storage account details used to store the flow log
@@ -49,7 +49,7 @@ where
 ```sql
 select
   name,
-  flowlog_format_type,
+  file_type,
   storage_id
 from
   azure_network_watcher_flow_log;
