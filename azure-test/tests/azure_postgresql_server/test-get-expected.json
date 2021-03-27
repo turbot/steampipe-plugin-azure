@@ -1,0 +1,23 @@
+[
+	{
+		"administrator_login": "psqladminun",
+		"backup_retention_days": 7,
+		"fully_qualified_domain_name": "{{ output.server_fqdn.value }}",
+		"geo_redundant_backup": "Disabled",
+		"id": "{{ output.resource_id.value }}",
+		"location": "{{ output.location.value }}",
+		"minimal_tls_version": "TLS1_2",
+		"name": "{{ resourceName }}",
+		"public_network_access": "Enabled",
+		"region": "{{ output.location.value }}",
+		"resource_group": "{{ resourceName }}",
+		"sku_family": "Gen5",
+		"sku_name": "B_Gen5_1",
+		"sku_size": "<null>",
+		"sku_tier": "Basic",
+		"ssl_enforcement": "Enabled",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"type": "Microsoft.DBforPostgreSQL/servers",
+		"version": "9.5"
+	}
+]

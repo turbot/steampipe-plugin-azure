@@ -60,6 +60,12 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
 			{
+				Name:        "backup_retention_days",
+				Description: "Backup retention days for the server.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("ServerProperties.StorageProfile.BackupRetentionDays"),
+			},
+			{
 				Name:        "byok_enforcement",
 				Description: "Status showing whether the server data encryption is enabled with customer-managed keys.",
 				Type:        proto.ColumnType_STRING,
@@ -76,6 +82,12 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Description: "The fully qualified domain name of the server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.FullyQualifiedDomainName"),
+			},
+			{
+				Name:        "geo_redundant_backup",
+				Description: "Indicates whether Geo-redundant is enabled, or not for server backup.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.StorageProfile.GeoRedundantBackup").Transform(transform.ToString),
 			},
 			{
 				Name:        "infrastructure_encryption",
@@ -148,18 +160,6 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Description: "Enable ssl enforcement or not when connect to server. Possible values include: 'Enabled', 'Disabled'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.SslEnforcement").Transform(transform.ToString),
-			},
-			{
-				Name:        "storage_profile_backup_retention_days",
-				Description: "Backup retention days for the server.",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("ServerProperties.StorageProfile.BackupRetentionDays"),
-			},
-			{
-				Name:        "storage_profile_geo_redundant_backup",
-				Description: "Indicates whether Geo-redundant is enabled, or not for server backup.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.StorageProfile.GeoRedundantBackup").Transform(transform.ToString),
 			},
 			{
 				Name:        "storage_profile_storage_auto_grow",

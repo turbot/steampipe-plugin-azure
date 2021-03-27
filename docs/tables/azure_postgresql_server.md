@@ -32,9 +32,9 @@ from
   azure_postgresql_server,
   jsonb_array_elements(firewall_rules) as rule
 where
-  rule ->> 'Name' = 'AllowAllAzureIps'
-  and rule -> 'FirewallRuleProperties' -> 'startIpAddress' = '0.0.0.0'
-  and rule -> 'FirewallRuleProperties' -> 'endIpAddress' = '0.0.0.0';
+  rule ->> 'Name' = 'AllowAllWindowsAzureIps'
+  and rule -> 'FirewallRuleProperties' ->> 'startIpAddress' = '0.0.0.0'
+  and rule -> 'FirewallRuleProperties' ->> 'endIpAddress' = '0.0.0.0';
 ```
 
 ## List servers for which Active Directory Admin is not configured
