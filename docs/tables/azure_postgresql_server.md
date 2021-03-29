@@ -18,7 +18,7 @@ where
   ssl_enforcement = 'Enabled';
 ```
 
-### List servers for which 'Allow access to Azure services' feature is disabled
+### List servers for which 'Allow access to Azure services' feature is enabled
 
 ```sql
 select
