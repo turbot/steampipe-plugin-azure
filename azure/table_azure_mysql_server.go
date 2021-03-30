@@ -264,6 +264,12 @@ func getMySQLServers(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Error: mysql.ServersClient#Get: Invalid input: autorest/validation: validation failed: parameter=resourceGroupName
+	// constraint=MinLength value="" details: value length must be greater than or equal to 1
+	if len(resourceGroup) < 1 {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
