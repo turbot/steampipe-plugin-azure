@@ -13,7 +13,7 @@ select
   audit -> 'properties' ->> 'state' as audit_policy_state
 from
   azure_sql_server,
-  jsonb(server_audit_policy) as audit
+  jsonb_array_elements(server_audit_policy) as audit
 where
   audit -> 'properties' ->> 'state' = 'Disabled';
 ```
@@ -24,12 +24,12 @@ where
 select
   name,
   id,
-  audit -> 'properties' -> 'retentionDays' as audit_policy_retention_days
+  (audit -> 'properties' ->> 'retentionDays')::integer as audit_policy_retention_days
 from
   azure_sql_server,
-  jsonb(server_audit_policy) as audit
+  jsonb_array_elements(server_audit_policy) as audit
 where
-  audit -> 'properties' ->> 'retentionDays' < '90';
+  (audit -> 'properties' ->> 'retentionDays')::integer < 90;
 ```
 
 ### List of servers that have advanced data security disabled
@@ -41,7 +41,7 @@ select
   security -> 'properties' ->> 'state' as security_alert_policy_state
 from
   azure_sql_server,
-  jsonb(server_security_alert_policy) as security
+  jsonb_array_elements(server_security_alert_policy) as security
 where
   security -> 'properties' ->> 'state' = 'Disabled';
 ```
@@ -55,7 +55,7 @@ select
   security -> 'properties' -> 'disabledAlerts' as security_alert_policy_state
 from
   azure_sql_server,
-  jsonb(server_security_alert_policy) as security,
+  jsonb_array_elements(server_security_alert_policy) as security,
   jsonb_array_elements_text(security -> 'properties' -> 'disabledAlerts') as disabled_alerts,
   jsonb_array_length(security -> 'properties' -> 'disabledAlerts') as alert_length
 where
@@ -84,7 +84,7 @@ select
   encryption ->> 'kind' as encryption_protector_kind
 from
   azure_sql_server,
-  jsonb(encryption_protector) as encryption
+  jsonb_array_elements(encryption_protector) as encryption
 where
   encryption ->> 'kind' = 'servicemanaged';
 ```
