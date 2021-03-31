@@ -18,7 +18,7 @@ variable "azure_subscription" {
 }
 
 provider "azurerm" {
-  version         = "=1.36.0"
+  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
 }
@@ -56,11 +56,11 @@ resource "azurerm_storage_container" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_storage_container.named_test_resource.id}"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Storage/storageAccounts/${var.resource_name}/blobServices/default/containers/${var.resource_name}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_storage_container.named_test_resource.id)}"
+  value = "azure:///subscriptions/${lower(var.azure_subscription)}/resourcegroups/${lower(var.resource_name)}/providers/microsoft.storage/storageaccounts/${lower(var.resource_name)}/blobservices/default/containers/${lower(var.resource_name)}"
 }
 
 output "resource_name" {
@@ -68,5 +68,5 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = azurerm_storage_container.named_test_resource.id
+  value = "/subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Storage/storageAccounts/${var.resource_name}/blobServices/default/containers/${var.resource_name}"
 }
