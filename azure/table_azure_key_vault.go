@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -10,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureKeyVault(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -40,6 +41,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "vault_uri",
 				Description: "Contains URI of the vault for performing operations on keys and secrets",
 				Type:        proto.ColumnType_STRING,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.VaultURI"),
 			},
 			{
@@ -86,36 +88,42 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "soft_delete_enabled",
 				Description: "Indicates whether the 'soft delete' functionality is enabled for this key vault",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnableSoftDelete"),
 			},
 			{
 				Name:        "soft_delete_retention_in_days",
 				Description: "Contains softDelete data retention days",
 				Type:        proto.ColumnType_INT,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.SoftDeleteRetentionInDays"),
 			},
 			{
 				Name:        "sku_family",
 				Description: "Contains SKU family name",
 				Type:        proto.ColumnType_STRING,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.Sku.Family"),
 			},
 			{
 				Name:        "sku_name",
 				Description: "SKU name to specify whether the key vault is a standard vault or a premium vault",
 				Type:        proto.ColumnType_STRING,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "tenant_id",
 				Description: "The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault",
 				Type:        proto.ColumnType_STRING,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.TenantID").Transform(transform.ToString),
 			},
 			{
 				Name:        "access_policies",
 				Description: "A list of 0 to 1024 identities that have access to the key vault",
 				Type:        proto.ColumnType_JSON,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.AccessPolicies"),
 			},
 
@@ -159,7 +167,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -170,42 +178,47 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	keyVaultClient := keyvault.NewVaultsClient(subscriptionID)
 	keyVaultClient.Authorizer = session.Authorizer
+	maxResults := int32(100)
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := keyVaultClient.ListBySubscription(ctx, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, vault := range result.Values() {
-			d.StreamListItem(ctx, vault)
-		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+	// Pagination is not handled, as the API always sends value of NotDone() as true,
+	// and the list goes to infinite
+	result, err := keyVaultClient.List(ctx, &maxResults)
+	if err != nil {
+		return nil, err
+	}
+	for _, vault := range result.Values() {
+		d.StreamListItem(ctx, vault)
 	}
 
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKeyVault")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	keyVaultClient := keyvault.NewVaultsClient(subscriptionID)
-	keyVaultClient.Authorizer = session.Authorizer
+	var name, resourceGroup string
+	if h.Item != nil {
+		data := h.Item.(keyvault.Resource)
+		name = *data.Name
+		resourceGroup = strings.Split(*data.ID, "/")[4]
+	} else {
+		name = d.KeyColumnQuals["name"].GetStringValue()
+		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
+	}
 
-	op, err := keyVaultClient.Get(ctx, resourceGroup, name)
+	client := keyvault.NewVaultsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}

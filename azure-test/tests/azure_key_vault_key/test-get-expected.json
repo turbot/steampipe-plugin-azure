@@ -1,0 +1,19 @@
+[
+	{
+		"curve_name": "RSA",
+		"enabled": true,
+		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.KeyVault/vaults/{{ resourceName }}/keys/{{ resourceName }}",
+		"key_ops": ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"],
+		"key_size": 2048,
+		"key_type": "RSA",
+		"key_uri": "{{ output.key_uri_without_version.value }}",
+		"key_uri_with_version": "{{ output.key_uri_without_version.value }}/{{ output.key_version.value }}",
+		"location": "{{ output.location.value }}",
+		"name": "{{ resourceName }}",
+		"region": "{{ output.location_lower.value }}",
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"type": "Microsoft.KeyVault/vaults/keys",
+		"vault_name": "{{ resourceName }}"
+	}
+]
