@@ -59,15 +59,12 @@ resource "azurerm_monitor_diagnostic_setting" "named_test_resource" {
   }
 }
 
-
-
-
 output "resource_aka" {
-  value = "azure://${azurerm_monitor_diagnostic_setting.named_test_resource.id}"
+  value = "azure://subscriptions/${var.azure_subscription}/providers/microsoft.insights/diagnosticSettings/${var.resource_name}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_monitor_diagnostic_setting.named_test_resource.id)}"
+  value = "azure://subscriptions/${var.azure_subscription}/providers/microsoft.insights/diagnosticsettings/${lower(var.resource_name)}"
 }
 
 output "resource_name" {
@@ -75,7 +72,7 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = azurerm_monitor_diagnostic_setting.named_test_resource.id
+  value = "subscriptions/${var.azure_subscription}/providers/microsoft.insights/diagnosticSettings/${var.resource_name}"
 }
 
 output "subscription_id" {
