@@ -341,7 +341,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

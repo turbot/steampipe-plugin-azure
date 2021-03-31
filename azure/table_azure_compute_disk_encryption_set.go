@@ -133,7 +133,7 @@ func tableAzureComputeDiskEncryptionSet(_ context.Context) *plugin.Table {
 
 func listAzureComputeDiskEncryptionSets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeDiskEncryptionSets")
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func getAzureComputeDiskEncryptionSet(ctx context.Context, d *plugin.QueryData, 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}

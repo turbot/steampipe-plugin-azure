@@ -19,7 +19,7 @@ type storageAccountInfo = struct {
 	ResourceGroup *string
 }
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -27,7 +27,6 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 		Description: "Azure Storage Account",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			ItemFromKey:       storageAccountDataFromKey,
 			Hydrate:           getStorageAccount,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
@@ -38,231 +37,231 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the storage account",
+				Description: "The friendly name that identifies the storage account.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a storage account uniquely",
+				Description: "Contains ID to identify a storage account uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.ID"),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Type"),
 			},
 			{
 				Name:        "access_tier",
-				Description: "The access tier used for billing",
+				Description: "The access tier used for billing.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.AccessTier").Transform(transform.ToString),
 			},
 			{
 				Name:        "kind",
-				Description: "The kind of the resource",
+				Description: "The kind of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Kind").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_name",
-				Description: "Contains sku name of the storage account",
+				Description: "Contains sku name of the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_tier",
-				Description: "Contains sku tier of the storage account",
+				Description: "Contains sku tier of the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Sku.Tier").Transform(transform.ToString),
 			},
 			{
 				Name:        "creation_time",
-				Description: "Creation date and time of the storage account",
+				Description: "Creation date and time of the storage account.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Account.AccountProperties.CreationTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "allow_blob_public_access",
-				Description: "Specifies whether allow or disallow public access to all blobs or containers in the storage account",
+				Description: "Specifies whether allow or disallow public access to all blobs or containers in the storage account.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.AllowBlobPublicAccess"),
 			},
 			{
 				Name:        "blob_change_feed_enabled",
-				Description: "Specifies whether change feed event logging is enabled for the Blob service",
+				Description: "Specifies whether change feed event logging is enabled for the Blob service.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.ChangeFeed.Enabled"),
 			},
 			{
 				Name:        "blob_container_soft_delete_enabled",
-				Description: "Specifies whether DeleteRetentionPolicy is enabled",
+				Description: "Specifies whether DeleteRetentionPolicy is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.ContainerDeleteRetentionPolicy.Enabled"),
 			},
 			{
 				Name:        "blob_container_soft_delete_retention_days",
-				Description: "Indicates the number of days that the deleted item should be retained",
+				Description: "Indicates the number of days that the deleted item should be retained.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.ContainerDeleteRetentionPolicy.Days"),
 			},
 			{
 				Name:        "blob_restore_policy_days",
-				Description: "Specifies how long the blob can be restored",
+				Description: "Specifies how long the blob can be restored.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.RestorePolicy.Days"),
 			},
 			{
 				Name:        "blob_restore_policy_enabled",
-				Description: "Specifies whether blob restore is enabled",
+				Description: "Specifies whether blob restore is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.RestorePolicy.Enabled"),
 			},
 			{
 				Name:        "blob_soft_delete_enabled",
-				Description: "Specifies whether DeleteRetentionPolicy is enabled",
+				Description: "Specifies whether DeleteRetentionPolicy is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.DeleteRetentionPolicy.Enabled"),
 			},
 			{
 				Name:        "blob_soft_delete_retention_days",
-				Description: "Indicates the number of days that the deleted item should be retained",
+				Description: "Indicates the number of days that the deleted item should be retained.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.DeleteRetentionPolicy.Days"),
 			},
 			{
 				Name:        "blob_versioning_enabled",
-				Description: "Specifies whether versioning is enabled",
+				Description: "Specifies whether versioning is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountBlobProperties,
 				Transform:   transform.FromField("BlobServicePropertiesProperties.IsVersioningEnabled"),
 			},
 			{
 				Name:        "enable_https_traffic_only",
-				Description: "Allows https traffic only to storage service if sets to true",
+				Description: "Allows https traffic only to storage service if sets to true.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.EnableHTTPSTrafficOnly"),
 			},
 			{
 				Name:        "encryption_key_source",
-				Description: "Contains the encryption keySource (provider)",
+				Description: "Contains the encryption keySource (provider).",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeySource").Transform(transform.ToString),
 			},
 			{
 				Name:        "encryption_key_vault_properties_key_current_version_id",
-				Description: "The object identifier of the current versioned Key Vault Key in use",
+				Description: "The object identifier of the current versioned Key Vault Key in use.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.CurrentVersionedKeyIdentifier"),
 			},
 			{
 				Name:        "encryption_key_vault_properties_key_name",
-				Description: "The name of KeyVault key",
+				Description: "The name of KeyVault key.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.KeyName"),
 			},
 			{
 				Name:        "encryption_key_vault_properties_key_vault_uri",
-				Description: "The Uri of KeyVault",
+				Description: "The Uri of KeyVault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.KeyVaultURI"),
 			},
 			{
 				Name:        "encryption_key_vault_properties_key_version",
-				Description: "The version of KeyVault key",
+				Description: "The version of KeyVault key.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.KeyVersion"),
 			},
 			{
 				Name:        "encryption_key_vault_properties_last_rotation_time",
-				Description: "Timestamp of last rotation of the Key Vault Key",
+				Description: "Timestamp of last rotation of the Key Vault Key.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.LastKeyRotationTimestamp"),
 			},
 			{
 				Name:        "failover_in_progress",
-				Description: "Specifies whether the failover is in progress",
+				Description: "Specifies whether the failover is in progress.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.FailoverInProgress"),
 			},
 			{
 				Name:        "file_soft_delete_enabled",
-				Description: "Specifies whether DeleteRetentionPolicy is enabled",
+				Description: "Specifies whether DeleteRetentionPolicy is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountFileProperties,
 				Transform:   transform.FromField("ShareDeleteRetentionPolicy.Enabled"),
 			},
 			{
 				Name:        "file_soft_delete_retention_days",
-				Description: "Indicates the number of days that the deleted item should be retained",
+				Description: "Indicates the number of days that the deleted item should be retained.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountFileProperties,
 				Transform:   transform.FromField("ShareDeleteRetentionPolicy.Days"),
 			},
 			{
 				Name:        "is_hns_enabled",
-				Description: "Specifies whether account HierarchicalNamespace is enabled",
+				Description: "Specifies whether account HierarchicalNamespace is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.IsHnsEnabled"),
 			},
 			{
 				Name:        "logging_delete",
-				Description: "Specifies whether all delete requests should be logged",
+				Description: "Specifies whether all delete requests should be logged.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.Delete"),
 			},
 			{
 				Name:        "logging_read",
-				Description: "Specifies whether all read requests should be logged",
+				Description: "Specifies whether all read requests should be logged.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.Read"),
 			},
 			{
 				Name:        "logging_retention_days",
-				Description: "Indicates the number of days that metrics or logging data should be retained",
+				Description: "Indicates the number of days that metrics or logging data should be retained.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.RetentionPolicy.Days"),
 			},
 			{
 				Name:        "logging_retention_enabled",
-				Description: "Specifies whether a retention policy is enabled for the storage service",
+				Description: "Specifies whether a retention policy is enabled for the storage service.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.RetentionPolicy.Enabled"),
 			},
 			{
 				Name:        "logging_version",
-				Description: "The version of Storage Analytics to configure",
+				Description: "The version of Storage Analytics to configure.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.Version"),
 			},
 			{
 				Name:        "logging_write",
-				Description: "Specifies whether all write requests should be logged",
+				Description: "Specifies whether all write requests should be logged.",
 				Type:        proto.ColumnType_BOOL,
 				Hydrate:     getAzureStorageAccountQueueProperties,
 				Transform:   transform.FromField("Logging.Write"),
 			},
 			{
 				Name:        "minimum_tls_version",
-				Description: "Contains the minimum TLS version to be permitted on requests to storage",
+				Description: "Contains the minimum TLS version to be permitted on requests to storage.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.MinimumTLSVersion").Transform(transform.ToString),
 			},
 			{
 				Name:        "network_rule_bypass",
-				Description: "Specifies whether traffic is bypassed for Logging/Metrics/AzureServices",
+				Description: "Specifies whether traffic is bypassed for Logging/Metrics/AzureServices.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.NetworkRuleSet.Bypass").Transform(transform.ToString),
 			},
@@ -274,85 +273,85 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "primary_blob_endpoint",
-				Description: "Contains the blob endpoint",
+				Description: "Contains the blob endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Blob"),
 			},
 			{
 				Name:        "primary_dfs_endpoint",
-				Description: "Contains the dfs endpoint",
+				Description: "Contains the dfs endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Dfs"),
 			},
 			{
 				Name:        "primary_file_endpoint",
-				Description: "Contains the file endpoint",
+				Description: "Contains the file endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.File"),
 			},
 			{
 				Name:        "primary_location",
-				Description: "Contains the location of the primary data center for the storage account",
+				Description: "Contains the location of the primary data center for the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryLocation"),
 			},
 			{
 				Name:        "primary_queue_endpoint",
-				Description: "Contains the queue endpoint",
+				Description: "Contains the queue endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Queue"),
 			},
 			{
 				Name:        "primary_table_endpoint",
-				Description: "Contains the table endpoint",
+				Description: "Contains the table endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Table"),
 			},
 			{
 				Name:        "primary_web_endpoint",
-				Description: "Contains the web endpoint",
+				Description: "Contains the web endpoint.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Web"),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the virtual network resource",
+				Description: "The provisioning state of the virtual network resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.ProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "require_infrastructure_encryption",
-				Description: "Specifies whether or not the service applies a secondary layer of encryption with platform managed keys for data at rest",
+				Description: "Specifies whether or not the service applies a secondary layer of encryption with platform managed keys for data at rest.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.RequireInfrastructureEncryption"),
 			},
 			{
 				Name:        "secondary_location",
-				Description: "Contains the location of the geo-replicated secondary for the storage account",
+				Description: "Contains the location of the geo-replicated secondary for the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.SecondaryLocation"),
 			},
 			{
 				Name:        "encryption_services",
-				Description: "A list of services which support encryption",
+				Description: "A list of services which support encryption.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.Services"),
 			},
 			{
 				Name:        "network_ip_rules",
-				Description: "A list of IP ACL rules",
+				Description: "A list of IP ACL rules.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.NetworkRuleSet.IPRules"),
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "A list of private endpoint connection associated with the specified storage account",
+				Description: "A list of private endpoint connection associated with the specified storage account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.PrivateEndpointConnections"),
 			},
 			{
 				Name:        "virtual_network_rules",
-				Description: "A list of virtual network rules",
+				Description: "A list of virtual network rules.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.NetworkRuleSet.VirtualNetworkRules"),
 			},
@@ -398,23 +397,10 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func storageAccountDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	resourceGroup := quals["resource_group"].GetStringValue()
-	item := &storageAccountInfo{
-		Name:          &name,
-		ResourceGroup: &resourceGroup,
-	}
-	return item, nil
-}
-
 //// FETCH FUNCTIONS ////
 
 func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -444,29 +430,31 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 //// HYDRATE FUNCTIONS ////
 
 func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	accountData := h.Item.(*storageAccountInfo)
+	plugin.Logger(ctx).Trace("getStorageAccount")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	op, err := storageClient.GetProperties(ctx, *accountData.ResourceGroup, *accountData.Name, storage.AccountExpand("blobRestoreStatus"))
+	op, err := storageClient.GetProperties(ctx, resourceGroup, name, storage.AccountExpand("blobRestoreStatus"))
 	if err != nil {
 		return nil, err
 	}
 
-	return &storageAccountInfo{op, op.Name, accountData.ResourceGroup}, nil
+	return &storageAccountInfo{op, op.Name, &resourceGroup}, nil
 }
 
 func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -491,7 +479,7 @@ func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryDa
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +506,7 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 	// Original Error: autorest/azure: Service returned an error. Status=400 Code="FeatureNotSupportedForAccount" Message="File is not supported for the account."
 	if accountData.Account.Sku.Tier == "Standard" && (accountData.Account.Kind == "Storage" || accountData.Account.Kind == "StorageV2") {
 		// Create session
-		session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+		session, err := GetNewSession(ctx, d, "MANAGEMENT")
 		if err != nil {
 			return nil, err
 		}

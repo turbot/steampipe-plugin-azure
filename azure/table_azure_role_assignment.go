@@ -18,7 +18,6 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		Description: "Azure Role Assignment",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("id"),
-			ItemFromKey:       roleAssignmentIDFromKey,
 			Hydrate:           getIamRoleAssignment,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound"}),
 		},
@@ -29,40 +28,40 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the role assignment",
+				Description: "The friendly name that identifies the role assignment.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a role assignment uniquely",
+				Description: "Contains ID to identify a role assignment uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "scope",
-				Description: "Current state of the role assignment",
+				Description: "Current state of the role assignment.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.Scope"),
 			},
 			{
 				Name:        "type",
-				Description: "Contains the resource type",
+				Description: "Contains the resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "principal_id",
-				Description: "Contains the principal id",
+				Description: "Contains the principal id.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.PrincipalID"),
 			},
 			{
 				Name:        "principal_type",
-				Description: "Principal type of the assigned principal ID",
+				Description: "Principal type of the assigned principal ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.PrincipalType").Transform(transform.ToString),
 			},
 			{
 				Name:        "role_definition_id",
-				Description: "Name of the assigned role definition",
+				Description: "Name of the assigned role definition.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.RoleDefinitionID"),
 			},
@@ -88,21 +87,10 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 	}
 }
 
-//// ITEM FROM KEY
-
-func roleAssignmentIDFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	roleAssignmentID := quals["id"].GetStringValue()
-	item := &authorization.RoleAssignment{
-		ID: &roleAssignmentID,
-	}
-	return item, nil
-}
-
 //// LIST FUNCTION
 
 func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -131,18 +119,19 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 //// HYDRATE FUNCTIONS
 
 func getIamRoleAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	roleAssignment := h.Item.(*authorization.RoleAssignment)
+	plugin.Logger(ctx).Trace("getIamRoleAssignment")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	roleAssignmentID := d.KeyColumnQuals["id"].GetStringValue()
 
 	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 
-	op, err := authorizationClient.GetByID(ctx, *roleAssignment.ID)
+	op, err := authorizationClient.GetByID(ctx, roleAssignmentID)
 	if err != nil {
 		return nil, err
 	}

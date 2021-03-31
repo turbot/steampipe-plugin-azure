@@ -17,7 +17,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		DefaultGetConfig: &plugin.GetConfig{
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound"}),
 		},
-
+		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
+			NewInstance: ConfigInstance,
+			Schema:      ConfigSchema,
+		},
 		TableMap: map[string]*plugin.Table{
 			"azure_ad_group":                    tableAzureAdGroup(ctx),
 			"azure_ad_service_principal":        tableAzureAdServicePrincipal(ctx),
@@ -54,6 +57,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_role_assignment":             tableAzureIamRoleAssignment(ctx),
 			"azure_role_definition":             tableAzureIamRoleDefinition(ctx),
 			"azure_route_table":                 tableAzureRouteTable(ctx),
+			"azure_sql_server":                  tableAzureSQLServer(ctx),
 			"azure_storage_account":             tableAzureStorageAccount(ctx),
 			"azure_storage_blob_service":        tableAzureStorageBlobService(ctx),
 			"azure_storage_blob":                tableAzureStorageBlob(ctx),
@@ -62,11 +66,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_storage_table":               tableAzureStorageTable(ctx),
 			"azure_subnet":                      tableAzureSubnet(ctx),
 			"azure_virtual_network":             tableAzureVirtualNetwork(ctx),
+			// "azure_storage_blob":                tableAzureStorageBlob(ctx),
+			// "azure_storage_table":               tableAzureStorageTable(ctx),
 		},
 	}
-
-	// TODO think about implementing a plugin configure - who calls it?
-	//p.ConfigureFunc = pluginConfigure(p)
 
 	return p
 }

@@ -19,7 +19,7 @@ type mongoDatabaseInfo = struct {
 	Location      *string
 }
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -27,7 +27,6 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 		Description: "Azure Cosmos DB Mongo Database",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
-			ItemFromKey:       mongoDatabaseDataFromKey,
 			Hydrate:           getCosmosDBMongoDatabase,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "NotFound"}),
 		},
@@ -39,59 +38,59 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the Mongo DB database",
+				Description: "The friendly name that identifies the Mongo DB database.",
 			},
 			{
 				Name:        "account_name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the database account in which the database is created",
+				Description: "The friendly name that identifies the database account in which the database is created.",
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a Mongo DB database uniquely",
+				Description: "Contains ID to identify a Mongo DB database uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoDatabase.ID"),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoDatabase.Type"),
 			},
 			{
 				Name:        "autoscale_settings_max_throughput",
-				Description: "Contains maximum throughput, the resource can scale up to",
+				Description: "Contains maximum throughput, the resource can scale up to.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Options.AutoscaleSettings.MaxThroughput"),
 			},
 			{
 				Name:        "database_etag",
-				Description: "A system generated property representing the resource etag required for optimistic concurrency control",
+				Description: "A system generated property representing the resource etag required for optimistic concurrency control.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Resource.Etag"),
 			},
 			{
 				Name:        "database_id",
-				Description: "Name of the Cosmos DB MongoDB database",
+				Description: "Name of the Cosmos DB MongoDB database.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Resource.ID"),
 			},
 			{
 				Name:        "database_rid",
-				Description: "A system generated unique identifier for database",
+				Description: "A system generated unique identifier for database.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Resource.Rid"),
 			},
 			{
 				Name:        "database_ts",
-				Description: "A system generated property that denotes the last updated timestamp of the resource",
+				Description: "A system generated property that denotes the last updated timestamp of the resource.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Resource.Ts").Transform(transform.ToInt),
 			},
 			{
 				Name:        "throughput",
-				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings",
+				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Options.Throughput"),
 			},
@@ -137,28 +136,13 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func mongoDatabaseDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	resourceGroup := quals["resource_group"].GetStringValue()
-	accountName := quals["account_name"].GetStringValue()
-	item := &mongoDatabaseInfo{
-		Name:          &name,
-		ResourceGroup: &resourceGroup,
-		Account:       &accountName,
-	}
-	return item, nil
-}
-
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of cosmos db account
 	account := h.Item.(databaseAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -180,19 +164,23 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	mongoDatabaseData := h.Item.(*mongoDatabaseInfo)
+	plugin.Logger(ctx).Trace("getCosmosDBMongoDatabase")
+
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
 
 	// Length of Account name must be greater than, or equal to 3
 	// Error: pq: rpc error: code = Unknown desc = documentdb.DatabaseAccountsClient#Get: Invalid input: autorest/validation: validation failed: parameter=accountName
 	// constraint=MinLength value="" details: value length must be greater than or equal to 3
-	if len(*mongoDatabaseData.Account) < 3 || len(*mongoDatabaseData.ResourceGroup) < 1 {
+	if len(accountName) < 3 || len(resourceGroup) < 1 {
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +189,7 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	databaseAccountClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
 
-	op, err := databaseAccountClient.Get(ctx, *mongoDatabaseData.ResourceGroup, *mongoDatabaseData.Account)
+	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
 		return nil, err
 	}
@@ -211,10 +199,10 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	documentDBClient := documentdb.NewMongoDBResourcesClient(subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
-	result, err := documentDBClient.GetMongoDBDatabase(ctx, *mongoDatabaseData.ResourceGroup, *mongoDatabaseData.Account, *mongoDatabaseData.Name)
+	result, err := documentDBClient.GetMongoDBDatabase(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return mongoDatabaseInfo{result, mongoDatabaseData.Account, result.Name, mongoDatabaseData.ResourceGroup, location}, nil
+	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, location}, nil
 }

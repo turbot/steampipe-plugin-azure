@@ -17,7 +17,7 @@ type databaseAccountInfo = struct {
 	ResourceGroup   *string
 }
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -25,7 +25,6 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 		Description: "Azure Cosmos DB Account",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			ItemFromKey:       databaseAccountDataFromKey,
 			Hydrate:           getCosmosDBAccount,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
 		},
@@ -36,186 +35,186 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the database account",
+				Description: "The friendly name that identifies the database account.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a database account uniquely",
+				Description: "Contains ID to identify a database account uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.ID"),
 			},
 			{
 				Name:        "kind",
-				Description: "Indicates the type of database account",
+				Description: "Indicates the type of database account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.Kind").Transform(transform.ToString),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.Type"),
 			},
 			{
 				Name:        "connector_offer",
-				Description: "The cassandra connector offer type for the Cosmos DB database C* account",
+				Description: "The cassandra connector offer type for the Cosmos DB database C* account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ConnectorOffer").Transform(transform.ToString),
 			},
 			{
 				Name:        "consistency_policy_max_interval",
-				Description: "The time amount of staleness (in seconds) tolerated, when used with the Bounded Staleness consistency level",
+				Description: "The time amount of staleness (in seconds) tolerated, when used with the Bounded Staleness consistency level.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ConsistencyPolicy.MaxIntervalInSeconds"),
 			},
 			{
 				Name:        "consistency_policy_max_staleness_prefix",
-				Description: "The number of stale requests tolerated, when used with the Bounded Staleness consistency level",
+				Description: "The number of stale requests tolerated, when used with the Bounded Staleness consistency level.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ConsistencyPolicy.MaxStalenessPrefix"),
 			},
 			{
 				Name:        "database_account_offer_type",
-				Description: "The offer type for the Cosmos DB database account",
+				Description: "The offer type for the Cosmos DB database account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.DatabaseAccountOfferType").Transform(transform.ToString),
 			},
 			{
 				Name:        "default_consistency_level",
-				Description: "The default consistency level and configuration settings of the Cosmos DB account",
+				Description: "The default consistency level and configuration settings of the Cosmos DB account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ConsistencyPolicy.DefaultConsistencyLevel").Transform(transform.ToString),
 			},
 			{
 				Name:        "disable_key_based_metadata_write_access",
-				Description: "Disable write operations on metadata resources (databases, containers, throughput) via account keys",
+				Description: "Disable write operations on metadata resources (databases, containers, throughput) via account keys.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.DisableKeyBasedMetadataWriteAccess"),
 				Default:     false,
 			},
 			{
 				Name:        "document_endpoint",
-				Description: "The connection endpoint for the Cosmos DB database account",
+				Description: "The connection endpoint for the Cosmos DB database account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.DocumentEndpoint"),
 			},
 			{
 				Name:        "enable_analytical_storage",
-				Description: "Specifies whether to enable storage analytics, or not",
+				Description: "Specifies whether to enable storage analytics, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.EnableAnalyticalStorage"),
 				Default:     false,
 			},
 			{
 				Name:        "enable_automatic_failover",
-				Description: "Enables automatic failover of the write region in the rare event that the region is unavailable due to an outage",
+				Description: "Enables automatic failover of the write region in the rare event that the region is unavailable due to an outage.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.EnableAutomaticFailover"),
 				Default:     false,
 			},
 			{
 				Name:        "enable_cassandra_connector",
-				Description: "Enables the cassandra connector on the Cosmos DB C* account",
+				Description: "Enables the cassandra connector on the Cosmos DB C* account.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.EnableCassandraConnector"),
 				Default:     false,
 			},
 			{
 				Name:        "enable_free_tier",
-				Description: "Specifies whether free Tier is enabled for Cosmos DB database account, or not",
+				Description: "Specifies whether free Tier is enabled for Cosmos DB database account, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.EnableFreeTier"),
 				Default:     false,
 			},
 			{
 				Name:        "enable_multiple_write_locations",
-				Description: "Enables the account to write in multiple locations",
+				Description: "Enables the account to write in multiple locations.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.EnableMultipleWriteLocations"),
 				Default:     false,
 			},
 			{
 				Name:        "is_virtual_network_filter_enabled",
-				Description: "Specifies whether to enable/disable Virtual Network ACL rules",
+				Description: "Specifies whether to enable/disable Virtual Network ACL rules.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.IsVirtualNetworkFilterEnabled"),
 				Default:     false,
 			},
 			{
 				Name:        "key_vault_key_uri",
-				Description: "The URI of the key vault, used to encrypt the Cosmos DB database account",
+				Description: "The URI of the key vault, used to encrypt the Cosmos DB database account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.KeyVaultKeyURI"),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the database account resource",
+				Description: "The provisioning state of the database account resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ProvisioningState"),
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Indicates whether requests from Public Network are allowed",
+				Description: "Indicates whether requests from Public Network are allowed.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.PublicNetworkAccess").Transform(transform.ToString),
 			},
 			{
 				Name:        "server_version",
-				Description: "Describes the ServerVersion of an a MongoDB account",
+				Description: "Describes the ServerVersion of an a MongoDB account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.APIProperties.ServerVersion").Transform(transform.ToString),
 			},
 			{
 				Name:        "capabilities",
-				Description: "A list of Cosmos DB capabilities for the account",
+				Description: "A list of Cosmos DB capabilities for the account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.Capabilities"),
 			},
 			{
 				Name:        "cors",
-				Description: "A list of CORS policy for the Cosmos DB database account",
+				Description: "A list of CORS policy for the Cosmos DB database account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.Cors"),
 			},
 			{
 				Name:        "failover_policies",
-				Description: "A list of regions ordered by their failover priorities",
+				Description: "A list of regions ordered by their failover priorities.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.FailoverPolicies"),
 			},
 			{
 				Name:        "ip_rules",
-				Description: "A list of IP rules",
+				Description: "A list of IP rules.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.IPRules"),
 			},
 			{
 				Name:        "locations",
-				Description: "A list of all locations that are enabled for the Cosmos DB account",
+				Description: "A list of all locations that are enabled for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.Locations"),
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account",
+				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.PrivateEndpointConnections"),
 			},
 			{
 				Name:        "read_locations",
-				Description: "A list of read locations enabled for the Cosmos DB account",
+				Description: "A list of read locations enabled for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ReadLocations"),
 			},
 			{
 				Name:        "virtual_network_rules",
-				Description: "A list of Virtual Network ACL rules configured for the Cosmos DB account",
+				Description: "A list of Virtual Network ACL rules configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.VirtualNetworkRules"),
 			},
 			{
 				Name:        "write_locations",
-				Description: "A list of write locations enabled for the Cosmos DB account",
+				Description: "A list of write locations enabled for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.WriteLocations"),
 			},
@@ -261,23 +260,10 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func databaseAccountDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	resourceGroup := quals["resource_group"].GetStringValue()
-	item := &databaseAccountInfo{
-		Name:          &name,
-		ResourceGroup: &resourceGroup,
-	}
-	return item, nil
-}
-
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -299,25 +285,26 @@ func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	databaseAccountData := h.Item.(*databaseAccountInfo)
 	plugin.Logger(ctx).Trace("getCosmosDBAccount")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	documentDBClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
-	op, err := documentDBClient.Get(ctx, *databaseAccountData.ResourceGroup, *databaseAccountData.Name)
+	op, err := documentDBClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return databaseAccountInfo{op, op.Name, databaseAccountData.ResourceGroup}, nil
+	return databaseAccountInfo{op, op.Name, &resourceGroup}, nil
 }

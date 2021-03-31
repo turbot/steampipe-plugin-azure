@@ -18,7 +18,6 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 		Description: "Azure Role Definition",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			ItemFromKey:       roleDefinitionNameFromKey,
 			Hydrate:           getIamRoleDefinition,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound"}),
 		},
@@ -29,46 +28,46 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the role definition",
+				Description: "The friendly name that identifies the role definition.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a role definition uniquely",
+				Description: "Contains ID to identify a role definition uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
-				Description: "Contains the resource type",
+				Description: "Contains the resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "role_name",
-				Description: "Current state of the role definition",
+				Description: "Current state of the role definition.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleDefinitionProperties.RoleName"),
 			},
 			{
 				Name:        "role_type",
-				Description: "Name of the role definition",
+				Description: "Name of the role definition.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleDefinitionProperties.RoleType"),
 			},
 			{
 				Name:        "description",
-				Description: "Description of the role definition",
+				Description: "Description of the role definition.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RoleDefinitionProperties.Description"),
 			},
 			{
 				Name:        "assignable_scopes",
-				Description: "A list of assignable scopes for which the role definition can be assigned",
+				Description: "A list of assignable scopes for which the role definition can be assigned.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("RoleDefinitionProperties.AssignableScopes"),
 			},
 			{
 				Name:        "permissions",
-				Description: "A list of actions, which can be accessed",
+				Description: "A list of actions, which can be accessed.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("RoleDefinitionProperties.Permissions"),
 			},
@@ -94,21 +93,10 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 	}
 }
 
-//// ITEM FROM KEY
-
-func roleDefinitionNameFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	item := &authorization.RoleDefinition{
-		Name: &name,
-	}
-	return item, nil
-}
-
 //// LIST FUNCTION
 
 func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -137,18 +125,19 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 //// HYDRATE FUNCTIONS
 
 func getIamRoleDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	roleDefinition := h.Item.(*authorization.RoleDefinition)
+	plugin.Logger(ctx).Trace("getIamRoleDefinition")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	authorizationClient := authorization.NewRoleDefinitionsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 
-	op, err := authorizationClient.Get(ctx, "/subscriptions/"+subscriptionID, *roleDefinition.Name)
+	op, err := authorizationClient.Get(ctx, "/subscriptions/"+subscriptionID, name)
 	if err != nil {
 		return nil, err
 	}

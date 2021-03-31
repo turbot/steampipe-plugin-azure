@@ -9,11 +9,11 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"strings"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/turbot/steampipe-plugin-sdk/connection"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
@@ -30,7 +30,36 @@ type Session struct {
 // 3. Username password
 // 4. MSI
 // 5. CLI
-func GetNewSession(ctx context.Context, connectionManager *connection.Manager, tokenAudience string) (session *Session, err error) {
+func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
+	azureConfig := GetConfig(d.Connection)
+
+	if &azureConfig != nil {
+		if azureConfig.TenantID != nil {
+			os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
+		}
+		if azureConfig.SubscriptionID != nil {
+			os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
+		}
+		if azureConfig.ClientID != nil {
+			os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
+		}
+		if azureConfig.ClientSecret != nil {
+			os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
+		}
+		if azureConfig.CertificatePath != nil {
+			os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
+		}
+		if azureConfig.CertificatePassword != nil {
+			os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
+		}
+		if azureConfig.Username != nil {
+			os.Setenv("AZURE_USERNAME", *azureConfig.Username)
+		}
+		if azureConfig.Username != nil {
+			os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
+		}
+	}
+
 	logger := plugin.Logger(ctx)
 	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
 	tenantID := os.Getenv("AZURE_TENANT_ID")
@@ -46,7 +75,7 @@ func GetNewSession(ctx context.Context, connectionManager *connection.Manager, t
 	// have we already created and cached the session?
 	serviceCacheKey := tokenAudience + resource + authMethod
 
-	if cachedData, ok := connectionManager.Cache.Get(serviceCacheKey); ok {
+	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
 		return cachedData.(*Session), nil
 	}
 
@@ -65,12 +94,21 @@ func GetNewSession(ctx context.Context, connectionManager *connection.Manager, t
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+
+			// In case the password got changed, and the session token stored in the system, or the CLI is outdated
+			if strings.Contains(err.Error(), "invalid_grant") {
+				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+			}
 			return nil, err
 		}
 	default:
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+
+			if strings.Contains(err.Error(), "invalid_grant") {
+				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+			}
 			return nil, err
 		}
 	}
@@ -95,7 +133,7 @@ func GetNewSession(ctx context.Context, connectionManager *connection.Manager, t
 		TenantID:       tenantID,
 	}
 
-	connectionManager.Cache.Set(serviceCacheKey, sess)
+	d.ConnectionManager.Cache.Set(serviceCacheKey, sess)
 
 	return sess, err
 }

@@ -19,7 +19,7 @@ type sqlDatabaseInfo = struct {
 	Location      *string
 }
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -27,7 +27,6 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 		Description: "Azure Cosmos DB SQL Database",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
-			ItemFromKey:       sqlDatabaseDataFromKey,
 			Hydrate:           getCosmosDBSQLDatabase,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "NotFound"}),
 		},
@@ -39,59 +38,59 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the sql database",
+				Description: "The friendly name that identifies the sql database.",
 			},
 			{
 				Name:        "account_name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the database account in which the database is created",
+				Description: "The friendly name that identifies the database account in which the database is created.",
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a sql database uniquely",
+				Description: "Contains ID to identify a sql database uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.ID"),
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.Type"),
 			},
 			{
 				Name:        "autoscale_settings_max_throughput",
-				Description: "Contains maximum throughput, the resource can scale up to",
+				Description: "Contains maximum throughput, the resource can scale up to.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Options.AutoscaleSettings.MaxThroughput"),
 			},
 			{
 				Name:        "database_colls",
-				Description: "A system generated property that specified the addressable path of the collections resource",
+				Description: "A system generated property that specified the addressable path of the collections resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Resource.Colls"),
 			},
 			{
 				Name:        "database_etag",
-				Description: "A system generated property representing the resource etag required for optimistic concurrency control",
+				Description: "A system generated property representing the resource etag required for optimistic concurrency control.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Resource.Etag"),
 			},
 			{
 				Name:        "database_id",
-				Description: "Name of the Cosmos DB SQL database",
+				Description: "Name of the Cosmos DB SQL database.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Resource.ID"),
 			},
 			{
 				Name:        "database_rid",
-				Description: "A system generated unique identifier for database",
+				Description: "A system generated unique identifier for database.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Resource.Rid"),
 			},
 			{
 				Name:        "database_ts",
-				Description: "A system generated property that denotes the last updated timestamp of the resource",
+				Description: "A system generated property that denotes the last updated timestamp of the resource.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Resource.Ts").Transform(transform.ToInt),
 			},
@@ -103,7 +102,7 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "throughput",
-				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings",
+				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("SQLDatabase.SQLDatabaseGetProperties.Options.Throughput"),
 			},
@@ -149,28 +148,13 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 	}
 }
 
-//// BUILD HYDRATE INPUT ////
-
-func sqlDatabaseDataFromKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
-	resourceGroup := quals["resource_group"].GetStringValue()
-	accountName := quals["account_name"].GetStringValue()
-	item := &sqlDatabaseInfo{
-		Name:          &name,
-		ResourceGroup: &resourceGroup,
-		Account:       &accountName,
-	}
-	return item, nil
-}
-
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of cosmos db account
 	account := h.Item.(databaseAccountInfo)
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -192,21 +176,25 @@ func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugi
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	sqlDatabaseData := h.Item.(*sqlDatabaseInfo)
+	plugin.Logger(ctx).Trace("getCosmosDBSQLDatabase")
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
+
 	databaseAccountClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
 
-	op, err := databaseAccountClient.Get(ctx, *sqlDatabaseData.ResourceGroup, *sqlDatabaseData.Account)
+	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
 		return nil, err
 	}
@@ -216,10 +204,10 @@ func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.
 	documentDBClient := documentdb.NewSQLResourcesClient(subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
-	result, err := documentDBClient.GetSQLDatabase(ctx, *sqlDatabaseData.ResourceGroup, *sqlDatabaseData.Account, *sqlDatabaseData.Name)
+	result, err := documentDBClient.GetSQLDatabase(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return sqlDatabaseInfo{result, sqlDatabaseData.Account, result.Name, sqlDatabaseData.ResourceGroup, location}, nil
+	return sqlDatabaseInfo{result, &accountName, result.Name, &resourceGroup, location}, nil
 }
