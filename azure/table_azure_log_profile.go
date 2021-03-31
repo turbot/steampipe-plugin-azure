@@ -120,7 +120,7 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS ////
 
 func listKeyLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
@@ -141,14 +141,14 @@ func listKeyLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getKeyLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKeyLogProfile")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
-	session, err := GetNewSession(ctx, d.ConnectionManager, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
