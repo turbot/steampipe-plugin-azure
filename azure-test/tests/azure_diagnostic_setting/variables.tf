@@ -18,8 +18,7 @@ variable "azure_subscription" {
 }
 
 provider "azurerm" {
-  # Cannot be passed as a variable
-  version         = "=1.36.0"
+  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
 }
@@ -45,33 +44,14 @@ resource "azurerm_storage_account" "named_test_resource" {
   account_replication_type = "GRS"
 }
 
-resource "azurerm_key_vault" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  tags = {
-    name = var.resource_name
-  }
-}
-
 resource "azurerm_monitor_diagnostic_setting" "named_test_resource" {
   name               = var.resource_name
-  target_resource_id = azurerm_key_vault.named_test_resource.id
+  target_resource_id = "/subscriptions/${var.azure_subscription}"
   storage_account_id = azurerm_storage_account.named_test_resource.id
 
   log {
-    category = "AuditEvent"
-    enabled  = false
-
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  metric {
-    category = "AllMetrics"
+    category = "Alert"
+    enabled  = true
 
     retention_policy {
       enabled = false
