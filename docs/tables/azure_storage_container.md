@@ -15,3 +15,13 @@ select
 from
   azure_storage_container;
 ```
+### Ensure the storage container storing the activity logs is not publicly accessible
+
+```sql
+select
+  jsonb_pretty(container_properties) as container_properties
+from
+  azure_storage_container
+where
+  name = 'insights-operational-logs';
+```
