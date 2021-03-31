@@ -17,7 +17,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_container",
 		Description: "Azure Storage Container",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
+			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "account_name"}),
 			Hydrate:           getStorageContainer,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
@@ -37,6 +37,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Name:        "id",
 				Description: "The container ID",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID"),
 			},
 			{
 				Name:        "type",
@@ -44,6 +45,12 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			// Other details
+			{
+				Name:        "account_name",
+				Description: "The friendly name that identifies the storage account.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID").Transform(idToAccountName),
+			},
 			{
 				Name:        "container_properties",
 				Description: "The blob container properties.",
@@ -59,6 +66,12 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Name"),
 			},
 			{
+				Name:        "tags",
+				Description: ColumnDescriptionTags,
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Etag"),
+			},
+			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
@@ -66,12 +79,6 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 			},
 
 			// Standard azure columns
-			{
-				Name:        "region",
-				Description: ColumnDescriptionRegion,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location").Transform(toLower),
-			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
