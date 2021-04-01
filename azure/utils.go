@@ -47,6 +47,27 @@ func convertDateToTime(ctx context.Context, d *transform.TransformData) (interfa
 	return nil, nil
 }
 
+func convertDateUnixToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	dateValue := d.Value.(*date.UnixTime)
+	if dateValue != nil {
+		// convert from *date.Time to *date.Time
+		timeValue := dateValue.Duration().Milliseconds()
+
+		epochTime, err := types.ToInt64(timeValue)
+		if err != nil {
+			return nil, err
+		}
+		if epochTime == 0 {
+			return nil, nil
+		}
+		timeIn := time.Unix(0, epochTime*int64(time.Millisecond))
+		timestampRFC3339Format := timeIn.Format(time.RFC3339)
+		return timestampRFC3339Format, nil
+	}
+
+	return nil, nil
+}
+
 // Constants for Standard Column Descriptions
 const (
 	ColumnDescriptionAkas          = "Array of globally unique identifier strings (also known as) for the resource."

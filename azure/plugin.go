@@ -43,6 +43,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_cosmosdb_sql_database":       tableAzureCosmosDBSQLDatabase(ctx),
 			"azure_firewall":                    tableAzureFirewall(ctx),
 			"azure_key_vault":                   tableAzureKeyVault(ctx),
+			"azure_key_vault_secret":            tableAzureKeyVaultSecret(ctx),
 			"azure_location":                    tableAzureLocation(ctx),
 			"azure_management_lock":             tableAzureManagementLock(ctx),
 			"azure_network_interface":           tableAzureNetworkInterface(ctx),
