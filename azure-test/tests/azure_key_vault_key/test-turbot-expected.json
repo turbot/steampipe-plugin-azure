@@ -4,10 +4,10 @@
 			"azure:///subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.KeyVault/vaults/{{ resourceName }}/keys/{{ resourceName }}",
 			"azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{ resourceName }}/providers/microsoft.keyvault/vaults/{{ resourceName }}/keys/{{ resourceName }}"
 		],
-		"name": "{{resourceName}}",
+		"name": "{{ resourceName }}",
 		"tags": {
-			"name": "{{resourceName}}"
+			"name": "{{ resourceName }}"
 		},
-		"title": "{{resourceName}}"
+		"title": "{{ resourceName }}"
 	}
 ]

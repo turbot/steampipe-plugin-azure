@@ -53,6 +53,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "enabled_for_deployment",
 				Description: "Indicates whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnabledForDeployment"),
 				Default:     false,
 			},
@@ -60,6 +61,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "enabled_for_disk_encryption",
 				Description: "Indicates whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnabledForDiskEncryption"),
 				Default:     false,
 			},
@@ -67,6 +69,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "enabled_for_template_deployment",
 				Description: "Indicates whether Azure Resource Manager is permitted to retrieve secrets from the key vault",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnabledForTemplateDeployment"),
 				Default:     false,
 			},
@@ -74,6 +77,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "enable_rbac_authorization",
 				Description: "Property that controls how data actions are authorized",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnableRbacAuthorization"),
 				Default:     false,
 			},
@@ -81,6 +85,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Name:        "purge_protection_enabled",
 				Description: "Indicates whether protection against purge is enabled for this vault",
 				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.EnablePurgeProtection"),
 				Default:     false,
 			},
@@ -127,7 +132,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.AccessPolicies"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -145,6 +150,8 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
