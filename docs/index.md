@@ -40,7 +40,7 @@ from
 
 ## Documentation
 
-- **[Table definitions & examples →](azure/tables)**
+- **[Table definitions & examples →](/plugins/turbot/azure/tables)**
 
 ## Get started
 
