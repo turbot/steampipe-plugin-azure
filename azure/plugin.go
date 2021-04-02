@@ -61,6 +61,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_storage_table_service":       tableAzureStorageTableService(ctx),
 			"azure_subnet":                      tableAzureSubnet(ctx),
 			"azure_virtual_network":             tableAzureVirtualNetwork(ctx),
+			"azure_security_center":             tableAzureSecurityCenter(ctx),
 			// "azure_storage_blob":                tableAzureStorageBlob(ctx),
 			// "azure_storage_table":               tableAzureStorageTable(ctx),
 		},
