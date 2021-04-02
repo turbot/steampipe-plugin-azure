@@ -57,7 +57,7 @@ resource "azurerm_mysql_server" "named_test_resource" {
   ssl_minimal_tls_version_enforced  = "TLS1_2"
 
   tags = {
-    "name" = var.resource_name
+    name = var.resource_name
   }
 }
 
