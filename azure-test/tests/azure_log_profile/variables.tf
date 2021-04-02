@@ -41,7 +41,7 @@ resource "azurerm_storage_account" "named_test_resource" {
   resource_group_name      = azurerm_resource_group.named_test_resource.name
   location                 = azurerm_resource_group.named_test_resource.location
   account_tier             = "Standard"
-  account_replication_type = "GRS"
+  account_replication_type = "LRS"
 }
 resource "azurerm_eventhub_namespace" "named_test_resource" {
   name                = var.resource_name
@@ -74,9 +74,6 @@ resource "azurerm_monitor_log_profile" "named_test_resource" {
     days    = 7
   }
 }
-
-
-
 
 output "resource_aka" {
   value = "azure://${azurerm_monitor_log_profile.named_test_resource.id}"

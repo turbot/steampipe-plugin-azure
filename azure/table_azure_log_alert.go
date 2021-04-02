@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureLogAlert(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,11 +18,11 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 		Description: "Azure Log Alert",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getKeyLogAlert,
+			Hydrate:           getLogAlert,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listKeyLogAlert,
+			Hydrate: listLogAlert,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -92,9 +92,9 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
-func listKeyLogAlert(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listLogAlert(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -116,9 +116,9 @@ func listKeyLogAlert(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
-func getKeyLogAlert(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getLogAlert(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKeyLogAlert")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()

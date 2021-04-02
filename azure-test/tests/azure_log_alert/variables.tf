@@ -52,7 +52,7 @@ resource "azurerm_storage_account" "named_test_resource" {
   resource_group_name      = azurerm_resource_group.named_test_resource.name
   location                 = azurerm_resource_group.named_test_resource.location
   account_tier             = "Standard"
-  account_replication_type = "GRS"
+  account_replication_type = "LRS"
 }
 
 resource "azurerm_monitor_activity_log_alert" "named_test_resource" {

@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,11 +18,11 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		Description: "Azure Diagnostic Setting",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getKeyDiagnosticSetting,
+			Hydrate:           getDiagnosticSetting,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listKeyDiagnosticSetting,
+			Hydrate: listDiagnosticSetting,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -76,9 +76,9 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
-func listKeyDiagnosticSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listDiagnosticSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -101,9 +101,9 @@ func listKeyDiagnosticSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
-func getKeyDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKeyDiagnosticSetting")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()

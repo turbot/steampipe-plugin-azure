@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureLogProfile(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,11 +18,11 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 		Description: "Azure Log Profile",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getKeyLogProfile,
+			Hydrate:           getLogProfile,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listKeyLogProfile,
+			Hydrate: listLogProfile,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -117,9 +117,9 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
-func listKeyLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func listKeyLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 //// HYDRATE FUNCTIONS
 
-func getKeyLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKeyLogProfile")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()

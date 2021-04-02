@@ -14,7 +14,7 @@ import (
 
 func tableAzureLocation(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_location sample test",
+		Name:        "azure_location",
 		Description: "Azure Location",
 		List: &plugin.ListConfig{
 			Hydrate: listLocations,
