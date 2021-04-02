@@ -41,7 +41,7 @@ resource "azurerm_storage_account" "named_test_resource" {
   resource_group_name      = azurerm_resource_group.named_test_resource.name
   location                 = azurerm_resource_group.named_test_resource.location
   account_tier             = "Standard"
-  account_replication_type = "GRS"
+  account_replication_type = "LRS"
 }
 
 resource "azurerm_monitor_diagnostic_setting" "named_test_resource" {
@@ -64,7 +64,7 @@ output "resource_aka" {
 }
 
 output "resource_aka_lower" {
-  value = "azure://subscriptions/${var.azure_subscription}/providers/microsoft.insights/diagnosticsettings/${lower(var.resource_name)}"
+  value = "azure://subscriptions/${var.azure_subscription}/providers/microsoft.insights/diagnosticsettings/${var.resource_name}"
 }
 
 output "resource_name" {
@@ -77,12 +77,4 @@ output "resource_id" {
 
 output "subscription_id" {
   value = var.azure_subscription
-}
-
-output "tenant_id" {
-  value = data.azurerm_client_config.current.tenant_id
-}
-
-output "object_id" {
-  value = data.azurerm_client_config.current.object_id
 }

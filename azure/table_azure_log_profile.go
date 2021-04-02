@@ -144,7 +144,7 @@ func listLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 //// HYDRATE FUNCTIONS
 
 func getLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getKeyLogProfile")
+	plugin.Logger(ctx).Trace("getLogProfile")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 

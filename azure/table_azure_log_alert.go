@@ -119,7 +119,7 @@ func listLogAlert(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 //// HYDRATE FUNCTIONS
 
 func getLogAlert(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getKeyLogAlert")
+	plugin.Logger(ctx).Trace("getLogAlert")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
