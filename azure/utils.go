@@ -62,9 +62,3 @@ func toLower(_ context.Context, d *transform.TransformData) (interface{}, error)
 	valStr := types.SafeString(d.Value)
 	return strings.ToLower(valStr), nil
 }
-
-func idToAccountName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	id := types.SafeString(d.Value)
-	accountName := strings.Split(id, "/")[8]
-	return accountName, nil
-}

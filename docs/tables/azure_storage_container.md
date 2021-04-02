@@ -20,9 +20,12 @@ from
 
 ```sql
 select
-  jsonb_pretty(container_properties) as container_properties
+  name,
+  id,
+  type,
+  account_name
 from
   azure_storage_container
 where
-  name = 'insights-operational-logs';
+  public_access = 'None';
 ```

@@ -60,7 +60,7 @@ output "resource_aka" {
 }
 
 output "resource_aka_lower" {
-  value = "azure:///subscriptions/${lower(var.azure_subscription)}/resourcegroups/${lower(var.resource_name)}/providers/microsoft.storage/storageaccounts/${lower(var.resource_name)}/blobservices/default/containers/${lower(var.resource_name)}"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourcegroups/${var.resource_name}/providers/microsoft.storage/storageaccounts/${var.resource_name}/blobservices/default/containers/${var.resource_name}"
 }
 
 output "resource_name" {

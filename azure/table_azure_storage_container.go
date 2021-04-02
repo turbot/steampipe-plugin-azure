@@ -2,7 +2,9 @@ package azure
 
 import (
 	"context"
+	"strings"
 
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -96,12 +98,6 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Name"),
 			},
 			{
-				Name:        "tags",
-				Description: ColumnDescriptionTags,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Etag"),
-			},
-			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
@@ -180,4 +176,12 @@ func getStorageContainer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 
 	return op, nil
+}
+
+//// TRANSFORM FUNCTIONS
+
+func idToAccountName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	id := types.SafeString(d.Value)
+	accountName := strings.Split(id, "/")[8]
+	return accountName, nil
 }
