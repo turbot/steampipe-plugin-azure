@@ -15,6 +15,7 @@ select
 from
   azure_storage_container;
 ```
+
 ### Ensure the storage container storing the activity logs is not publicly accessible
 
 ```sql

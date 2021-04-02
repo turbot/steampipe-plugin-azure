@@ -37,7 +37,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Name:        "id",
 				Description: "The container ID",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID"),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
@@ -95,7 +95,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS
+//// LIST FUNCTION
 
 func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
