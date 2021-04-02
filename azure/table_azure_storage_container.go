@@ -52,6 +52,36 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAccountName),
 			},
 			{
+				Name:        "deleted",
+				Description: "Indicates whether the blob container was deleted.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ContainerProperties.Deleted"),
+			},
+			{
+				Name:        "default_encryption_scope",
+				Description: "Default the container to use specified encryption scope for all writes.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.DefaultEncryptionScope"),
+			},
+			{
+				Name:        "public_access",
+				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.PublicAccess"),
+			},
+			{
+				Name:        "remaining_retention_days",
+				Description: "Remaining retention days for soft deleted blob container.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("ContainerProperties.RemainingRetentionDays"),
+			},
+			{
+				Name:        "version",
+				Description: "The version of the deleted blob container.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.Version"),
+			},
+			{
 				Name:        "container_properties",
 				Description: "The blob container properties.",
 				Type:        proto.ColumnType_JSON,
@@ -68,7 +98,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
-				Type:        proto.ColumnType_JSON,
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Etag"),
 			},
 			{
