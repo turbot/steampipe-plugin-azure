@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/resources/mgmt/2020-03-01-preview/policy"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -11,42 +11,41 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_security_center",
-		Description: "Azure security Center",
+		Description: "Azure Security Center",
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenter,
 		},
 		Columns: []*plugin.Column{
 			{
-				Name:        "setting",
-				Description: "",
-				Type:        proto.ColumnType_JSON,
-			},
-			{
-				Name:        "pricing",
-				Description: "",
-				Type:        proto.ColumnType_JSON,
-			},
-			{
 				Name:        "auto_provisioning",
-				Description: "",
+				Description: "Auto provisioning settings of the subscriptions.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "contact",
-				Description: "",
+				Description: "Security contact configurations for the subscription.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "policy",
-				Description: "",
+				Description: "Provides operations to assign policy definitions to a scope in your subscription.",
 				Type:        proto.ColumnType_JSON,
 			},
-
+			{
+				Name:        "pricing",
+				Description: "Security pricing configuration in the resource group.",
+				Type:        proto.ColumnType_JSON,
+			},
+			{
+				Name:        "setting",
+				Description: "Configuration settings for Azure Security Center.",
+				Type:        proto.ColumnType_JSON,
+			},
 			// Standard columns
 			{
 				Name:        "title",
@@ -70,7 +69,7 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -78,82 +77,19 @@ func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	settings := getSettingDetails(ctx, session, subscriptionID)
+	provisioning := getProvisioningDetails(ctx, session, subscriptionID)
+	pricings := getPricingsDetails(ctx, session, subscriptionID)
+	contacts := getContactDetails(ctx, session, subscriptionID)
 
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
-
-	pricingClient := security.NewPricingsClient(subscriptionID, "")
-	pricingClient.Authorizer = session.Authorizer
-
-	autoProvisionClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
-	autoProvisionClient.Authorizer = session.Authorizer
-
-	contactClient := security.NewContactsClient(subscriptionID, "")
-	contactClient.Authorizer = session.Authorizer
-
-	PolicyClient := policy.NewAssignmentsClient()
+	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
 	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, "SecurityCenterBuiltIn")
 	if err != nil {
 		return nil, err
 	}
-	contactList, err := contactClient.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	autoProvisionList, err := autoProvisionClient.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	pricingList, err := pricingClient.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	settingList, err := settingClient.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var settings []map[string]interface{}
-	var provisioning []map[string]interface{}
-	var pricings []map[string]interface{}
-	var contacts []map[string]interface{}
 
-	for _, setting := range settingList.Values() {
-		settingMap := make(map[string]interface{})
-		settingMap["id"] = setting.ID
-		settingMap["name"] = setting.Name
-		settingMap["kind"] = setting.Kind
-		settingMap["type"] = setting.Type
-		settings = append(settings, settingMap)
-	}
-
-	for _, provision := range autoProvisionList.Values() {
-		provisionMap := make(map[string]interface{})
-		provisionMap["id"] = provision.ID
-		provisionMap["name"] = provision.Name
-		provisionMap["properties"] = provision.AutoProvisioningSettingProperties
-		provisionMap["type"] = provision.Type
-		provisioning = append(provisioning, provisionMap)
-	}
-
-	for _, pricing := range pricingList.Values() {
-		pricingMap := make(map[string]interface{})
-		pricingMap["id"] = pricing.ID
-		pricingMap["name"] = pricing.Name
-		pricingMap["properties"] = pricing.PricingProperties
-		pricingMap["type"] = pricing.Type
-		pricings = append(pricings, pricingMap)
-	}
-
-	for _, contact := range contactList.Values() {
-		contactMap := make(map[string]interface{})
-		contactMap["id"] = contact.ID
-		contactMap["name"] = contact.Name
-		contactMap["properties"] = contact.ContactProperties
-		contactMap["type"] = contact.Type
-		contacts = append(contacts, contactMap)
-	}
 	Id := "/subscriptions/" + subscriptionID + "/providers/Microsoft.Security/securityCenter"
 	result := map[string]interface{}{
 		"Setting":          settings,
@@ -165,4 +101,91 @@ func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	d.StreamListItem(ctx, result)
 	return nil, err
+}
+
+func getSettingDetails(ctx context.Context, session *Session, subscriptionID string) []map[string]interface{} {
+	settingClient := security.NewSettingsClient(subscriptionID, "")
+	settingClient.Authorizer = session.Authorizer
+
+	settingList, err := settingClient.List(ctx)
+	if err != nil {
+		return nil
+	}
+	var settings []map[string]interface{}
+
+	for _, setting := range settingList.Values() {
+		settingMap := make(map[string]interface{})
+		settingMap["id"] = setting.ID
+		settingMap["name"] = setting.Name
+		settingMap["kind"] = setting.Kind
+		settingMap["type"] = setting.Type
+		settings = append(settings, settingMap)
+	}
+	return settings
+}
+
+func getProvisioningDetails(ctx context.Context, session *Session, subscriptionID string) []map[string]interface{} {
+	autoProvisionClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
+	autoProvisionClient.Authorizer = session.Authorizer
+
+	autoProvisionList, err := autoProvisionClient.List(ctx)
+	if err != nil {
+		return nil
+	}
+
+	var provisioning []map[string]interface{}
+
+	for _, provision := range autoProvisionList.Values() {
+		provisionMap := make(map[string]interface{})
+		provisionMap["id"] = provision.ID
+		provisionMap["name"] = provision.Name
+		provisionMap["properties"] = provision.AutoProvisioningSettingProperties
+		provisionMap["type"] = provision.Type
+		provisioning = append(provisioning, provisionMap)
+	}
+	return provisioning
+}
+
+func getPricingsDetails(ctx context.Context, session *Session, subscriptionID string) []map[string]interface{} {
+	pricingClient := security.NewPricingsClient(subscriptionID, "")
+	pricingClient.Authorizer = session.Authorizer
+
+	pricingList, err := pricingClient.List(ctx)
+	if err != nil {
+		return nil
+	}
+
+	var pricings []map[string]interface{}
+
+	for _, pricing := range pricingList.Values() {
+		pricingMap := make(map[string]interface{})
+		pricingMap["id"] = pricing.ID
+		pricingMap["name"] = pricing.Name
+		pricingMap["properties"] = pricing.PricingProperties
+		pricingMap["type"] = pricing.Type
+		pricings = append(pricings, pricingMap)
+	}
+	return pricings
+}
+
+func getContactDetails(ctx context.Context, session *Session, subscriptionID string) []map[string]interface{} {
+	contactClient := security.NewContactsClient(subscriptionID, "")
+	contactClient.Authorizer = session.Authorizer
+
+	contactList, err := contactClient.List(ctx)
+	if err != nil {
+		return nil
+	}
+
+	var contacts []map[string]interface{}
+
+	for _, contact := range contactList.Values() {
+		contactMap := make(map[string]interface{})
+		contactMap["id"] = contact.ID
+		contactMap["name"] = contact.Name
+		contactMap["properties"] = contact.ContactProperties
+		contactMap["type"] = contact.Type
+		contacts = append(contacts, contactMap)
+	}
+	return contacts
 }
