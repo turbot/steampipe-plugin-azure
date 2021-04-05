@@ -18,7 +18,6 @@ where
   );
 ```
 
-
 ### Ensure that Windows Defender ATP (WDATP) integration with Security Center is selected
 
 ```sql
@@ -33,22 +32,27 @@ where
   );
 ```
 
-
-### Check the status of the Automatic provisioning of monitoring agent
+### Ensure that Automatic provisioning of monitoring agent is set to On
 
 ```sql
 select
-  jsonb_pretty(auto_provisioning) as auto_provisioning
+  p -> 'properties' ->> 'autoProvision' as autoProvision
 from
-  azure_security_center;
+  azure_security_center,
+  jsonb_array_elements(auto_provisioning) as p
+where
+  auto_provisioning is not null
+  and p -> 'properties' ->> 'autoProvision' = 'On';
 ```
-
 
 ### Ensure 'Additional email addresses' is configured with a security contact email
 
 ```sql
 select
-  jsonb_pretty(contact) as contact
+  c -> 'properties' ->> 'email' as contact_email
 from
-  azure_security_center;
+  azure_security_center,
+  jsonb_array_elements(contact) as c
+where
+  contact is not null and c -> 'properties' ->> 'email' != '';
 ```
