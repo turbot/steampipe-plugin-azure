@@ -60,7 +60,6 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_sql_server":                  tableAzureSQLServer(ctx),
 			"azure_storage_account":             tableAzureStorageAccount(ctx),
 			"azure_storage_blob_service":        tableAzureStorageBlobService(ctx),
-			"azure_storage_blob":                tableAzureStorageBlob(ctx),
 			"azure_storage_queue":               tableAzureStorageQueue(ctx),
 			"azure_storage_table_service":       tableAzureStorageTableService(ctx),
 			"azure_storage_table":               tableAzureStorageTable(ctx),
