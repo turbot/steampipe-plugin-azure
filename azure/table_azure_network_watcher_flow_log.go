@@ -55,6 +55,12 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "provisioning_state",
+				Description: "The provisioning state of the flow log.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("FlowLogPropertiesFormat.ProvisioningState").Transform(transform.ToString),
+			},
+			{
 				Name:        "type",
 				Description: "The resource type of the flow log.",
 				Type:        proto.ColumnType_STRING,
@@ -75,12 +81,6 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Description: "The file type of flow log. Possible values include: 'JSON'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("FlowLogPropertiesFormat.Format.Type").Transform(transform.ToString),
-			},
-			{
-				Name:        "provisioning_state",
-				Description: "The provisioning state of the flow log.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FlowLogPropertiesFormat.ProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "retention_policy_days",

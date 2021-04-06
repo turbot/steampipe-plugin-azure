@@ -16,7 +16,7 @@ from
   azure_network_watcher_flow_log;
 ```
 
-### List of flow logs which are not enabled
+### List flow logs which are not enabled
 
 ```sql
 select
@@ -30,7 +30,7 @@ where
   not enabled;
 ```
 
-### List of flow logs for which retention period is less than 90 days
+### List flow logs with retention period less than 90 days
 
 ```sql
 select
@@ -44,7 +44,7 @@ where
   enabled and retention_policy_days < 90;
 ```
 
-### Storage account details used to store the flow log
+### Get storage account details used to store the flow log
 
 ```sql
 select
