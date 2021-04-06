@@ -18,7 +18,7 @@ where
   audit -> 'properties' ->> 'state' = 'Disabled';
 ```
 
-### List servers with an audit log retention period that is less than 90 days
+### List servers with an audit log retention period less than 90 days
 
 ```sql
 select

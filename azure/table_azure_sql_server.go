@@ -61,7 +61,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "administrator_login",
-				Description: "Specifies the username of the Administrator for this server.",
+				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
@@ -251,6 +251,8 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of ServerBlobAuditingPolicyProperties
 	var auditPolicies []map[string]interface{}
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
@@ -290,6 +292,8 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of SecurityAlertPolicyProperties
 	var securityAlertPolicies []map[string]interface{}
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
@@ -332,6 +336,8 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of ServerAdministratorProperties
 	var serverAdministrators []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
@@ -371,6 +377,8 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of EncryptionProtectorProperties
 	var encryptionProtectors []map[string]interface{}
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
@@ -417,6 +425,8 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of ServerVulnerabilityAssessmentProperties
 	var vulnerabilityAssessments []map[string]interface{}
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
@@ -460,6 +470,8 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 		return op.Value, nil
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of FirewallRuleProperties
 	var firewallRules []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
