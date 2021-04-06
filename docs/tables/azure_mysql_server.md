@@ -4,7 +4,7 @@ Azure Database for MySQL Server is a fully managed database service designed to 
 
 ## Examples
 
-### List servers for which Enforce SSL connection is enabled
+### List servers for which SSL is enabled
 
 ```sql
 select
@@ -31,7 +31,7 @@ where
   public_network_access = 'Disabled';
 ```
 
-### List servers for which storage profile auto grow feature is disabled
+### List servers with storage profile auto grow feature disabled
 
 ```sql
 select

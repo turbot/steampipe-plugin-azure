@@ -18,7 +18,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 		Description: "Azure MySQL Server",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMySQLServers,
+			Hydrate:           getMySQLServer,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 		},
 		List: &plugin.ListConfig{
@@ -66,7 +66,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "administrator_login",
-				Description: "Specifies the username of the Administrator for this server.",
+				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
@@ -258,8 +258,8 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 //// HYDRATE FUNCTIONS
 
-func getMySQLServers(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getMySQLServers")
+func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getMySQLServer")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
