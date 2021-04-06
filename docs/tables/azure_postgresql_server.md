@@ -4,7 +4,7 @@ Azure Database for PostgreSQL is a relational database service based on the open
 
 ## Examples
 
-### List servers for which Enforce SSL connection is enabled
+### List servers for which SSL is enabled
 
 ```sql
 select

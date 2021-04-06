@@ -327,6 +327,8 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of FirewallRuleProperties
 	var firewallRules []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
@@ -367,6 +369,8 @@ func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, 
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of ServerAdministratorProperties
 	var serverAdministrators []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
@@ -406,6 +410,8 @@ func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives
+	// the contents of ConfigurationProperties
 	var serverParameters []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
