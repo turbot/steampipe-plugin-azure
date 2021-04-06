@@ -54,6 +54,12 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServerProperties.Version").Transform(transform.ToString),
 			},
 			{
+				Name:        "user_visible_state",
+				Description: "A state of a server that is visible to user. Possible values include: 'Ready', 'Dropping', 'Disabled', 'Inaccessible'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.UserVisibleState").Transform(transform.ToString),
+			},
+			{
 				Name:        "location",
 				Description: "The resource location.",
 				Type:        proto.ColumnType_STRING,
@@ -167,22 +173,16 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServerProperties.SslEnforcement").Transform(transform.ToString),
 			},
 			{
-				Name:        "storage_profile_storage_auto_grow",
+				Name:        "storage_auto_grow",
 				Description: "Indicates whether storage auto grow is enabled, or not.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.StorageProfile.StorageAutogrow").Transform(transform.ToString),
 			},
 			{
-				Name:        "storage_profile_storage_mb",
+				Name:        "storage_mb",
 				Description: "Indicates max storage allowed for a server.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("ServerProperties.StorageProfile.StorageMB"),
-			},
-			{
-				Name:        "user_visible_state",
-				Description: "A state of a server that is visible to user. Possible values include: 'Ready', 'Dropping', 'Disabled', 'Inaccessible'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.UserVisibleState").Transform(transform.ToString),
 			},
 			{
 				Name:        "private_endpoint_connections",
@@ -193,6 +193,12 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 
 			// Steampipe standard columns
 			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name"),
+			},
+			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
@@ -202,12 +208,6 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
-			},
-			{
-				Name:        "title",
-				Description: ColumnDescriptionTitle,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Name"),
 			},
 
 			// Azure standard columns

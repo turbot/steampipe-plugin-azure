@@ -16,8 +16,8 @@
 		"sku_name": "B_Gen5_1",
 		"sku_tier": "Basic",
 		"ssl_enforcement": "Enabled",
-		"storage_profile_storage_auto_grow": "Disabled",
-		"storage_profile_storage_mb": 5120,
+		"storage_auto_grow": "Disabled",
+		"storage_mb": 5120,
 		"subscription_id": "{{ output.subscription_id.value }}",
 		"type": "Microsoft.DBforMySQL/servers",
 		"version": "5.6"

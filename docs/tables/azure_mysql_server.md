@@ -37,14 +37,14 @@ where
 select
   name,
   id,
-  storage_profile_storage_auto_grow
+  storage_auto_grow
 from
   azure_mysql_server
 where
-  storage_profile_storage_auto_grow = 'Disabled';
+  storage_auto_grow = 'Disabled';
 ```
 
-### List servers for which 'backup_retention_days' is greater than 3 days
+### List servers with 'backup_retention_days' greater than 3 days
 
 ```sql
 select
@@ -57,7 +57,7 @@ where
   backup_retention_days > 3;
 ```
 
-### List servers with minimum TLS version is lower than 1.2
+### List servers with minimum TLS version lower than 1.2
 
 ```sql
 select
