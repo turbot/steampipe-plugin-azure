@@ -43,6 +43,12 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "user_visible_state",
+				Description: "A state of a server that is visible to user. Possible values include: 'ServerStateReady', 'ServerStateDropping', 'ServerStateDisabled', 'ServerStateInaccessible'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.UserVisibleState").Transform(transform.ToString),
+			},
+			{
 				Name:        "version",
 				Description: "Specifies the version of the server.",
 				Type:        proto.ColumnType_STRING,
@@ -55,7 +61,7 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "administrator_login",
-				Description: "Specifies the username of the Administrator for this server.",
+				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
@@ -162,22 +168,16 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServerProperties.SslEnforcement").Transform(transform.ToString),
 			},
 			{
-				Name:        "storage_profile_storage_auto_grow",
+				Name:        "storage_auto_grow",
 				Description: "Indicates whether storage auto grow is enabled, or not.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.StorageProfile.StorageAutogrow").Transform(transform.ToString),
 			},
 			{
-				Name:        "storage_profile_storage_mb",
+				Name:        "storage_mb",
 				Description: "Indicates max storage allowed for a server.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("ServerProperties.StorageProfile.StorageMB"),
-			},
-			{
-				Name:        "user_visible_state",
-				Description: "A state of a server that is visible to user. Possible values include: 'ServerStateReady', 'ServerStateDropping', 'ServerStateDisabled', 'ServerStateInaccessible'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.UserVisibleState").Transform(transform.ToString),
 			},
 			{
 				Name:        "private_endpoint_connections",
@@ -207,7 +207,13 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 
-			// steampipe standard columns
+			// Steampipe standard columns
+			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name"),
+			},
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
@@ -219,14 +225,8 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-			{
-				Name:        "title",
-				Description: ColumnDescriptionTitle,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Name"),
-			},
 
-			// azure standard columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
