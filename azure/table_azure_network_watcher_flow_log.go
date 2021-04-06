@@ -119,7 +119,7 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("FlowLogPropertiesFormat.FlowAnalyticsConfiguration.NetworkWatcherFlowAnalyticsConfiguration"),
 			},
 
-			// steampipe standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -138,7 +138,7 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// azure standard columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
