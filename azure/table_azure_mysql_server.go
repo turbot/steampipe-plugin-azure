@@ -249,6 +249,8 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	if err != nil {
 		return nil, err
 	}
+
+	// Currently the API does not support pagination
 	for _, server := range *result.Value {
 		d.StreamListItem(ctx, server)
 	}
