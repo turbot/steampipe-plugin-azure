@@ -1,7 +1,20 @@
 [
-  {
-    "id": "{{ output.resource_id.value }}",
-    "name": "{{resourceName}}",
-    "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
-  }
+	{
+		"account_name": "{{ resourceName }}",
+		"deleted": false,
+		"deny_encryption_scope_override": false,
+		"has_immutability_policy": false,
+		"has_legal_hold": false,
+		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}/blobServices/default/containers/{{ resourceName }}",
+		"lease_duration": "",
+		"lease_state": "Available",
+		"lease_status": "Unlocked",
+		"name": "{{ resourceName }}",
+		"public_access": "None",
+		"remaining_retention_days": 0,
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+		"version": null
+	}
 ]

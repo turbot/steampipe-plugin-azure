@@ -29,7 +29,6 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 		},
 
 		Columns: []*plugin.Column{
-			// Basic info
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the container.",
@@ -37,16 +36,10 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "The container ID",
+				Description: "Contains ID to identify a container uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
-			{
-				Name:        "type",
-				Description: "Specifies the type of the container.",
-				Type:        proto.ColumnType_STRING,
-			},
-			// Other details
 			{
 				Name:        "account_name",
 				Description: "The friendly name that identifies the storage account.",
@@ -60,16 +53,69 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ContainerProperties.Deleted"),
 			},
 			{
+				Name:        "public_access",
+				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.PublicAccess").Transform(transform.ToString),
+			},
+			{
+				Name:        "type",
+				Description: "Specifies the type of the container.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
 				Name:        "default_encryption_scope",
 				Description: "Default the container to use specified encryption scope for all writes.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ContainerProperties.DefaultEncryptionScope"),
 			},
 			{
-				Name:        "public_access",
-				Description: "Specifies whether data in the container may be accessed publicly and the level of access.",
+				Name:        "deleted_time",
+				Description: "Specifies the time when the container was deleted.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("ContainerProperties.DeletedTime"),
+			},
+			{
+				Name:        "deny_encryption_scope_override",
+				Description: "Indicates whether block override of encryption scope from the container default, or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ContainerProperties.DenyEncryptionScopeOverride"),
+			},
+			{
+				Name:        "has_immutability_policy",
+				Description: "The hasImmutabilityPolicy public property is set to true by SRP if ImmutabilityPolicy has been created for this container. The hasImmutabilityPolicy public property is set to false by SRP if ImmutabilityPolicy has not been created for this container.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ContainerProperties.HasImmutabilityPolicy"),
+			},
+			{
+				Name:        "has_legal_hold",
+				Description: "The hasLegalHold public property is set to true by SRP if there are at least one existing tag. The hasLegalHold public property is set to false by SRP if all existing legal hold tags are cleared out. There can be a maximum of 1000 blob containers with hasLegalHold=true for a given account.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ContainerProperties.HasLegalHold"),
+			},
+			{
+				Name:        "last_modified_time",
+				Description: "Specifies the date and time the container was last modified.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("ContainerProperties.LastModifiedTime"),
+			},
+			{
+				Name:        "lease_status",
+				Description: "Specifies the lease status of the container.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContainerProperties.PublicAccess"),
+				Transform:   transform.FromField("ContainerProperties.LeaseStatus").Transform(transform.ToString),
+			},
+			{
+				Name:        "lease_state",
+				Description: "Specifies the lease state of the container.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.LeaseState").Transform(transform.ToString),
+			},
+			{
+				Name:        "lease_duration",
+				Description: "Specifies whether the lease on a container is of infinite or fixed duration, only when the container is leased. Possible values are: 'Infinite', 'Fixed'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContainerProperties.LeaseDuration").Transform(transform.ToString),
 			},
 			{
 				Name:        "remaining_retention_days",
@@ -84,13 +130,25 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ContainerProperties.Version"),
 			},
 			{
-				Name:        "container_properties",
-				Description: "The blob container properties.",
+				Name:        "immutability_policy",
+				Description: "The ImmutabilityPolicy property of the container.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ContainerProperties"),
+				Transform:   transform.FromField("ContainerProperties.ImmutabilityPolicy"),
+			},
+			{
+				Name:        "legal_hold",
+				Description: "The LegalHold property of the container.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ContainerProperties.LegalHold"),
+			},
+			{
+				Name:        "metadata",
+				Description: "A name-value pair to associate with the container as metadata.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ContainerProperties.Metadata"),
 			},
 
-			// Standard steampipe columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -104,7 +162,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Standard azure columns
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -127,18 +185,19 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	// List all containers
-	containerClient := storage.NewBlobContainersClient(subscriptionID)
-	containerClient.Authorizer = session.Authorizer
+	client := storage.NewBlobContainersClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
 	pagesLeft := true
 	for pagesLeft {
-		containerList, err := containerClient.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
+		containerList, err := client.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
 		if err != nil {
 			return nil, err
 		}
@@ -158,19 +217,21 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 func getStorageContainer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getStorageContainer")
 
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
 
-	storageClient := storage.NewBlobContainersClient(subscriptionID)
-	storageClient.Authorizer = session.Authorizer
+	client := storage.NewBlobContainersClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := storageClient.Get(ctx, resourceGroup, accountName, name)
+	op, err := client.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}

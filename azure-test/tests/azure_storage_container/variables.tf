@@ -1,4 +1,3 @@
-
 variable "resource_name" {
   type        = string
   default     = "turbot-test-20200125-create-update"
@@ -69,4 +68,8 @@ output "resource_name" {
 
 output "resource_id" {
   value = "/subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Storage/storageAccounts/${var.resource_name}/blobServices/default/containers/${var.resource_name}"
+}
+
+output "subscription_id" {
+  value = var.azure_subscription
 }
