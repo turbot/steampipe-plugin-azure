@@ -4,7 +4,7 @@ Azure Database for PostgreSQL is a relational database service based on the open
 
 ## Examples
 
-### List servers for which SSL is enabled
+### List servers for which In-Transit Encryption is disabled
 
 ```sql
 select
@@ -15,7 +15,7 @@ select
 from
   azure_postgresql_server
 where
-  ssl_enforcement = 'Enabled';
+  ssl_enforcement = 'Disabled';
 ```
 
 ### List servers for which 'Allow access to Azure services' feature is enabled
@@ -78,4 +78,18 @@ from
 where
   configurations ->> 'Name' = 'log_retention_days'
   and (configurations -> 'ConfigurationProperties' ->> 'value')::INTEGER > 3;
+```
+
+### List servers for which Geo-Redundant backup feature is disabled
+
+```sql
+select
+  name,
+  id,
+  location,
+  geo_redundant_backup
+from
+  azure_postgresql_server
+where
+  geo_redundant_backup = 'Disabled';
 ```
