@@ -494,8 +494,8 @@ func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.Que
 	accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 	if err != nil {
 		// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
-		// Message="The scope '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
-		// cannot perform write operation because following scope(s) are locked: '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
+		// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
+		// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
 		// Please remove the lock and try again."
 		if strings.Contains(err.Error(), "ScopeLocked") {
 			return nil, nil
@@ -573,8 +573,8 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 		accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 		if err != nil {
 			// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
-			// Message="The scope '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
-			// cannot perform write operation because following scope(s) are locked: '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
+			// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
+			// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
 			// Please remove the lock and try again."
 			if strings.Contains(err.Error(), "ScopeLocked") {
 				return nil, nil
