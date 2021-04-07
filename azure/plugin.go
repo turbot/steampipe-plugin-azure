@@ -48,6 +48,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_network_interface":           tableAzureNetworkInterface(ctx),
 			"azure_network_security_group":      tableAzureNetworkSecurityGroup(ctx),
 			"azure_network_watcher":             tableAzureNetworkWatcher(ctx),
+			"azure_postgresql_server":           tableAzurePostgreSqlServer(ctx),
 			"azure_provider":                    tableAzureProvider(ctx),
 			"azure_public_ip":                   tableAzurePublicIP(ctx),
 			"azure_resource_group":              tableAzureResourceGroup(ctx),
