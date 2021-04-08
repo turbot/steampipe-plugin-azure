@@ -1,0 +1,12 @@
+[
+	{
+		"configuration_name": "log_checkpoints",
+		"configuration_value": "on",
+		"end_ip_address": "40.112.8.12",
+		"name": "{{ resourceName }}",
+		"rule_name": "{{ resourceName }}",
+		"rule_type": "Microsoft.DBforPostgreSQL/servers/firewallRules",
+		"server_admin_login_name": "ActiveDirectory",
+		"start_ip_address": "40.112.8.12"
+	}
+]
