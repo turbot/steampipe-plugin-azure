@@ -44,7 +44,7 @@ where
   storage_auto_grow = 'Disabled';
 ```
 
-### List servers with 'backup_retention_days' greater than 3 days
+### List servers with 'backup_retention_days' greater than 90 days
 
 ```sql
 select
@@ -54,7 +54,7 @@ select
 from
   azure_mysql_server
 where
-  backup_retention_days > 3;
+  backup_retention_days > 90;
 ```
 
 ### List servers with minimum TLS version lower than 1.2
