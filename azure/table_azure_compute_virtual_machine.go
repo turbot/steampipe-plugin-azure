@@ -267,7 +267,13 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureComputeVirtualMachineStatuses,
 			},
-
+			{
+				Name:        "extensions",
+				Description: "Specifies the VM Extensions details",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureComputeVirtualMachineExtensions,
+				Transform:   transform.FromValue(),
+			},
 			{
 				Name:        "zones",
 				Description: "A list of virtual machine zones",
@@ -472,6 +478,48 @@ func getNicPublicIP(ctx context.Context, session *Session, id string) (network.P
 	networkClient.Authorizer = session.Authorizer
 
 	return networkClient.Get(ctx, resourceGroup, name, "")
+}
+
+func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineExtensions")
+
+	virtualMachine := h.Item.(compute.VirtualMachine)
+	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachineExtensionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(context.Background(), resourceGroupName, *virtualMachine.Name, "")
+	if err != nil {
+		return nil, err
+	}
+
+	var extensions []map[string]interface{}
+
+	for _, extension := range *op.Value {
+		extensionMap := make(map[string]interface{})
+		extensionMap["Id"] = extension.ID
+		extensionMap["Name"] = extension.Name
+		extensionMap["Type"] = extension.Type
+		extensionMap["Location"] = extension.Location
+		extensionMap["Publisher"] = extension.VirtualMachineExtensionProperties.Publisher
+		extensionMap["TypeHandlerVersion"] = extension.VirtualMachineExtensionProperties.TypeHandlerVersion
+		extensionMap["AutoUpgradeMinorVersion"] = extension.VirtualMachineExtensionProperties.AutoUpgradeMinorVersion
+		extensionMap["EnableAutomaticUpgrade"] = extension.VirtualMachineExtensionProperties.EnableAutomaticUpgrade
+		extensionMap["ForceUpdateTag"] = extension.VirtualMachineExtensionProperties.ForceUpdateTag
+		extensionMap["Settings"] = extension.VirtualMachineExtensionProperties.Settings
+		extensionMap["ProtectedSettings"] = extension.VirtualMachineExtensionProperties.ProtectedSettings
+		extensionMap["ProvisioningState"] = extension.VirtualMachineExtensionProperties.ProvisioningState
+		extensionMap["InstanceView"] = extension.VirtualMachineExtensionProperties.InstanceView
+		extensionMap["tags"] = extension.Tags
+		extensions = append(extensions, extensionMap)
+	}
+	return extensions, nil
 }
 
 // TRANSFORM FUNCTIONS
