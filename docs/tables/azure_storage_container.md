@@ -23,35 +23,38 @@ select
   name,
   id,
   type,
-  account_name
+  account_name,
+  public_access
 from
   azure_storage_container
 where
   public_access = 'None';
 ```
 
-### List containers for which the legal_hold is true
+### List containers with legal hold enabled
 
 ```sql
 select
   name,
   id,
   type,
-  account_name
+  account_name,
+  has_legal_hold
 from
   azure_storage_container
 where
   has_legal_hold;
 ```
 
-### List containers which are either leased or lease broken state
+### List containers which are either leased or have a broken lease state
 
 ```sql
 select
   name,
   id,
   type,
-  account_name
+  account_name,
+  lease_state
 from
   azure_storage_container
 where
@@ -59,28 +62,30 @@ where
   or lease_state = 'Broken';
 ```
 
-### List containers where lease duration is infinite.
+### List containers with infinite lease duration
 
 ```sql
 select
   name,
   id,
   type,
-  account_name
+  account_name,
+  lease_duration
 from
   azure_storage_container
 where
   lease_duration = 'Infinite';
 ```
 
-### List containers where retention days ending in next 7 days
+### List containers with a remaining retention period of 7 days
 
 ```sql
 select
   name,
   id,
   type,
-  account_name
+  account_name,
+  remaining_retention_days
 from
   azure_storage_container
 where
