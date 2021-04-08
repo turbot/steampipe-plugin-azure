@@ -2,9 +2,10 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-12-01/web"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -119,6 +120,13 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.SiteConfig"),
 			},
+			{
+				Name:        "key_to_reference_statuses",
+				Description: "Describes key vault references of an app.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getAppServiceFunctionAppSettingsKeyVaultReferences,
+				Transform:   transform.FromValue(),
+			},
 
 			// Standard columns
 			{
@@ -226,4 +234,37 @@ func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	return nil, nil
+}
+
+func getAppServiceFunctionAppSettingsKeyVaultReferences(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences")
+
+	//data := h.Item.(web.Site)
+	data := h.Item.(web.Site)
+	name := *data.Name
+	resourceGroupName := *data.SiteProperties.ResourceGroup
+
+	if len(resourceGroupName) < 1 {
+		return nil, nil
+	}
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetAppSettingsKeyVaultReferences(ctx, resourceGroupName, name)
+	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "pphufhvfvifivijrvrfvfv455656", subscriptionID)
+	if err != nil {
+		plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "errorvalue should", err)
+		return nil, err
+	}
+	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "pphufhvfvifivij", op)
+	var result1 interface{}
+	err = json.Unmarshal([]byte(op.Response().Value), result1)
+	//return op.Response().Value, nil
+	return result1, nil
 }
