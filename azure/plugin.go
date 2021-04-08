@@ -45,6 +45,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_key_vault":                   tableAzureKeyVault(ctx),
 			"azure_location":                    tableAzureLocation(ctx),
 			"azure_management_lock":             tableAzureManagementLock(ctx),
+			"azure_mysql_server":                tableAzureMySQLServer(ctx),
 			"azure_network_interface":           tableAzureNetworkInterface(ctx),
 			"azure_network_security_group":      tableAzureNetworkSecurityGroup(ctx),
 			"azure_network_watcher":             tableAzureNetworkWatcher(ctx),
