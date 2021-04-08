@@ -1,0 +1,24 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "id": "{{ output.resource_id.value }}",
+    "identity": {
+      "type": "SystemAssigned"
+    },
+    "location": "{{ output.location.value }}",
+    "name": "{{ resourceName }}",
+    "rbac": false,
+    "region": "{{ output.location.value }}",
+    "resource_group": "{{ resourceName }}",
+    "sku": "{Name:Basic Tier:Free}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "foo": "bar"
+    },
+    "title": "{{ resourceName }}",
+    "type": "Microsoft.ContainerService/ManagedClusters"
+  }
+]
