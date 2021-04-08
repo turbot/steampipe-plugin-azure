@@ -47,6 +47,12 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "sku",
+				Description: "Property that controls how data actions are authorized",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getKubernetesCluster,
+			},
+			{
 				Name:        "identity",
 				Description: "Indicates whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault",
 				Type:        proto.ColumnType_JSON,
@@ -55,12 +61,6 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "managed_cluster_properties",
 				Description: "Indicates whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys",
 				Type:        proto.ColumnType_JSON,
-			},
-			{
-				Name:        "sku",
-				Description: "Property that controls how data actions are authorized",
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     getKubernetesCluster,
 			},
 
 			// Standard columns
