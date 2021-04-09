@@ -22,7 +22,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listDiagnosticSetting,
+			Hydrate: listDiagnosticSettings,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -60,6 +60,8 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -78,7 +80,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listDiagnosticSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listDiagnosticSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

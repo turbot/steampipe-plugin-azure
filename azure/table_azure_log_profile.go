@@ -22,7 +22,7 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listLogProfile,
+			Hydrate: listLogProfiles,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -95,6 +95,8 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -119,7 +121,7 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listLogProfile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

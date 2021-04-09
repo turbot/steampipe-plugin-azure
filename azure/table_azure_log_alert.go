@@ -22,7 +22,7 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listLogAlert,
+			Hydrate: listLogAlerts,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -70,6 +70,8 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -94,7 +96,7 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listLogAlert(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listLogAlerts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

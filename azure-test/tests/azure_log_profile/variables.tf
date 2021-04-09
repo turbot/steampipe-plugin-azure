@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8"
+  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
   description = "Azure subscription used for the test."
 }
 
@@ -43,6 +43,7 @@ resource "azurerm_storage_account" "named_test_resource" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
 resource "azurerm_eventhub_namespace" "named_test_resource" {
   name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location

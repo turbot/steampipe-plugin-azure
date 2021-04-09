@@ -1,9 +1,6 @@
 # Table: azure_diagnostic_setting
 
-Each Azure resource requires its own diagnostic setting, which defines the following criteria:
-
-Categories of logs and metric data sent to the destinations defined in the setting. The available categories will vary for different resource types.
-One or more destinations to send the logs. Current destinations include Log Analytics workspace, Event Hubs, and Azure Storage.
+Azure diagnostic settings used to send platform logs and metrics to different destinations.
 
 ## Examples
 
