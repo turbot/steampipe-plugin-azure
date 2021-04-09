@@ -55,7 +55,7 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "managed",
-				Description: "Indicates whether the secret is enabled, or not.",
+				Description: "Indicates whether the secret's lifetime is managed by key vault, or not.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
@@ -70,7 +70,7 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Attributes.Created").Transform(convertDateUnixToTime),
 			},
 			{
-				Name:        "expired_at",
+				Name:        "expires_at",
 				Description: "Specifies the time when the secret will expire.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("Attributes.Expires").Transform(convertDateUnixToTime).Transform(transform.NullIfZeroValue),
