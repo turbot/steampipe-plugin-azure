@@ -8,35 +8,37 @@ Azure Security Center provides unified security management and advanced threat p
 
 ```sql
 select
-  jsonb_pretty(setting) as setting
+  s ->> 'name' as name,
+  s ->> 'id' as id,
+  s ->> 'kind' as kind,
+  s ->> 'type' as type
 from
-  azure_security_center
+  azure_security_center,
+  jsonb_array_elements(setting) as s
 where
-  jsonb_path_exists(
-    setting,
-    '$.** ? (@.type() == "string" && @ like_regex "MCAS")'
-  );
+  s ->> 'name' = 'MCAS';
 ```
 
 ### Ensure that Windows Defender ATP (WDATP) integration with Security Center is selected
 
 ```sql
 select
-  jsonb_pretty(setting) as setting
+  s ->> 'name' as name,
+  s ->> 'id' as id,
+  s ->> 'kind' as kind,
+  s ->> 'type' as type
 from
-  azure_security_center
+  azure_security_center,
+  jsonb_array_elements(setting) as s
 where
-  jsonb_path_exists(
-    setting,
-    '$.** ? (@.type() == "string" && @ like_regex "WDATP")'
-  );
+  s ->> 'name' = 'WDATP';
 ```
 
 ### Ensure that Automatic provisioning of monitoring agent is set to On
 
 ```sql
 select
-  p -> 'properties' ->> 'autoProvision' as autoProvision
+  p -> 'properties' ->> 'autoProvision' as auto_provision
 from
   azure_security_center,
   jsonb_array_elements(auto_provisioning) as p
@@ -45,7 +47,7 @@ where
   and p -> 'properties' ->> 'autoProvision' = 'On';
 ```
 
-### Ensure 'Additional email addresses' is configured with a security contact email
+### Get security contact email configured for the subscription
 
 ```sql
 select

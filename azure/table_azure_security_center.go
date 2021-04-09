@@ -79,16 +79,15 @@ func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	if err != nil {
 		return nil, err
 	}
+
+	// Fetch settings, provisioning, pricings, contacts and policy details from separate API's
 	subscriptionID := session.SubscriptionID
 	settings := getSettingDetails(ctx, session, subscriptionID)
 	provisioning := getProvisioningDetails(ctx, session, subscriptionID)
 	pricings := getPricingsDetails(ctx, session, subscriptionID)
 	contacts := getContactDetails(ctx, session, subscriptionID)
+	policy, err := getPolicyDetails(ctx, session, subscriptionID)
 
-	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
-	PolicyClient.Authorizer = session.Authorizer
-
-	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, "SecurityCenterBuiltIn")
 	if err != nil {
 		return nil, err
 	}
@@ -191,4 +190,13 @@ func getContactDetails(ctx context.Context, session *Session, subscriptionID str
 		contacts = append(contacts, contactMap)
 	}
 	return contacts
+}
+
+func getPolicyDetails(ctx context.Context, session *Session, subscriptionID string) (policy.Assignment, error) {
+	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
+	PolicyClient.Authorizer = session.Authorizer
+
+	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, "SecurityCenterBuiltIn")
+
+	return policy, err
 }
