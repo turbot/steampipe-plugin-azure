@@ -1,4 +1,3 @@
-
 variable "resource_name" {
   type        = string
   default     = "turbot-test-20200125-create-update"
@@ -24,7 +23,6 @@ provider "azurerm" {
 }
 
 data "azurerm_client_config" "current" {}
-
 data "null_data_source" "resource" {
   inputs = {
     scope = "azure:///subscriptions/${data.azurerm_client_config.current.subscription_id}"

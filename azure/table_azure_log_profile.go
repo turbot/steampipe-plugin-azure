@@ -77,7 +77,7 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("LogProfileProperties.RetentionPolicy"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,

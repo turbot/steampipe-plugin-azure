@@ -1,7 +1,7 @@
 [
-  {
-    "id": "{{ output.resource_id.value }}",
-    "name": "{{resourceName}}",
-    "type": "Microsoft.Insights/diagnosticSettings"
-  }
+	{
+		"id": "{{ output.resource_id.value }}",
+		"name": "{{ resourceName }}",
+		"type": "Microsoft.Insights/diagnosticSettings"
+	}
 ]
