@@ -46,7 +46,8 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Description: "Configuration settings for Azure Security Center.",
 				Type:        proto.ColumnType_JSON,
 			},
-			// Standard columns
+
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -59,6 +60,8 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Id").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
