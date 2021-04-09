@@ -238,6 +238,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.AdditionalCapabilities.UltraSSDEnabled"),
 			},
 			{
+				Name:        "vhd_uri",
+				Description: "Specifies the virtual hard disk's uri.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Vhd.URI").Transform(transform.ToString),
+			},
+			{
 				Name:        "data_disks",
 				Description: "A list of parameters that are used to add a data disk to a virtual machine",
 				Type:        proto.ColumnType_JSON,
