@@ -16,7 +16,7 @@ from
 ```
 
 
-### List of web app which accepts HTTP traffics (i.e HTTPS only is disabled)
+### List web apps which accepts HTTP traffics (i.e HTTPS only is disabled)
 
 ```sql
 select
@@ -57,4 +57,31 @@ select
   resource_group
 from
   azure_app_service_web_app;
+```
+
+
+### List web apps with latest HTTP version
+
+```sql
+select
+  name,
+  enabled,
+  region
+from
+  azure_app_service_web_app
+where
+  (configuration -> 'properties' ->> 'http20Enabled')::boolean;
+```
+
+
+### List web apps that have FTP deployments set to disabled
+
+```sql
+select
+  name,
+  configuration -> 'properties' ->> 'ftpsState' as ftps_state
+from
+  azure_app_service_web_app
+where
+  configuration -> 'properties' ->> 'ftpsState' <> 'AllAllowed';
 ```

@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
+	"github.com/tombuildsstuff/giovanni/storage/2019-12-12/blob/accounts"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -123,6 +124,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("BlobServicePropertiesProperties.RestorePolicy.Enabled"),
 			},
 			{
+				Name:        "blob_service_logging",
+				Description: "Specifies the blob service properties for logging access.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountBlobServiceLogging,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "blob_soft_delete_enabled",
 				Description: "Specifies whether DeleteRetentionPolicy is enabled.",
 				Type:        proto.ColumnType_BOOL,
@@ -230,7 +238,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "Indicates the number of days that metrics or logging data should be retained.",
 				Type:        proto.ColumnType_INT,
 				Hydrate:     getAzureStorageAccountQueueProperties,
-				Transform:   transform.FromField("Logging.RetentionPolicy.Days"),
+				Transform:   transform.FromField("Logging.RetentionPolicy.Days").Transform(transform.NullIfZeroValue),
 			},
 			{
 				Name:        "logging_retention_enabled",
@@ -397,7 +405,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -427,7 +435,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getStorageAccount")
@@ -468,6 +476,53 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 	return op, nil
+}
+
+func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient.Authorizer = session.Authorizer
+
+	accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+	if err != nil {
+		// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
+		// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
+		// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
+		// Please remove the lock and try again."
+		if strings.Contains(err.Error(), "ScopeLocked") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	if *accountKeys.Keys != nil || len(*accountKeys.Keys) > 0 {
+		key := (*accountKeys.Keys)[0]
+		storageAuth, err := autorest.NewSharedKeyAuthorizer(*accountData.Name, *key.Value, autorest.SharedKeyLite)
+		if err != nil {
+			return nil, err
+		}
+
+		client := accounts.New()
+		client.Client.Authorizer = storageAuth
+
+		resp, err := client.GetServiceProperties(ctx, *accountData.Name)
+		if err != nil {
+			if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return resp.StorageServiceProperties.Logging, nil
+	}
+	return nil, nil
 }
 
 func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -518,8 +573,8 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 		accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 		if err != nil {
 			// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
-			// Message="The scope '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
-			// cannot perform write operation because following scope(s) are locked: '/subscriptions/d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
+			// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
+			// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
 			// Please remove the lock and try again."
 			if strings.Contains(err.Error(), "ScopeLocked") {
 				return nil, nil
