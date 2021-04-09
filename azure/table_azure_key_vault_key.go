@@ -68,10 +68,10 @@ func tableAzureKeyVaultKey(_ context.Context) *plugin.Table {
 				Description: "The elliptic curve name. Possible values are: 'P256', 'P384', 'P521', 'P256K'.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getKeyVaultKey,
-				Transform:   transform.FromField("KeyProperties.Kty").Transform(transform.ToString),
+				Transform:   transform.FromField("KeyProperties.CurveName").Transform(transform.ToString),
 			},
 			{
-				Name:        "expired_at",
+				Name:        "expires_at",
 				Description: "Specifies the time when the key wil expire.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("KeyProperties.Attributes.Expires").Transform(transform.UnixToTimestamp),
