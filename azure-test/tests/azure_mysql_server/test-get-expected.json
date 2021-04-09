@@ -1,0 +1,25 @@
+[
+	{
+		"administrator_login": "mradministrator",
+		"backup_retention_days": 7,
+		"fully_qualified_domain_name": "{{ output.server_fqdn.value }}",
+		"geo_redundant_backup": "Disabled",
+		"infrastructure_encryption": "Disabled",
+		"location": "{{ output.location.value }}",
+		"minimal_tls_version": "TLS1_2",
+		"name": "{{ resourceName }}",
+		"public_network_access": "Enabled",
+		"region": "eastus",
+		"resource_group": "{{ resourceName }}",
+		"sku_capacity": 1,
+		"sku_family": "Gen5",
+		"sku_name": "B_Gen5_1",
+		"sku_tier": "Basic",
+		"ssl_enforcement": "Enabled",
+		"storage_auto_grow": "Disabled",
+		"storage_mb": 5120,
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"type": "Microsoft.DBforMySQL/servers",
+		"version": "5.6"
+	}
+]
