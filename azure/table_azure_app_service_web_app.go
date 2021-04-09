@@ -89,6 +89,24 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SiteProperties.HTTPSOnly"),
 			},
 			{
+				Name:        "identity_type",
+				Description: "Type of managed service identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.Type"),
+			},
+			{
+				Name:        "identity_tenant_id",
+				Description: "Tenant of managed service identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.TenantID"),
+			},
+			{
+				Name:        "identity_principal_id",
+				Description: "Principal Id of managed service identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.PrincipalID"),
+			},
+			{
 				Name:        "outbound_ip_addresses",
 				Description: "List of IP addresses that the app uses for outbound connections (e.g. database access).",
 				Type:        proto.ColumnType_STRING,

@@ -4,9 +4,10 @@
     "enabled": true,
     "https_only": false,
     "id": "{{ output.resource_id.value }}",
+    "identity_type": "SystemAssigned",
     "kind": "app",
     "name": "{{resourceName}}",
-    "region": "East US",
+    "region": "east us",
     "reserved": false,
     "resource_group": "{{resourceName}}"
   }

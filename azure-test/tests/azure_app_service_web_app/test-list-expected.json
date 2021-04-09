@@ -1,6 +1,7 @@
 [
   {
     "id": "{{ output.resource_id.value }}",
+    "identity_type": "SystemAssigned",
     "name": "{{resourceName}}"
   }
 ]

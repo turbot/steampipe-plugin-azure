@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cd4401c4-3cc8-4565-a594-839c1e345f1e"
   description = "Azure subscription used for the test."
 }
 
@@ -62,6 +62,9 @@ resource "azurerm_app_service" "named_test_resource" {
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
   app_service_plan_id = azurerm_app_service_plan.named_test_resource.id
+  identity {
+    type = "SystemAssigned"
+  }
 
   tags = {
     name = var.resource_name
