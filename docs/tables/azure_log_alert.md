@@ -14,18 +14,16 @@ from
   azure_log_alert;
 ```
 
-
 ### Ensure that Activity Log Alert exists for Create Policy Assignment
 
 ```sql
 select
   name,
-  jsonb_pretty(activity_log_alert) as activity_log_alert
+  id,
+  type
 from
-  azure_log_alert
+  azure_log_alert,
+  jsonb_array_elements(activity_log_alert -> 'condition' -> 'allOf') as l
 where
-  jsonb_path_exists(
-    activity_log_alert,
-    '$.** ? (@.type() == "string" && @ like_regex "Microsoft.Authorization/policyAssignments/write")'
-  )
+  l ->> 'equals' = 'Microsoft.Authorization/policyAssignments/write';
 ```

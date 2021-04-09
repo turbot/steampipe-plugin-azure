@@ -164,11 +164,5 @@ func getLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
+	return op, nil
 }

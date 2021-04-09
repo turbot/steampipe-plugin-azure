@@ -106,7 +106,7 @@ func listDiagnosticSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.
 //// HYDRATE FUNCTIONS
 
 func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getKeyDiagnosticSetting")
+	plugin.Logger(ctx).Trace("getDiagnosticSetting")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
@@ -125,11 +125,5 @@ func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
+	return op, nil
 }

@@ -15,7 +15,7 @@ from
   azure_diagnostic_setting;
 ```
 
-### Ensure Diagnostic Setting captures Alert category
+### List diagnostic settings that captures Alert category logs
 
 ```sql
 select
