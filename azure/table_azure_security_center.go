@@ -113,6 +113,8 @@ func getSettingDetails(ctx context.Context, session *Session, subscriptionID str
 	if err != nil {
 		return nil
 	}
+
+	// If we return the API response directly, the output only gives the contents of SettingsList
 	var settings []map[string]interface{}
 
 	for _, setting := range settingList.Values() {
@@ -135,6 +137,7 @@ func getProvisioningDetails(ctx context.Context, session *Session, subscriptionI
 		return nil
 	}
 
+	// If we return the API response directly, the output only gives the contents of AutoProvisionList
 	var provisioning []map[string]interface{}
 
 	for _, provision := range autoProvisionList.Values() {
@@ -157,6 +160,7 @@ func getPricingsDetails(ctx context.Context, session *Session, subscriptionID st
 		return nil
 	}
 
+	// If we return the API response directly, the output only gives the contents of PricingList
 	var pricings []map[string]interface{}
 
 	for _, pricing := range pricingList.Values() {
@@ -179,6 +183,7 @@ func getContactDetails(ctx context.Context, session *Session, subscriptionID str
 		return nil
 	}
 
+	// If we return the API response directly, the output only gives the contents of ContactList
 	var contacts []map[string]interface{}
 
 	for _, contact := range contactList.Values() {
