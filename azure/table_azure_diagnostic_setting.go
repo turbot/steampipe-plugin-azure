@@ -38,13 +38,56 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "diagnostic_settings",
-				Description: "Properties of a Diagnostic Settings Resource.",
+				Name:        "storage_account_id",
+				Description: "The resource ID of the storage account to which you would like to send Diagnostic Logs.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.StorageAccountID"),
+			},
+			{
+				Name:        "service_bus_rule_id",
+				Description: "The service bus rule Id of the diagnostic setting.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.ServiceBusRuleID"),
+			},
+			{
+				Name:        "event_hub_authorization_rule_id",
+				Description: "The resource Id for the event hub authorization rule.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.EventHubAuthorizationRuleID"),
+			},
+			{
+				Name:        "event_hub_name",
+				Description: "The name of the event hub.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.EventHubName"),
+			},
+			{
+				Name:        "workspace_id",
+				Description: "The full ARM resource ID of the Log Analytics workspace to which you would like to send Diagnostic Logs.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.WorkspaceID"),
+			},
+			{
+				Name:        "log_analytics_destination_type",
+				Description: "A string indicating whether the export to Log Analytics should use the default destinatio type.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiagnosticSettings.LogAnalyticsDestinationType"),
+			},
+			{
+				Name:        "Metrics",
+				Description: "The list of metric settings.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DiagnosticSettings.Metrics"),
+			},
+			{
+				Name:        "logs",
+				Description: "The list of logs settings.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DiagnosticSettings.Logs"),
 			},
 
 			// Steampipe standard columns

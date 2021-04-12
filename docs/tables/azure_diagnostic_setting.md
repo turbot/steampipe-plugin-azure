@@ -19,13 +19,13 @@ from
 
 ```sql
 select
-  l ->> 'category' as category,
-  l ->> 'enabled' as enabled
+  name,
+  id,
+  type
 from
   azure_diagnostic_setting,
-  jsonb_array_elements(diagnostic_settings -> 'logs') as l
+  jsonb_array_elements(logs) as l
 where
-  diagnostic_settings is not null
-  and l ->> 'category' = 'Alert'
+  l ->> 'category' = 'Alert'
   and l ->> 'enabled' = 'true';
 ```

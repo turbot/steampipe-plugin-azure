@@ -42,14 +42,39 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "enabled",
+				Description: "Indicates whether this activity log alert is enabled.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ActivityLogAlert.Enabled"),
+			},
+			{
+				Name:        "description",
+				Description: "A description of this activity log alert.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ActivityLogAlert.Description"),
+			},
+			{
 				Name:        "location",
 				Description: "The location of the resource. Since Azure Activity Log Alerts is a global service, the location of the rules should always be 'global'.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "activity_log_alert",
-				Description: "The activity log alert properties of the resource.",
+				Name:        "scopes",
+				Description: "A list of resourceIds that will be used as prefixes.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ActivityLogAlert.Scopes"),
+			},
+			{
+				Name:        "condition",
+				Description: "The condition that will cause this alert to activate.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ActivityLogAlert.Condition"),
+			},
+			{
+				Name:        "actions",
+				Description: "The actions that will activate when the condition is met.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ActivityLogAlert.Actions"),
 			},
 
 			// Steampipe standard columns

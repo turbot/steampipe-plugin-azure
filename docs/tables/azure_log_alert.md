@@ -9,7 +9,9 @@ Activity log alerts are the alerts that get activated when a new activity log ev
 ```sql
 select
   name,
-  jsonb_pretty(activity_log_alert) as activity_log_alert
+  id,
+  type,
+  enabled
 from
   azure_log_alert;
 ```
@@ -23,7 +25,7 @@ select
   type
 from
   azure_log_alert,
-  jsonb_array_elements(activity_log_alert -> 'condition' -> 'allOf') as l
+  jsonb_array_elements(condition -> 'allOf') as l
 where
   l ->> 'equals' = 'Microsoft.Authorization/policyAssignments/write';
 ```
