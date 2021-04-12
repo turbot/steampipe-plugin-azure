@@ -499,6 +499,8 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 		return nil, err
 	}
 
+	// If we return the API response directly, the output only gives the contents of VirtualMachineExtensionsListResult
+
 	var extensions []map[string]interface{}
 
 	for _, extension := range *op.Value {
