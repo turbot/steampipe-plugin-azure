@@ -269,7 +269,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "extensions",
-				Description: "Specifies the VM Extensions details",
+				Description: "Specifies the details of VM Extensions.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureComputeVirtualMachineExtensions,
 				Transform:   transform.FromValue(),
