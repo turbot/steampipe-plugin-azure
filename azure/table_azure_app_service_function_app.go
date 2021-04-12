@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-12-01/web"
@@ -12,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -29,90 +28,104 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The friendly name that identifies the app service function app",
+				Description: "The friendly name that identifies the app service function app.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify an app service function app uniquely",
+				Description: "Contains ID to identify an app service function app uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "kind",
-				Description: "Contains the kind of the resource",
+				Description: "Contains the kind of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "state",
-				Description: "Current state of the app",
+				Description: "Current state of the app.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.State"),
 			},
 			{
 				Name:        "type",
-				Description: "The resource type of the app service function app",
+				Description: "The resource type of the app service function app.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "client_affinity_enabled",
-				Description: "Specify whether client affinity is enabled",
+				Description: "Specify whether client affinity is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.ClientAffinityEnabled"),
 			},
 			{
 				Name:        "client_cert_enabled",
-				Description: "Specify whether client certificate authentication is enabled",
+				Description: "Specify whether client certificate authentication is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.ClientCertEnabled"),
 			},
 			{
 				Name:        "default_site_hostname",
-				Description: "Default hostname of the app",
+				Description: "Default hostname of the app.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.DefaultHostName"),
 			},
 			{
 				Name:        "enabled",
-				Description: "Specify whether the app is enabled",
+				Description: "Specify whether the app is enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.Enabled"),
 			},
 			{
 				Name:        "host_name_disabled",
-				Description: "Specify whether the public hostnames of the app is disabled",
+				Description: "Specify whether the public hostnames of the app is disabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.HostNamesDisabled"),
 			},
 			{
 				Name:        "https_only",
-				Description: "Specify whether configuring a web site to accept only https requests",
+				Description: "Specify whether configuring a web site to accept only https requests.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.HTTPSOnly"),
 			},
 			{
 				Name:        "outbound_ip_addresses",
-				Description: "List of IP addresses that the app uses for outbound connections (e.g. database access)",
+				Description: "List of IP addresses that the app uses for outbound connections (e.g. database access).",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.OutboundIPAddresses"),
 			},
 			{
 				Name:        "possible_outbound_ip_addresses",
-				Description: "List of possible IP addresses that the app uses for outbound connections (e.g. database access)",
+				Description: "List of possible IP addresses that the app uses for outbound connections (e.g. database access).",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.PossibleOutboundIPAddresses"),
 			},
 			{
 				Name:        "reserved",
-				Description: "Specify whether the app is reserved",
+				Description: "Specify whether the app is reserved.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.Reserved"),
 			},
 			{
 				Name:        "host_names",
-				Description: "A list of hostnames associated with the app",
+				Description: "A list of hostnames associated with the app.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.HostNames"),
+			},
+			{
+				Name:        "auth_settings",
+				Description: "Describes the Authentication/Authorization settings of an app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAppServiceFunctionAppSiteAuthSetting,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "configuration",
+				Description: "Describes the configuration of an app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAppServiceFunctionAppSiteConfiguration,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "site_config",
@@ -128,7 +141,7 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -146,6 +159,8 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -168,7 +183,7 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -199,7 +214,7 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getAppServiceFunctionApp")
@@ -229,11 +244,55 @@ func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
-	if op.ID != nil {
+	if op.ID != nil && strings.Contains(string(*op.Kind), "functionapp") {
 		return op, nil
 	}
 
 	return nil, nil
+}
+
+func getAppServiceFunctionAppSiteConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSiteConfiguration")
+
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func getAppServiceFunctionAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSiteAuthSetting")
+
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
 }
 
 func getAppServiceFunctionAppSettingsKeyVaultReferences(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -257,14 +316,9 @@ func getAppServiceFunctionAppSettingsKeyVaultReferences(ctx context.Context, d *
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetAppSettingsKeyVaultReferences(ctx, resourceGroupName, name)
-	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "pphufhvfvifivijrvrfvfv455656", subscriptionID)
 	if err != nil {
-		plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "errorvalue should", err)
+		plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "<<<<<<ERROR>>>>>>", err)
 		return nil, err
 	}
-	plugin.Logger(ctx).Trace("getAppServiceFunctionAppSettingsKeyVaultReferences", "pphufhvfvifivij", op)
-	var result1 interface{}
-	err = json.Unmarshal([]byte(op.Response().Value), result1)
-	//return op.Response().Value, nil
-	return result1, nil
+	return op, nil
 }
