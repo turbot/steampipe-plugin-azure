@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-12-01/web"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -131,6 +131,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Description: "A map of all configuration for the app",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.SiteConfig"),
+			},
+			{
+				Name:        "key_to_reference_statuses",
+				Description: "Describes key vault references of an app.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getAppServiceWebAppSettingsKeyVaultReferences,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -284,5 +291,33 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 		return nil, err
 	}
 
+	return op, nil
+}
+
+func getAppServiceWebAppSettingsKeyVaultReferences(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceWebAppSettingsKeyVaultReferences")
+
+	//data := h.Item.(web.Site)
+	data := h.Item.(web.Site)
+	name := *data.Name
+	resourceGroupName := *data.SiteProperties.ResourceGroup
+
+	if len(resourceGroupName) < 1 {
+		return nil, nil
+	}
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetAppSettingsKeyVaultReferences(ctx, resourceGroupName, name)
+	if err != nil {
+		plugin.Logger(ctx).Trace("getAppServiceWebAppSettingsKeyVaultReferences", "<<<<<<ERROR>>>>>>", err)
+		return nil, err
+	}
 	return op, nil
 }
