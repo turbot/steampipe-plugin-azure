@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
@@ -58,7 +59,6 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Id").Transform(idToAkas),
 			},
 
 			// Azure standard columns
@@ -66,7 +66,6 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Id").Transform(idToSubscriptionID),
 			},
 		},
 	}
@@ -87,19 +86,20 @@ func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	pricings := getPricingsDetails(ctx, session, subscriptionID)
 	contacts := getContactDetails(ctx, session, subscriptionID)
 	policy, err := getPolicyDetails(ctx, session, subscriptionID)
-
 	if err != nil {
 		return nil, err
 	}
 
 	Id := "/subscriptions/" + subscriptionID + "/providers/Microsoft.Security/securityCenter"
+	akas := []string{"azure://" + Id, "azure://" + strings.ToLower(Id)}
 	result := map[string]interface{}{
 		"Setting":          settings,
 		"Pricing":          pricings,
 		"AutoProvisioning": provisioning,
 		"Contact":          contacts,
 		"Policy":           policy,
-		"Id":               Id,
+		"Akas":             akas,
+		"SubscriptionId":   subscriptionID,
 	}
 	d.StreamListItem(ctx, result)
 	return nil, err
@@ -183,7 +183,7 @@ func getContactDetails(ctx context.Context, session *Session, subscriptionID str
 		return nil
 	}
 
-	// If we return the API response directly, the output only gives the contents of ContactList
+	// If we return the API response directly, the output only gives the contents of contactList
 	var contacts []map[string]interface{}
 
 	for _, contact := range contactList.Values() {
