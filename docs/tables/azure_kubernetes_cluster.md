@@ -18,7 +18,7 @@ from
 ```
 
 
-### List Kubernetes Clusters for a specific location
+### List Clusters for a specific location
 
 ```sql
 select
@@ -35,7 +35,7 @@ where
 ```
 
 
-### List Kubernetes Clusters having System Assigned identity
+### List Clusters having System Assigned identity
 
 ```sql
 select
@@ -52,7 +52,7 @@ where
 ```
 
 
-### List Kubernetes Clusters having role-based access control (RBAC) enabled
+### List Clusters having role-based access control (RBAC) enabled
 
 ```sql
 select

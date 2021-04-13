@@ -28,38 +28,38 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the vault",
+				Description: "The name of the cluster.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a vault uniquely",
+				Description: "The ID of the cluster.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
-				Description: "Contains URI of the vault for performing operations on keys and secrets",
+				Description: "The type of the cluster.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "location",
-				Description: "Type of the resource",
+				Description: "The location where the cluster is created.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "sku",
-				Description: "Property that controls how data actions are authorized",
+				Description: "The managed cluster SKU.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getKubernetesCluster,
 			},
 			{
 				Name:        "identity",
-				Description: "Indicates whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault",
+				Description: "The identity of the managed cluster, if configured.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "managed_cluster_properties",
-				Description: "Indicates whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys",
+				Description: "Properties of a managed cluster.",
 				Type:        proto.ColumnType_JSON,
 			},
 
