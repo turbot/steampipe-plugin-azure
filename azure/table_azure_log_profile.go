@@ -38,17 +38,17 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "location",
-				Description: "Resource location.",
+				Description: "Specifies the name of the region, the resource is created at.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "storage_account_id",
-				Description: "the resource id of the storage account to which you would like to send the Activity Log.",
+				Description: "The resource id of the storage account to which you would like to send the Activity Log.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("LogProfileProperties.StorageAccountID"),
 			},

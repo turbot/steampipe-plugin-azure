@@ -78,7 +78,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DiagnosticSettings.LogAnalyticsDestinationType"),
 			},
 			{
-				Name:        "Metrics",
+				Name:        "metrics",
 				Description: "The list of metric settings.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DiagnosticSettings.Metrics"),
