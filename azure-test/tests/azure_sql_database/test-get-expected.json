@@ -1,0 +1,33 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "containment_state": 2,
+    "default_secondary_location": "{{ output.resource_default_secondary_location.value }}",
+    "earliest_restore_date": null,
+    "edition": "GeneralPurpose",
+    "elastic_pool_name": null,
+    "id": "{{ output.resource_id.value }}",
+    "location": "{{ output.resource_location.value }}",
+    "max_size_bytes": "34359738368",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.resource_region.value }}",
+    "requested_service_objective_name": "GP_Gen5_2",
+    "resource_group": "{{ resourceName }}",
+    "server_name": "{{ resourceName }}",
+    "service_level_objective": "GP_Gen5_2",
+    "status": "Online",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "foo": "bar"
+    },
+    "title": "{{ resourceName }}",
+    "transparent_data_encryption": {
+      "status": "Enabled"
+    },
+    "type": "Microsoft.Sql/servers/databases",
+    "zone_redundant": false
+  }
+]

@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -97,6 +97,12 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseProperties.EarliestRestoreDate").Transform(convertDateToTime),
 			},
 			{
+				Name:        "edition",
+				Description: "The edition of the database.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DatabaseProperties.Edition"),
+			},
+			{
 				Name:        "elastic_pool_name",
 				Description: "The name of the elastic pool the database is in.",
 				Type:        proto.ColumnType_STRING,
@@ -165,12 +171,6 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Description: "Specifies the mode of database creation.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseProperties.CreateMode"),
-			},
-			{
-				Name:        "edition",
-				Description: "The edition of the database.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.Edition"),
 			},
 			{
 				Name:        "read_scale",
@@ -257,7 +257,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -284,7 +284,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSqlDatabase")
@@ -362,7 +362,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	return nil, nil
 }
 
-//// Transform Functions
+//// TRANSFORM FUNCTIONS
 
 func idToServerName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(sql.Database)
