@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "3510ae4d-530b-497d-8f30-53c0616fc6c1"
   description = "Azure subscription used for the test."
 }
 
@@ -62,6 +62,30 @@ resource "azurerm_key_vault_access_policy" "named_test_resource" {
   ]
 }
 
+resource "azurerm_storage_account" "named_test_resource" {
+  name                     = var.resource_name
+  location                 = azurerm_resource_group.named_test_resource.location
+  resource_group_name      = azurerm_resource_group.named_test_resource.name
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_monitor_diagnostic_setting" "named_test_resource" {
+  name               = var.resource_name
+  target_resource_id = azurerm_key_vault.named_test_resource.id
+  storage_account_id = azurerm_storage_account.named_test_resource.id
+
+  log {
+    category = "AuditEvent"
+    enabled  = true
+
+    retention_policy {
+      enabled = true
+      days    = 30
+    }
+  }
+}
+
 output "resource_aka" {
   value = "azure://${azurerm_key_vault.named_test_resource.id}"
 }
@@ -88,4 +112,8 @@ output "tenant_id" {
 
 output "object_id" {
   value = data.azurerm_client_config.current.object_id
+}
+
+output "storage_account_id" {
+  value = azurerm_storage_account.named_test_resource.id
 }
