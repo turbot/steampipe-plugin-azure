@@ -517,7 +517,7 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 		extensionMap["ProtectedSettings"] = extension.VirtualMachineExtensionProperties.ProtectedSettings
 		extensionMap["ProvisioningState"] = extension.VirtualMachineExtensionProperties.ProvisioningState
 		extensionMap["InstanceView"] = extension.VirtualMachineExtensionProperties.InstanceView
-		extensionMap["tags"] = extension.Tags
+		extensionMap["Tags"] = extension.Tags
 		extensions = append(extensions, extensionMap)
 	}
 	return extensions, nil
