@@ -362,7 +362,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	return nil, nil
 }
 
-//// TRANSFORM FUNCTIONS
+//// TRANSFORM FUNCTION
 
 func idToServerName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(sql.Database)

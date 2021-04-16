@@ -1,6 +1,6 @@
 # Table: azure_sql_database
 
-An Azure SQL Database is an intelligent, scalable, relational database service built for the cloud. Optimise performance and durability with automated, AI-powered features that are always up to date.
+An Azure SQL Database is an intelligent, scalable, relational database service built for the cloud.
 
 ## Examples
 
@@ -50,7 +50,7 @@ where
 ```
 
 
-### List databases which are online
+### List databases which are not online
 
 ```sql
 select
@@ -63,11 +63,11 @@ select
 from
   azure_sql_database
 where
-  status = 'Online';
+  status != 'Online';
 ```
 
 
-### List databases which are encrypted
+### List databases which are not encrypted
 
 ```sql
 select
@@ -80,7 +80,7 @@ select
 from
   azure_sql_database
 where
-  transparent_data_encryption ->> 'status' = 'Enabled';
+  transparent_data_encryption ->> 'status' != 'Enabled';
 ```
 
 
