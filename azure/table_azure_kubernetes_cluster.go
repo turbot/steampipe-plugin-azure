@@ -18,8 +18,8 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 		Name:        "azure_kubernetes_cluster",
 		Description: "Azure Kubernetes Cluster",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getKubernetesCluster,
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getKubernetesCluster,
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKubernetesClusters,
@@ -58,9 +58,154 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 			{
-				Name:        "managed_cluster_properties",
-				Description: "Properties of a managed cluster.",
+				Name:        "azure_portal_fqdn",
+				Description: "FQDN for the master pool which used by proxy config.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.AzurePortalFQDN"),
+			},
+			{
+				Name:        "disk_encryption_set_id",
+				Description: "ResourceId of the disk encryption set to use for enabling encryption at rest.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.DiskEncryptionSetID"),
+			},
+			{
+				Name:        "dns_prefix",
+				Description: "DNS prefix specified when creating the managed cluster.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.DNSPrefix"),
+			},
+			{
+				Name:        "enable_pod_security_policy",
+				Description: "Whether to enable Kubernetes pod security policy (preview).",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ManagedClusterProperties.EnablePodSecurityPolicy"),
+			},
+			{
+				Name:        "enable_rbac",
+				Description: "Whether to enable Kubernetes Role-Based Access Control.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("ManagedClusterProperties.EnableRBAC"),
+			},
+			{
+				Name:        "fqdn",
+				Description: "FQDN for the master pool.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.Fqdn"),
+			},
+			{
+				Name:        "fqdn_subdomain",
+				Description: "FQDN subdomain specified when creating private cluster with custom private dns zone.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.FqdnSubdomain"),
+			},
+			{
+				Name:        "kubernetes_version",
+				Description: "Version of Kubernetes specified when creating the managed cluster.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.KubernetesVersion"),
+			},
+			{
+				Name:        "max_agent_pools",
+				Description: "The max number of agent pools for the managed cluster.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("ManagedClusterProperties.MaxAgentPools"),
+			},
+			{
+				Name:        "node_resource_group",
+				Description: "Name of the resource group containing agent pool nodes.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.NodeResourceGroup"),
+			},
+			{
+				Name:        "private_fqdn",
+				Description: "FQDN of private cluster.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.PrivateFQDN"),
+			},
+			{
+				Name:        "provisioning_state",
+				Description: "The current deployment or provisioning state.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.ProvisioningState"),
+			},
+			{
+				Name:        "aad_profile",
+				Description: "Profile of Azure Active Directory configuration.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.AadProfile"),
+			},
+			{
+				Name:        "addon_profiles",
+				Description: "Profile of managed cluster add-on.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.AddonProfiles"),
+			},
+			{
+				Name:        "agent_pool_profiles",
+				Description: "Properties of the agent pool.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.AgentPoolProfiles"),
+			},
+			{
+				Name:        "api_server_access_profile",
+				Description: "Access profile for managed cluster API server.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.APIServerAccessProfile"),
+			},
+			{
+				Name:        "auto_scaler_profile",
+				Description: "Parameters to be applied to the cluster-autoscaler when enabled.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.AutoScalerProfile"),
+			},
+			{
+				Name:        "auto_upgrade_profile",
+				Description: "Profile of auto upgrade configuration.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.AutoUpgradeProfile"),
+			},
+			{
+				Name:        "identity_profile",
+				Description: "Identities associated with the cluster.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.IdentityProfile"),
+			},
+			{
+				Name:        "linux_profile",
+				Description: "Profile for Linux VMs in the container service cluster.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.LinuxProfile"),
+			},
+			{
+				Name:        "network_profile",
+				Description: "Profile of network configuration.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.NetworkProfile"),
+			},
+			{
+				Name:        "pod_identity_profile",
+				Description: "Profile of managed cluster pod identity.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.PodIdentityProfile"),
+			},
+			{
+				Name:        "power_state",
+				Description: "Represents the Power State of the cluster.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.PowerState"),
+			},
+			{
+				Name:        "service_principal_profile",
+				Description: "Information about a service principal identity for the cluster to use for manipulating Azure APIs.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.ServicePrincipalProfile"),
+			},
+			{
+				Name:        "windows_profile",
+				Description: "Profile for Windows VMs in the container service cluster.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ManagedClusterProperties.WindowsProfile"),
 			},
 
 			// Standard columns
@@ -103,7 +248,7 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -132,7 +277,7 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTION
 
 func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKubernetesCluster")

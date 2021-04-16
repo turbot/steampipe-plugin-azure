@@ -82,10 +82,10 @@ output "subscription_id" {
   value = var.azure_subscription
 }
 
-output "tenant_id" {
-  value = data.azurerm_client_config.current.tenant_id
+output "cluster_fqdn" {
+  value = azurerm_kubernetes_cluster.named_test_resource.fqdn
 }
 
-output "object_id" {
-  value = data.azurerm_client_config.current.object_id
+output "node_resource_group" {
+  value = azurerm_kubernetes_cluster.named_test_resource.node_resource_group
 }

@@ -52,7 +52,7 @@ where
 ```
 
 
-### List Clusters having role-based access control (RBAC) enabled
+### List Clusters having role-based access control (RBAC) disabled
 
 ```sql
 select
@@ -61,10 +61,10 @@ select
   location,
   type,
   identity,
-  managed_cluster_properties ->> 'enableRBAC' as rbac_enabled,
+  enable_rbac,
   sku
 from
   azure_kubernetes_cluster
 where
-  managed_cluster_properties ->> 'enableRBAC' = 'true';
+  enable_rbac = 'false';
 ```
