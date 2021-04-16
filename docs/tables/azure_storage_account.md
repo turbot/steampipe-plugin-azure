@@ -8,12 +8,12 @@ An Azure storage account contains all of your Azure Storage data objects: blobs,
 
 ```sql
 select
-	name,
-	blob_versioning_enabled
+  name,
+  blob_versioning_enabled
 from
-	azure_storage_account
+  azure_storage_account
 where
-	not blob_versioning_enabled;
+  not blob_versioning_enabled;
 ```
 
 
@@ -21,13 +21,13 @@ where
 
 ```sql
 select
-	name,
-	blob_soft_delete_enabled,
-	blob_soft_delete_retention_days
+  name,
+  blob_soft_delete_enabled,
+  blob_soft_delete_retention_days
 from
-	azure_storage_account
+  azure_storage_account
 where
-	not blob_soft_delete_enabled;
+  not blob_soft_delete_enabled;
 ```
 
 
@@ -35,12 +35,12 @@ where
 
 ```sql
 select
-	name,
-	allow_blob_public_access
+  name,
+  allow_blob_public_access
 from
-	azure_storage_account
+  azure_storage_account
 where
-	allow_blob_public_access;
+  allow_blob_public_access;
 ```
 
 
@@ -48,12 +48,12 @@ where
 
 ```sql
 select
-	name,
-	enable_https_traffic_only
+  name,
+  enable_https_traffic_only
 from
-	azure_storage_account
+  azure_storage_account
 where
-	not enable_https_traffic_only;
+  not enable_https_traffic_only;
 ```
 
 
@@ -61,13 +61,13 @@ where
 
 ```sql
 select
-	name,
-	sku_name,
-	sku_tier,
-	primary_location,
-	secondary_location
+  name,
+  sku_name,
+  sku_tier,
+  primary_location,
+  secondary_location
 from
-	azure_storage_account;
+  azure_storage_account;
 ```
 
 
@@ -75,16 +75,33 @@ from
 
 ```sql
 select
-	sg.name,
-	ml.scope,
-	ml.lock_level,
-	ml.notes
+  sg.name,
+  ml.scope,
+  ml.lock_level,
+  ml.notes
 from
-	azure_storage_account as sg
-	left join azure_management_lock as ml on lower(sg.id) = lower(ml.scope)
+  azure_storage_account as sg
+  left join azure_management_lock as ml on lower(sg.id) = lower(ml.scope)
 where
-	(
-		(ml.lock_level is null)
-		or(ml.lock_level = 'ReadOnly')
-	);
+  (
+    (ml.lock_level is null)
+    or(ml.lock_level = 'ReadOnly')
+  );
+```
+
+
+### List of storage accounts with logging enabled for Queue service for read, write, and delete requests
+
+```sql
+select
+  name,
+  queue_logging_delete,
+  queue_logging_read,
+  queue_logging_write
+from
+  azure_storage_account
+where
+  queue_logging_delete
+  and queue_logging_read
+  and queue_logging_write;
 ```
