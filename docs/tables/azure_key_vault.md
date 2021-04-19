@@ -72,6 +72,6 @@ select
   policy #> '{permissions, keys}'  keys_permissions,
   policy #> '{permissions, secrets}'  secrets_permissions
 from
-  azure_key_vault
-  cross join jsonb_array_elements(access_policies) as policy;
+  azure_key_vault,
+  jsonb_array_elements(access_policies) as policy;
 ```
