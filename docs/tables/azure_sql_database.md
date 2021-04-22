@@ -18,39 +18,7 @@ from
 ```
 
 
-### List databases for a specific server
-
-```sql
-select
-  name,
-  id,
-  server_name,
-  location,
-  edition
-from
-  azure_sql_database
-where
-  server_name = 'test-steampipe';
-```
-
-
-### List databases having system edition
-
-```sql
-select
-  name,
-  id,
-  server_name,
-  location,
-  edition
-from
-  azure_sql_database
-where
-  edition = 'Basic';
-```
-
-
-### List databases which are not online
+### List databases that are not online
 
 ```sql
 select
@@ -67,7 +35,7 @@ where
 ```
 
 
-### List databases which are not encrypted
+### List databases that are not encrypted
 
 ```sql
 select
@@ -81,20 +49,4 @@ from
   azure_sql_database
 where
   transparent_data_encryption ->> 'status' != 'Enabled';
-```
-
-
-### List databases created before last 7 days
-
-```sql
-select
-  name,
-  id,
-  server_name,
-  location,
-  creation_date
-from
-  azure_sql_database
-where
-  creation_date < (current_date - 7);
 ```
