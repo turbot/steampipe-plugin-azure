@@ -44,6 +44,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_diagnostic_setting":          tableAzureDiagnosticSetting(ctx),
 			"azure_firewall":                    tableAzureFirewall(ctx),
 			"azure_key_vault":                   tableAzureKeyVault(ctx),
+			"azure_key_vault_secret":            tableAzureKeyVaultSecret(ctx),
 			"azure_location":                    tableAzureLocation(ctx),
 			"azure_log_alert":                   tableAzureLogAlert(ctx),
 			"azure_log_profile":                 tableAzureLogProfile(ctx),
