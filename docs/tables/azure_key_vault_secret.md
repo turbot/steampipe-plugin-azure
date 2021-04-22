@@ -1,7 +1,6 @@
 # Table: azure_key_vault_secret
 
-Azure Key Vault is a cloud service for securely storing and accessing secrets.
-A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, or cryptographic keys.
+Azure Key Vault is a cloud service for securely storing and accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, or cryptographic keys.
 
 ## Examples
 
@@ -20,7 +19,7 @@ from
   azure_key_vault_secret;
 ```
 
-### List secrets which are not enabled
+### List disabled secrets
 
 ```sql
 select
@@ -33,7 +32,7 @@ where
   not enabled;
 ```
 
-### List secrets for which expiration time is not set
+### List secrets that do not expire
 
 ```sql
 select
@@ -46,7 +45,7 @@ where
   expired_at is null;
 ```
 
-### List secrets which have never updated
+### List enabled secrets that have never been updated
 
 ```sql
 select
@@ -61,7 +60,7 @@ where
   and age(updated_at, created_at) = '00:00:00';
 ```
 
-### Count of secrets by Key Vault
+### Count the number of secrets by vault
 
 ```sql
 select
