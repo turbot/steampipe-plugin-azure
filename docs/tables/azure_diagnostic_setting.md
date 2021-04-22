@@ -1,6 +1,6 @@
 # Table: azure_diagnostic_setting
 
-Azure diagnostic settings used to send platform logs and metrics to different destinations.
+Azure diagnostic settings are used to send platform logs and metrics to different destinations.
 
 ## Examples
 
@@ -15,7 +15,7 @@ from
   azure_diagnostic_setting;
 ```
 
-### List diagnostic settings that captures Alert category logs
+### List diagnostic settings that capture Alert category logs
 
 ```sql
 select
@@ -30,7 +30,7 @@ where
   and l ->> 'enabled' = 'true';
 ```
 
-### List diagnostic settings that captures Security category logs
+### List diagnostic settings that capture Security category logs
 
 ```sql
 select
@@ -45,7 +45,7 @@ where
   and l ->> 'enabled' = 'true';
 ```
 
-### List diagnostic settings that captures Policy category logs
+### List diagnostic settings that capture Policy category logs
 
 ```sql
 select
@@ -60,7 +60,7 @@ where
   and l ->> 'enabled' = 'true';
 ```
 
-### List diagnostic settings that captures Administrative category logs
+### List diagnostic settings that capture Administrative category logs
 
 ```sql
 select
