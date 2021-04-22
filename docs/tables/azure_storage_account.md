@@ -4,60 +4,7 @@ An Azure storage account contains all of your Azure Storage data objects: blobs,
 
 ## Examples
 
-### List of storage accounts where versioning is not enabled
-
-```sql
-select
-  name,
-  blob_versioning_enabled
-from
-  azure_storage_account
-where
-  not blob_versioning_enabled;
-```
-
-
-### List of storage accounts where Blob Soft delete is not enabled
-
-```sql
-select
-  name,
-  blob_soft_delete_enabled,
-  blob_soft_delete_retention_days
-from
-  azure_storage_account
-where
-  not blob_soft_delete_enabled;
-```
-
-
-### List of storage accounts which allows blob public access
-
-```sql
-select
-  name,
-  allow_blob_public_access
-from
-  azure_storage_account
-where
-  allow_blob_public_access;
-```
-
-
-### List of storage accounts where encryption in transit is not enabled
-
-```sql
-select
-  name,
-  enable_https_traffic_only
-from
-  azure_storage_account
-where
-  not enable_https_traffic_only;
-```
-
-
-### Storage type info for storage accounts
+### Basic info
 
 ```sql
 select
@@ -71,7 +18,60 @@ from
 ```
 
 
-### Storage accounts which are not locked with `CanNotDelete` lock
+### List storage accounts with versioning disabled
+
+```sql
+select
+  name,
+  blob_versioning_enabled
+from
+  azure_storage_account
+where
+  not blob_versioning_enabled;
+```
+
+
+### List storage accounts with blob soft delete disabled
+
+```sql
+select
+  name,
+  blob_soft_delete_enabled,
+  blob_soft_delete_retention_days
+from
+  azure_storage_account
+where
+  not blob_soft_delete_enabled;
+```
+
+
+### List storage accounts that allow blob public access
+
+```sql
+select
+  name,
+  allow_blob_public_access
+from
+  azure_storage_account
+where
+  allow_blob_public_access;
+```
+
+
+### List storage accounts with encryption in transit disabled
+
+```sql
+select
+  name,
+  enable_https_traffic_only
+from
+  azure_storage_account
+where
+  not enable_https_traffic_only;
+```
+
+
+### List storage accounts that do not have a cannot-delete lock
 
 ```sql
 select
@@ -90,7 +90,7 @@ where
 ```
 
 
-### List of storage accounts with logging enabled for Queue service for read, write, and delete requests
+### List storage accounts with queue logging enabled
 
 ```sql
 select
