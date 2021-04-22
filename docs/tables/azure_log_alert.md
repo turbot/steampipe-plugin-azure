@@ -16,7 +16,7 @@ from
   azure_log_alert;
 ```
 
-### Ensure that Activity Log Alert exists for Create Policy Assignment
+### List log alerts that check for create policy assignment events
 
 ```sql
 select
