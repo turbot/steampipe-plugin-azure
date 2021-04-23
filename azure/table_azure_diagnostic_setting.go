@@ -111,7 +111,8 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
+				Hydrate:     getDiagnosticSettingResourceGroup,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "subscription_id",
@@ -179,4 +180,25 @@ func diagnosticSettingSubscriptionID(ctx context.Context, d *transform.Transform
 	id := types.SafeString(d.Value)
 	subscriptionid := strings.Split(id, "/")[1]
 	return subscriptionid, nil
+}
+
+func getDiagnosticSettingResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getDiagnosticSettingResourceGroup")
+
+	var resourseGroupID string
+	storage_account_id := h.Item.(insights.DiagnosticSettingsResource).StorageAccountID
+	event_hub_authorization_rule_id := h.Item.(insights.DiagnosticSettingsResource).EventHubAuthorizationRuleID
+	workspace_id := h.Item.(insights.DiagnosticSettingsResource).WorkspaceID
+
+	if storage_account_id != nil {
+		resourseGroupID = strings.Split(*storage_account_id, "/")[4]
+	} else if event_hub_authorization_rule_id != nil {
+		resourseGroupID = strings.Split(*event_hub_authorization_rule_id, "/")[4]
+	} else {
+		resourseGroupID = strings.Split(*workspace_id, "/")[4]
+	}
+
+	plugin.Logger(ctx).Trace("resourseGroupID", resourseGroupID)
+
+	return resourseGroupID, nil
 }
