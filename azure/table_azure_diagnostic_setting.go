@@ -111,8 +111,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Hydrate:     getDiagnosticSettingResourceGroup,
-				Transform:   transform.FromValue(),
+				Transform:   transform.From(diagnosticSettingResourceGroup),
 			},
 			{
 				Name:        "subscription_id",
@@ -182,23 +181,13 @@ func diagnosticSettingSubscriptionID(ctx context.Context, d *transform.Transform
 	return subscriptionid, nil
 }
 
-func getDiagnosticSettingResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDiagnosticSettingResourceGroup")
-
-	var resourseGroupID string
-	storage_account_id := h.Item.(insights.DiagnosticSettingsResource).StorageAccountID
-	event_hub_authorization_rule_id := h.Item.(insights.DiagnosticSettingsResource).EventHubAuthorizationRuleID
-	workspace_id := h.Item.(insights.DiagnosticSettingsResource).WorkspaceID
-
-	if storage_account_id != nil {
-		resourseGroupID = strings.Split(*storage_account_id, "/")[4]
-	} else if event_hub_authorization_rule_id != nil {
-		resourseGroupID = strings.Split(*event_hub_authorization_rule_id, "/")[4]
+func diagnosticSettingResourceGroup(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	item := d.HydrateItem.(insights.DiagnosticSettingsResource)
+	if item.StorageAccountID != nil {
+		return strings.Split(*item.StorageAccountID, "/")[4], nil
+	} else if item.EventHubAuthorizationRuleID != nil {
+		return strings.Split(*item.EventHubAuthorizationRuleID, "/")[4], nil
 	} else {
-		resourseGroupID = strings.Split(*workspace_id, "/")[4]
+		return strings.Split(*item.WorkspaceID, "/")[4], nil
 	}
-
-	plugin.Logger(ctx).Trace("resourseGroupID", resourseGroupID)
-
-	return resourseGroupID, nil
 }
