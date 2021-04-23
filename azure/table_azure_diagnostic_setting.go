@@ -2,8 +2,10 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -115,7 +117,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
+				Transform:   transform.FromField("ID").Transform(diagnosticSettingSubscriptionID),
 			},
 		},
 	}
@@ -169,4 +171,12 @@ func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 
 	return op, nil
+}
+
+//// TRANSFORM FUNCTION
+
+func diagnosticSettingSubscriptionID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	id := types.SafeString(d.Value)
+	subscriptionid := strings.Split(id, "/")[1]
+	return subscriptionid, nil
 }
