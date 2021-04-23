@@ -89,22 +89,10 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SiteProperties.HTTPSOnly"),
 			},
 			{
-				Name:        "identity_type",
-				Description: "Type of managed service identity.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.Type"),
-			},
-			{
-				Name:        "identity_tenant_id",
-				Description: "Tenant of managed service identity.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.TenantID"),
-			},
-			{
-				Name:        "identity_principal_id",
-				Description: "Principal Id of managed service identity.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.PrincipalID"),
+				Name:        "identity",
+				Description: "Managed service identity for the resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(webAppIdentity),
 			},
 			{
 				Name:        "outbound_ip_addresses",
@@ -303,4 +291,26 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 	}
 
 	return op, nil
+}
+
+//// TRANSFORM FUNCTION
+
+func webAppIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(web.Site)
+	objectMap := make(map[string]interface{})
+	if data.Identity != nil {
+		if data.Identity.Type != "" {
+			objectMap["Type"] = data.Identity.Type
+		}
+		if data.Identity.TenantID != nil {
+			objectMap["TenantID"] = data.Identity.TenantID
+		}
+		if data.Identity.PrincipalID != nil {
+			objectMap["PrincipalID"] = data.Identity.PrincipalID
+		}
+		if data.Identity.UserAssignedIdentities != nil {
+			objectMap["UserAssignedIdentities"] = data.Identity.UserAssignedIdentities
+		}
+	}
+	return objectMap, nil
 }

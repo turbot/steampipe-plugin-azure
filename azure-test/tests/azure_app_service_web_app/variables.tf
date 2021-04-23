@@ -90,3 +90,11 @@ output "resource_id" {
 output "subscription_id" {
   value = var.azure_subscription
 }
+
+output "tenant_id" {
+  value = azurerm_app_service.named_test_resource.identity[0].tenant_id
+}
+
+output "principal_id" {
+  value = azurerm_app_service.named_test_resource.identity[0].principal_id
+}
