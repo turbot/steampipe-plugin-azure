@@ -4,7 +4,7 @@ Network security group (NSG) flow logs is a feature of Azure Network Watcher tha
 
 ## Examples
 
-### List flow logs with their corresponding NSG and Network Watcher details
+### Basic info
 
 ```sql
 select
@@ -16,7 +16,7 @@ from
   azure_network_watcher_flow_log;
 ```
 
-### List flow logs which are not enabled
+### List disabled flow logs
 
 ```sql
 select
@@ -30,7 +30,7 @@ where
   not enabled;
 ```
 
-### List flow logs with retention period less than 90 days
+### List flow logs with a retention period less than 90 days
 
 ```sql
 select
@@ -44,7 +44,7 @@ where
   enabled and retention_policy_days < 90;
 ```
 
-### Get storage account details used to store the flow log
+### Get storage account details for each flow log
 
 ```sql
 select
