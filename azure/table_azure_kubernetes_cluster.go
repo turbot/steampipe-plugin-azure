@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-02-01/containerservice"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -45,17 +44,6 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "location",
 				Description: "The location where the cluster is created.",
 				Type:        proto.ColumnType_STRING,
-			},
-			{
-				Name:        "sku",
-				Description: "The managed cluster SKU.",
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     getKubernetesCluster,
-			},
-			{
-				Name:        "identity",
-				Description: "The identity of the managed cluster, if configured.",
-				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "azure_portal_fqdn",
@@ -166,6 +154,11 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ManagedClusterProperties.AutoUpgradeProfile"),
 			},
 			{
+				Name:        "identity",
+				Description: "The identity of the managed cluster, if configured.",
+				Type:        proto.ColumnType_JSON,
+			},
+			{
 				Name:        "identity_profile",
 				Description: "Identities associated with the cluster.",
 				Type:        proto.ColumnType_JSON,
@@ -200,6 +193,12 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Description: "Information about a service principal identity for the cluster to use for manipulating Azure APIs.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ManagedClusterProperties.ServicePrincipalProfile"),
+			},
+			{
+				Name:        "sku",
+				Description: "The managed cluster SKU.",
+				Type:        proto.ColumnType_JSON,
+				// Hydrate:     getKubernetesCluster,
 			},
 			{
 				Name:        "windows_profile",
@@ -282,16 +281,8 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKubernetesCluster")
 
-	resourceName := ""
-	resourceGroupName := ""
-	if h.Item != nil {
-		managedCluster := h.Item.(containerservice.ManagedCluster)
-		resourceName = *managedCluster.Name
-		resourceGroupName = strings.Split(string(*managedCluster.ID), "/")[4]
-	} else {
-		resourceName = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
-	}
+	resourceName := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroupName := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
