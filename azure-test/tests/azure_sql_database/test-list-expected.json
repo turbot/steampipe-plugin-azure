@@ -1,0 +1,9 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "location": "{{ output.resource_location.value }}",
+    "name": "{{ resourceName }}",
+    "resource_group": "{{ resourceName }}",
+    "server_name": "{{ resourceName }}"
+  }
+]

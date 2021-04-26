@@ -1,3 +1,42 @@
+## v0.5.0 [2021-04-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_diagnostic_setting](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_diagnostic_setting) ([#70](https://github.com/turbot/steampipe-plugin-azure/pull/70))
+  - [azure_key_vault_secret](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_secret) ([#76](https://github.com/turbot/steampipe-plugin-azure/pull/76))
+  - [azure_log_alert](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_log_alert) ([#70](https://github.com/turbot/steampipe-plugin-azure/pull/70))
+  - [azure_log_profile](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_log_profile) ([#70](https://github.com/turbot/steampipe-plugin-azure/pull/70))
+  - [azure_sql_database](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_sql_database) ([#93](https://github.com/turbot/steampipe-plugin-azure/pull/93))
+
+_Enhancements_
+
+- Updated: Add `diagnostic_settings` column to `azure_key_vault` table ([#96](https://github.com/turbot/steampipe-plugin-azure/pull/96))
+- Updated: Add `queue` prefix to various queue logging columns in `azure_storage_account` table ([#94](https://github.com/turbot/steampipe-plugin-azure/pull/94))
+
+_Bug fixes_
+
+- Fixed: List calls should not infinitely loop in `azure_key_vault` table ([#82](https://github.com/turbot/steampipe-plugin-azure/pull/82))
+
+## v0.4.0 [2021-04-08]
+
+_What's new?_
+
+- New tables added
+  - [azure_mysql_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mysql_server) ([#66](https://github.com/turbot/steampipe-plugin-azure/pull/66))
+  - [azure_postgresql_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_postgresql_server) ([#64](https://github.com/turbot/steampipe-plugin-azure/pull/64))
+  - [azure_storage_container](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_storage_container) ([#71](https://github.com/turbot/steampipe-plugin-azure/pull/71))
+
+_Enhancements_
+
+- Updated: Add `auth_settings` and `configuration` columns to `azure_app_service_function_app` table ([#77](https://github.com/turbot/steampipe-plugin-azure/pull/77))
+- Updated: Add `auth_settings` and `configuration` columns to `azure_app_service_web_app` table ([#77](https://github.com/turbot/steampipe-plugin-azure/pull/77))
+- Updated: Add `blob_service_logging` column to `azure_storage_account` table ([#80](https://github.com/turbot/steampipe-plugin-azure/pull/80))
+
+_Bug fixes_
+
+- Fixed: The table `azure_sql_server` should return `null` instead of an empty object for columns with missing data ([#68](https://github.com/turbot/steampipe-plugin-azure/pull/68))
+
 ## v0.3.1 [2021-03-25]
 
 _Enhancements_

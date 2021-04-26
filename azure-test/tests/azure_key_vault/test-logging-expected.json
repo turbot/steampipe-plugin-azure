@@ -1,0 +1,8 @@
+[
+	{
+		"category": "AuditEvent",
+		"log_retention_days": 30,
+		"name": "{{ resourceName }}",
+		"storage_account_id": "{{ output.storage_account_id.value }}"
+	}
+]
