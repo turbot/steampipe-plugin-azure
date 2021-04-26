@@ -15,6 +15,6 @@
 		"resource_group": "{{ resourceName }}",
 		"subscription_id": "{{ output.subscription_id.value }}",
 		"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-		"version": null
+		"version": "<null>"
 	}
 ]
