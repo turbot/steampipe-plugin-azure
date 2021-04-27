@@ -1,0 +1,14 @@
+[
+  {
+    "auto_provisioning": [
+      {
+        "id": "{{ output.resource_id.value }}",
+        "name": "default",
+        "properties": {
+        "autoProvision": "{{ output.auto_provision.value }}"
+        },
+        "type": "Microsoft.Security/autoProvisioningSettings"
+      }
+    ]
+  }
+]

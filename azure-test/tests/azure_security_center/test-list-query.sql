@@ -1,0 +1,2 @@
+select auto_provisioning
+from azure.azure_security_center
