@@ -17,11 +17,6 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
-variable "provision_name" {
-  type        = string
-  default     = "default"
-  description = "Name of the resource used throughout the test."
-}
 provider "azurerm" {
   # Cannot be passed as a variable
   version         = "=2.43.0"
@@ -33,25 +28,61 @@ provider "azurerm" {
 data "azurerm_client_config" "current" {}
 
 locals {
-  path = "${path.cwd}/autoProvision.json"
+  provision_path = "${path.cwd}/autoProvision.json"
+  contact_path = "${path.cwd}/contact.json"
+
 }
 
 resource "null_resource" "named_test_resource" {
   provisioner "local-exec" {
-    command = "az security auto-provisioning-setting show -n ${var.provision_name} > ${local.path}"
+    command = "az security auto-provisioning-setting list > ${local.provision_path}"
+  }
+  provisioner "local-exec" {
+    command = "az security contact list > ${local.contact_path}"
   }
 }
 
 data "local_file" "input" {
   depends_on = [null_resource.named_test_resource]
-  filename   = local.path
+  filename   = local.provision_path
+}
+
+data "local_file" "input_contact" {
+  depends_on = [null_resource.named_test_resource]
+  filename   = local.contact_path
 }
 
 output "auto_provision" {
   depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input.content), "autoProvision", "autoProvision")
+  value      = lookup(jsondecode(data.local_file.input.content)[0], "autoProvision", "autoProvision")
 }
 
-output "resource_id" {
-  value      = lookup(jsondecode(data.local_file.input.content), "id", "id")
+output "provision_id" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input.content)[0], "id", "id")
+}
+
+output "contact_id" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "id", "id")
+}
+
+output "email" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "email", "email")
+}
+
+output "alert_notification" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertNotifications", "alertNotifications")
+}
+
+output "alert_to_admin" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertsToAdmins", "alertsToAdmins")
+}
+
+output "name" {
+   depends_on = [null_resource.named_test_resource]
+  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "name", "name")
 }
