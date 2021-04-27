@@ -90,8 +90,8 @@ func listSecurityCenter(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		return nil, err
 	}
 
-	Id := "/subscriptions/" + subscriptionID + "/providers/Microsoft.Security/securityCenter"
-	akas := []string{"azure://" + Id, "azure://" + strings.ToLower(Id)}
+	id := "/subscriptions/" + subscriptionID + "/providers/Microsoft.Security/securityCenter"
+	akas := []string{"azure://" + id, "azure://" + strings.ToLower(id)}
 	result := map[string]interface{}{
 		"Setting":          settings,
 		"Pricing":          pricings,
