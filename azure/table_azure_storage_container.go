@@ -73,7 +73,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Name:        "deleted_time",
 				Description: "Specifies the time when the container was deleted.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ContainerProperties.DeletedTime"),
+				Transform:   transform.FromField("ContainerProperties.DeletedTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "deny_encryption_scope_override",
@@ -97,7 +97,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Name:        "last_modified_time",
 				Description: "Specifies the date and time the container was last modified.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ContainerProperties.LastModifiedTime"),
+				Transform:   transform.FromField("ContainerProperties.LastModifiedTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "lease_status",

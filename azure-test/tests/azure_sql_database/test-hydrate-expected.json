@@ -1,0 +1,10 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "server_name": "{{ resourceName }}",
+    "transparent_data_encryption": {
+      "status": "Enabled"
+    }
+  }
+]

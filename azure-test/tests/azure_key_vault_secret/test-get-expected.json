@@ -1,0 +1,15 @@
+[
+	{
+		"content_type": "text",
+		"enabled": true,
+		"id": "{{ output.resource_id.value }}",
+		"name": "{{ resourceName }}",
+		"recoverable_days": 7,
+		"recovery_level": "CustomizedRecoverable+Purgeable",
+		"region": "{{ output.location.value }}",
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"value": "steampipe",
+		"vault_name": "{{ resourceName }}"
+	}
+]

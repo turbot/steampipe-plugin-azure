@@ -183,7 +183,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, tokenAudience string
 	case "GRAPH":
 		resource = environment.GraphEndpoint
 	case "VAULT":
-		resource = environment.KeyVaultEndpoint
+		resource = strings.TrimSuffix(environment.KeyVaultEndpoint, "/")
 	case "MANAGEMENT":
 		resource = environment.ResourceManagerEndpoint
 	default:
