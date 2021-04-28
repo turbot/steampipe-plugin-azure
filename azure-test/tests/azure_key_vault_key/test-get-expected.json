@@ -1,6 +1,6 @@
 [
 	{
-		"curve_name": "RSA",
+		"curve_name": "",
 		"enabled": true,
 		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.KeyVault/vaults/{{ resourceName }}/keys/{{ resourceName }}",
 		"key_ops": ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"],
