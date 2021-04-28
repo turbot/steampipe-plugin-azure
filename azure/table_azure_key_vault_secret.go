@@ -202,8 +202,8 @@ func getKeyVaultSecret(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		vaultName = strings.Split(splitID[2], ".")[0]
 		name = splitID[4]
 		// Operation get is not allowed on a disabled secret
-		if  !*data.Attributes.Enabled{
-			return nil,nil
+		if !*data.Attributes.Enabled {
+			return nil, nil
 		}
 	} else {
 		vaultName = d.KeyColumnQuals["vault_name"].GetStringValue()
