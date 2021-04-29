@@ -35,6 +35,9 @@ func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData)
 }
 
 func convertDateToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	if d.Value == nil {
+		return nil, nil
+	}
 	dateValue := d.Value.(*date.Time)
 
 	if dateValue != nil {
