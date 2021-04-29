@@ -19,7 +19,7 @@ from
   azure_key_vault_key;
 ```
 
-### List keys which are not enabled
+### List disabled keys
 
 ```sql
 select
@@ -32,7 +32,7 @@ where
   not enabled;
 ```
 
-### List keys for which expiration time is not set
+### List keys with no expiration time set
 
 ```sql
 select
@@ -45,7 +45,7 @@ where
   expired_at is null;
 ```
 
-### List keys which have never updated
+### List keys which have never been updated
 
 ```sql
 select
@@ -60,7 +60,7 @@ where
   and age(updated_at, created_at) = '00:00:00';
 ```
 
-### Count of keys by Key Vault
+### Count the number of keys by key vault
 
 ```sql
 select
