@@ -249,7 +249,7 @@ func getKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listKmsKeyVaultDiagnosticSettings")
-	data := h.Item.(keyvault.Vault)
+	id := getKeyVaultID(h.Item)
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -261,7 +261,7 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	client := insights.NewDiagnosticSettingsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.List(ctx, *data.ID)
+	op, err := client.List(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -286,4 +286,14 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+func getKeyVaultID(item interface{}) string {
+	switch item.(type) {
+	case keyvault.Vault:
+		return *item.(keyvault.Vault).ID
+	case keyvault.Resource:
+		return *item.(keyvault.Resource).ID
+	}
+	return ""
 }
