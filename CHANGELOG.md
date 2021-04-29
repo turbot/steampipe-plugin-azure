@@ -1,3 +1,23 @@
+## v0.6.0 [2021-04-29]
+
+_What's new?_
+
+- New tables added
+  - [azure_key_vault_key](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_key) ([#73](https://github.com/turbot/steampipe-plugin-azure/pull/73))
+  - [azure_network_watcher_flow_log](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_network_watcher_flow_log) ([#61](https://github.com/turbot/steampipe-plugin-azure/pull/61))
+
+_Enhancements_
+
+- Updated: Add `extensions` column to `azure_compute_virtual_machine` table ([#85](https://github.com/turbot/steampipe-plugin-azure/pull/85))
+
+_Bug fixes_
+
+- Fixed: `azure_key_vault` table queries no longer crash when getting vault diagnostic settings ([#107](https://github.com/turbot/steampipe-plugin-azure/pull/107))
+- Fixed: `deleted_time` and `last_modified_time` columns now show the correct dates in `azure_storage_container` table ([#106](https://github.com/turbot/steampipe-plugin-azure/pull/106))
+- Fixed: `encryption_key_vault_properties_last_rotation_time` column now shows the correct date in `azure_storage_account` table ([#101](https://github.com/turbot/steampipe-plugin-azure/pull/101))
+- Fixed: `subscription_id` column now displays the correct subscription ID in `azure_diagnostic_setting` table ([#99](https://github.com/turbot/steampipe-plugin-azure/pull/99))
+- Fixed: Column name in example query in `azure_key_vault_secret` table doc ([#108](https://github.com/turbot/steampipe-plugin-azure/pull/108))
+
 ## v0.5.0 [2021-04-22]
 
 _What's new?_
