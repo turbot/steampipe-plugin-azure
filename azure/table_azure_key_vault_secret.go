@@ -221,11 +221,7 @@ func getKeyVaultSecret(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	client.Authorizer = session.Authorizer
 
 	vaultURI := "https://" + vaultName + ".vault.azure.net/"
-	// data := h.Item.(secret.SecretItem)
-	// if !*data.Attributes.Enabled {
-	// 	logger.Debug("getKeyVaultSecret", "We can not perform GET operation on disable secret", *data.Attributes.Enabled)
-	// 	return nil, nil
-	// }
+
 	op, err := client.GetSecret(ctx, vaultURI, name, "")
 	if err != nil {
 		return nil, err
