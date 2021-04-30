@@ -279,7 +279,7 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 //// HYDRATE FUNCTIONS
 
-func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKubernetesCluster")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

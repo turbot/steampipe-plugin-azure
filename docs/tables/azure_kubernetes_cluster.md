@@ -66,5 +66,5 @@ select
 from
   azure_kubernetes_cluster
 where
-  enable_rbac = 'false';
+  not enable_rbac;
 ```
