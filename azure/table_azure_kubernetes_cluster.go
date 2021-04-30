@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -198,7 +198,6 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "sku",
 				Description: "The managed cluster SKU.",
 				Type:        proto.ColumnType_JSON,
-				// Hydrate:     getKubernetesCluster,
 			},
 			{
 				Name:        "windows_profile",
@@ -207,7 +206,7 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ManagedClusterProperties.WindowsProfile"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -225,6 +224,8 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -276,13 +277,10 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	return nil, err
 }
 
-//// HYDRATE FUNCTION
+//// HYDRATE FUNCTIONS
 
 func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getKubernetesCluster")
-
-	resourceName := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroupName := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -292,6 +290,9 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	client := containerservice.NewManagedClustersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	resourceName := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroupName := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	op, err := client.Get(ctx, resourceGroupName, resourceName)
 	if err != nil {

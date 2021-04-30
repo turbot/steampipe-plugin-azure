@@ -10,6 +10,9 @@
       "httpApplicationRouting": {
         "enabled": false
       },
+      "ingressApplicationGateway": {
+        "enabled": false
+      },
       "kubeDashboard": {
         "enabled": false
       },
@@ -32,7 +35,7 @@
       "type": "SystemAssigned"
     },
     "location": "{{ output.location.value }}",
-    "max_agent_pools": 10,
+    "max_agent_pools": 100,
     "name": "{{ resourceName }}",
     "node_resource_group": "{{ output.node_resource_group.value }}",
     "power_state": {
@@ -41,7 +44,10 @@
     "provisioning_state": "Succeeded",
     "region": "{{ output.location.value }}",
     "resource_group": "{{ resourceName }}",
-    "sku": "{Name:Basic Tier:Free}",
+    "sku": {
+      "name": "Basic",
+      "tier": "Free"
+    },
     "subscription_id": "{{ output.subscription_id.value }}",
     "tags": {
       "foo": "bar"
