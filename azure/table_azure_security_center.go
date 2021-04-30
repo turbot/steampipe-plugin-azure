@@ -13,13 +13,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-type securityInfo = struct {
-	Provisioning []map[string]interface{}
-	Setting      []map[string]interface{}
-	Contact      []map[string]interface{}
-	Pricing      []map[string]interface{}
-}
-
 //// TABLE DEFINITION
 
 func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
@@ -35,14 +28,14 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Description: "Auto provisioning settings of the subscriptions.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getProvisioningDetails,
-				Transform:   transform.FromField("Provisioning"),
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "contact",
 				Description: "Security contact configurations for the subscription.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getContactDetails,
-				Transform:   transform.FromField("Contact"),
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "policy",
@@ -56,14 +49,14 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Description: "Security pricing configuration in the resource group.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getPricingsDetails,
-				Transform:   transform.FromField("Pricing"),
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "setting",
 				Description: "Configuration settings for azure security center.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSettingDetails,
-				Transform:   transform.FromField("Setting"),
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -133,7 +126,7 @@ func getProvisioningDetails(ctx context.Context, d *plugin.QueryData, h *plugin.
 		provisionMap["type"] = provision.Type
 		provisioning = append(provisioning, provisionMap)
 	}
-	return securityInfo{provisioning, nil, nil, nil}, nil
+	return provisioning, nil
 }
 
 func getContactDetails(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -162,7 +155,7 @@ func getContactDetails(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		contactMap["type"] = contact.Type
 		contacts = append(contacts, contactMap)
 	}
-	return securityInfo{nil, nil, contacts, nil}, nil
+	return contacts, nil
 }
 
 func getPolicyDetails(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -208,7 +201,7 @@ func getSettingDetails(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		settingMap["type"] = setting.Type
 		settings = append(settings, settingMap)
 	}
-	return securityInfo{nil, settings, nil, nil}, nil
+	return settings, nil
 }
 
 func getPricingsDetails(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -237,7 +230,7 @@ func getPricingsDetails(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		pricingMap["type"] = pricing.Type
 		pricings = append(pricings, pricingMap)
 	}
-	return securityInfo{nil, nil, nil, pricings}, nil
+	return pricings, nil
 }
 
 //// TRANSFORM FUNCTIONS
