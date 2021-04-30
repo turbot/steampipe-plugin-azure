@@ -299,7 +299,7 @@ func webAppIdentity(ctx context.Context, d *transform.TransformData) (interface{
 	data := d.HydrateItem.(web.Site)
 	objectMap := make(map[string]interface{})
 	if data.Identity != nil {
-		if data.Identity.Type != "" {
+		if &data.Identity.Type != nil {
 			objectMap["Type"] = data.Identity.Type
 		}
 		if data.Identity.TenantID != nil {
