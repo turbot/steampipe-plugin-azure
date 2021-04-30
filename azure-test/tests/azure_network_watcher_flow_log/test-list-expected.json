@@ -1,0 +1,6 @@
+[
+	{
+		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Network/networkWatchers/{{ resourceName }}/flowLogs/Microsoft.Network{{ resourceName }}{{ resourceName }}",
+		"name": "Microsoft.Network{{ resourceName }}{{ resourceName }}"
+	}
+]

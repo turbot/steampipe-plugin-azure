@@ -61,7 +61,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "administrator_login",
-				Description: "Specifies the username of the Administrator for this server.",
+				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
 			},
@@ -132,7 +132,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Tags"),
 			},
 
-			// steampipe standard columns
+			// Steampipe standard columns
+			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name"),
+			},
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
@@ -144,14 +150,8 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-			{
-				Name:        "title",
-				Description: ColumnDescriptionTitle,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Name"),
-			},
 
-			// azure standard columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -246,18 +246,31 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	auditPolicyData := map[string]interface{}{
-		"id":         op.ID,
-		"name":       op.Name,
-		"type":       op.Type,
-		"properties": op.ServerBlobAuditingPolicyProperties,
+	// If we return the API response directly, the output only gives
+	// the contents of ServerBlobAuditingPolicyProperties
+	var auditPolicies []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.ServerBlobAuditingPolicyProperties != nil {
+			objectMap["properties"] = i.ServerBlobAuditingPolicyProperties
+		}
+		auditPolicies = append(auditPolicies, objectMap)
 	}
-	return auditPolicyData, nil
+	return auditPolicies, nil
 }
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -274,18 +287,31 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	client := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	securityAlertPolicyData := map[string]interface{}{
-		"id":         op.ID,
-		"name":       op.Name,
-		"type":       op.Type,
-		"properties": op.SecurityAlertPolicyProperties,
+	// If we return the API response directly, the output only gives
+	// the contents of SecurityAlertPolicyProperties
+	var securityAlertPolicies []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.SecurityAlertPolicyProperties != nil {
+			objectMap["properties"] = i.SecurityAlertPolicyProperties
+		}
+		securityAlertPolicies = append(securityAlertPolicies, objectMap)
 	}
-	return securityAlertPolicyData, nil
+	return securityAlertPolicies, nil
 }
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -299,10 +325,10 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	serverAzureADAdministratorClient := sql.NewServerAzureADAdministratorsClient(subscriptionID)
-	serverAzureADAdministratorClient.Authorizer = session.Authorizer
+	client := sql.NewServerAzureADAdministratorsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := serverAzureADAdministratorClient.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		if strings.Contains(err.Error(), "NotFound") {
 			return nil, nil
@@ -310,13 +336,26 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 		return nil, err
 	}
 
-	administratorData := map[string]interface{}{
-		"id":         op.ID,
-		"name":       op.Name,
-		"type":       op.Type,
-		"properties": op.ServerAdministratorProperties,
+	// If we return the API response directly, the output only gives
+	// the contents of ServerAdministratorProperties
+	var serverAdministrators []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.ServerAdministratorProperties != nil {
+			objectMap["properties"] = i.ServerAdministratorProperties
+		}
+		serverAdministrators = append(serverAdministrators, objectMap)
 	}
-	return administratorData, nil
+	return serverAdministrators, nil
 }
 
 func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -333,23 +372,38 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	client := sql.NewEncryptionProtectorsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	encryptionData := map[string]interface{}{
-		"id":            op.ID,
-		"name":          op.Name,
-		"kind":          op.Kind,
-		"subRegion":     op.EncryptionProtectorProperties.Subregion,
-		"serverKeyName": op.EncryptionProtectorProperties.ServerKeyName,
-		"serverKeyType": string(op.ServerKeyType),
-		"uri":           op.URI,
-		"thumbPrint":    op.Thumbprint,
+	// If we return the API response directly, the output only gives
+	// the contents of EncryptionProtectorProperties
+	var encryptionProtectors []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.Location != nil {
+			objectMap["location"] = i.Location
+		}
+		if i.Kind != nil {
+			objectMap["kind"] = i.Kind
+		}
+		if i.EncryptionProtectorProperties != nil {
+			objectMap["properties"] = i.EncryptionProtectorProperties
+		}
+		encryptionProtectors = append(encryptionProtectors, objectMap)
 	}
 
-	return encryptionData, nil
+	return encryptionProtectors, nil
 }
 
 func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -366,18 +420,31 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	client := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroupName, *server.Name)
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	vulnerabilityAssessmentData := map[string]interface{}{
-		"id":         op.ID,
-		"name":       op.Name,
-		"type":       op.Type,
-		"properties": op.ServerVulnerabilityAssessmentProperties,
+	// If we return the API response directly, the output only gives
+	// the contents of ServerVulnerabilityAssessmentProperties
+	var vulnerabilityAssessments []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.ServerVulnerabilityAssessmentProperties != nil {
+			objectMap["properties"] = i.ServerVulnerabilityAssessmentProperties
+		}
+		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 	}
-	return vulnerabilityAssessmentData, nil
+	return vulnerabilityAssessments, nil
 }
 
 func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -403,5 +470,25 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 		return op.Value, nil
 	}
 
-	return nil, nil
+	// If we return the API response directly, the output only gives
+	// the contents of FirewallRuleProperties
+	var firewallRules []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.FirewallRuleProperties != nil {
+			objectMap["properties"] = i.FirewallRuleProperties
+		}
+		firewallRules = append(firewallRules, objectMap)
+	}
+
+	return firewallRules, nil
 }
