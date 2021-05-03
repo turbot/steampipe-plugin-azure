@@ -68,3 +68,19 @@ from
 where
   not enable_rbac;
 ```
+
+
+### List Clusters having undesired/older kubernetes version
+
+```sql
+select
+  name,
+  id,
+  location,
+  type,
+  kubernetes_version
+from
+  azure_kubernetes_cluster
+where
+  kubernetes_version < '1.20.5';
+```
