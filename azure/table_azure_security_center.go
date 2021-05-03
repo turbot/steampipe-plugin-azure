@@ -24,14 +24,14 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 		},
 		Columns: []*plugin.Column{
 			{
-				Name:        "auto_provisioning",
+				Name:        "auto_provisioning_settings",
 				Description: "Auto provisioning settings of the subscriptions.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getProvisioningDetails,
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "contact",
+				Name:        "contacts",
 				Description: "Security contact configurations for the subscription.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getContactDetails,
@@ -45,14 +45,14 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "pricing",
+				Name:        "pricings",
 				Description: "Security pricing configuration in the resource group.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getPricingsDetails,
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "setting",
+				Name:        "settings",
 				Description: "Configuration settings for azure security center.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSettingDetails,
