@@ -21,7 +21,7 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"vault_name", "name"}),
 			Hydrate:           getKeyVaultSecret,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "404", "403"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "404", "SecretDisabled"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listKeyVaultSecrets,
