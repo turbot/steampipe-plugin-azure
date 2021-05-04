@@ -18,24 +18,7 @@ from
 ```
 
 
-### List Clusters for a specific location
-
-```sql
-select
-  name,
-  id,
-  location,
-  type,
-  identity,
-  sku
-from
-  azure_kubernetes_cluster
-where
-  location = 'westus';
-```
-
-
-### List Clusters having System Assigned identity
+### List clusters with a system assigned identity
 
 ```sql
 select
@@ -52,7 +35,7 @@ where
 ```
 
 
-### List Clusters having role-based access control (RBAC) disabled
+### List clusters that have role-based access control (RBAC) disabled
 
 ```sql
 select
@@ -70,7 +53,7 @@ where
 ```
 
 
-### List Clusters having undesired/older kubernetes version
+### List clusters with an undesirable version (older than 1.20.5)
 
 ```sql
 select
