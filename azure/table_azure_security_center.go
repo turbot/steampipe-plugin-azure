@@ -70,7 +70,7 @@ func tableAzureSecurityCenter(_ context.Context) *plugin.Table {
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromValue().Transform(getSecurityCenterAkas),
+				Transform:   transform.FromValue().Transform(securityCenterAkas),
 			},
 
 			// Azure standard columns
@@ -235,7 +235,7 @@ func getPricingsDetails(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 //// TRANSFORM FUNCTIONS
 
-func getSecurityCenterAkas(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func securityCenterAkas(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subscriptionID := types.SafeString(d.Value)
 	id := "/subscriptions/" + subscriptionID + "/providers/Microsoft.Security/securityCenter"
 	akas := []string{"azure://" + id, "azure://" + strings.ToLower(id)}

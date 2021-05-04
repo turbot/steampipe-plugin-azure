@@ -59,30 +59,30 @@ output "auto_provision" {
 
 output "provision_id" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input.content)[0], "id", "id")
+   value      = lookup(jsondecode(data.local_file.input.content)[0], "id", "id")
 }
 
 output "contact_id" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "id", "id")
+   value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "id", "id")
 }
 
 output "email" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "email", "email")
+   value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "email", "email")
 }
 
 output "alert_notification" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertNotifications", "alertNotifications")
+   value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertNotifications", "alertNotifications")
 }
 
 output "alert_to_admin" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertsToAdmins", "alertsToAdmins")
+   value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "alertsToAdmins", "alertsToAdmins")
 }
 
 output "name" {
    depends_on = [null_resource.named_test_resource]
-  value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "name", "name")
+   value      = lookup(jsondecode(data.local_file.input_contact.content)[0], "name", "name")
 }

@@ -5,22 +5,22 @@
         "id": "{{ output.provision_id.value }}",
         "name": "default",
         "properties": {
-        "autoProvision": "{{ output.auto_provision.value }}"
+          "autoProvision": "{{ output.auto_provision.value }}"
         },
         "type": "Microsoft.Security/autoProvisioningSettings"
       }
     ],
-      "contacts": [
-        {
-          "id": "{{ output.contact_id.value }}",
-          "name": "{{ output.name.value }}",
-          "properties": {
+    "contacts": [
+      {
+        "id": "{{ output.contact_id.value }}",
+        "name": "{{ output.name.value }}",
+        "properties": {
           "alertNotifications": "{{ output.alert_notification.value }}",
           "alertsToAdmins": "{{ output.alert_to_admin.value }}",
           "email": "{{ output.email.value }}",
           "phone": ""
         },
-      "type": "Microsoft.Security/securityContacts"
+        "type": "Microsoft.Security/securityContacts"
       }
     ]
   }
