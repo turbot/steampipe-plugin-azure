@@ -4,9 +4,14 @@
     "enabled": true,
     "https_only": false,
     "id": "{{ output.resource_id.value }}",
+    "identity": {
+      "PrincipalID": "{{ output.principal_id.value }}",
+      "TenantID": "{{ output.tenant_id.value }}",
+      "Type": "SystemAssigned"
+    },
     "kind": "app",
     "name": "{{resourceName}}",
-    "region": "East US",
+    "region": "east us",
     "reserved": false,
     "resource_group": "{{resourceName}}"
   }

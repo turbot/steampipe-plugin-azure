@@ -89,6 +89,12 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SiteProperties.HTTPSOnly"),
 			},
 			{
+				Name:        "identity",
+				Description: "Managed service identity for the resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(webAppIdentity),
+			},
+			{
 				Name:        "outbound_ip_addresses",
 				Description: "List of IP addresses that the app uses for outbound connections (e.g. database access).",
 				Type:        proto.ColumnType_STRING,
@@ -285,4 +291,26 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 	}
 
 	return op, nil
+}
+
+//// TRANSFORM FUNCTION
+
+func webAppIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(web.Site)
+	objectMap := make(map[string]interface{})
+	if data.Identity != nil {
+		if &data.Identity.Type != nil {
+			objectMap["Type"] = data.Identity.Type
+		}
+		if data.Identity.TenantID != nil {
+			objectMap["TenantID"] = data.Identity.TenantID
+		}
+		if data.Identity.PrincipalID != nil {
+			objectMap["PrincipalID"] = data.Identity.PrincipalID
+		}
+		if data.Identity.UserAssignedIdentities != nil {
+			objectMap["UserAssignedIdentities"] = data.Identity.UserAssignedIdentities
+		}
+	}
+	return objectMap, nil
 }

@@ -85,3 +85,18 @@ from
 where
   configuration -> 'properties' ->> 'ftpsState' <> 'AllAllowed';
 ```
+
+
+### List web apps that have managed service identity disabled
+
+```sql
+select
+  name,
+  enabled,
+  region,
+  identity
+from
+  azure_app_service_web_app
+where
+  identity = '{}';
+```

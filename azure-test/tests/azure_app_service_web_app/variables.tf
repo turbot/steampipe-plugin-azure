@@ -62,6 +62,9 @@ resource "azurerm_app_service" "named_test_resource" {
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
   app_service_plan_id = azurerm_app_service_plan.named_test_resource.id
+  identity {
+    type = "SystemAssigned"
+  }
 
   tags = {
     name = var.resource_name
@@ -86,4 +89,12 @@ output "resource_id" {
 
 output "subscription_id" {
   value = var.azure_subscription
+}
+
+output "tenant_id" {
+  value = azurerm_app_service.named_test_resource.identity[0].tenant_id
+}
+
+output "principal_id" {
+  value = azurerm_app_service.named_test_resource.identity[0].principal_id
 }
