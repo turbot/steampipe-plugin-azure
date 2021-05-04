@@ -191,7 +191,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Name:        "encryption_key_vault_properties_last_rotation_time",
 				Description: "Timestamp of last rotation of the Key Vault Key.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.LastKeyRotationTimestamp"),
+				Transform:   transform.FromField("Account.AccountProperties.Encryption.KeyVaultProperties.LastKeyRotationTimestamp").Transform(convertDateToTime),
 			},
 			{
 				Name:        "failover_in_progress",

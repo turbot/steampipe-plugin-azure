@@ -1,0 +1,6 @@
+[
+	{
+		"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.KeyVault/vaults/{{ resourceName }}/keys/{{ resourceName }}",
+		"name": "{{ resourceName }}"
+	}
+]
