@@ -87,7 +87,7 @@ where
 ```
 
 
-### List web apps that have managed service identity set to disabled
+### List web apps that have managed service identity disabled
 
 ```sql
 select
