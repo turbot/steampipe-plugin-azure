@@ -14,7 +14,7 @@ select
   s ->> 'type' as type
 from
   azure_security_center,
-  jsonb_array_elements(setting) as s
+  jsonb_array_elements(settings) as s
 where
   s ->> 'name' = 'MCAS';
 ```
@@ -29,7 +29,7 @@ select
   s ->> 'type' as type
 from
   azure_security_center,
-  jsonb_array_elements(setting) as s
+  jsonb_array_elements(settings) as s
 where
   s ->> 'name' = 'WDATP';
 ```
@@ -41,9 +41,9 @@ select
   p -> 'properties' ->> 'autoProvision' as auto_provision
 from
   azure_security_center,
-  jsonb_array_elements(auto_provisioning) as p
+  jsonb_array_elements(auto_provisioning_settings) as p
 where
-  auto_provisioning is not null
+  auto_provisioning_settings is not null
   and p -> 'properties' ->> 'autoProvision' = 'On';
 ```
 
@@ -54,7 +54,7 @@ select
   c -> 'properties' ->> 'email' as contact_email
 from
   azure_security_center,
-  jsonb_array_elements(contact) as c
+  jsonb_array_elements(contacts) as c
 where
-  contact is not null and c -> 'properties' ->> 'email' != '';
+  contacts is not null and c -> 'properties' ->> 'email' != '';
 ```

@@ -1,6 +1,6 @@
 [
   {
-    "auto_provisioning": [
+    "auto_provisioning_settings": [
       {
         "id": "{{ output.provision_id.value }}",
         "name": "default",
@@ -10,7 +10,7 @@
         "type": "Microsoft.Security/autoProvisioningSettings"
       }
     ],
-      "contact": [
+      "contacts": [
         {
           "id": "{{ output.contact_id.value }}",
           "name": "{{ output.name.value }}",

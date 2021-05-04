@@ -1,2 +1,2 @@
-select auto_provisioning, contact
+select auto_provisioning_settings, contacts
 from azure.azure_security_center
