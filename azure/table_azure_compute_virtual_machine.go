@@ -208,6 +208,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Name"),
 			},
 			{
+				Name:        "os_disk_vhd_uri",
+				Description: "Specifies the virtual hard disk's uri.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Vhd.URI").Transform(transform.ToString),
+			},
+			{
 				Name:        "os_type",
 				Description: "Specifies the type of the OS that is included in the disk if creating a VM from user-image or a specialized VHD",
 				Type:        proto.ColumnType_STRING,
