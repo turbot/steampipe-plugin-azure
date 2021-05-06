@@ -17,9 +17,8 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 		Name:        "azure_security_center_setting",
 		Description: "Azure Security Center Setting",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getSecurityCenterSetting,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getSecurityCenterSetting,
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterSettings,
@@ -28,7 +27,7 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 			{
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
-				Description: "The resource Id.",
+				Description: "The resource id.",
 				Transform:   transform.FromField("ID"),
 			},
 			{
