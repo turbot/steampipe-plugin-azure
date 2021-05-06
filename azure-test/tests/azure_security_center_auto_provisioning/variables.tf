@@ -13,13 +13,13 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8"
+  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
   description = "Azure subscription used for the test."
 }
 
-variable "setting_name" {
+variable "provision_name" {
   type        = string
-  default     = "MCAS"
+  default     = "default"
   description = "Name of the resource."
 }
 
@@ -39,26 +39,24 @@ data "null_data_source" "resource" {
   }
 }
 
-resource "azurerm_security_center_setting" "named_test_resource" {
-  #expected setting_name to be one of [MCAS WDATP]
-  setting_name = var.setting_name
-  enabled      = true
+resource "azurerm_security_center_auto_provisioning" "named_test_resource" {
+  auto_provision = "On"
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_security_center_setting.named_test_resource.id}"
+  value = "azure://${azurerm_security_center_auto_provisioning.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_security_center_setting.named_test_resource.id)}"
+  value = "azure://${lower(azurerm_security_center_auto_provisioning.named_test_resource.id)}"
 }
 
 output "resource_id" {
-  value = azurerm_security_center_setting.named_test_resource.id
+  value = azurerm_security_center_auto_provisioning.named_test_resource.id
 }
 
 output "resource_name" {
-  value = var.setting_name
+  value = var.provision_name
 }
 
 output "subscription_id" {

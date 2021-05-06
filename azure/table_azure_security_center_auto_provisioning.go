@@ -12,17 +12,17 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
+func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_security_center_setting",
-		Description: "Azure Security Center Setting",
+		Name:        "azure_security_center_auto_provisioning",
+		Description: "Azure Security Center Auto Provisioning",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getSecurityCenterSetting,
+			Hydrate:           getSecurityCenterAutoProvisioning,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSecurityCenterSettings,
+			Hydrate: listSecurityCenterAutoProvisioning,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -42,9 +42,10 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "kind",
-				Description: "The kind of the settings string (DataExportSettings).",
+				Name:        "auto_provision",
+				Description: "Describes what kind of security agent provisioning action to take. Possible values include: AutoProvisionOn, AutoProvisionOff",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AutoProvisioningSettingProperties.AutoProvision"),
 			},
 
 			// Steampipe standard columns
@@ -74,30 +75,30 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
+	autoProvisioningClient.Authorizer = session.Authorizer
 
-	settingList, err := settingClient.List(ctx)
+	autoProvisioningList, err := autoProvisioningClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, setting := range settingList.Values() {
-		d.StreamListItem(ctx, setting)
+	for _, autoProvisioning := range autoProvisioningList.Values() {
+		d.StreamListItem(ctx, autoProvisioning)
 	}
 	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
-func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -105,13 +106,13 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
+	autoProvisioningClient.Authorizer = session.Authorizer
 
-	setting, err := settingClient.Get(ctx, name)
+	autoProvisioning, err := autoProvisioningClient.Get(ctx, name)
 	if err != nil {
 		return err, nil
 	}
 
-	return setting, nil
+	return autoProvisioning, nil
 }
