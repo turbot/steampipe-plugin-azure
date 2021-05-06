@@ -18,11 +18,11 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 		Description: "Azure Security Center Setting",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getSettingDetails,
+			Hydrate:           getSecurityCenterSetting,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSettingDetails,
+			Hydrate: listSecurityCenterSettings,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -74,7 +74,7 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSettingDetails(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -95,9 +95,9 @@ func listSettingDetails(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	return nil, nil
 }
 
-//// TABLE DEFINITION
+//// HYDRATE FUNCTIONS
 
-func getSettingDetails(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

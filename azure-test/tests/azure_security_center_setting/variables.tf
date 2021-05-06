@@ -17,6 +17,12 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
+variable "setting_name" {
+  type        = string
+  default     = "MCAS"
+  description = "Name of the resource."
+}
+
 provider "azurerm" {
   # Cannot be passed as a variable
   version = "=2.43.0"
@@ -35,7 +41,7 @@ data "null_data_source" "resource" {
 
 resource "azurerm_security_center_setting" "named_test_resource" {
   #expected setting_name to be one of [MCAS WDATP]
-  setting_name = "MCAS"
+  setting_name = var.setting_name
   enabled      = true
 }
 
@@ -52,7 +58,7 @@ output "resource_id" {
 }
 
 output "resource_name" {
-  value = "MCAS"
+  value = var.setting_name
 }
 
 output "subscription_id" {
