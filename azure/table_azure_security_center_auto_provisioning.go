@@ -17,9 +17,8 @@ func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 		Name:        "azure_security_center_auto_provisioning",
 		Description: "Azure Security Center Auto Provisioning",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getSecurityCenterAutoProvisioning,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getSecurityCenterAutoProvisioning,
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterAutoProvisioning,
@@ -28,7 +27,7 @@ func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 			{
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
-				Description: "The resource Id.",
+				Description: "The resource id.",
 				Transform:   transform.FromField("ID"),
 			},
 			{
