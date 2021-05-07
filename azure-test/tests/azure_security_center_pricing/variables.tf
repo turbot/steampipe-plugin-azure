@@ -39,19 +39,19 @@ resource "azurerm_security_center_subscription_pricing" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_security_center_contact.named_test_resource.id}"
+  value = "azure://${azurerm_security_center_subscription_pricing.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_security_center_contact.named_test_resource.id)}"
+  value = "azure://${lower(azurerm_security_center_subscription_pricing.named_test_resource.id)}"
 }
 
 output "resource_id" {
-  value = azurerm_security_center_contact.named_test_resource.id
+  value = azurerm_security_center_subscription_pricing.named_test_resource.id
 }
 
 output "resource_name" {
-  value = element(split("/", azurerm_security_center_contact.named_test_resource.id), 6)
+  value = element(split("/", azurerm_security_center_subscription_pricing.named_test_resource.id), 6)
 }
 
 output "subscription_id" {

@@ -1,3 +1,3 @@
 select name, id, type
-from azure.azure_security_center_contact
-where name = '{{ output.resource_name.value }}';
+from azure.azure_security_center_pricing
+where name = 'default';
