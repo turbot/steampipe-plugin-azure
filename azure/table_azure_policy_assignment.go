@@ -21,7 +21,7 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 			Hydrate:    getPolicyAssignment,
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listPolicyAssignment,
+			Hydrate: listPolicyAssignments,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -90,7 +90,7 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listPolicyAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
