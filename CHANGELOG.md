@@ -1,3 +1,19 @@
+## v0.7.0 [2021-05-06]
+
+_What's new?_
+
+- New tables added
+  - [azure_kubernetes_cluster](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_kubernetes_cluster) ([#83](https://github.com/turbot/steampipe-plugin-azure/pull/83))
+
+_Enhancements_
+
+- Updated: Add `identity` column to `azure_app_service_web_app` table ([#90](https://github.com/turbot/steampipe-plugin-azure/pull/90))
+- Updated: Add `os_disk_vhd_uri` column to `azure_compute_virtual_machine` table ([#88](https://github.com/turbot/steampipe-plugin-azure/pull/88))
+
+_Bug fixes_
+
+- Fixed: The get calls in the `azure_key_vault_secret` table should not fail for disabled secrets ([#111](https://github.com/turbot/steampipe-plugin-azure/pull/111))
+
 ## v0.6.0 [2021-04-29]
 
 _What's new?_
