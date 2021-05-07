@@ -33,11 +33,9 @@ data "null_data_source" "resource" {
   }
 }
 
-resource "azurerm_security_center_contact" "named_test_resource" {
-  email               = "contact@example.com"
-  phone               = "+1-555-555-5555"
-  alert_notifications = true
-  alerts_to_admins    = true
+resource "azurerm_security_center_subscription_pricing" "named_test_resource" {
+  tier          = "Free"
+  resource_type = "VirtualMachines"
 }
 
 output "resource_aka" {

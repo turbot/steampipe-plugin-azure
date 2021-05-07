@@ -12,16 +12,16 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
+func tableAzureSecurityCenterPricing(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_security_center_contact",
-		Description: "Azure Security Center Contact",
+		Name:        "azure_security_center_pricing",
+		Description: "Azure Security Center Pricing",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
-			Hydrate:    getSecurityCenterContact,
+			Hydrate:    getSecurityCenterPricing,
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSecurityCenterContacts,
+			Hydrate: listSecurityCenterPricings,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -41,28 +41,10 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "email",
-				Description: "The email of this security contact.",
+				Name:        "pricing_tier",
+				Description: "Pricing tier type. Possible values include: 'Free', 'Standard'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.Email"),
-			},
-			{
-				Name:        "phone",
-				Description: "The phone number of this security contact.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.Phone"),
-			},
-			{
-				Name:        "alert_notifications",
-				Description: "Whether to send security alerts notifications to the security contact.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.AlertNotifications"),
-			},
-			{
-				Name:        "alerts_to_admins",
-				Description: "Whether to send security alerts notifications to subscription admins.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.AlertsToAdmins"),
+				Transform:   transform.FromField("PricingProperties.PricingTier"),
 			},
 
 			// Steampipe standard columns
@@ -92,30 +74,30 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClient(subscriptionID, "")
-	contactClient.Authorizer = session.Authorizer
+	pricingClient := security.NewPricingsClient(subscriptionID, "")
+	pricingClient.Authorizer = session.Authorizer
 
-	contactList, err := contactClient.List(ctx)
+	pricingList, err := pricingClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, contact := range contactList.Values() {
-		d.StreamListItem(ctx, contact)
+	for _, pricing := range pricingList.Values() {
+		d.StreamListItem(ctx, pricing)
 	}
 	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
-func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getSecurityCenterPricing(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -123,13 +105,13 @@ func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClient(subscriptionID, "")
-	contactClient.Authorizer = session.Authorizer
+	pricingClient := security.NewPricingsClient(subscriptionID, "")
+	pricingClient.Authorizer = session.Authorizer
 
-	contact, err := contactClient.Get(ctx, name)
+	pricing, err := pricingClient.GetSubscriptionPricing(ctx, name)
 	if err != nil {
 		return err, nil
 	}
 
-	return contact, nil
+	return pricing, nil
 }
