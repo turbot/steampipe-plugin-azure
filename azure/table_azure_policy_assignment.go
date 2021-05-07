@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -12,38 +12,55 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
+func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_security_center_setting",
-		Description: "Azure Security Center Setting",
+		Name:        "azure_policy_assignment",
+		Description: "Azure Policy Assignment",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
-			Hydrate:    getSecurityCenterSetting,
+			Hydrate:    getPolicyAssignment,
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSecurityCenterSettings,
+			Hydrate: listPolicyAssignment,
 		},
 		Columns: []*plugin.Column{
 			{
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
-				Description: "The resource id.",
+				Description: "The ID of the policy assignment.",
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "name",
-				Description: "The resource name.",
+				Description: "The name of the policy assignment.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
-				Description: "The resource type.",
+				Description: "The type of the policy assignment.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "kind",
-				Description: "The kind of the settings string (DataExportSettings).",
+				Name:        "sku_name",
+				Description: "The name of the policy sku.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Name"),
+			},
+			{
+				Name:        "sku_tier",
+				Description: "The policy sku tier.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Tier").Transform(transform.ToString),
+			},
+			{
+				Name:        "assignment_properties",
+				Description: "Properties for the policy assignment.",
+				Type:        proto.ColumnType_JSON,
+			},
+			{
+				Name:        "identity",
+				Description: "The managed identity associated with the policy assignment.",
+				Type:        proto.ColumnType_JSON,
 			},
 
 			// Steampipe standard columns
@@ -73,30 +90,31 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
+	PolicyClient.Authorizer = session.Authorizer
 
-	settingList, err := settingClient.List(ctx)
+	policyList, err := PolicyClient.List(ctx, "")
 	if err != nil {
 		return err, nil
 	}
 
-	for _, setting := range settingList.Values() {
-		d.StreamListItem(ctx, setting)
+	for _, policy := range policyList.Values() {
+		d.StreamListItem(ctx, policy)
 	}
+
 	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
-func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -104,13 +122,13 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
+	PolicyClient.Authorizer = session.Authorizer
 
-	setting, err := settingClient.Get(ctx, name)
+	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, name)
 	if err != nil {
 		return err, nil
 	}
 
-	return setting, nil
+	return policy, nil
 }
