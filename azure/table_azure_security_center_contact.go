@@ -12,16 +12,16 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
+func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_security_center_setting",
-		Description: "Azure Security Center Setting",
+		Name:        "azure_security_center_contact",
+		Description: "Azure Security Center Contact",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
-			Hydrate:    getSecurityCenterSetting,
+			Hydrate:    getSecurityCenterContact,
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSecurityCenterSettings,
+			Hydrate: listSecurityCenterContacts,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -41,9 +41,28 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "kind",
-				Description: "The kind of the settings string (DataExportSettings).",
+				Name:        "email",
+				Description: "The email of this security contact.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.Email"),
+			},
+			{
+				Name:        "phone",
+				Description: "The phone number of this security contact.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.Phone"),
+			},
+			{
+				Name:        "alert_notifications",
+				Description: "Whether to send security alerts notifications to the security contact.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.AlertNotifications"),
+			},
+			{
+				Name:        "alerts_to_admins",
+				Description: "Whether to send security alerts notifications to subscription admins.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.AlertsToAdmins"),
 			},
 
 			// Steampipe standard columns
@@ -73,30 +92,30 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	contactClient := security.NewContactsClient(subscriptionID, "")
+	contactClient.Authorizer = session.Authorizer
 
-	settingList, err := settingClient.List(ctx)
+	contactList, err := contactClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, setting := range settingList.Values() {
-		d.StreamListItem(ctx, setting)
+	for _, contact := range contactList.Values() {
+		d.StreamListItem(ctx, contact)
 	}
 	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
-func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -104,13 +123,13 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClient(subscriptionID, "")
-	settingClient.Authorizer = session.Authorizer
+	contactClient := security.NewContactsClient(subscriptionID, "")
+	contactClient.Authorizer = session.Authorizer
 
-	setting, err := settingClient.Get(ctx, name)
+	contact, err := contactClient.Get(ctx, name)
 	if err != nil {
 		return err, nil
 	}
 
-	return setting, nil
+	return contact, nil
 }

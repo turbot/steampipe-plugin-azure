@@ -17,12 +17,6 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
-variable "setting_name" {
-  type        = string
-  default     = "MCAS"
-  description = "Name of the resource."
-}
-
 provider "azurerm" {
   # Cannot be passed as a variable
   version = "=2.43.0"
@@ -39,26 +33,27 @@ data "null_data_source" "resource" {
   }
 }
 
-resource "azurerm_security_center_setting" "named_test_resource" {
-  #expected setting_name to be one of [MCAS WDATP]
-  setting_name = var.setting_name
-  enabled      = true
+resource "azurerm_security_center_contact" "named_test_resource" {
+  email               = "contact@example.com"
+  phone               = "+1-555-555-5555"
+  alert_notifications = true
+  alerts_to_admins    = true
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_security_center_setting.named_test_resource.id}"
+  value = "azure://${azurerm_security_center_contact.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_security_center_setting.named_test_resource.id)}"
+  value = "azure://${lower(azurerm_security_center_contact.named_test_resource.id)}"
 }
 
 output "resource_id" {
-  value = azurerm_security_center_setting.named_test_resource.id
+  value = azurerm_security_center_contact.named_test_resource.id
 }
 
 output "resource_name" {
-  value = var.setting_name
+  value = element(split("/", azurerm_security_center_contact.named_test_resource.id), 6)
 }
 
 output "subscription_id" {
