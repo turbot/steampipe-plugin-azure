@@ -28,7 +28,7 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
 				Description: "The resource id.",
-				Transform:   transform.FromField("ID"),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "name",
