@@ -17,12 +17,6 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
-variable "provision_name" {
-  type        = string
-  default     = "default"
-  description = "Name of the resource."
-}
-
 provider "azurerm" {
   # Cannot be passed as a variable
   version = "=2.43.0"
@@ -56,7 +50,7 @@ output "resource_id" {
 }
 
 output "resource_name" {
-  value = var.provision_name
+  value = element(split("/", azurerm_security_center_auto_provisioning.named_test_resource.id), 6)
 }
 
 output "subscription_id" {
