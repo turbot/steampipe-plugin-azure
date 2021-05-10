@@ -16,7 +16,7 @@ from
   azure_storage_container;
 ```
 
-### List containers which are not publicly accessible
+### List containers which are publicly accessible
 
 ```sql
 select
@@ -28,7 +28,7 @@ select
 from
   azure_storage_container
 where
-  public_access = 'None';
+  public_access <> 'None';
 ```
 
 ### List containers with legal hold enabled
