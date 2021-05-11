@@ -36,6 +36,24 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "display_name",
+				Description: "The display name of the policy assignment.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.DisplayName"),
+			},
+			{
+				Name:        "policy_definition_id",
+				Description: "The ID of the policy definition or policy set definition being assigned.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.PolicyDefinitionID"),
+			},
+			{
+				Name:        "scope",
+				Description: "The scope for the policy assignment.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.Scope"),
+			},
+			{
 				Name:        "type",
 				Description: "The type of the policy assignment.",
 				Type:        proto.ColumnType_STRING,
@@ -53,9 +71,34 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Tier").Transform(transform.ToString),
 			},
 			{
-				Name:        "assignment_properties",
-				Description: "Properties for the policy assignment.",
+				Name:        "enforcement_mode",
+				Description: "The policy assignment enforcement mode. Possible values are Default and DoNotEnforce.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.EnforcementMode"),
+			},
+			{
+				Name:        "description",
+				Description: "This message will be part of response in case of policy violation.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.Description"),
+			},
+			{
+				Name:        "parameters",
+				Description: "The parameter values for the assigned policy rule.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AssignmentProperties.Parameters"),
+			},
+			{
+				Name:        "not_scopes",
+				Description: "The policy's excluded scopes.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AssignmentProperties.NotScopes"),
+			},
+			{
+				Name:        "metadata",
+				Description: "The policy assignment metadata.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AssignmentProperties.Metadata"),
 			},
 			{
 				Name:        "identity",
