@@ -42,7 +42,7 @@ func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "auto_provision",
-				Description: "Describes what kind of security agent provisioning action to take. Possible values include: AutoProvisionOn, AutoProvisionOff",
+				Description: "Describes what kind of security agent provisioning action to take. Possible values include: On, Off",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AutoProvisioningSettingProperties.AutoProvision"),
 			},
