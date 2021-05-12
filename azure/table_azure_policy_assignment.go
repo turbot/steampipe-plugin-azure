@@ -48,15 +48,22 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("AssignmentProperties.PolicyDefinitionID"),
 			},
 			{
+				Name:        "description",
+				Description: "This message will be part of response in case of policy violation.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.Description"),
+			},
+			{
+				Name:        "enforcement_mode",
+				Description: "The policy assignment enforcement mode. Possible values are Default and DoNotEnforce.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AssignmentProperties.EnforcementMode"),
+			},
+			{
 				Name:        "scope",
 				Description: "The scope for the policy assignment.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AssignmentProperties.Scope"),
-			},
-			{
-				Name:        "type",
-				Description: "The type of the policy assignment.",
-				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "sku_name",
@@ -71,28 +78,14 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Tier").Transform(transform.ToString),
 			},
 			{
-				Name:        "enforcement_mode",
-				Description: "The policy assignment enforcement mode. Possible values are Default and DoNotEnforce.",
+				Name:        "type",
+				Description: "The type of the policy assignment.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("AssignmentProperties.EnforcementMode"),
 			},
 			{
-				Name:        "description",
-				Description: "This message will be part of response in case of policy violation.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("AssignmentProperties.Description"),
-			},
-			{
-				Name:        "parameters",
-				Description: "The parameter values for the assigned policy rule.",
+				Name:        "identity",
+				Description: "The managed identity associated with the policy assignment.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AssignmentProperties.Parameters"),
-			},
-			{
-				Name:        "not_scopes",
-				Description: "The policy's excluded scopes.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AssignmentProperties.NotScopes"),
 			},
 			{
 				Name:        "metadata",
@@ -101,9 +94,16 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("AssignmentProperties.Metadata"),
 			},
 			{
-				Name:        "identity",
-				Description: "The managed identity associated with the policy assignment.",
+				Name:        "not_scopes",
+				Description: "The policy's excluded scopes.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AssignmentProperties.NotScopes"),
+			},
+			{
+				Name:        "parameters",
+				Description: "The parameter values for the assigned policy rule.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AssignmentProperties.Parameters"),
 			},
 
 			// Steampipe standard columns
