@@ -5,7 +5,7 @@ icon_url: "/images/plugins/turbot/azure.svg"
 brand_color: "#0089D6"
 display_name: "Azure"
 name: "azure"
-description: "Steampipe plugin for 30+ Azure services and resource types."
+description: "Steampipe plugin for querying resource groups, virtual machines, storage accounts and more from Azure."
 og_description: Query Azure with SQL! Open source CLI. No DB required. 
 og_image: "/images/plugins/turbot/azure-social-graphic.png"
 ---

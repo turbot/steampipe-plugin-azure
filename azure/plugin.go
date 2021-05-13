@@ -64,6 +64,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_role_definition":                   tableAzureIamRoleDefinition(ctx),
 			"azure_route_table":                       tableAzureRouteTable(ctx),
 			"azure_security_center_auto_provisioning": tableAzureSecurityCenterAutoProvisioning(ctx),
+			"azure_security_center_contact":           tableAzureSecurityCenterContact(ctx),
 			"azure_sql_database":                      tableAzureSqlDatabase(ctx),
 			"azure_sql_server":                        tableAzureSQLServer(ctx),
 			"azure_storage_account":                   tableAzureStorageAccount(ctx),
@@ -74,8 +75,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_storage_table_service":             tableAzureStorageTableService(ctx),
 			"azure_subnet":                            tableAzureSubnet(ctx),
 			"azure_virtual_network":                   tableAzureVirtualNetwork(ctx),
-			// "azure_storage_blob":                tableAzureStorageBlob(ctx),
-			// "azure_storage_table":               tableAzureStorageTable(ctx),
+			// "azure_storage_blob":                   tableAzureStorageBlob(ctx),
+			// "azure_storage_table":                  tableAzureStorageTable(ctx),
 		},
 	}
 
