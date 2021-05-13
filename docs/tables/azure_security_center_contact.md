@@ -1,6 +1,6 @@
 # Table: azure_security_center_contact
 
-Azure security center contact configurations for the subscription.
+Azure security center contact details for the subscription.
 
 ## Examples
 
@@ -16,7 +16,7 @@ from
   azure_security_center_contact;
 ```
 
-### Ensure security contact email configured for the subscription
+### List security center contacts not configured with email notifications
 
 ```sql
 select
