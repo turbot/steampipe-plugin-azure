@@ -1,6 +1,6 @@
 # Table: azure_security_center_auto_provisioning
 
-Azure security center auto provisioning settings exposes the auto provisioning settings of the subscriptions.
+Azure security center auto provisioning settings expose the auto provisioning settings of the subscriptions.
 
 ## Examples
 
@@ -16,7 +16,7 @@ from
   azure_security_center_auto_provisioning;
 ```
 
-### Ensure that Automatic provisioning of monitoring agent is set to On
+### List subscriptions that have automatic provisioning of VM monitoring agent enabled
 
 ```sql
 select
