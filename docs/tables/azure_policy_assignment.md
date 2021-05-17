@@ -1,6 +1,6 @@
 # Table: azure_policy_assignment
 
-Azure policy assignment retrieves the information of all policy assignments associated with the given subscription.
+Policy assignments are used by Azure Policy to define which resources are assigned which policies or initiatives in a subscription.
 
 ## Examples
 
@@ -16,7 +16,7 @@ from
   azure_policy_assignment;
 ```
 
-### Policy assignment status for sqlAuditingMonitoringEffect parameter
+### Get SQL auditing and threat detection monitoring status for the subscription
 
 ```sql
 select
@@ -28,7 +28,7 @@ from
   azure_policy_assignment;
 ```
 
-### Policy assignment status for sqlEncryptionMonitoringEffect parameter
+### Get SQL encryption monitoring status for the subscription
 
 ```sql
 select
