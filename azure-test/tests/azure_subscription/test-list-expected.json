@@ -1,0 +1,6 @@
+[
+  {
+    "display_name": "{{ output.current_subscription_display_name.value }}",
+    "subscription_id": "{{ output.subscription_id.value }}"
+  }
+]

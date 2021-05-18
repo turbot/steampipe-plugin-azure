@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	azure_sub "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-01-01/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -51,11 +51,6 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("State").Transform(transform.ToString),
 			},
 			{
-				Name:        "subscription_policies",
-				Description: "The subscription policies.",
-				Type:        proto.ColumnType_JSON,
-			},
-			{
 				Name:        "authorization_source",
 				Description: "The authorization source of the request. Valid values are one or more combinations of Legacy, RoleBased, Bypassed, Direct and Management. For example, 'Legacy, RoleBased'.",
 				Type:        proto.ColumnType_STRING,
@@ -66,8 +61,8 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 			{
-				Name:        "tags",
-				Description: "The tags attached to the subscription.",
+				Name:        "subscription_policies",
+				Description: "The subscription policies.",
 				Type:        proto.ColumnType_JSON,
 			},
 
@@ -96,8 +91,9 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		return nil, err
 	}
 
-	client := azure_sub.NewClient()
+	client := subscriptions.NewClient()
 	client.Authorizer = session.Authorizer
+	subscriptionID := session.SubscriptionID
 
 	pagesLeft := true
 	for pagesLeft {
@@ -105,9 +101,11 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		if err != nil {
 			return nil, err
 		}
-
 		for _, subscription := range result.Values() {
-			d.StreamListItem(ctx, subscription)
+			// Filtering the response to return only for the subscription which is used
+			if subscriptionID == *subscription.SubscriptionID {
+				d.StreamListItem(ctx, subscription)
+			}
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
