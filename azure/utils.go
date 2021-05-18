@@ -10,10 +10,13 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
-//// TRANSFORM FUNCTION ////
+//// TRANSFORM FUNCTIONS
 
 func idToSubscriptionID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	id := types.SafeString(d.Value)
+	if len(id) == 0 {
+		return nil, nil
+	}
 	subscriptionid := strings.Split(id, "/")[2]
 	return subscriptionid, nil
 }
