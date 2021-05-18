@@ -33,7 +33,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_blob",
 		Description: "Azure Storage Blob",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name", "region"}),
+			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name"}),
 			Hydrate:    listStorageBlobs,
 		},
 		Columns: []*plugin.Column{
@@ -346,7 +346,23 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-	region := d.KeyColumnQuals["region"].GetStringValue()
+
+	if accountName == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
+	//Get storage account location
+	accountClient := storage.NewAccountsClient(subscriptionID)
+	accountClient.Authorizer = session.Authorizer
+
+	op, err := accountClient.GetProperties(ctx, resourceGroup, accountName, "")
+	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") || strings.Contains(err.Error(), "ResourceGroupNotFound") {
+			return nil, nil
+		}
+		return nil, err
+	}
+	region := *op.Location
 
 	// List storage account keys
 	storageClient := storage.NewAccountsClient(subscriptionID)
