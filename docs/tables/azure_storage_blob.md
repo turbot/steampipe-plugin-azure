@@ -15,7 +15,11 @@ select
   type,
   is_snapshot
 from
-  azure_storage_blob;
+  azure_storage_blob
+where
+  resource_group = '*****'
+  and storage_account_name = '*****'
+  and region = '*****';
 ```
 
 ### List all the blobs of the type snapshot with import data
@@ -35,5 +39,8 @@ select
 from
   azure_storage_blob
 where
-  is_snapshot;
+  resource_group = '*****'
+  and storage_account_name = '*****'
+  and region = '*****'
+  and is_snapshot;
 ```
