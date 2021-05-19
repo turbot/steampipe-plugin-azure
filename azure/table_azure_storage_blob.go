@@ -351,7 +351,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		return nil, nil
 	}
 
-	//Get storage account location
+	// Get storage account location
 	accountClient := storage.NewAccountsClient(subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
@@ -419,7 +419,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	for item := range blobCh {
 		for _, data := range item {
-			d.StreamLeafListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
+			d.StreamListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
 		}
 	}
 

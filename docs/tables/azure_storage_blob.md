@@ -17,9 +17,9 @@ select
 from
   azure_storage_blob
 where
-  resource_group = '*****'
-  and storage_account_name = '*****'
-  and region = '*****';
+  resource_group = 'turbot'
+  and storage_account_name = 'test'
+  and region = 'eastus';
 ```
 
 ### List all the blobs of the type snapshot with import data
@@ -39,8 +39,8 @@ select
 from
   azure_storage_blob
 where
-  resource_group = '*****'
-  and storage_account_name = '*****'
-  and region = '*****'
+  resource_group = 'turbot'
+  and storage_account_name = 'test'
+  and region = 'eastus'
   and is_snapshot;
 ```
