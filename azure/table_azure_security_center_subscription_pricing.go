@@ -69,7 +69,7 @@ func tableAzureSecurityCenterPricing(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// // Azure standard columns
+			// Azure standard columns
 			{
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
