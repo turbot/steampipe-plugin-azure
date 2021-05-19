@@ -1,3 +1,16 @@
+## v0.8.0 [2021-05-13]
+
+_What's new?_
+
+- New tables added
+  - [azure_security_center_auto_provisioning](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_auto_provisioning) ([#117](https://github.com/turbot/steampipe-plugin-azure/pull/117))
+  - [azure_security_center_contact](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_contact) ([#121](https://github.com/turbot/steampipe-plugin-azure/pull/121))
+
+_Enhancements_
+
+- Updated: README.md and docs/index.md now contain links to our Slack community ([#129](https://github.com/turbot/steampipe-plugin-azure/pull/129))
+- Updated: Bump lodash from 4.17.20 to 4.17.21 in /azure-test ([#126](https://github.com/turbot/steampipe-plugin-azure/pull/126))
+
 ## v0.7.0 [2021-05-06]
 
 _What's new?_

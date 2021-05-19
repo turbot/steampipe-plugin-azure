@@ -6,15 +6,15 @@ brand_color: "#0089D6"
 display_name: "Azure"
 name: "azure"
 description: "Steampipe plugin for querying resource groups, virtual machines, storage accounts and more from Azure."
-og_description: Query Azure with SQL! Open source CLI. No DB required. 
+og_description: "Query Azure with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/azure-social-graphic.png"
 ---
 
 # Azure + Steampipe
 
-[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
-
 [Azure](https://azure.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis. 
+
+[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
 
 For example:
 
@@ -75,4 +75,4 @@ connection "azure_sub_000000" {
 ## Get involved
 
 * Open source: https://github.com/turbot/steampipe-plugin-azure
-* Community: [Discussion forums](https://github.com/turbot/steampipe/discussions)
+* Community: [Slack Channel](https://join.slack.com/t/steampipe/shared_invite/zt-oij778tv-lYyRTWOTMQYBVAbtPSWs3g)
