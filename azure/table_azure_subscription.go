@@ -95,21 +95,11 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	client.Authorizer = session.Authorizer
 	subscriptionID := session.SubscriptionID
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, subscription := range result.Values() {
-			// Filtering the response to return only for the subscription which is used
-			if subscriptionID == *subscription.SubscriptionID {
-				d.StreamListItem(ctx, subscription)
-			}
-		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+	op, err := client.Get(ctx, subscriptionID)
+	if err != nil {
+		return nil, err
 	}
+	d.StreamListItem(ctx, op)
 
-	return nil, err
+	return nil, nil
 }
