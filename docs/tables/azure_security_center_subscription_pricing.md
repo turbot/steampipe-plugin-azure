@@ -15,7 +15,7 @@ from
   azure_security_center_subscription_pricing;
 ```
 
-### Get pricing tier for VirtualMachines
+### List pricing information for virtual machines
 
 ```sql
 select
