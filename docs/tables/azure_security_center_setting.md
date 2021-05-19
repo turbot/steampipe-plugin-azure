@@ -27,7 +27,8 @@ select
 from
   azure_security_center_setting
 where
-  name = 'MCAS';
+  name = 'MCAS'
+  and enabled;
 ```
 
 ### Ensure that Windows Defender ATP (WDATP) integration with Security Center is selected
@@ -41,5 +42,6 @@ select
 from
   azure_security_center_setting
 where
-  name = 'WDATP';
+  name = 'WDATP'
+  and enabled;
 ```

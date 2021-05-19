@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v3.0/security"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -34,6 +34,12 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "The resource name.",
 				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "enabled",
+				Description: "The resource name.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DataExportSettingProperties.Enabled"),
 			},
 			{
 				Name:        "type",
@@ -112,5 +118,5 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 		return err, nil
 	}
 
-	return setting, nil
+	return setting.Value, nil
 }
