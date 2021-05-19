@@ -37,7 +37,7 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "enabled",
-				Description: "The resource name.",
+				Description: "Data export setting status.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DataExportSettingProperties.Enabled"),
 			},
