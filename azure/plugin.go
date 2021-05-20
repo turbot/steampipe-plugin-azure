@@ -77,6 +77,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_storage_table":                        tableAzureStorageTable(ctx),
 			"azure_storage_table_service":                tableAzureStorageTableService(ctx),
 			"azure_subnet":                               tableAzureSubnet(ctx),
+			"azure_subscription":                         tableAzureSubscription(ctx),
 			"azure_virtual_network":                      tableAzureVirtualNetwork(ctx),
 			// "azure_storage_blob":                tableAzureStorageBlob(ctx),
 			// "azure_storage_table":               tableAzureStorageTable(ctx),
