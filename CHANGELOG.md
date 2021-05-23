@@ -1,3 +1,13 @@
+## v0.9.0 [2021-05-20]
+
+_What's new?_
+
+- New tables added
+  - [azure_policy_assignment](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_policy_assignment) ([#123](https://github.com/turbot/steampipe-plugin-azure/pull/123))
+  - [azure_security_center_setting](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_setting) ([#115](https://github.com/turbot/steampipe-plugin-azure/pull/115))
+  - [azure_security_center_subscription_pricing](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_subscription_pricing) ([#135](https://github.com/turbot/steampipe-plugin-azure/pull/135))
+  - [azure_subscription](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_subscription) ([#132](https://github.com/turbot/steampipe-plugin-azure/pull/132))
+
 ## v0.8.0 [2021-05-13]
 
 _What's new?_
