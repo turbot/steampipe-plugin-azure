@@ -241,7 +241,7 @@ func getSubscriptionFromCLI(resource string) (*subscription, error) {
 
 	output, err := cliCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("Invoking Azure CLI failed with the following error: %v", stderr)
+		return nil, fmt.Errorf("Invoking Azure CLI failed with the following error: %v", err)
 	}
 
 	var tokenResponse map[string]interface{}
