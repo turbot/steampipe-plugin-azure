@@ -18,7 +18,7 @@ from
   azure_storage_blob
 where
   resource_group = 'turbot'
-  and storage_account_name = 'test'
+  and storage_account_name = 'mystorageaccount'
   and region = 'eastus';
 ```
 
@@ -40,7 +40,7 @@ from
   azure_storage_blob
 where
   resource_group = 'turbot'
-  and storage_account_name = 'test'
+  and storage_account_name = 'mystorageaccount'
   and region = 'eastus'
   and is_snapshot;
 ```
