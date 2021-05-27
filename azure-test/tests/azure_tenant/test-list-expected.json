@@ -1,0 +1,7 @@
+[
+  {
+    "display_name": null,
+    "name": "{{ output.current_tenant_display_name.value }}",
+    "tenant_id": "{{ output.tenant_id.value }}"
+  }
+]
