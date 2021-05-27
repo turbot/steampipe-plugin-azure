@@ -1,3 +1,15 @@
+## v0.10.0 [2021-05-27]
+
+_What's new?_
+
+- Updated plugin license to Apache 2.0 per [turbot/steampipe#488](https://github.com/turbot/steampipe/issues/488)
+- New tables added
+  - [azure_storage_blob](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_storage_blob) ([#133](https://github.com/turbot/steampipe-plugin-azure/pull/133))
+
+_Bug fixes_
+
+- Fixed: Improved error messages when we fail to get credentials from the Azure CLI ([#137](https://github.com/turbot/steampipe-plugin-azure/pull/137))
+
 ## v0.9.0 [2021-05-20]
 
 _What's new?_
