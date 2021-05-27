@@ -85,3 +85,7 @@ output "subscription_id" {
 output "resource_id" {
   value = azurerm_storage_blob.named_test_resource.id
 }
+
+output "location" {
+  value = azurerm_storage_account.named_test_resource.location
+}

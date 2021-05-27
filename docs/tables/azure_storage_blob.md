@@ -4,7 +4,7 @@ Azure Blob Storage helps you create data lakes for your analytics needs and prov
 
 ## Examples
 
-### Get basic info for all the blobs
+### Basic info
 
 ```sql
 select
@@ -15,10 +15,14 @@ select
   type,
   is_snapshot
 from
-  azure_storage_blob;
+  azure_storage_blob
+where
+  resource_group = 'turbot'
+  and storage_account_name = 'mystorageaccount'
+  and region = 'eastus';
 ```
 
-### List all the blobs of the type snapshot with import data
+### List snapshot type blobs with import data
 
 ```sql
 select
@@ -35,5 +39,8 @@ select
 from
   azure_storage_blob
 where
-  is_snapshot;
+  resource_group = 'turbot'
+  and storage_account_name = 'mystorageaccount'
+  and region = 'eastus'
+  and is_snapshot;
 ```

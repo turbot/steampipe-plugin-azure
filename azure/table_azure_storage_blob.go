@@ -18,11 +18,11 @@ import (
 type blobInfo = struct {
 	Blob           azblob.BlobItemInternal
 	Name           string
-	Account        *string
+	Account        string
 	Container      *string
-	ResourceGroup  *string
+	ResourceGroup  string
 	SubscriptionID *string
-	Location       *string
+	Location       string
 	IsSnapshot     bool
 }
 
@@ -33,8 +33,8 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_blob",
 		Description: "Azure Storage Blob",
 		List: &plugin.ListConfig{
-			ParentHydrate: listStorageAccounts,
-			Hydrate:       listStorageBlobs,
+			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name"}),
+			Hydrate:    listStorageBlobs,
 		},
 		Columns: []*plugin.Column{
 			// Basic info
@@ -338,24 +338,41 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	// Get the details of storage account
-	account := h.Item.(*storageAccountInfo)
-
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
+	accountName := d.KeyColumnQuals["storage_account_name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	if accountName == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
+	// Get storage account location
+	accountClient := storage.NewAccountsClient(subscriptionID)
+	accountClient.Authorizer = session.Authorizer
+
+	op, err := accountClient.GetProperties(ctx, resourceGroup, accountName, "")
+	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") || strings.Contains(err.Error(), "ResourceGroupNotFound") {
+			return nil, nil
+		}
+		return nil, err
+	}
+	region := *op.Location
+
 	// List storage account keys
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
-	keys, err := storageClient.ListKeys(ctx, *account.ResourceGroup, *account.Name, "")
+	keys, err := storageClient.ListKeys(ctx, resourceGroup, accountName, "")
 	if err != nil {
 		return nil, err
 	}
 
-	credential, errC := azblob.NewSharedKeyCredential(*account.Account.Name, *(*(keys.Keys))[0].Value)
+	credential, errC := azblob.NewSharedKeyCredential(accountName, *(*(keys.Keys))[0].Value)
 	if errC != nil {
 		return nil, errC
 	}
@@ -366,7 +383,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	var containers []storage.ListContainerItem
 	pagesLeft := true
 	for pagesLeft {
-		containerList, err := containerClient.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
+		containerList, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
 		if err != nil {
 			return nil, err
 		}
@@ -385,7 +402,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// Iterating all the available containers
 	for _, item := range containers {
 		wg.Add(1)
-		go getRowDataForBlobAsync(ctx, item, account, credential, &wg, blobCh, errorCh)
+		go getRowDataForBlobAsync(ctx, item, accountName, credential, &wg, blobCh, errorCh)
 	}
 
 	// wait for all containers to be processed
@@ -402,17 +419,17 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	for item := range blobCh {
 		for _, data := range item {
-			d.StreamLeafListItem(ctx, &blobInfo{data.Blob, data.Name, account.Name, data.Container, account.ResourceGroup, &subscriptionID, account.Account.Location, data.IsSnapshot})
+			d.StreamListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
 		}
 	}
 
 	return nil, err
 }
 
-func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem, account *storageAccountInfo, credential *azblob.SharedKeyCredential, wg *sync.WaitGroup, subnetCh chan []blobInfo, errorCh chan error) {
+func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem, accountName string, credential *azblob.SharedKeyCredential, wg *sync.WaitGroup, subnetCh chan []blobInfo, errorCh chan error) {
 	defer wg.Done()
 
-	rowData, err := getRowDataForBlob(ctx, item, account, credential)
+	rowData, err := getRowDataForBlob(ctx, item, accountName, credential)
 	if err != nil {
 		errorCh <- err
 	} else if rowData != nil {
@@ -421,8 +438,8 @@ func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem,
 }
 
 // List all the available blobs
-func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, account *storageAccountInfo, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
-	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", *account.Name))
+func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, accountName string, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
+	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", accountName))
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	// Create Service URL
@@ -462,7 +479,7 @@ func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem,
 			if len(blob.Snapshot) < 1 {
 				isSnapshot = false
 			}
-			items = append(items, blobInfo{blob, blob.Name, account.Name, container.Name, account.ResourceGroup, &subscriptionID, account.Account.Location, isSnapshot})
+			items = append(items, blobInfo{blob, blob.Name, accountName, container.Name, "", &subscriptionID, "", isSnapshot})
 		}
 	}
 
@@ -475,7 +492,7 @@ func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, 
 	blob := d.HydrateItem.(*blobInfo)
 
 	// Build resource aka
-	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + *blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + *blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(*blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(*blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
+	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
 
 	return akas, nil
 }
