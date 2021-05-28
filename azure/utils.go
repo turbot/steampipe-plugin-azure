@@ -24,6 +24,15 @@ func idToSubscriptionID(ctx context.Context, d *transform.TransformData) (interf
 func idToAkas(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	id := types.SafeString(d.Value)
 	akas := []string{"azure://" + id, "azure://" + strings.ToLower(id)}
+	occured := map[string]bool{}
+	result := []string{}
+	for i := range akas {
+		if !occured[akas[i]] {
+			occured[akas[i]] = true
+			result = append(result, akas[i])
+		}
+	}
+	akas = result
 	return akas, nil
 }
 
