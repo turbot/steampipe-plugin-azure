@@ -122,7 +122,7 @@ func tableAzureFirewall(_ context.Context) *plugin.Table {
 				Name:        "ip_configurations",
 				Description: "A collection of IP configuration of the Azure Firewall resource",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(ipConfigurationData),
+				Transform:   transform.FromField("AzureFirewallPropertiesFormat.IPConfigurations"),
 			},
 			{
 				Name:        "ip_groups",
@@ -240,29 +240,4 @@ func getFirewall(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 
 	return nil, nil
-}
-
-//// Transform Functions
-
-func ipConfigurationData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(network.AzureFirewall)
-
-	var output []map[string]interface{}
-	for _, firewall := range *data.AzureFirewallPropertiesFormat.IPConfigurations {
-		objectMap := make(map[string]interface{})
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress != nil {
-			objectMap["privateIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress
-		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress != nil {
-			objectMap["publicIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress
-		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet != nil {
-			objectMap["subnet"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet
-		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState != "" {
-			objectMap["provisioningState"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState
-		}
-		output = append(output, objectMap)
-	}
-	return output, nil
 }
