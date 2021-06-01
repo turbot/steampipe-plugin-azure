@@ -11,7 +11,8 @@ select
   id,
   name,
   display_name,
-  type
+  type,
+  jsonb_pretty(policy_rule) as policy_rule
 from
   azure_policy_definition
 where
@@ -25,7 +26,8 @@ select
   id,
   name,
   display_name,
-  type
+  type,
+  jsonb_pretty(policy_rule) as policy_rule
 from
   azure_policy_definition
 where
