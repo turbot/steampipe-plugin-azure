@@ -15,11 +15,9 @@ select
   jsonb_pretty(policy_rule) as policy_rule
 from
   azure_policy_definition
-where
-  display_name = 'Private endpoint connections on Batch accounts should be enabled';
 ```
 
-### Get the policy definitions for a particular subscription
+### Get the policy definition by display name
 
 ```sql
 select
@@ -31,6 +29,5 @@ select
 from
   azure_policy_definition
 where
-  subscription_id = '3510ae4d-530b-497d-8f30-53b9616fc6c1';
+  display_name = 'Private endpoint connections on Batch accounts should be enabled';
 ```
-
