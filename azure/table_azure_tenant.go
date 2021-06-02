@@ -40,7 +40,7 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 			{
 				Name:        "tenant_category",
 				Type:        proto.ColumnType_STRING,
-				Description: "The tenant category. Possible values include: 'Home', 'ProjectedBy', 'ManagedBy'",
+				Description: "The tenant category. Possible values include: 'Home', 'ProjectedBy', 'ManagedBy'.",
 				Transform:   transform.FromField("TenantCategory").Transform(transform.ToString),
 			},
 			{
