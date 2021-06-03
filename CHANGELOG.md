@@ -1,3 +1,11 @@
+## v0.11.0 [2021-06-03]
+
+_What's new?_
+
+- New tables added
+  - [azure_policy_definition](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_policy_definition) ([#141](https://github.com/turbot/steampipe-plugin-azure/pull/141))
+  - [azure_tenant](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_tenant) ([#142](https://github.com/turbot/steampipe-plugin-azure/pull/142))
+
 ## v0.10.0 [2021-05-27]
 
 _What's new?_
