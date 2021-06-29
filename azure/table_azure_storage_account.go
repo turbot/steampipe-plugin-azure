@@ -346,6 +346,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.Encryption.Services"),
 			},
 			{
+				Name:        "lifecycle_management_policy",
+				Description: "The managementpolicy associated with the specified storage account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountLifecycleManagementPolicy,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "network_ip_rules",
 				Description: "A list of IP ACL rules.",
 				Type:        proto.ColumnType_JSON,
@@ -457,6 +464,43 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	return &storageAccountInfo{op, op.Name, &resourceGroup}, nil
+}
+
+func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient := storage.NewManagementPoliciesClient(subscriptionID)
+	storageClient.Authorizer = session.Authorizer
+
+	op, err := storageClient.Get(ctx, *accountData.ResourceGroup, *accountData.Name)
+	if err != nil {
+		if strings.Contains(err.Error(), "ManagementPolicyNotFound") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+		objectMap := make(map[string]interface{})
+		if op.ID != nil {
+			objectMap["id"] = op.ID
+		}
+		if op.Name != nil {
+			objectMap["name"] = op.Name
+		}
+		if op.Type != nil {
+			objectMap["type"] = op.Type
+		}
+		if op.ManagementPolicyProperties != nil {
+			objectMap["properties"] = op.ManagementPolicyProperties
+		}
+
+	return objectMap, nil
 }
 
 func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
