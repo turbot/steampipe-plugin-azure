@@ -371,7 +371,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.NetworkRuleSet.VirtualNetworkRules"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -390,6 +390,8 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -486,19 +488,20 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 		return nil, err
 	}
 
-		objectMap := make(map[string]interface{})
-		if op.ID != nil {
-			objectMap["id"] = op.ID
-		}
-		if op.Name != nil {
-			objectMap["name"] = op.Name
-		}
-		if op.Type != nil {
-			objectMap["type"] = op.Type
-		}
-		if op.ManagementPolicyProperties != nil {
-			objectMap["properties"] = op.ManagementPolicyProperties
-		}
+	// Direct assignment returns ManagementPolicyProperties only
+	objectMap := make(map[string]interface{})
+	if op.ID != nil {
+		objectMap["id"] = op.ID
+	}
+	if op.Name != nil {
+		objectMap["name"] = op.Name
+	}
+	if op.Type != nil {
+		objectMap["type"] = op.Type
+	}
+	if op.ManagementPolicyProperties != nil {
+		objectMap["properties"] = op.ManagementPolicyProperties
+	}
 
 	return objectMap, nil
 }
