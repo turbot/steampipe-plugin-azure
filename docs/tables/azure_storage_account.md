@@ -116,5 +116,5 @@ select
 from
   azure_storage_account
 where
-  lifecycle_rules is null;
+  lifecycle_management_policy -> 'properties' -> 'policy' -> 'rules' is null;
 ```
