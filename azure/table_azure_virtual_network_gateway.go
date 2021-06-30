@@ -29,22 +29,22 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the virtual network gateway",
+				Description: "The friendly name that identifies the virtual network gateway.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a virtual network gateway uniquely",
+				Description: "Contains ID to identify a virtual network gateway uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
-				Description: "Type of the resource",
+				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -121,7 +121,7 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "vpn_gateway_generation",
-				Description: "The generation for this VirtualNetworkGateway. Must be None if gatewayType is not VPN. Possible values include: 'VpnGatewayGenerationNone', 'VpnGatewayGenerationGeneration1', 'VpnGatewayGenerationGeneration2'",
+				Description: "The generation for this VirtualNetworkGateway. Must be None if gatewayType is not VPN. Possible values include: 'VpnGatewayGenerationNone', 'VpnGatewayGenerationGeneration1', 'VpnGatewayGenerationGeneration2'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnGatewayGeneration").Transform(transform.ToString),
 			},
@@ -156,7 +156,7 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnClientConfiguration"),
 			},
 
-			// Standard steampipe columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -175,7 +175,7 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Standard azure columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,

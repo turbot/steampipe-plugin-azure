@@ -8,11 +8,11 @@ A virtual network gateway is used to establish secure, cross-premises connectivi
 
 ```sql
 select
-	name,
-	id,
-	enable_bgp,
-	location,
-	resource_group
+  name,
+  id,
+  enable_bgp,
+  region,
+  resource_group
 from
-	azure_virtual_network_gateway;
+  azure_virtual_network_gateway;
 ```
