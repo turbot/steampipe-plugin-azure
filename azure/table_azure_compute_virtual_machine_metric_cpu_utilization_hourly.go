@@ -17,7 +17,7 @@ func tableComputeInstanceCpuUtilizationMetricHourly(_ context.Context) *plugin.T
 		Description: "Azure Compute Virtual Machine Hourly Metrics - CPU Utilization",
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachines,
-			Hydrate:       listComputeVirtualMachineMMetricCpuUtilizationHourly,
+			Hydrate:       listComputeVirtualMachineMetricCpuUtilizationHourly,
 		},
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{
@@ -32,7 +32,7 @@ func tableComputeInstanceCpuUtilizationMetricHourly(_ context.Context) *plugin.T
 
 //// LIST FUNCTION
 
-func listComputeVirtualMachineMMetricCpuUtilizationHourly(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listComputeVirtualMachineMetricCpuUtilizationHourly(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	vmInfo := h.Item.(compute.VirtualMachine)
 
 	return listAzureMonitorMetricStatistics(ctx, d, "HOURLY", "Microsoft.Compute/virtualMachines", "Percentage CPU", *vmInfo.ID)
