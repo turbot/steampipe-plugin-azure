@@ -97,7 +97,7 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 			Type:        proto.ColumnType_STRING,
 		},
 		{
-			Name:        "subscrition_id",
+			Name:        "subscription_id",
 			Description: "The time stamp used for the data point.",
 			Type:        proto.ColumnType_STRING,
 			Transform:   transform.FromField("SubscriptionID"),
