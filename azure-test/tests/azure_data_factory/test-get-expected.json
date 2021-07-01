@@ -1,0 +1,13 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "region": "eastus",
+    "resource_group": "{{resourceName}}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "name": "{{resourceName}}"
+    },
+    "type": "Microsoft.DataFactory/factories"
+  }
+]
