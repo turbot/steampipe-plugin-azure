@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_metric_cpu_utilization
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization` table provides metric statistics at 5 minute intervals for the most recent 5 days.
+GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization` table provides metric statistics at 5 minute intervals for the most recent 1 year.
 
 ## Examples
 
