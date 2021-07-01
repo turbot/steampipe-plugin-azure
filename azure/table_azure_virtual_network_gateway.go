@@ -144,6 +144,13 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.BgpSettings"),
 			},
 			{
+				Name:        "gateway_connection",
+				Description: "Properties of the virtual network gateway connection.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getVirtualNetworkGatewayConnection,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "ip_configurations",
 				Description: "IP configurations for virtual network gateway.",
 				Type:        proto.ColumnType_JSON,
@@ -238,6 +245,11 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Handle empty name or resourceGroup
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -252,11 +264,29 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
+	return op, nil
+}
+
+func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getVirtualNetworkGatewayConnection")
+
+	virtualNetworkGateway := h.Item.(network.VirtualNetworkGateway)
+	name := *virtualNetworkGateway.Name
+	resourceGroup := strings.Split(string(*virtualNetworkGateway.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+	networkClient.Authorizer = session.Authorizer
+
+	op, err := networkClient.ListConnections(ctx, resourceGroup, name)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	return op.Values(), nil
 }
