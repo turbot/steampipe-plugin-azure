@@ -35,6 +35,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_disk":                                          tableAzureComputeDisk(ctx),
 			"azure_compute_disk_encryption_set":                           tableAzureComputeDiskEncryptionSet(ctx),
 			"azure_compute_disk_metric_read_ops":                          tableComputeDisksReadOpsMetric(ctx),
+			"azure_compute_disk_metric_read_ops_hourly":                   tableComputeDisksReadOpsMetricHourly(ctx),
 			"azure_compute_image":                                         tableAzureComputeImage(ctx),
 			"azure_compute_resource_sku":                                  tableAzureResourceSku(ctx),
 			"azure_compute_snapshot":                                      tableAzureComputeSnapshot(ctx),
