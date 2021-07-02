@@ -1,6 +1,6 @@
-# Table: azure_compute_disk_metric_write_ops_hourly
+# Table: azure_compute_disk_metric_write_ops_daily
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops_hourly` table provides metric statistics at 60 minute intervals for the most recent 1 year.
+GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops_daily` table provides metric statistics at 1 hour intervals for the most recent 1 year.
 
 ## Examples
 
@@ -15,7 +15,7 @@ select
   average,
   sample_count
 from
-  azure_compute_disk_metric_write_ops_hourly
+  azure_compute_disk_metric_write_ops_daily
 order by
   name,
   timestamp;
@@ -32,7 +32,7 @@ select
   round(average::numeric,2) as avg_write_ops,
   sample_count
 from
-  azure_compute_disk_metric_write_ops_hourly
+  azure_compute_disk_metric_write_ops_daily
 where average > 10
 order by
   name,

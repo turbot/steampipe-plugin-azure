@@ -131,7 +131,7 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 	// Define param values
 	interval := getMonitoringIntervalForGranularity(granularity)
 	aggregation := "average,count,maximum,minimum,total"
-	timeSpan := time.Now().UTC().AddDate(-1, 0, 0).Format(time.RFC3339) + "/" + time.Now().UTC().Format(time.RFC3339) // Retrive data within a year
+	timeSpan := time.Now().UTC().AddDate(-1, 0, 0).Format(time.RFC3339) + "/" + time.Now().UTC().AddDate(0, 0, 1).Format(time.RFC3339) // Retrive data within a year
 	orderBy := "timestamp"
 	top := int32(1000) // Maximum number of recodr fetch with given interval
 	filter := ""
