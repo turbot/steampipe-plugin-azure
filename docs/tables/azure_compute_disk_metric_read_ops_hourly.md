@@ -21,7 +21,7 @@ order by
   timestamp;
 ```
 
-### CPU Over 10 Bytes average
+### Operations Over 10 Bytes average
 
 ```sql
 select
