@@ -55,12 +55,6 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
-			// {
-			// 	Name:        "provisioning_state",
-			// 	Description: "Factory provisioning state, example Succeeded.",
-			// 	Type:        proto.ColumnType_STRING,
-			// 	Transform:   transform.FromField("FactoryProperties.ProvisioningState"),
-			// },
 			{
 				Name:        "factory_name",
 				Description: "Time the factory was created in ISO8601 format.",
@@ -208,7 +202,7 @@ func getPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return pipelineInfo{op, factoryName}, nil
 	}
 
 	return op, nil
