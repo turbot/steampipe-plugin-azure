@@ -39,6 +39,12 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
+				Name:        "description",
+				Description: "The description of the Dataset.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Dataset.Description"),
+			},
+			{
 				Name:        "etag",
 				Description: "Etag identifies change in the resource.",
 				Type:        proto.ColumnType_STRING,
@@ -58,7 +64,6 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 				Name:        "properties",
 				Description: "Dataset ElapsedTime Metric Policy.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties"),
 			},
 			// Standard columns
 			{
@@ -152,8 +157,8 @@ func getDataset(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return DatasetInfo{op, factoryName}, nil
 	}
 
-	return op, nil
+	return nil, nil
 }

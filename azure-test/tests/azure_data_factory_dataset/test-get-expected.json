@@ -4,6 +4,6 @@
     "name": "{{resourceName}}",
     "resource_group": "{{resourceName}}",
     "subscription_id": "{{ output.subscription_id.value }}",
-    "type": "Microsoft.DataFactory/factories"
+    "type": "Microsoft.DataFactory/factories/datasets"
   }
 ]
