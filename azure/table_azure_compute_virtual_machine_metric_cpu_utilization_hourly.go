@@ -14,7 +14,7 @@ import (
 func tableComputeInstanceCpuUtilizationMetricHourly(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_virtual_machine_metric_cpu_utilization_hourly",
-		Description: "Azure Compute Virtual Machine Hourly Metrics - CPU Utilization",
+		Description: "Azure Compute Virtual Machine Metrics - CPU Utilization (Hourly)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachines,
 			Hydrate:       listComputeVirtualMachineMetricCpuUtilizationHourly,

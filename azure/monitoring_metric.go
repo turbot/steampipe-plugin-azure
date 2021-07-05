@@ -83,7 +83,7 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 		{
 			Name:        "timestamp",
 			Description: "The time stamp used for the data point.",
-			Type:        proto.ColumnType_STRING,
+			Type:        proto.ColumnType_TIMESTAMP,
 			Transform:   transform.FromField("TimeStamp"),
 		},
 		{
@@ -93,12 +93,12 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 		},
 		{
 			Name:        "resource_group",
-			Description: "The time stamp used for the data point.",
+			Description: ColumnDescriptionResourceGroup,
 			Type:        proto.ColumnType_STRING,
 		},
 		{
 			Name:        "subscription_id",
-			Description: "The time stamp used for the data point.",
+			Description: ColumnDescriptionSubscription,
 			Type:        proto.ColumnType_STRING,
 			Transform:   transform.FromField("SubscriptionID"),
 		},
@@ -118,6 +118,19 @@ func getMonitoringIntervalForGranularity(granularity string) string {
 	return "PT5M"
 }
 
+func getMonitoringStartDateForGranularity(granularity string) string {
+	switch strings.ToUpper(granularity) {
+	case "DAILY":
+		// Last 1 year
+		return time.Now().UTC().AddDate(-1, 0, 0).Format(time.RFC3339)
+	case "HOURLY":
+		// Last 60 days
+		return time.Now().UTC().AddDate(0, 0, -60).Format(time.RFC3339)
+	}
+	// Last 5 days
+	return time.Now().UTC().AddDate(0, 0, -5).Format(time.RFC3339)
+}
+
 func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, granularity string, metricNameSpace string, metricNames string, dimensionValue string) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -131,9 +144,9 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 	// Define param values
 	interval := getMonitoringIntervalForGranularity(granularity)
 	aggregation := "average,count,maximum,minimum,total"
-	timeSpan := time.Now().UTC().AddDate(-1, 0, 0).Format(time.RFC3339) + "/" + time.Now().UTC().AddDate(0, 0, 1).Format(time.RFC3339) // Retrive data within a year
+	timeSpan := getMonitoringStartDateForGranularity(granularity) + "/" + time.Now().UTC().AddDate(0, 0, 1).Format(time.RFC3339) // Retrieve data within a year
 	orderBy := "timestamp"
-	top := int32(1000) // Maximum number of recodr fetch with given interval
+	top := int32(1000) // Maximum number of record fetch with given interval
 	filter := ""
 
 	result, err := monitoringClient.List(ctx, dimensionValue, timeSpan, &interval, metricNames, aggregation, &top, orderBy, filter, insights.ResultTypeData, metricNameSpace)
@@ -153,7 +166,7 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 						Sum:            data.Total,
 						SampleCount:    data.Count,
 						Unit:           string(metric.Unit),
-						ResourceGroup:  strings.Split(dimensionValue, "/")[4],
+						ResourceGroup:  strings.ToLower(strings.Split(dimensionValue, "/")[4]),
 						SubscriptionID: strings.Split(dimensionValue, "/")[2],
 					})
 				}

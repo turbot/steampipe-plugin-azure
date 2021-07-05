@@ -1,6 +1,6 @@
 # Table: azure_compute_disk_metric_write_ops
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops` table provides metric statistics at 5 minute intervals for the most recent 1 year.
+GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops` table provides metric statistics at 5 minute intervals for the most recent 5 days.
 
 ## Examples
 

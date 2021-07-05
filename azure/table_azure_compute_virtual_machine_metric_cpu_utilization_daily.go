@@ -14,7 +14,7 @@ import (
 func tableComputeInstanceCpuUtilizationMetricDaily(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_virtual_machine_metric_cpu_utilization_daily",
-		Description: "Azure Compute Virtual Machine Daily Metrics - CPU Utilization",
+		Description: "Azure Compute Virtual Machine Metrics - CPU Utilization (Daily)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachines,
 			Hydrate:       listComputeVirtualMachineMetricCpuUtilizationDaily,

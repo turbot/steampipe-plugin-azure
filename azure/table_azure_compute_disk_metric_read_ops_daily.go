@@ -22,7 +22,7 @@ func tableComputeDisksReadOpsMetricDaily(_ context.Context) *plugin.Table {
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The name of the compute disk.",
+				Description: "The name of the disk.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DimensionValue"),
 			},
