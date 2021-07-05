@@ -14,7 +14,7 @@ import (
 func tableComputeDisksReadOpsMetricDaily(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_disk_metric_read_ops_daily",
-		Description: "Azure Compute Disk Metrics - Read Ops Daily",
+		Description: "Azure Compute Disk Metrics - Read Ops (Daily)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeDisks,
 			Hydrate:       listComputeDiskMetricReadOpsDaily,
@@ -24,7 +24,7 @@ func tableComputeDisksReadOpsMetricDaily(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "The name of the disk.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DimensionValue"),
+				Transform:   transform.FromField("DimensionValue").Transform(lastPathElement),
 			},
 		}),
 	}

@@ -14,7 +14,7 @@ import (
 func tableComputeDisksWriteOpsMetricHourly(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_disk_metric_write_ops_hourly",
-		Description: "Azure Compute Disk Metrics - Write Ops Hourly",
+		Description: "Azure Compute Disk Metrics - Write Ops (Hourly)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeDisks,
 			Hydrate:       listComputeDiskMetricWriteOpsHourly,
@@ -24,7 +24,7 @@ func tableComputeDisksWriteOpsMetricHourly(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "The name of the disk.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DimensionValue"),
+				Transform:   transform.FromField("DimensionValue").Transform(lastPathElement),
 			},
 		}),
 	}

@@ -14,37 +14,24 @@ import (
 type monitoringMetric struct {
 	// Resource  Name
 	DimensionValue string
-
 	// MetadataValue represents a metric metadata value.
 	MetaData *insights.MetadataValue
-
 	// Metric the result data of a query.
 	Metric *insights.Metric
-
 	// The maximum metric value for the data point.
 	Maximum *float64
-
 	// The minimum metric value for the data point.
 	Minimum *float64
-
 	// The average of the metric values that correspond to the data point.
 	Average *float64
-
 	// The number of metric values that contributed to the aggregate value of this data point.
 	SampleCount *float64
-
 	// The sum of the metric values for the data point.
 	Sum *float64
-
 	// The time stamp used for the data point.
 	TimeStamp string
-
 	// The units in which the metric value is reported.
 	Unit string
-
-	ResourceGroup string
-
-	SubscriptionID string
 }
 
 //// TABLE DEFINITION
@@ -95,12 +82,13 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 			Name:        "resource_group",
 			Description: ColumnDescriptionResourceGroup,
 			Type:        proto.ColumnType_STRING,
+			Transform:   transform.FromField("DimensionValue").Transform(extractResourceGroupFromID),
 		},
 		{
 			Name:        "subscription_id",
 			Description: ColumnDescriptionSubscription,
 			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("SubscriptionID"),
+			Transform:   transform.FromField("DimensionValue").Transform(idToSubscriptionID),
 		},
 	}
 }
@@ -158,7 +146,7 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 			for _, data := range *timeseries.Data {
 				if data.Average != nil {
 					d.StreamListItem(ctx, &monitoringMetric{
-						DimensionValue: strings.Split(dimensionValue, "/")[len(strings.Split(dimensionValue, "/"))-1],
+						DimensionValue: dimensionValue,
 						TimeStamp:      data.TimeStamp.Format(time.RFC3339),
 						Maximum:        data.Maximum,
 						Minimum:        data.Minimum,
@@ -166,8 +154,6 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 						Sum:            data.Total,
 						SampleCount:    data.Count,
 						Unit:           string(metric.Unit),
-						ResourceGroup:  strings.ToLower(strings.Split(dimensionValue, "/")[4]),
-						SubscriptionID: strings.Split(dimensionValue, "/")[2],
 					})
 				}
 			}

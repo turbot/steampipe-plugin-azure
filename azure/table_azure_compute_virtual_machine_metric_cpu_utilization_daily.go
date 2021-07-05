@@ -22,9 +22,9 @@ func tableComputeInstanceCpuUtilizationMetricDaily(_ context.Context) *plugin.Ta
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The name of the virtual machine instance.",
+				Description: "The name of the virtual machine.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DimensionValue"),
+				Transform:   transform.FromField("DimensionValue").Transform(lastPathElement),
 			},
 		}),
 	}
