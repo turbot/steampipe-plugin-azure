@@ -15,7 +15,7 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_expressroute_circuit",
 		Description: "Azure Express Route Circuit",
-		Get:         &plugin.GetConfig{
+		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getExpressRouteCircuit,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
@@ -26,14 +26,14 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The friendly name that identifies the Circuit",
+				Description: "The friendly name that identifies the Circuit.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
 				Description: "Resource ID.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ID"),
+				Transform:   transform.FromField("ID"),
 			},
 			{
 				Name:        "etag",
@@ -44,100 +44,100 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 				Name:        "sku_name",
 				Description: "The name of the SKU.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Sku.Name"),
+				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
 				Name:        "sku_tier",
-				Description: "The tier of the SKU. Possible values include: 'ExpressRouteCircuitSkuTierStandard', 'ExpressRouteCircuitSkuTierPremium', 'ExpressRouteCircuitSkuTierBasic', 'ExpressRouteCircuitSkuTierLocal'",
+				Description: "The tier of the SKU. Possible values include: 'ExpressRouteCircuitSkuTierStandard', 'ExpressRouteCircuitSkuTierPremium', 'ExpressRouteCircuitSkuTierBasic', 'ExpressRouteCircuitSkuTierLocal'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Sku.Tier"),
+				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
 				Name:        "sku_family",
-				Description: "Family - The family of the SKU. Possible values include: 'UnlimitedData', 'MeteredData'",
+				Description: "Family - The family of the SKU. Possible values include: 'UnlimitedData', 'MeteredData'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Sku.Family"),
+				Transform:   transform.FromField("Sku.Family"),
 			},
 			{
 				Name:        "allow_classic_operations",
 				Description: "Allow classic operations.",
 				Type:        proto.ColumnType_BOOL,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.AllowClassicOperations"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.AllowClassicOperations"),
 			},
 			{
 				Name:        "circuit_provisioning_state",
 				Description: "The CircuitProvisioningState state of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.CircuitProvisioningState"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.CircuitProvisioningState"),
 			},
 			{
 				Name:        "service_provider_provisioning_state",
-				Description: "The ServiceProviderProvisioningState state of the resource. Possible values include: 'ServiceProviderProvisioningStateNotProvisioned', 'ServiceProviderProvisioningStateProvisioning', 'ServiceProviderProvisioningStateProvisioned', 'ServiceProviderProvisioningStateDeprovisioning",
+				Description: "The ServiceProviderProvisioningState state of the resource. Possible values include: 'ServiceProviderProvisioningStateNotProvisioned', 'ServiceProviderProvisioningStateProvisioning', 'ServiceProviderProvisioningStateProvisioned', 'ServiceProviderProvisioningStateDeprovisioning.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProvisioningState"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProvisioningState"),
 			},
 			{
 				Name:        "authorizations",
 				Description: "The list of authorizations.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.Authorizations"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.Authorizations"),
 			},
 			{
 				Name:        "peerings",
 				Description: "The list of peerings.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.Peerings"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.Peerings"),
 			},
 			{
 				Name:        "service_key",
 				Description: "The ServiceKey.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceKey"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceKey"),
 			},
 			{
 				Name:        "service_provider_notes",
 				Description: "The ServiceProviderNotes.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderNotes"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderNotes"),
 			},
 			{
 				Name:        "service_provider_properties",
 				Description: "The ServiceProviderProperties.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProperties"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProperties"),
 			},
 			{
 				Name:        "express_route_port",
 				Description: "The reference to the ExpressRoutePort resource when the circuit is provisioned on an ExpressRoutePort resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ExpressRoutePort"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ExpressRoutePort"),
 			},
 			{
 				Name:        "bandwidth_in_gbps",
 				Description: "The bandwidth of the circuit when the circuit is provisioned on an ExpressRoutePort resource.",
 				Type:        proto.ColumnType_DOUBLE,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.BandwidthInGbps"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.BandwidthInGbps"),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the express route circuit resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'",
+				Description: "The provisioning state of the express route circuit resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.ProvisioningState"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ProvisioningState"),
 			},
 			{
 				Name:        "global_reach_enabled",
 				Description: "Flag denoting global reach status.",
 				Type:        proto.ColumnType_BOOL,
-				Transform: transform.FromField("ExpressRouteCircuitPropertiesFormat.GlobalReachEnabled"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.GlobalReachEnabled"),
 			},
 			{
 				Name:        "tag_src",
-				Description: "Resource tags",
+				Description: "Resource tags.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("Tags"),
+				Transform:   transform.FromField("Tags"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -155,6 +155,8 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -185,6 +187,7 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+
 	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
 
@@ -195,30 +198,36 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 			return nil, err
 		}
 
-		for _, route := range result.Values() {
-			d.StreamListItem(ctx, route)
+		for _, routeCircuit := range result.Values() {
+			d.StreamListItem(ctx, routeCircuit)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
 	}
-	
+
 	return nil, nil
 }
 
 //// HYDRATE FUNCTION
 
 func getExpressRouteCircuit(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Handle empty name or resourceGroup
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+
 	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
+
 	op, err := expressRouteCircuitClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
