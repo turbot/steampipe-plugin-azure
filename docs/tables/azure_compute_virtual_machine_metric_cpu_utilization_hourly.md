@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_metric_cpu_utilization_hourly
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization_hourly` table provides metric statistics at 1 hour intervals for the most recent 60 days.
+GCP Monitoring metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization_hourly` table provides metric statistics at 1 hour intervals for the most recent 60 days.
 
 ## Examples
 
@@ -33,7 +33,8 @@ select
   sample_count
 from
   azure_compute_virtual_machine_metric_cpu_utilization_hourly
-where average > 80
+where
+  average > 80
 order by
   name,
   timestamp;

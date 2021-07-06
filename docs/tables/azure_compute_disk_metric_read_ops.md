@@ -1,6 +1,6 @@
 # Table: azure_compute_disk_metric_read_ops
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_read_ops` table provides metric statistics at 5 minute intervals for the most recent 5 days.
+GCP Monitoring metrics provide data about the performance of your systems. The `azure_compute_disk_metric_read_ops` table provides metric statistics at 5 minutes intervals for the most recent 5 days.
 
 ## Examples
 
@@ -33,7 +33,8 @@ select
   sample_count
 from
   azure_compute_disk_metric_read_ops
-where average > 10
+where
+  average > 10
 order by
   name,
   timestamp;

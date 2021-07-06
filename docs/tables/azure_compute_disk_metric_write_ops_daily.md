@@ -1,6 +1,6 @@
 # Table: azure_compute_disk_metric_write_ops_daily
 
-GCP Monitoring Metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops_daily` table provides metric statistics at 24 hour intervals for the most recent 1 year.
+GCP Monitoring metrics provide data about the performance of your systems. The `azure_compute_disk_metric_write_ops_daily` table provides metric statistics at 24 hours intervals for the most recent 1 year.
 
 ## Examples
 
@@ -33,7 +33,8 @@ select
   sample_count
 from
   azure_compute_disk_metric_write_ops_daily
-where average > 10
+where
+  average > 10
 order by
   name,
   timestamp;
