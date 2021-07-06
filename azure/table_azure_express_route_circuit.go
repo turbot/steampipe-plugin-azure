@@ -130,12 +130,6 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.GlobalReachEnabled"),
 			},
-			{
-				Name:        "tag_src",
-				Description: "Resource tags.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Tags"),
-			},
 
 			// Steampipe standard columns
 			{
