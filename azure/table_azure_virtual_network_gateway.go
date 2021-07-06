@@ -73,7 +73,7 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "active_active",
-				Description: "ActiveActive flag.",
+				Description: "ActiveActive flag. If true, an active-active Virtual Network Gateway will be created.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.ActiveActive"),
 			},
@@ -227,8 +227,8 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 			return nil, err
 		}
 
-		for _, network := range result.Values() {
-			d.StreamListItem(ctx, network)
+		for _, networkGateway := range result.Values() {
+			d.StreamListItem(ctx, networkGateway)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()

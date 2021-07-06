@@ -17,7 +17,7 @@ from
   azure_virtual_network_gateway;
 ```
 
-### List network gateways which does not have any connection
+### List network gateways with no connections
 
 ```sql
 select
