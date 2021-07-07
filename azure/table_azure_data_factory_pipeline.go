@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -19,11 +19,11 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 		Description: "Azure Data Factory Pipeline",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "factory_name"}),
-			Hydrate:           getPipeline,
+			Hydrate:           getDataFactoryPipeline,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate:       listPipelines,
+			Hydrate:       listDataFactoryPipelines,
 			ParentHydrate: listFactories,
 		},
 		Columns: []*plugin.Column{
@@ -37,6 +37,11 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 				Description: "The resource identifier.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
+			},
+			{
+				Name:        "factory_name",
+				Description: "Name of the factory the pipeline belongs.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "description",
@@ -53,11 +58,6 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 			{
 				Name:        "type",
 				Description: "The resource type.",
-				Type:        proto.ColumnType_STRING,
-			},
-			{
-				Name:        "factory_name",
-				Description: "Time the factory was created in ISO8601 format.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -108,7 +108,8 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Pipeline.Folder.PipelinePolicy"),
 			},
-			// Standard columns
+
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -121,6 +122,8 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -142,9 +145,9 @@ type pipelineInfo = struct {
 	FactoryName string
 }
 
-//// LIST FUNCTIONS ////
+//// LIST FUNCTION
 
-func listPipelines(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -166,9 +169,7 @@ func listPipelines(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 		}
 
 		for _, pipeline := range result.Values() {
-			// plugin.Logger(ctx).Trace("getPipeline1111", pipeline)
 			d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
-			// d.StreamListItem(ctx, pipeline)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
@@ -176,14 +177,18 @@ func listPipelines(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
-func getPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getPipeline")
+func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getDataFactoryPipeline")
 
 	pipelineName := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	factoryName := d.KeyColumnQuals["factory_name"].GetStringValue()
+
+	if pipelineName == "" || resourceGroup == "" || factoryName == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
