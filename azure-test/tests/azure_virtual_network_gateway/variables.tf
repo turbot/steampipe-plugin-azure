@@ -37,7 +37,6 @@ resource "azurerm_resource_group" "named_test_resource" {
 }
 
 resource "azurerm_virtual_network" "named_test_resource" {
-  depends_on = [azurerm_resource_group.named_test_resource]
   name                = var.resource_name
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.named_test_resource.location
@@ -45,7 +44,6 @@ resource "azurerm_virtual_network" "named_test_resource" {
 }
 
 resource "azurerm_subnet" "named_test_resource" {
-  depends_on = [azurerm_virtual_network.named_test_resource]
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.named_test_resource.name
   virtual_network_name = azurerm_virtual_network.named_test_resource.name
@@ -53,7 +51,7 @@ resource "azurerm_subnet" "named_test_resource" {
 }
 
 resource "azurerm_public_ip" "named_test_resource" {
-  depends_on = [azurerm_subnet.named_test_resource]
+  depends_on          = [azurerm_subnet.named_test_resource]
   name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
@@ -67,7 +65,7 @@ locals {
 resource "null_resource" "named_test_resource" {
   depends_on = [azurerm_public_ip.named_test_resource]
   provisioner "local-exec" {
-    command = "az network vnet-gateway create --gateway-type Vpn --location eastus --name ${var.resource_name} --no-wait --public-ip-addresses ${var.resource_name} --resource-group ${var.resource_name} --vnet ${var.resource_name}"
+    command = "az network vnet-gateway create --gateway-type Vpn --location ${azurerm_resource_group.named_test_resource.location} --name ${var.resource_name} --no-wait --public-ip-addresses ${var.resource_name} --resource-group ${var.resource_name} --vnet ${var.resource_name}"
   }
   provisioner "local-exec" {
     command = "az network vnet-gateway show -g ${var.resource_name} -n ${var.resource_name} > ${local.path}"
@@ -81,12 +79,12 @@ data "local_file" "input" {
 
 output "resource_aka" {
   depends_on = [null_resource.named_test_resource]
-  value = "azure://${jsondecode(data.local_file.input.content).id}"
+  value      = "azure://${jsondecode(data.local_file.input.content).id}"
 }
 
 output "resource_aka_lower" {
   depends_on = [null_resource.named_test_resource]
-  value = "azure://${lower(jsondecode(data.local_file.input.content).id)}"
+  value      = "azure://${lower(jsondecode(data.local_file.input.content).id)}"
 }
 
 output "resource_name" {

@@ -28,8 +28,8 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Type:        proto.ColumnType_STRING,
 				Description: "The friendly name that identifies the virtual network gateway.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
@@ -38,26 +38,27 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
-				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated.",
-				Type:        proto.ColumnType_STRING,
-			},
-			{
 				Name:        "type",
 				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "enable_bgp",
-				Description: "Whether BGP is enabled for this virtual network gateway or not.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.EnableBgp"),
+				Name:        "gateway_type",
+				Description: "The type of this virtual network gateway. Possible values include: 'Vpn', 'ExpressRoute'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.GatewayType").Transform(transform.ToString),
 			},
 			{
-				Name:        "enable_private_ip_address",
-				Description: "Whether private IP needs to be enabled on this gateway for connections or not.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.EnablePrivateIPAddress"),
+				Name:        "vpn_type",
+				Description: "The type of this virtual network gateway. Valid values are: 'PolicyBased', 'RouteBased'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnType").Transform(transform.ToString),
+			},
+			{
+				Name:        "vpn_gateway_generation",
+				Description: "The generation for this virtual network gateway. Must be None if gatewayType is not VPN. Valid values are: 'None', 'Generation1', 'Generation2'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnGatewayGeneration").Transform(transform.ToString),
 			},
 			{
 				Name:        "provisioning_state",
@@ -66,34 +67,39 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.ProvisioningState").Transform(transform.ToString),
 			},
 			{
-				Name:        "resource_guid",
-				Description: "The resource GUID property of the virtual network gateway resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.ResourceGUID"),
-			},
-			{
 				Name:        "active_active",
-				Description: "ActiveActive flag. If true, an active-active Virtual Network Gateway will be created.",
+				Description: "Indicates whether virtual network gateway configured with active-active mode, or not. If true, each Azure gateway instance will have a unique public IP address, and each will establish an IPsec/IKE S2S VPN tunnel to your on-premises VPN device specified in your local network gateway and connection.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.ActiveActive"),
 			},
 			{
+				Name:        "enable_bgp",
+				Description: "Indicates whether BGP is enabled for this virtual network gateway, or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.EnableBgp"),
+			},
+			{
 				Name:        "enable_dns_forwarding",
-				Description: "Whether dns forwarding is enabled or not.",
+				Description: "Indicates whether DNS forwarding is enabled, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.EnableVMProtection"),
 			},
 			{
-				Name:        "gateway_default_site",
-				Description: "The reference to the LocalNetworkGateway resource which represents local network site having default routes. Assign Null value in case of removing existing default site setting.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.GatewayDefaultSite.ID"),
+				Name:        "enable_private_ip_address",
+				Description: "Indicates whether private IP needs to be enabled on this gateway for connections or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.EnablePrivateIPAddress"),
 			},
 			{
-				Name:        "gateway_type",
-				Description: "The type of this virtual network gateway. Possible values include: 'VirtualNetworkGatewayTypeVpn', 'VirtualNetworkGatewayTypeExpressRoute'.",
+				Name:        "etag",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.GatewayType").Transform(transform.ToString),
+			},
+			{
+				Name:        "gateway_default_site",
+				Description: "The reference to the LocalNetworkGateway resource, which represents local network site having default routes. Assign Null value in case of removing existing default site setting.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.GatewayDefaultSite.ID"),
 			},
 			{
 				Name:        "inbound_dns_forwarding_endpoint",
@@ -102,40 +108,28 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.InboundDNSForwardingEndpoint"),
 			},
 			{
+				Name:        "resource_guid",
+				Description: "The resource GUID property of the virtual network gateway resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.ResourceGUID"),
+			},
+			{
 				Name:        "sku_name",
 				Description: "Gateway SKU name.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.Sku.Name"),
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_tier",
 				Description: "Gateway SKU tier.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.Sku.Tier"),
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.Sku.Tier").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_capacity",
 				Description: "Gateway SKU capacity.",
-				Type:        proto.ColumnType_STRING,
+				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.Sku.Capacity"),
-			},
-			{
-				Name:        "vpn_gateway_generation",
-				Description: "The generation for this VirtualNetworkGateway. Must be None if gatewayType is not VPN. Possible values include: 'VpnGatewayGenerationNone', 'VpnGatewayGenerationGeneration1', 'VpnGatewayGenerationGeneration2'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnGatewayGeneration").Transform(transform.ToString),
-			},
-			{
-				Name:        "vpn_type",
-				Description: "The type of this virtual network gateway. Possible values include: 'PolicyBased', 'RouteBased'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.VpnType"),
-			},
-			{
-				Name:        "address_prefixes",
-				Description: "A list of address blocks reserved for this virtual network in CIDR notation.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.CustomRoutes.AddressPrefixes"),
 			},
 			{
 				Name:        "bgp_settings",
@@ -144,8 +138,14 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.BgpSettings"),
 			},
 			{
-				Name:        "gateway_connection",
-				Description: "Properties of the virtual network gateway connection.",
+				Name:        "custom_routes_address_prefixes",
+				Description: "A list of address blocks reserved for this virtual network in CIDR notation.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualNetworkGatewayPropertiesFormat.CustomRoutes.AddressPrefixes"),
+			},
+			{
+				Name:        "gateway_connections",
+				Description: "A list of virtual network gateway connection resources that exists in a resource group.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getVirtualNetworkGatewayConnection,
 				Transform:   transform.FromValue(),
@@ -218,7 +218,7 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 	networkClient.Authorizer = session.Authorizer
 
 	virtualNetwork := h.Item.(network.VirtualNetwork)
-	resourceGroupName := strings.Split(string(*virtualNetwork.ID), "/")[4]
+	resourceGroupName := strings.Split(*virtualNetwork.ID, "/")[4]
 
 	pagesLeft := true
 	for pagesLeft {
@@ -242,6 +242,13 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getVirtualNetworkGateway")
 
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
@@ -249,12 +256,6 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 	if name == "" || resourceGroup == "" {
 		return nil, nil
 	}
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
 
 	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
@@ -270,23 +271,31 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getVirtualNetworkGatewayConnection")
 
-	virtualNetworkGateway := h.Item.(network.VirtualNetworkGateway)
-	name := *virtualNetworkGateway.Name
-	resourceGroup := strings.Split(string(*virtualNetworkGateway.ID), "/")[4]
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
+	virtualNetworkGateway := h.Item.(network.VirtualNetworkGateway)
+	name := *virtualNetworkGateway.Name
+	resourceGroup := strings.Split(*virtualNetworkGateway.ID, "/")[4]
+
 	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
-	op, err := networkClient.ListConnections(ctx, resourceGroup, name)
-	if err != nil {
-		return nil, err
+	var gatewayConnections []network.VirtualNetworkGatewayConnectionListEntity
+	pagesLeft := true
+	for pagesLeft {
+		result, err := networkClient.ListConnections(ctx, resourceGroup, name)
+		if err != nil {
+			return nil, err
+		}
+		gatewayConnections = append(gatewayConnections, result.Values()...)
+		result.NextWithContext(context.Background())
+		pagesLeft = result.NotDone()
 	}
 
-	return op.Values(), nil
+	return gatewayConnections, nil
 }
