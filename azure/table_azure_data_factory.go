@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureDataFactory(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -55,7 +55,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "create_time",
-				Description: "Time the factory was created in ISO8601 format.",
+				Description: "Specifies the time, the factory was created.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("FactoryProperties.CreateTime").Transform(convertDateToTime),
 			},
@@ -95,7 +95,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -113,6 +113,8 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard column
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -135,7 +137,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 	}
 }
 
-//// LIST FUNCTIONS ////
+//// LIST FUNCTION
 
 func listFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -163,13 +165,17 @@ func listFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getFactory")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

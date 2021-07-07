@@ -18,7 +18,7 @@ from
 ```
 
 
-### List system assigned identity type Factories
+### List system assigned identity type factories
 
 ```sql
 select
@@ -33,7 +33,7 @@ where
 ```
 
 
-### List factories with plubic network access is allowed
+### List factories with publicbic network access enabled
 
 ```sql
 select
