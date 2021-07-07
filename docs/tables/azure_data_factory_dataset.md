@@ -18,7 +18,7 @@ from
 ```
 
 
-### List relational table type Datasets
+### List relational table type datasets
 
 ```sql
 select
