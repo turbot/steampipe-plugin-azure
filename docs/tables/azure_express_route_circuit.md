@@ -16,7 +16,7 @@ from
   azure_express_route_circuit;
 ```
 
-### List express route circuits which have global reach enabled
+### List express route circuits with global reach enabled
 
 ```sql
 select
@@ -29,7 +29,7 @@ where
   global_reach_enabled;
 ```
 
-### List premium category express route circuits
+### List premium express route circuits
 
 ```sql
 select

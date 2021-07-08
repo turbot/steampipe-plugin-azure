@@ -13,7 +13,7 @@ import (
 
 func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_expressroute_circuit",
+		Name:        "azure_express_route_circuit",
 		Description: "Azure Express Route Circuit",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
@@ -26,18 +26,18 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "The friendly name that identifies the Circuit.",
+				Description: "The friendly name that identifies the circuit.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
 				Description: "Resource ID.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID"),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "etag",
-				Description: "A unique read-only string that changes whenever the resource is updated.",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -48,15 +48,15 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sku_tier",
-				Description: "The tier of the SKU. Possible values include: 'ExpressRouteCircuitSkuTierStandard', 'ExpressRouteCircuitSkuTierPremium', 'ExpressRouteCircuitSkuTierBasic', 'ExpressRouteCircuitSkuTierLocal'.",
+				Description: "The tier of the SKU. Possible values include: 'Standard', 'Premium', 'Basic', 'Local'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Sku.Tier"),
+				Transform:   transform.FromField("Sku.Tier").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_family",
-				Description: "Family - The family of the SKU. Possible values include: 'UnlimitedData', 'MeteredData'.",
+				Description: "The family of the SKU. Possible values include: 'UnlimitedData', 'MeteredData'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Sku.Family"),
+				Transform:   transform.FromField("Sku.Family").Transform(transform.ToString),
 			},
 			{
 				Name:        "allow_classic_operations",
@@ -72,9 +72,9 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "service_provider_provisioning_state",
-				Description: "The ServiceProviderProvisioningState state of the resource. Possible values include: 'ServiceProviderProvisioningStateNotProvisioned', 'ServiceProviderProvisioningStateProvisioning', 'ServiceProviderProvisioningStateProvisioned', 'ServiceProviderProvisioningStateDeprovisioning.",
+				Description: "The ServiceProviderProvisioningState state of the resource. Possible values include: 'NotProvisioned', 'Provisioning', 'Provisioned', 'Deprovisioning'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProvisioningState"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ServiceProviderProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "authorizations",
@@ -122,7 +122,7 @@ func tableAzureExpressRouteCircuit(_ context.Context) *plugin.Table {
 				Name:        "provisioning_state",
 				Description: "The provisioning state of the express route circuit resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ProvisioningState"),
+				Transform:   transform.FromField("ExpressRouteCircuitPropertiesFormat.ProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "global_reach_enabled",
@@ -202,7 +202,7 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 	return nil, nil
 }
 
-//// HYDRATE FUNCTION
+//// HYDRATE FUNCTIONS
 
 func getExpressRouteCircuit(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	name := d.KeyColumnQuals["name"].GetStringValue()
