@@ -191,7 +191,6 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 		if err != nil {
 			return nil, err
 		}
-
 		for _, routeCircuit := range result.Values() {
 			d.StreamListItem(ctx, routeCircuit)
 		}
@@ -205,6 +204,15 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 //// HYDRATE FUNCTIONS
 
 func getExpressRouteCircuit(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getExpressRouteCircuit")
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
@@ -212,12 +220,6 @@ func getExpressRouteCircuit(ctx context.Context, d *plugin.QueryData, h *plugin.
 	if name == "" || resourceGroup == "" {
 		return nil, nil
 	}
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
 
 	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
