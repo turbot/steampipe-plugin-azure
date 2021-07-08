@@ -12,7 +12,7 @@ import (
 )
 
 type monitoringMetric struct {
-	// Resource  Name
+	// Resource Name
 	DimensionValue string
 	// MetadataValue represents a metric metadata value.
 	MetaData *insights.MetadataValue
