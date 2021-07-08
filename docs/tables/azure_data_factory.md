@@ -33,7 +33,7 @@ where
 ```
 
 
-### List factories with publicbic network access enabled
+### List factories with public network access enabled
 
 ```sql
 select

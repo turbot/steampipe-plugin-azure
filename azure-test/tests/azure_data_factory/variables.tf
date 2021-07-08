@@ -39,7 +39,7 @@ resource "azurerm_resource_group" "named_test_resource" {
 
 resource "azurerm_data_factory" "named_test_resource" {
   name                = var.resource_name
-  location            = "East US"
+  location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
   tags = {
     name = var.resource_name
@@ -60,6 +60,10 @@ output "resource_name" {
 
 output "resource_id" {
   value = azurerm_data_factory.named_test_resource.id
+}
+
+output "location" {
+  value = azurerm_resource_group.named_test_resource.location
 }
 
 output "subscription_id" {

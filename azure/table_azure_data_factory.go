@@ -18,11 +18,11 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 		Description: "Azure Data Factory",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getFactory,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			Hydrate:           getDataFactory,
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listFactories,
+			Hydrate: listDataFactories,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -37,27 +37,9 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
-				Name:        "etag",
-				Description: "Etag identifies change in the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ETag"),
-			},
-			{
 				Name:        "type",
 				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
-			},
-			{
-				Name:        "provisioning_state",
-				Description: "Factory provisioning state, example Succeeded.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.ProvisioningState"),
-			},
-			{
-				Name:        "create_time",
-				Description: "Specifies the time, the factory was created.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("FactoryProperties.CreateTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "version",
@@ -66,10 +48,33 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("FactoryProperties.Version"),
 			},
 			{
+				Name:        "create_time",
+				Description: "Specifies the time, the factory was created.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("FactoryProperties.CreateTime").Transform(convertDateToTime),
+			},
+			{
+				Name:        "etag",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ETag"),
+			},
+			{
+				Name:        "provisioning_state",
+				Description: "Factory provisioning state, example Succeeded.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("FactoryProperties.ProvisioningState"),
+			},
+			{
 				Name:        "public_network_access",
 				Description: "Whether or not public network access is allowed for the data factory.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.PublicNetworkAccess"),
+				Transform:   transform.FromField("FactoryProperties.PublicNetworkAccess").Transform(transform.ToString),
+			},
+			{
+				Name:        "additional_properties",
+				Description: "Unmatched properties from the message are deserialized this collection.",
+				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "identity",
@@ -139,7 +144,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -148,14 +153,13 @@ func listFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	factoryClient := datafactory.NewFactoriesClient(subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
-	pagesLeft := true
 
+	pagesLeft := true
 	for pagesLeft {
 		result, err := factoryClient.List(context.Background())
 		if err != nil {
 			return nil, err
 		}
-
 		for _, factory := range result.Values() {
 			d.StreamListItem(ctx, factory)
 		}
@@ -167,16 +171,10 @@ func listFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 //// HYDRATE FUNCTIONS
 
-func getFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getFactory")
+func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getDataFactory")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-
-	if name == "" || resourceGroup == "" {
-		return nil, nil
-	}
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -186,16 +184,18 @@ func getFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	factoryClient := datafactory.NewFactoriesClient(subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Return nil, if no input provide
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	op, err := factoryClient.Get(ctx, resourceGroup, name, "*")
 	if err != nil {
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
+	return op, nil
 }
