@@ -46,6 +46,19 @@ func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData)
 	return resourceGroup, nil
 }
 
+func lastPathElement(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	return getLastPathElement(types.SafeString(d.Value)), nil
+}
+
+func getLastPathElement(path string) string {
+	if path == "" {
+		return ""
+	}
+
+	pathItems := strings.Split(path, "/")
+	return pathItems[len(pathItems)-1]
+}
+
 func convertDateToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	if d.Value == nil {
 		return nil, nil
