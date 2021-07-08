@@ -1,0 +1,15 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "name": "{{ resourceName }}",
+    "sku_name": "{{ output.sku_tire.value }}_{{ output.sku_family.value }}",
+    "sku_tier": "{{ output.sku_tire.value }}",
+    "tags": {
+      "Name": "{{ resourceName }}"
+    },
+    "title": "{{ resourceName }}"
+  }
+]
