@@ -98,3 +98,7 @@ output "resource_id" {
 output "subscription_id" {
   value = var.azure_subscription
 }
+
+output "region" {
+  value = azurerm_resource_group.named_test_resource.location
+}
