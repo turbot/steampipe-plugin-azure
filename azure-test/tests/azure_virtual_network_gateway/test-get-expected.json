@@ -1,0 +1,10 @@
+[
+  {
+    "enable_bgp": false,
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.region.value }}",
+    "resource_group": "{{ resourceName }}",
+    "type": "Microsoft.Network/virtualNetworkGateways"
+  }
+]
