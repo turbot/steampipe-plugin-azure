@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d7245080-b4ae-4fe5-b6fa-2e71b3dae6c8"
   description = "Azure subscription used for the test."
 }
 
@@ -86,11 +86,11 @@ resource "azurerm_disk_encryption_set" "named_test_resource" {
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
   key_vault_key_id = azurerm_key_vault_key.named_test_resource.id
-  
+
   identity {
     type = "SystemAssigned"
   }
-  
+
   tags = {
     name = var.resource_name
   }
