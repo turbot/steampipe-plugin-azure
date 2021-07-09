@@ -1,6 +1,6 @@
 # Table: azure_data_factory_dataset
 
- Datasets identify data within different data stores, such as tables, files, folders, and documents.
+Azure Data Factory datasets identify data within different data stores, such as tables, files, folders, and documents.
 
 ## Examples
 

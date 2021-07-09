@@ -24,7 +24,7 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listDataFactoryDatasets,
-			ParentHydrate: listFactories,
+			ParentHydrate: listDataFactories,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -40,20 +40,13 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "factory_name",
-				Description: "Name of the factory the dataset belongs",
+				Description: "Name of the factory the dataset belongs.",
 				Type:        proto.ColumnType_STRING,
-			},
-			{
-				Name:        "description",
-				Description: "The description of the Dataset.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Dataset.Description"),
 			},
 			{
 				Name:        "etag",
-				Description: "Etag identifies change in the resource.",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Etag"),
 			},
 			{
 				Name:        "type",
@@ -62,7 +55,7 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "properties",
-				Description: "Dataset ElapsedTime Metric Policy.",
+				Description: "Dataset properties.",
 				Type:        proto.ColumnType_JSON,
 			},
 
@@ -109,22 +102,21 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 	if err != nil {
 		return nil, err
 	}
+	subscriptionID := session.SubscriptionID
 
+	// Get factory details
 	factoryInfo := h.Item.(datafactory.Factory)
 	resourceGroup := strings.Split(*factoryInfo.ID, "/")[4]
 
-	subscriptionID := session.SubscriptionID
-
 	datasetClient := datafactory.NewDatasetsClient(subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
-	pagesLeft := true
 
+	pagesLeft := true
 	for pagesLeft {
 		result, err := datasetClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, dataset := range result.Values() {
 			d.StreamListItem(ctx, DatasetInfo{dataset, *factoryInfo.Name})
 		}
@@ -136,17 +128,10 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 
 //// HYDRATE FUNCTIONS
 
-func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getDataFactoryDataset")
 
-	datasetName := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-	factoryName := d.KeyColumnQuals["factory_name"].GetStringValue()
-
-	if datasetName == "" || resourceGroup == "" || factoryName == "" {
-		return nil, nil
-	}
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -156,7 +141,16 @@ func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	datasetClient := datafactory.NewDatasetsClient(subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
 
-	op, err := datasetClient.Get(ctx, resourceGroup, factoryName, datasetName, "")
+	datasetName := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	factoryName := d.KeyColumnQuals["factory_name"].GetStringValue()
+
+	// Return nil, of no input provided
+	if datasetName == "" || resourceGroup == "" || factoryName == "" {
+		return nil, nil
+	}
+
+	op, err := datasetClient.Get(ctx, resourceGroup, factoryName, datasetName, "*")
 	if err != nil {
 		return nil, err
 	}
