@@ -11,7 +11,7 @@ import (
 
 //// TABLE DEFINITION
 
-func tableComputeDisksWriteOpsMetricDaily(_ context.Context) *plugin.Table {
+func tableAzureComputeDisksWriteOpsMetricDaily(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_disk_metric_write_ops_daily",
 		Description: "Azure Compute Disk Metrics - Write Ops (Daily)",
