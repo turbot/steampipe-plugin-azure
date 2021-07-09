@@ -11,7 +11,7 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureComputeInstanceCpuUtilizationMetricDaily(_ context.Context) *plugin.Table {
+func tableAzureComputeInstanceMetricCpuUtilizationDaily(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_virtual_machine_metric_cpu_utilization_daily",
 		Description: "Azure Compute Virtual Machine Metrics - CPU Utilization (Daily)",

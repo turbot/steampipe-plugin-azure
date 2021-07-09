@@ -11,7 +11,7 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureComputeDisksReadOpsMetric(_ context.Context) *plugin.Table {
+func tableAzureComputeDisksMetricReadOps(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_compute_disk_metric_read_ops",
 		Description: "Azure Compute Disk Metrics - Read Ops",
