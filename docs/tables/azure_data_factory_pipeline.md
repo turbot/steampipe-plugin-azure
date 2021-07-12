@@ -1,6 +1,6 @@
 # Table: azure_data_factory_pipeline
 
-A pipeline is a logical grouping of activities that together perform a task. The activities in a pipeline define actions to perform on data.
+A Data Factory pipeline is a logical grouping of activities that together perform a task. The activities in a pipeline define actions to perform on data.
 
 ## Examples
 
@@ -10,9 +10,9 @@ A pipeline is a logical grouping of activities that together perform a task. The
 select
   name,
   id,
+  factory_name,
   type,
-  etag,
-  factory_name
+  etag
 from
   azure_data_factory_pipeline;
 ```

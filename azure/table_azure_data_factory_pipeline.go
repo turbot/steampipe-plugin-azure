@@ -24,7 +24,7 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listDataFactoryPipelines,
-			ParentHydrate: listFactories,
+			ParentHydrate: listDataFactories,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -51,14 +51,19 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "etag",
-				Description: "Etag identifies change in the resource.",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Etag"),
 			},
 			{
 				Name:        "type",
 				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "concurrency",
+				Description: "The max number of concurrent runs for the pipeline.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("Pipeline.Concurrency"),
 			},
 			{
 				Name:        "pipeline_folder",
@@ -68,45 +73,39 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "activities",
-				Description: "List of activities in pipeline.",
+				Description: "A list of activities in pipeline.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Pipeline.Activities"),
 			},
 			{
-				Name:        "parameters",
-				Description: "List of parameters for pipeline.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Pipeline.Parameters"),
-			},
-			{
-				Name:        "variables",
-				Description: "List of variables for pipeline.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Pipeline.Variables"),
-			},
-			{
-				Name:        "concurrency",
-				Description: "The max number of concurrent runs for the pipeline.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Pipeline.Concurrency"),
-			},
-			{
 				Name:        "annotations",
-				Description: "List of tags that can be used for describing the Pipeline.",
+				Description: "A list of tags that can be used for describing the Pipeline.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Pipeline.Annotations"),
 			},
 			{
-				Name:        "run_dimensions",
-				Description: "Dimensions emitted by Pipeline.",
+				Name:        "parameters",
+				Description: "A list of parameters for pipeline.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Pipeline.RunDimensions"),
+				Transform:   transform.FromField("Pipeline.Parameters"),
 			},
 			{
 				Name:        "pipeline_policy",
 				Description: "Pipeline ElapsedTime Metric Policy.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Pipeline.Folder.PipelinePolicy"),
+			},
+			{
+				Name:        "variables",
+				Description: "A list of variables for pipeline.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Pipeline.Variables"),
+			},
+			{
+				Name:        "run_dimensions",
+				Description: "Dimensions emitted by Pipeline.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Pipeline.RunDimensions"),
 			},
 
 			// Steampipe standard columns
@@ -153,6 +152,7 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, err
 	}
 
+	// Get factory details
 	factoryInfo := h.Item.(datafactory.Factory)
 	resourceGroup := strings.Split(*factoryInfo.ID, "/")[4]
 
@@ -160,14 +160,13 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
-	pagesLeft := true
 
+	pagesLeft := true
 	for pagesLeft {
 		result, err := pipelineClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, pipeline := range result.Values() {
 			d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
 		}
@@ -182,14 +181,7 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getDataFactoryPipeline")
 
-	pipelineName := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-	factoryName := d.KeyColumnQuals["factory_name"].GetStringValue()
-
-	if pipelineName == "" || resourceGroup == "" || factoryName == "" {
-		return nil, nil
-	}
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -198,6 +190,15 @@ func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
+
+	pipelineName := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	factoryName := d.KeyColumnQuals["factory_name"].GetStringValue()
+
+	// Return nil, if no input provided
+	if pipelineName == "" || resourceGroup == "" || factoryName == "" {
+		return nil, nil
+	}
 
 	op, err := pipelineClient.Get(ctx, resourceGroup, factoryName, pipelineName, "")
 	if err != nil {
@@ -210,5 +211,5 @@ func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.
 		return pipelineInfo{op, factoryName}, nil
 	}
 
-	return op, nil
+	return nil, nil
 }
