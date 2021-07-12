@@ -1,3 +1,9 @@
+## v0.12.0 [2021-07-01]
+
+_Enhancements_
+
+- Updated: Add `lifecycle_management_policy` column to `azure_storage_account` table ([#155](https://github.com/turbot/steampipe-plugin-azure/pull/155))
+
 ## v0.11.0 [2021-06-03]
 
 _What's new?_
