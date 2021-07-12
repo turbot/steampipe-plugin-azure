@@ -151,12 +151,11 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 	if err != nil {
 		return nil, err
 	}
+	subscriptionID := session.SubscriptionID
 
 	// Get factory details
 	factoryInfo := h.Item.(datafactory.Factory)
 	resourceGroup := strings.Split(*factoryInfo.ID, "/")[4]
-
-	subscriptionID := session.SubscriptionID
 
 	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
