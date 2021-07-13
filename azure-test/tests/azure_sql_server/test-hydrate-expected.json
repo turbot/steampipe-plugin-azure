@@ -34,7 +34,7 @@
 				"type": "Microsoft.Sql/servers/auditingSettings"
 			}
 		],
-		"server_azure_ad_administrator": "<null>",
+		"server_azure_ad_administrator": null,
 		"server_security_alert_policy": [
 			{
 				"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/securityAlertPolicies/Default",

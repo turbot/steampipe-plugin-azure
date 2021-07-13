@@ -50,6 +50,8 @@ resource "azurerm_eventhub_namespace" "named_test_resource" {
   capacity            = 2
 }
 
+# NOTE: It's only possible to configure one Log Profile per Subscription. If you are trying to create more than one Log Profile, an error with StatusCode=409 will occur.
+
 resource "azurerm_monitor_log_profile" "named_test_resource" {
   name = var.resource_name
 

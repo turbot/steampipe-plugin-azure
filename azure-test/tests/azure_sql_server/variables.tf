@@ -90,6 +90,17 @@ output "subscription_id" {
   value = var.azure_subscription
 }
 
-output "auditing_policy" {
-  value = azurerm_sql_server.named_test_resource.extended_auditing_policy
-}
+# To reduce the risk of accidentally exporting sensitive data that was intended
+# to be only internal, Terraform requires that any root module output
+# containing sensitive data be explicitly marked as sensitive, to confirm your
+# intent.
+
+# If you do intend to export this data, annotate the output value as sensitive
+# by adding the following argument:
+#     sensitive = true
+
+# Though it is not being  used any where so it is commented
+
+# output "auditing_policy" {
+#   value = azurerm_sql_server.named_test_resource.extended_auditing_policy
+# }
