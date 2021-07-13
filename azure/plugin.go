@@ -51,6 +51,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_cosmosdb_mongo_database":                               tableAzureCosmosDBMongoDatabase(ctx),
 			"azure_cosmosdb_sql_database":                                 tableAzureCosmosDBSQLDatabase(ctx),
 			"azure_data_factory":                                          tableAzureDataFactory(ctx),
+			"azure_data_factory_dataset":                                  tableAzureDataFactoryDataset(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),
 			"azure_firewall":                                              tableAzureFirewall(ctx),
