@@ -1,6 +1,0 @@
-[
-  {
-    "name": "{{ output.resource_id.value.split('/').pop() }}",
-    "scope": "/subscriptions/{{ output.subscription_id.value }}"
-  }
-]
