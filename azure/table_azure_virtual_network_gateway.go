@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -22,7 +23,7 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			ParentHydrate: listVirtualNetworks,
+			ParentHydrate: listResourceGroups,
 			Hydrate:       listVirtualNetworkGateways,
 		},
 		Columns: []*plugin.Column{
@@ -217,8 +218,8 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
-	virtualNetwork := h.Item.(network.VirtualNetwork)
-	resourceGroupName := strings.Split(*virtualNetwork.ID, "/")[4]
+	data := h.Item.(resources.Group)
+	resourceGroupName := *data.Name
 
 	pagesLeft := true
 	for pagesLeft {
