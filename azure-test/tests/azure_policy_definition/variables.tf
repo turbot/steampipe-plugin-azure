@@ -34,10 +34,10 @@ data "null_data_source" "resource" {
 }
 
 resource "azurerm_policy_definition" "named_test_resource" {
-  name         = "TestSecurityCenterBuiltIn"
+  name         = var.resource_name
   policy_type  = "Custom"
   mode         = "All"
-  display_name = "TestSecurityCenterBuiltIn"
+  display_name = var.resource_name
   policy_rule  = <<POLICY_RULE
     {
     "if": {
@@ -78,7 +78,7 @@ output "resource_id" {
 }
 
 output "resource_name" {
-  value = "TestSecurityCenterBuiltIn"
+  value = azurerm_policy_definition.named_test_resource.name
 }
 
 output "subscription_id" {

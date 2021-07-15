@@ -63,7 +63,7 @@ output "resource_name" {
 }
 
 output "resource_name_upper" {
-  value = "${upper(var.resource_name)}"
+  value = upper(var.resource_name)
 }
 
 output "resource_id" {

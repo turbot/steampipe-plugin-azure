@@ -3,7 +3,7 @@
     "front_end_scale_factor": 10,
     "id": "{{ output.resource_id.value }}",
     "name": "{{resourceName}}",
-    "region": "westus",
+    "region": "west us",
     "resource_group": "{{resourceName}}",
     "vnet_name": "{{resourceName}}",
     "vnet_resource_group_name": "{{resourceName}}",

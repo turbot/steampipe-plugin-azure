@@ -6,7 +6,7 @@
     "id": "{{ output.resource_id.value }}",
     "kind": "functionapp",
     "name": "{{resourceName}}",
-    "region": "East US",
+    "region": "east us",
     "resource_group": "{{resourceName}}"
   }
 ]

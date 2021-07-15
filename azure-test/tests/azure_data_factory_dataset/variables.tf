@@ -1,7 +1,7 @@
 
 variable "resource_name" {
   type        = string
-  default     = "turbot-test-20200125-create-update"
+  default     = "steampipe-test"
   description = "Name of the resource used throughout the test."
 }
 
@@ -37,45 +37,43 @@ resource "azurerm_resource_group" "named_test_resource" {
   location = "East US"
 }
 
-resource "azurerm_managed_disk" "named_test_resource" {
-  name                 = var.resource_name
-  location             = azurerm_resource_group.named_test_resource.location
-  resource_group_name  = azurerm_resource_group.named_test_resource.name
-  storage_account_type = "Standard_LRS"
-  create_option        = "Empty"
-  disk_size_gb         = "10"
-}
-
-resource "azurerm_snapshot" "named_test_resource" {
-  name                = "${var.resource_name}snapshot"
-  location            = azurerm_resource_group.named_test_resource.location
+resource "azurerm_data_factory" "named_test_resource" {
+  name                = var.resource_name
+  location            = "East US"
   resource_group_name = azurerm_resource_group.named_test_resource.name
-  create_option       = "Copy"
-  source_uri          = azurerm_managed_disk.named_test_resource.id
-
   tags = {
     name = var.resource_name
   }
 }
 
+resource "azurerm_data_factory_linked_service_mysql" "named_test_resource" {
+  name                = var.resource_name
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  data_factory_name   = azurerm_data_factory.named_test_resource.name
+  connection_string   = "Server=test;Port=3306;Database=test;User=test;SSLMode=1;UseSystemTrustStore=0;Password=test"
+}
+
+resource "azurerm_data_factory_dataset_mysql" "named_test_resource" {
+  name                = var.resource_name
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  data_factory_name   = azurerm_data_factory.named_test_resource.name
+  linked_service_name = azurerm_data_factory_linked_service_mysql.named_test_resource.name
+}
+
 output "resource_aka" {
-  value = "azure://${azurerm_snapshot.named_test_resource.id}"
+  value = "azure://${azurerm_data_factory_dataset_mysql.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_snapshot.named_test_resource.id)}"
+  value = "azure://${lower(azurerm_data_factory_dataset_mysql.named_test_resource.id)}"
 }
 
 output "resource_name" {
   value = var.resource_name
 }
 
-output "resource_name_upper" {
-  value = upper(var.resource_name)
-}
-
 output "resource_id" {
-  value = azurerm_snapshot.named_test_resource.id
+  value = azurerm_data_factory_dataset_mysql.named_test_resource.id
 }
 
 output "subscription_id" {

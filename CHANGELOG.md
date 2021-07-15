@@ -1,3 +1,31 @@
+## v0.13.0 [2021-07-13]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_disk_metric_read_ops](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_read_ops) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_disk_metric_read_ops_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_read_ops_daily) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_disk_metric_read_ops_hourly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_read_ops_hourly) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_disk_metric_write_ops](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_write_ops) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_disk_metric_write_ops_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_write_ops_daily) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_disk_metric_write_ops_hourly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_metric_write_ops_hourly) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_virtual_machine_metric_cpu_utilization](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_cpu_utilization) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_virtual_machine_metric_cpu_utilization_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_cpu_utilization_daily) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_compute_virtual_machine_metric_cpu_utilization_hourly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_cpu_utilization_hourly) ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+  - [azure_data_factory](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_factory) ([#158](https://github.com/turbot/steampipe-plugin-azure/pull/158))
+  - [azure_data_factory_dataset](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_factory_dataset) ([#168](https://github.com/turbot/steampipe-plugin-azure/pull/168))
+  - [azure_express_route_circuit](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_express_route_circuit) ([#170](https://github.com/turbot/steampipe-plugin-azure/pull/170))
+  - [azure_virtual_network_gateway](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_virtual_network_gateway) ([#157](https://github.com/turbot/steampipe-plugin-azure/pull/157))
+
+_Enhancements_
+
+- Updated: `azure-sdk-for-go` to `v55.4.0+incompatible` ([#166](https://github.com/turbot/steampipe-plugin-azure/pull/166))
+- Updated: Change several metric table function names to be consistent with naming standards ([#173](https://github.com/turbot/steampipe-plugin-azure/pull/173))
+
+_Bug fixes_
+
+- Fixed: Integration tests for several tables and remove unused integration tests ([#175](https://github.com/turbot/steampipe-plugin-azure/pull/175))
+
 ## v0.12.0 [2021-07-01]
 
 _Enhancements_
