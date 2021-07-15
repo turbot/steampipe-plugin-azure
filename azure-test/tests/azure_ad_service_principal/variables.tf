@@ -28,7 +28,7 @@ data "azuread_client_config" "current" {}
 resource "azuread_application" "named_test_resource" {
   name                       = var.resource_name
   homepage                   = "http://homepage"
-  identifier_uris            = ["http://uri"]
+  identifier_uris            = ["http://${var.resource_name}"]
   reply_urls                 = ["http://replyurl"]
   available_to_other_tenants = false
   oauth2_allow_implicit_flow = true

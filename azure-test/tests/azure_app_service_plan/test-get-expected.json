@@ -7,7 +7,7 @@
     "kind": "Windows",
     "name": "{{resourceName}}",
     "per_site_scaling": false,
-    "region": "East US",
+    "region": "east us",
     "reserved": false,
     "resource_group": "{{resourceName}}",
     "sku_capacity": 1,
