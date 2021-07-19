@@ -80,6 +80,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_route_table":                                           tableAzureRouteTable(ctx),
 			"azure_security_center_auto_provisioning":                     tableAzureSecurityCenterAutoProvisioning(ctx),
 			"azure_security_center_contact":                               tableAzureSecurityCenterContact(ctx),
+			"azure_security_center_jit_network_access_policy":             tableAzureSecurityCenterJITNetworkAccessPolicy(ctx),
 			"azure_security_center_setting":                               tableAzureSecurityCenterSetting(ctx),
 			"azure_security_center_subscription_pricing":                  tableAzureSecurityCenterPricing(ctx),
 			"azure_sql_database":                                          tableAzureSqlDatabase(ctx),
