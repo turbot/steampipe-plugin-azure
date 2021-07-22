@@ -1,3 +1,18 @@
+## v0.14.0 [2021-07-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_data_factory_pipeline](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_factory_pipeline) ([#169](https://github.com/turbot/steampipe-plugin-azure/pull/169))
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v1.3.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v131--2021-07-15)
+
+_Bug fixes_
+
+- Fixed: `azure_virtual_network_gateway` table's parent hydrate now lists resource groups instead of virtual networks to prevent duplicate rows ([#181](https://github.com/turbot/steampipe-plugin-azure/pull/181))
+
 ## v0.13.0 [2021-07-13]
 
 _What's new?_
