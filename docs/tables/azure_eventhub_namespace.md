@@ -29,7 +29,7 @@ select
 from
   azure_eventhub_namespace
 where
-  network_rule_set  -> 'properties' -> 'virtualNetworkRules' = '[]';
+  network_rule_set -> 'properties' -> 'virtualNetworkRules' = '[]';
 ```
 
 
