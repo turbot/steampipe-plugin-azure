@@ -32,7 +32,7 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "The unique id identifying the resource in subscription",
+				Description: "The unique id identifying the resource in subscription.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
