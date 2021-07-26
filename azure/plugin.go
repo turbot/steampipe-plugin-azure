@@ -47,6 +47,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_virtual_machine_metric_cpu_utilization":        tableAzureComputeVirtualMachineMetricCpuUtilization(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization_daily":  tableAzureComputeVirtualMachineMetricCpuUtilizationDaily(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization_hourly": tableAzureComputeVirtualMachineMetricCpuUtilizationHourly(ctx),
+			"azure_container_registry":                                    tableAzureContainerRegistry(ctx),
 			"azure_cosmosdb_account":                                      tableAzureCosmosDBAccount(ctx),
 			"azure_cosmosdb_mongo_database":                               tableAzureCosmosDBMongoDatabase(ctx),
 			"azure_cosmosdb_sql_database":                                 tableAzureCosmosDBSQLDatabase(ctx),
