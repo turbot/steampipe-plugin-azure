@@ -61,7 +61,7 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "metric_id",
-				Description: "The identifier for Azure insights metrics",
+				Description: "The identifier for Azure insights metrics.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SBNamespaceProperties.MetricID"),
 			},
@@ -72,10 +72,10 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SBNamespaceProperties.ServiceBusEndpoint"),
 			},
 			{
-				Name:        "updated_at",
-				Description: "The time the namespace was updated.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("SBNamespaceProperties.UpdatedAt").Transform(convertDateToTime),
+				Name:        "sku_capacity",
+				Description: "The specified messaging units for the tier. For Premium tier, capacity are 1,2 and 4.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("Sku.Capacity"),
 			},
 			{
 				Name:        "sku_name",
@@ -84,16 +84,16 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
 			},
 			{
-				Name:        "sku_capacity",
-				Description: "The specified messaging units for the tier. For Premium tier, capacity are 1,2 and 4.",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("Sku.Capacity"),
-			},
-			{
 				Name:        "sku_tier",
 				Description: "The billing tier of this particular SKU. Valid values are: 'Basic', 'Standard', 'Premium'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier"),
+			},
+			{
+				Name:        "updated_at",
+				Description: "The time the namespace was updated.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("SBNamespaceProperties.UpdatedAt").Transform(convertDateToTime),
 			},
 			{
 				Name:        "encryption",
