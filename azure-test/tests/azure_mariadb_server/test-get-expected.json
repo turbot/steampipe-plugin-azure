@@ -1,0 +1,21 @@
+[
+  {
+    "administrator_login": "steampipeadmin",
+    "auto_grow_enabled": "Disabled",
+    "backup_retention_days": 7,
+    "fully_qualified_domain_name": "{{ output.fqdn.value }}",
+    "geo_redundant_backup_enabled": "Disabled",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "public_network_access": "Enabled",
+    "sku_capacity": 1,
+    "sku_family": "Gen5",
+    "sku_name": "B_Gen5_1",
+    "sku_tier": "Basic",
+    "ssl_enforcement": "Enabled",
+    "storage_mb": 5120,
+    "type": "Microsoft.DBforMariaDB/servers",
+    "user_visible_state": "Ready",
+    "version": "10.2"
+  }
+]
