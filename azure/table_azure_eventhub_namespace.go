@@ -19,7 +19,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getEventHubNamespace,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventHubNamespaces,
@@ -49,87 +49,100 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "created_at",
-				Description: "The time the Namespace was created.",
+				Description: "The time the namespace was created.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("EHNamespaceProperties.CreatedAt"),
+				Transform:   transform.FromField("EHNamespaceProperties.CreatedAt").Transform(convertDateToTime),
 			},
 			{
 				Name:        "cluster_arm_id",
-				Description: "Cluster ARM ID of the Namespace.",
+				Description: "Cluster ARM ID of the namespace.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EHNamespaceProperties.ClusterArmId"),
 			},
 			{
 				Name:        "is_auto_inflate_enabled",
-				Description: "Indicates whether AutoInflate is enabled for eventhub namespace.",
+				Description: "Indicates whether auto-inflate is enabled for eventhub namespace.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.IsAutoInflateEnabled"),
 			},
 			{
 				Name:        "kafka_enabled",
-				Description: "Value that indicates whether Kafka is enabled for eventhub namespace.",
+				Description: "Value that indicates whether kafka is enabled for eventhub namespace.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.KafkaEnabled"),
 			},
 			{
 				Name:        "maximum_throughput_units",
-				Description: "Upper limit of throughput units when AutoInflate is enabled, value should be within 0 to 20 throughput units.",
+				Description: "Upper limit of throughput units when auto-inflate is enabled, value should be within 0 to 20 throughput units.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("EHNamespaceProperties.MaximumThroughputUnits"),
 			},
 			{
 				Name:        "metric_id",
-				Description: "Identifier for Azure Insights metrics.",
+				Description: "Identifier for azure insights metrics.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EHNamespaceProperties.Metric_id"),
 			},
 			{
 				Name:        "principal_id",
-				Description: "ObjectId from the KeyVault.",
+				Description: "ObjectId from the key-vault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Identity.PrincipalId"),
 			},
 			{
 				Name:        "service_bus_endpoint",
-				Description: "Endpoint you can use to perform Service Bus operations.",
+				Description: "Endpoint you can use to perform service bus operations.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EHNamespaceProperties.ServiceBusEndpoint"),
 			},
 			{
+				Name:        "sku_capacity",
+				Description: "The Event Hubs throughput units, value should be 0 to 20 throughput units.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("Sku.Capacity"),
+			},
+			{
+				Name:        "sku_name",
+				Description: "Name of this SKU. Possible values include: 'Basic', 'Standard'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
+			},
+			{
+				Name:        "sku_tier",
+				Description: "The billing tier of this particular SKU. Valid values are: 'Basic', 'Standard', 'Premium'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Tier"),
+			},
+			{
 				Name:        "tenant_id",
-				Description: "TenantId from the KeyVault.",
+				Description: "TenantId from the key-vault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Identity.TenantId"),
 			},
 			{
 				Name:        "updated_at",
-				Description: "The time the Namespace was updated.",
+				Description: "The time the namespace was updated.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("EHNamespaceProperties.UpdatedAt"),
+				Transform:   transform.FromField("EHNamespaceProperties.UpdatedAt").Transform(convertDateToTime),
 			},
 			{
 				Name:        "zone_redundant",
-				Description: "Enabling this property creates a Standard Event Hubs Namespace in regions supported availability zones.",
+				Description: "Enabling this property creates a standard event hubs namespace in regions supported availability zones.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.ZoneRedundant"),
 			},
 			{
 				Name:        "encryption",
-				Description: "Cluster ARM ID of the Namespace.",
+				Description: "Properties of BYOK encryption description.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("EHNamespaceProperties.Encryption"),
 			},
 			{
 				Name:        "network_rule_set",
-				Description: "Gets NetworkRuleSet for a Namespace.",
+				Description: "Describes the network rule set for specified namespace. The EventHub Namespace must be Premium in order to attach a EventHub Namespace Network Rule Set.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getNetworkRuleSet,
 				Transform:   transform.FromValue(),
-			},
-			{
-				Name:        "sku",
-				Description: "Properties of sku resource.",
-				Type:        proto.ColumnType_JSON,
 			},
 
 			// Steampipe standard columns
@@ -230,13 +243,7 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
+	return op, nil
 }
 
 func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
