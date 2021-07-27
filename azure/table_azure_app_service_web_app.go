@@ -24,6 +24,12 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
 		},
+		HydrateDependencies: []plugin.HydrateDependencies{
+			{
+				Func:    getAppServiceWebAppVnetConnection,
+				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
+			},
+		},
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
@@ -134,9 +140,16 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "site_config",
-				Description: "A map of all configuration for the app",
+				Description: "A map of all configuration for the app.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.SiteConfig"),
+			},
+			{
+				Name:        "vnet_connection",
+				Description: "The details of the Vnet connection for the app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAppServiceWebAppVnetConnection,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -286,6 +299,29 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
+
+	data := h.Item.(web.Site)
+	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetVnetConnection(ctx, *data.SiteProperties.ResourceGroup, *data.Name, *vnet.SiteConfig.VnetName)
 	if err != nil {
 		return nil, err
 	}
