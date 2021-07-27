@@ -1,0 +1,6 @@
+[
+  {
+    "name": "{{ resourceName }}",
+    "type": "Microsoft.Cache/Redis"
+  }
+]

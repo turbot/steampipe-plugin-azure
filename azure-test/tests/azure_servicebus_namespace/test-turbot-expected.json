@@ -1,0 +1,17 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "{{ output.resource_aka_lower.value }}"
+    ],
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.location.value }}",
+    "resource_group": "{{ resourceName }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "name": "{{ resourceName }}"
+    },
+    "title": "{{ resourceName }}"
+  }
+]

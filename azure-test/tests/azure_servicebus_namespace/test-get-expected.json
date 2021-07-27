@@ -1,0 +1,20 @@
+[
+  {
+    "encryption": null,
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "network_rule_set": {
+      "properties": {
+        "defaultAction": "Deny",
+        "ipRules": [],
+        "virtualNetworkRules": []
+      }
+    },
+    "provisioning_state": "Succeeded",
+    "servicebus_endpoint": "https://{{ resourceName }}.servicebus.windows.net:443/",
+    "sku_name": "Basic",
+    "sku_tier": "Basic",
+    "type": "Microsoft.ServiceBus/Namespaces",
+    "zone_redundant": false
+  }
+]

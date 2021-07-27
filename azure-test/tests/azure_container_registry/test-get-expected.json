@@ -1,0 +1,32 @@
+[
+  {
+    "admin_user_enabled": false,
+    "data_endpoint_enabled": false,
+    "encryption": {
+      "status": "disabled"
+    },
+    "id": "{{ output.resource_id.value }}",
+    "login_server": "{{ output.login_server.value }}",
+    "name": "{{ resourceName }}",
+    "network_rule_bypass_options": "AzureServices",
+    "policies": {
+      "quarantinePolicy": {
+        "status": "disabled"
+      },
+      "retentionPolicy": {
+        "days": 7,
+        "status": "disabled"
+      },
+      "trustPolicy": {
+        "status": "disabled",
+        "type": "Notary"
+      }
+    },
+    "provisioning_state": "Succeeded",
+    "public_network_access": "Enabled",
+    "sku_name": "Premium",
+    "sku_tier": "Premium",
+    "type": "Microsoft.ContainerRegistry/registries",
+    "zone_redundancy": "Disabled"
+  }
+]
