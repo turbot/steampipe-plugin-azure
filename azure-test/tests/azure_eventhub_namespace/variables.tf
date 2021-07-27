@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
+  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
   description = "Azure subscription used for the test."
 }
 
@@ -66,4 +66,8 @@ output "resource_id" {
 
 output "subscription_id" {
   value = var.azure_subscription
+}
+
+output "location" {
+  value = azurerm_resource_group.named_test_resource.location
 }

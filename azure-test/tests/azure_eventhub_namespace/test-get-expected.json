@@ -4,7 +4,7 @@
     "is_auto_inflate_enabled": false,
     "kafka_enabled": true,
     "name": "{{ resourceName }}",
-    "region": "west us",
+    "region": "{{ output.location.value }}",
     "resource_group": "{{ resourceName }}",
     "type": "Microsoft.EventHub/Namespaces"
   }

@@ -1,6 +1,6 @@
 # Table: azure_eventhub_namespace
 
-An Event Hubs namespace provides a unique scoping container, in which you create one or more event hubs.
+An Event Hubs namespace provides DNS integrated network endpoints and a range of access control and network integration management features such as IP filtering, virtual network service endpoint, and Private Link and is the management container for one of multiple Event Hub instances (or topics, in Kafka parlance).
 
 ## Examples
 
@@ -17,7 +17,6 @@ from
   azure_eventhub_namespace;
 ```
 
-
 ### List namespaces not configured to use virtual network service endpoint
 
 ```sql
@@ -31,7 +30,6 @@ from
 where
   network_rule_set -> 'properties' -> 'virtualNetworkRules' = '[]';
 ```
-
 
 ### List unencrypted namespaces
 
@@ -47,8 +45,7 @@ where
   encryption is null;
 ```
 
-
-### List namespaces with auto inflate disabled
+### List namespaces with auto-inflate disabled
 
 ```sql
 select

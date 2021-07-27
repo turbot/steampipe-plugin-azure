@@ -67,7 +67,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "kafka_enabled",
-				Description: "Value that indicates whether kafka is enabled for eventhub namespace.",
+				Description: "Indicates whether kafka is enabled for eventhub namespace, or not.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.KafkaEnabled"),
 			},
@@ -82,12 +82,6 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Description: "Identifier for azure insights metrics.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EHNamespaceProperties.Metric_id"),
-			},
-			{
-				Name:        "principal_id",
-				Description: "ObjectId from the key-vault.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.PrincipalId"),
 			},
 			{
 				Name:        "service_bus_endpoint",
@@ -114,12 +108,6 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
-				Name:        "tenant_id",
-				Description: "TenantId from the key-vault.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.TenantId"),
-			},
-			{
 				Name:        "updated_at",
 				Description: "The time the namespace was updated.",
 				Type:        proto.ColumnType_TIMESTAMP,
@@ -134,6 +122,12 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			{
 				Name:        "encryption",
 				Description: "Properties of BYOK encryption description.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("EHNamespaceProperties.Encryption"),
+			},
+			{
+				Name:        "identity",
+				Description: "Describes the properties of BYOK encryption description.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("EHNamespaceProperties.Encryption"),
 			},
@@ -169,7 +163,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location").Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(formatRegion).Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
@@ -191,6 +185,8 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 
 func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listEventHubNamespaces")
+
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -199,8 +195,8 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	subscriptionID := session.SubscriptionID
 	client := eventhub.NewNamespacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
 
+	pagesLeft := true
 	for pagesLeft {
 		result, err := client.List(context.Background())
 		if err != nil {
@@ -219,7 +215,7 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 //// HYDRATE FUNCTIONS
 
-func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getEventHubNamespace")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -230,6 +226,7 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 		return nil, nil
 	}
 
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -247,12 +244,9 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 }
 
 func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	logger := plugin.Logger(ctx)
-	logger.Trace("getNetworkRuleSet")
+	plugin.Logger(ctx).Trace("getNetworkRuleSet")
 
-	namespace:= h.Item.(eventhub.EHNamespace)
-	resourceGroupName := strings.Split(string(*namespace.ID), "/")[4]
-
+	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -260,6 +254,9 @@ func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	subscriptionID := session.SubscriptionID
 	networkClient := eventhub.NewNamespacesClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	namespace := h.Item.(eventhub.EHNamespace)
+	resourceGroupName := strings.Split(string(*namespace.ID), "/")[4]
 
 	op, err := networkClient.GetNetworkRuleSet(context.Background(), resourceGroupName, *namespace.Name)
 	if err != nil {
