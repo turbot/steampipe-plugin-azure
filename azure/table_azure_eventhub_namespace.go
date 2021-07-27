@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -18,11 +18,11 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 		Description: "Azure Event Hub Namespace",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAzureEventHubNamespace,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			Hydrate:           getEventHubNamespace,
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureEventHubNamespaces,
+			Hydrate: listEventHubNamespaces,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -32,18 +32,18 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "The resource Id.",
+				Description: "The ID of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
-				Description: "The Resource type.",
+				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Provisioning state of the Namespace.",
+				Description: "Provisioning state of the namespace.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EHNamespaceProperties.ProvisioningState"),
 			},
@@ -61,7 +61,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "is_auto_inflate_enabled",
-				Description: "Value that indicates whether AutoInflate is enabled for eventhub namespace.",
+				Description: "Indicates whether AutoInflate is enabled for eventhub namespace.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.IsAutoInflateEnabled"),
 			},
@@ -174,10 +174,10 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 	}
 }
 
-//// LIST FUNCTION ////
+//// LIST FUNCTION
 
-func listAzureEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureEventHubNamespaces")
+func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventHubNamespaces")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -204,13 +204,18 @@ func listAzureEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *pl
 	return nil, nil
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
-func getAzureEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAzureComputeSnapshot")
+func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getEventHubNamespace")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Return nil, if no input provided
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

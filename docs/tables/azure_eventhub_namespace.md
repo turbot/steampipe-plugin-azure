@@ -18,7 +18,7 @@ from
 ```
 
 
-### List Namespaces with no virtual network service endpoint configured
+### List namespaces not configured to use virtual network service endpoint
 
 ```sql
 select
@@ -33,7 +33,7 @@ where
 ```
 
 
-### List Namespaces with encryption disabled
+### List unencrypted namespaces
 
 ```sql
 select
