@@ -1,0 +1,17 @@
+[
+  {
+    "enable_non_ssl_port": false,
+    "host_name": "{{ resourceName }}.redis.cache.windows.net",
+    "minimum_tls_version": "1.2",
+    "name": "{{ resourceName }}",
+    "public_network_access": "Enabled",
+    "redis_version": "4.0.14",
+    "region": "{{ output.location.value }}",
+    "resource_group": "{{ resourceName }}",
+    "sku_capacity": 0,
+    "sku_family": "C",
+    "sku_name": "Basic",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.Cache/Redis"
+  }
+]

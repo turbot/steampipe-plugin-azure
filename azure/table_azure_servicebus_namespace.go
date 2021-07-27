@@ -133,7 +133,7 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(formatRegion).Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(formatRegion).Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
@@ -235,12 +235,4 @@ func getServiceBusNamespaceNetworkRuleSet(ctx context.Context, d *plugin.QueryDa
 	}
 
 	return op, nil
-}
-
-//// TRANSFORM FUNCTION
-
-func formatRegion(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(servicebus.SBNamespace)
-	region := strings.ReplaceAll(*data.Location, " ", "")
-	return region, nil
 }
