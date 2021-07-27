@@ -48,7 +48,7 @@ where
 ```
 
 
-### List Namespaces with auto inflate disabled
+### List namespaces with auto inflate disabled
 
 ```sql
 select
