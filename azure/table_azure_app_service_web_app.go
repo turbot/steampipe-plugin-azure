@@ -146,7 +146,7 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "vnet_connection",
-				Description: "The details of the Vnet connection for the app.",
+				Description: "Describes the virtual network connection for the app.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAppServiceWebAppVnetConnection,
 				Transform:   transform.FromValue(),
@@ -326,7 +326,14 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 
-	return op, nil
+	appVnetConnection := map[string]interface{}{
+		"name":       op.Name,
+		"id":         op.ID,
+		"type":       op.Type,
+		"properties": op.VnetInfoProperties,
+	}
+
+	return appVnetConnection, nil
 }
 
 //// TRANSFORM FUNCTION
