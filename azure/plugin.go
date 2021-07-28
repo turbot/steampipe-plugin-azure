@@ -55,6 +55,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_factory_dataset":                                  tableAzureDataFactoryDataset(ctx),
 			"azure_data_factory_pipeline":                                 tableAzureDataFactoryPipeline(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
+			"azure_eventhub_namespace":                                    tableAzureEventHubNamespace(ctx),
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),
 			"azure_firewall":                                              tableAzureFirewall(ctx),
 			"azure_key_vault":                                             tableAzureKeyVault(ctx),
