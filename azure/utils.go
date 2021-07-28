@@ -111,3 +111,10 @@ func toLower(_ context.Context, d *transform.TransformData) (interface{}, error)
 	valStr := types.SafeString(d.Value)
 	return strings.ToLower(valStr), nil
 }
+
+// Remove spaces in between the location (i.e. 'east us' will be formatted to 'eastus')
+func formatRegion(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	valStr := types.SafeString(d.Value)
+	region := strings.ReplaceAll(valStr, " ", "")
+	return region, nil
+}

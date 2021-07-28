@@ -1,0 +1,11 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "is_auto_inflate_enabled": false,
+    "kafka_enabled": true,
+    "name": "{{ resourceName }}",
+    "region": "{{ output.location.value }}",
+    "resource_group": "{{ resourceName }}",
+    "type": "Microsoft.EventHub/Namespaces"
+  }
+]
