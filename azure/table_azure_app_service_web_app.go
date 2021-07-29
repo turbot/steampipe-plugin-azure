@@ -321,6 +321,10 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	webClient := web.NewAppsClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	if *vnet.SiteConfig.VnetName == "" {
+		return nil, nil
+	}
+
 	op, err := webClient.GetVnetConnection(ctx, *data.SiteProperties.ResourceGroup, *data.Name, *vnet.SiteConfig.VnetName)
 	if err != nil {
 		return nil, err
