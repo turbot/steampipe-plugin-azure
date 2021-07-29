@@ -24,6 +24,12 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
 		},
+		HydrateDependencies: []plugin.HydrateDependencies{
+			{
+				Func:    getAppServiceWebAppVnetConnection,
+				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
+			},
+		},
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
@@ -134,9 +140,16 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "site_config",
-				Description: "A map of all configuration for the app",
+				Description: "A map of all configuration for the app.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.SiteConfig"),
+			},
+			{
+				Name:        "vnet_connection",
+				Description: "Describes the virtual network connection for the app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAppServiceWebAppVnetConnection,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -291,6 +304,50 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 	}
 
 	return op, nil
+}
+
+func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
+
+	data := h.Item.(web.Site)
+	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClient(subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	// Return nil, if no virtual network is configured
+	if *vnet.SiteConfig.VnetName == "" {
+		return nil, nil
+	}
+
+	op, err := webClient.GetVnetConnection(ctx, *data.SiteProperties.ResourceGroup, *data.Name, *vnet.SiteConfig.VnetName)
+	if err != nil {
+		return nil, err
+	}
+
+	if op.VnetInfoProperties != nil {
+		appVnetConnection := make(map[string]interface{})
+		if op.Name != nil {
+			appVnetConnection["name"] = op.Name
+		}
+		if op.ID != nil {
+			appVnetConnection["id"] = op.ID
+		}
+		if op.Type != nil {
+			appVnetConnection["type"] = op.Type
+		}
+		appVnetConnection["properties"] = op.VnetInfoProperties
+
+		return appVnetConnection, nil
+	}
+
+	return nil, nil
 }
 
 //// TRANSFORM FUNCTION
