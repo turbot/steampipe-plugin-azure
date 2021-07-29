@@ -321,6 +321,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	webClient := web.NewAppsClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	// Return nil, if no virtual network is configured
 	if *vnet.SiteConfig.VnetName == "" {
 		return nil, nil
 	}
@@ -330,14 +331,23 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 
-	appVnetConnection := map[string]interface{}{
-		"name":       op.Name,
-		"id":         op.ID,
-		"type":       op.Type,
-		"properties": op.VnetInfoProperties,
+	if op.VnetInfoProperties != nil {
+		appVnetConnection := make(map[string]interface{})
+		if op.Name != nil {
+			appVnetConnection["name"] = op.Name
+		}
+		if op.ID != nil {
+			appVnetConnection["id"] = op.ID
+		}
+		if op.Type != nil {
+			appVnetConnection["type"] = op.Type
+		}
+		appVnetConnection["properties"] = op.VnetInfoProperties
+
+		return appVnetConnection, nil
 	}
 
-	return appVnetConnection, nil
+	return nil, nil
 }
 
 //// TRANSFORM FUNCTION
