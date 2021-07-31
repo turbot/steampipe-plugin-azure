@@ -2,7 +2,9 @@ package azure
 
 import (
 	"context"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/datalake/store/mgmt/2016-11-01/account"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -19,7 +21,7 @@ func tableAzureDataLakeStore(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getDataLakeStore,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataLakeStores,
@@ -51,30 +53,128 @@ func tableAzureDataLakeStore(_ context.Context) *plugin.Table {
 				Name:        "creation_time",
 				Description: "The account creation time.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.CreationTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.CreationTime", "DataLakeStoreAccountProperties.CreationTime").Transform(convertDateToTime),
+			},
+			{
+				Name:        "current_tier",
+				Description: "The commitment tier in use for current month.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.CurrentTier"),
+			},
+			{
+				Name:        "default_group",
+				Description: "The default owner group for all new folders and files created in the Data Lake Store account.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.DefaultGroup"),
+			},
+			{
+				Name:        "encryption_state",
+				Description: "The current state of encryption for this Data Lake Store account.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.EncryptionState"),
+			},
+			{
+				Name:        "encryption_provisioning_state",
+				Description: "The current state of encryption provisioning for this Data Lake Store account.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.EncryptionProvisioningState"),
 			},
 			{
 				Name:        "endpoint",
 				Description: "The full CName endpoint for this account.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.Endpoint", "DataLakeStoreAccountProperties.Endpoint"),
+			},
+			{
+				Name:        "firewall_state",
+				Description: "The current state of the IP address firewall for this Data Lake Store account.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.FirewallState"),
+			},
+			{
+				Name:        "last_modified_time",
+				Description: "The account last modified time.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.LastModifiedTime", "DataLakeStoreAccountProperties.LastModifiedTime").Transform(convertDateToTime),
+			},
+			{
+				Name:        "new_tier",
+				Description: "The commitment tier to use for next month.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.NewTier"),
 			},
 			{
 				Name:        "provisioning_state",
 				Description: "The provisioning status of the Data Lake Store account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.ProvisioningState"),
+				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.ProvisioningState", "DataLakeStoreAccountProperties.ProvisioningState"),
 			},
 			{
 				Name:        "state",
 				Description: "The state of the Data Lake Store account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.State"),
+				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.State", "DataLakeStoreAccountProperties.State"),
 			},
 			{
-				Name:        "last_modified_time",
-				Description: "Managed service identity of the factory.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DataLakeStoreAccountPropertiesBasic.LastModifiedTime").Transform(convertDateToTime),
+				Name:        "trusted_id_provider_state",
+				Description: "The current state of the trusted identity provider feature for this Data Lake Store account.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.TrustedIDProviderState"),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the Lake Store.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listDataLakeStoreDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "encryption_config",
+				Description: "The Key Vault encryption configuration.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.EncryptionConfig"),
+			},
+			{
+				Name:        "firewall_allow_azure_ips",
+				Description: "The current state of allowing or disallowing IPs originating within Azure through the firewall. If the firewall is disabled, this is not enforced.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.FirewallAllowAzureIps"),
+			},
+			{
+				Name:        "firewall_rules",
+				Description: "The list of firewall rules associated with this Data Lake Store account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.FirewallRules"),
+			},
+			{
+				Name:        "identity",
+				Description: "The Key Vault encryption identity, if any.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+			},
+			{
+				Name:        "trusted_id_providers",
+				Description: "The list of trusted identity providers associated with this Data Lake Store account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.TrustedIDProviders"),
+			},
+			{
+				Name:        "virtual_network_rules",
+				Description: "The list of virtual network rules associated with this Data Lake Store account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataLakeStore,
+				Transform:   transform.FromField("DataLakeStoreAccountProperties.VirtualNetworkRules"),
 			},
 
 			// Steampipe standard columns
@@ -161,8 +261,16 @@ func getDataLakeStore(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	accountClient := account.NewAccountsClient(subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	var name, resourceGroup string
+	if h.Item != nil {
+		data := h.Item.(account.DataLakeStoreAccountBasic)
+		splitID := strings.Split(*data.ID, "/")
+		name = *data.Name
+		resourceGroup = splitID[4]
+	} else {
+		name = d.KeyColumnQuals["name"].GetStringValue()
+		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
+	}
 
 	// Return nil, if no input provide
 	if name == "" || resourceGroup == "" {
@@ -175,4 +283,55 @@ func getDataLakeStore(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	return op, nil
+}
+
+func listDataLakeStoreDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listDataLakeStoreDiagnosticSettings")
+	id := getLakeStoreID(h.Item)
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
+}
+
+func getLakeStoreID(item interface{}) string {
+	switch item := item.(type) {
+	case account.DataLakeStoreAccountBasic:
+		return *item.ID
+	case account.DataLakeStoreAccount:
+		return *item.ID
+	}
+	return ""
 }
