@@ -139,6 +139,13 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Hydrate:     listKmsKeyVaultDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "network_acls",
+				Description: "Rules governing the accessibility of the key vault from specific network locations.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getKeyVault,
+				Transform:   transform.FromField("Properties.NetworkAcls"),
+			},
 
 			// Steampipe standard columns
 			{
