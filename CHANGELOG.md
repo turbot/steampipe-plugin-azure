@@ -1,3 +1,19 @@
+## v0.15.0 [2021-07-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_container_registry](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_container_registry) ([#196](https://github.com/turbot/steampipe-plugin-azure/pull/196))
+  - [azure_eventhub_namespace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_eventhub_namespace) ([#201](https://github.com/turbot/steampipe-plugin-azure/pull/201))
+  - [azure_mariadb_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mariadb_server) ([#206](https://github.com/turbot/steampipe-plugin-azure/pull/206))
+  - [azure_redis_cache](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_redis_cache) ([#203](https://github.com/turbot/steampipe-plugin-azure/pull/203))
+  - [azure_security_center_jit_network_access_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_jit_network_access_policy) ([#192](https://github.com/turbot/steampipe-plugin-azure/pull/192))
+  - [azure_servicebus_namespace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_servicebus_namespace) ([#200](https://github.com/turbot/steampipe-plugin-azure/pull/200))
+
+_Enhancements_
+
+- Updated: Add column `vnet_connection` to `azure_app_service_web_app` table ([#204](https://github.com/turbot/steampipe-plugin-azure/pull/204))
+
 ## v0.14.0 [2021-07-22]
 
 _What's new?_
