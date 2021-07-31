@@ -130,7 +130,7 @@ func tableAzureDataLakeStore(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the Lake Store.",
+				Description: "A list of active diagnostic settings for the Data Lake Store.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listDataLakeStoreDiagnosticSettings,
 				Transform:   transform.FromValue(),
