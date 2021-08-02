@@ -216,13 +216,13 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provision_vm_agent",
-				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine.",
+				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine for linux configuration.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.LinuxConfiguration.ProvisionVMAgent"),
 			},
 			{
 				Name:        "provision_vm_agent_windows",
-				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine.",
+				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine for windows configuration.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.ProvisionVMAgent"),
 			},
