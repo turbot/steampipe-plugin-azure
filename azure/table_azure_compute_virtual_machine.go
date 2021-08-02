@@ -131,15 +131,21 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "computer_name",
-				Description: "Specifies the host OS name of the virtual machine",
+				Description: "Specifies the host OS name of the virtual machine.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.ComputerName"),
 			},
 			{
 				Name:        "disable_password_authentication",
-				Description: "Specifies whether password authentication should be disabled",
+				Description: "Specifies whether password authentication should be disabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.LinuxConfiguration.DisablePasswordAuthentication"),
+			},
+			{
+				Name:        "enable_automatic_updates",
+				Description: "Indicates whether Automatic Updates is enabled for the Windows virtual machine.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.EnableAutomaticUpdates"),
 			},
 			{
 				Name:        "eviction_policy",
@@ -226,10 +232,16 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.Priority").Transform(transform.ToString),
 			},
 			{
-				Name:        "provision_vm_agent",
+				Name:        "provision_vm_agent_linux",
 				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.LinuxConfiguration.ProvisionVMAgent"),
+			},
+			{
+				Name:        "provision_vm_agent_windows",
+				Description: "Specifies whether virtual machine agent should be provisioned on the virtual machine",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.ProvisionVMAgent"),
 			},
 			{
 				Name:        "require_guest_provision_signal",
@@ -242,6 +254,18 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Description: "Specifies whether managed disks with storage account type UltraSSD_LRS can be added to a virtual machine or virtual machine scale set, or not",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.AdditionalCapabilities.UltraSSDEnabled"),
+			},
+			{
+				Name:        "time_zone",
+				Description: "Specifies the time zone of the virtual machine.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.TimeZone"),
+			},
+			{
+				Name:        "additional_unattend_content",
+				Description: "Specifies additional base-64 encoded XML formatted information that can be included in the Unattend.xml file, which is used by Windows Setup.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.AdditionalUnattendContent"),
 			},
 			{
 				Name:        "data_disks",
@@ -262,6 +286,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.NetworkProfile.NetworkInterfaces"),
 			},
 			{
+				Name:        "patch_settings",
+				Description: "Specifies settings related to in-guest patching (KBs).",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.PatchSettings"),
+			},
+			{
 				Name:        "secrets",
 				Description: "A list of certificates that should be installed onto the virtual machine",
 				Type:        proto.ColumnType_JSON,
@@ -279,6 +309,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureComputeVirtualMachineExtensions,
 				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "win_rm",
+				Description: "Specifies the Windows Remote Management listeners. This enables remote Windows PowerShell.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.WinRM"),
 			},
 			{
 				Name:        "zones",
