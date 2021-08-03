@@ -126,7 +126,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "enable_automatic_updates",
-				Description: "Indicates whether Automatic Updates is enabled for the Windows virtual machine.",
+				Description: "Indicates whether automatic updates is enabled for the windows virtual machine.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.EnableAutomaticUpdates"),
 			},
@@ -246,7 +246,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "additional_unattend_content",
-				Description: "Specifies additional base-64 encoded XML formatted information that can be included in the Unattend.xml file, which is used by Windows Setup.",
+				Description: "Specifies additional base-64 encoded XML formatted information that can be included in the Unattend.xml file, which is used by windows setup.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.AdditionalUnattendContent"),
 			},
@@ -309,7 +309,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "win_rm",
-				Description: "Specifies the Windows Remote Management listeners. This enables remote Windows PowerShell.",
+				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("VirtualMachineProperties.OsProfile.WindowsConfiguration.WinRM"),
 			},
