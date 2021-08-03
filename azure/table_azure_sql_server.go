@@ -131,6 +131,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Tags"),
 			},
+			{
+				Name:        "virtual_network_rules",
+				Description: "A list of virtual network rules for this server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSQLServerVirtualNetworkRules,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -491,4 +498,51 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	return firewallRules, nil
+}
+
+func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSQLServerVirtualNetworkRules")
+	server := h.Item.(sql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := sql.NewVirtualNetworkRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	// If we return the API response directly, the output only gives
+	// the contents of FirewallRuleProperties
+	var NetworkRules []map[string]interface{}
+
+	pagesLeft := true
+	for pagesLeft {
+		result, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, networkRule := range result.Values() {
+			objectMap := make(map[string]interface{})
+			if networkRule.ID != nil {
+				objectMap["id"] = networkRule.ID
+			}
+			if networkRule.Name != nil {
+				objectMap["name"] = networkRule.Name
+			}
+			if networkRule.Type != nil {
+				objectMap["type"] = networkRule.Type
+			}
+			if networkRule.VirtualNetworkRuleProperties != nil {
+				objectMap["properties"] = networkRule.VirtualNetworkRuleProperties
+			}
+			NetworkRules = append(NetworkRules, objectMap)
+		}
+		result.NextWithContext(context.Background())
+		pagesLeft = result.NotDone()
+	}
+
+	return NetworkRules, nil
 }
