@@ -122,7 +122,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the resource.",
+				Description: "A list of active diagnostic settings for the eventhub namespace.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listEventHubNamespaceDiagnosticSettings,
 				Transform:   transform.FromValue(),
