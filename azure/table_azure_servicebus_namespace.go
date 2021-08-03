@@ -98,7 +98,7 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the resource.",
+				Description: "A list of active diagnostic settings for the servicebus namespace.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listServiceBusNamespaceDiagnosticSettings,
 				Transform:   transform.FromValue(),
