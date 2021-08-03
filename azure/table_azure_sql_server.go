@@ -515,7 +515,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	client.Authorizer = session.Authorizer
 
 	// If we return the API response directly, the output only gives
-	// the contents of FirewallRuleProperties
+	// the contents of VirtualNetworkRuleProperties
 	var NetworkRules []map[string]interface{}
 
 	pagesLeft := true
