@@ -15,3 +15,31 @@ select
 from
   azure_logic_app_workflow;
 ```
+
+### List disabled workflows
+
+```sql
+select
+  name,
+  id,
+  state,
+  type
+from
+  azure_logic_app_workflow
+where
+  state = 'Disabled';
+```
+
+### List suspended workflows
+
+```sql
+select
+  name,
+  id,
+  state,
+  type
+from
+  azure_logic_app_workflow
+where
+  state = 'Suspended';
+```

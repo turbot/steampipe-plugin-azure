@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/logic/mgmt/2019-05-01/logic"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -94,6 +95,13 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 				Description: "The workflow defination.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("WorkflowProperties.Definition"),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the workflow.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listLogicAppWorkflowDiagnosticSettings,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "endpoints_configuration",
@@ -224,4 +232,45 @@ func getLogicAppWorkflow(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 
 	return op, nil
+}
+
+func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listLogicAppWorkflowDiagnosticSettings")
+	id := *h.Item.(logic.Workflow).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }
