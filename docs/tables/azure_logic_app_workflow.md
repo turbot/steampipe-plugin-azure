@@ -1,6 +1,6 @@
 # Table: azure_logic_app_workflow
 
-A workflow is a series of steps that defines a task or process. Each workflow starts with a single trigger, after which you must add one or more actions.
+Azure Logic Apps helps you simplify and implement scalable integrations and workflows in the cloud. You can model and automate your process visually as a series of steps known as a workflow in the Logic App Designer.
 
 ## Examples
 
