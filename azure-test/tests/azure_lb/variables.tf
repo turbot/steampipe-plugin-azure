@@ -30,34 +30,18 @@ resource "azurerm_resource_group" "named_test_resource" {
   location = "West Europe"
 }
 
-resource "azurerm_public_ip" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  allocation_method   = "Static"
-}
-
 resource "azurerm_lb" "named_test_resource" {
   name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
-
-  frontend_ip_configuration {
-    name                 = var.resource_name
-    public_ip_address_id = azurerm_public_ip.named_test_resource.id
-  }
-
+  
   tags = {
     name = var.resource_name
   }
 }
 
-output "public_ip_id" {
-  value = azurerm_public_ip.named_test_resource.id
-}
-
 output "region" {
-  value = azurerm_public_ip.named_test_resource.location
+  value = azurerm_resource_group.named_test_resource.location
 }
 
 output "resource_aka" {
@@ -75,4 +59,8 @@ output "resource_name" {
 
 output "resource_id" {
   value = azurerm_lb.named_test_resource.id
+}
+
+output "subscription_id" {
+  value = var.azure_subscription
 }

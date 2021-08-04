@@ -4,12 +4,10 @@
     "name": "{{resourceName}}",
     "region": "{{ output.region.value }}",
     "resource_group": "{{resourceName}}",
-    "frontend_ip_configurations": [
-      {
-        "id": "{{ output.public_ip_id.value }}",
-        "name": "{{resourceName}}"
-      }
-    ],
-    "type": "Microsoft.Network/networkSecurityGroups"
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "name": "{{ resourceName }}"
+    },
+    "type": "Microsoft.Network/loadBalancers"
   }
 ]
