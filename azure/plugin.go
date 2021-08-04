@@ -62,6 +62,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_key_vault_key":                                         tableAzureKeyVaultKey(ctx),
 			"azure_key_vault_secret":                                      tableAzureKeyVaultSecret(ctx),
 			"azure_kubernetes_cluster":                                    tableAzureKubernetesCluster(ctx),
+			"azure_lb":                                                    tableAzureLoadBalancer(ctx),
 			"azure_location":                                              tableAzureLocation(ctx),
 			"azure_log_alert":                                             tableAzureLogAlert(ctx),
 			"azure_log_profile":                                           tableAzureLogProfile(ctx),
