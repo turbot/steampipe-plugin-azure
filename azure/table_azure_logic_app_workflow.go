@@ -20,7 +20,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getLogicAppWorkflow,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogicAppWorkflows,
