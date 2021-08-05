@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/iothub/mgmt/2020-03-01/devices/iothub"
+	"github.com/Azure/azure-sdk-for-go/services/iothub/mgmt/2020-03-01/devices"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -19,7 +19,7 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getIotHub,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIotHubs,
@@ -37,67 +37,134 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
+				Name:        "state",
+				Description: "The iot hub state.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.State"),
+			},
+			{
+				Name:        "provisioning_state",
+				Description: "Iot hub provisioning state.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.ProvisioningState"),
+			},
+			{
 				Name:        "type",
 				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "version",
-				Description: "Version of the factory.",
+				Name:        "comments",
+				Description: "IoT hub comments.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.Version"),
+				Transform:   transform.FromField("Properties.Comments"),
 			},
 			{
-				Name:        "create_time",
-				Description: "Specifies the time, the factory was created.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("FactoryProperties.CreateTime").Transform(convertDateToTime),
+				Name:        "enable_file_upload_notifications",
+				Description: "If True, file upload notifications are enabled.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Properties.EnableFileUploadNotifications"),
 			},
 			{
 				Name:        "etag",
 				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ETag"),
 			},
 			{
-				Name:        "provisioning_state",
-				Description: "Factory provisioning state, example Succeeded.",
+				Name:        "features",
+				Description: "The capabilities and features enabled for the iot hub. Possible values include: 'None', 'DeviceManagement'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.ProvisioningState"),
+				Transform:   transform.FromField("Properties.Features"),
+			},
+			{
+				Name:        "host_name",
+				Description: "The name of the host.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.HostName"),
+			},
+			{
+				Name:        "min_tls_version",
+				Description: "Specifies the minimum TLS version to support for this hub.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.MinTLSVersion"),
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Whether or not public network access is allowed for the data factory.",
+				Description: "Whether requests from public network are allowed.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.PublicNetworkAccess").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.PublicNetworkAccess").Transform(transform.ToString),
 			},
 			{
-				Name:        "additional_properties",
-				Description: "Unmatched properties from the message are deserialized this collection.",
-				Type:        proto.ColumnType_JSON,
+				Name:        "sku_capacity",
+				Description: "Iot hub SKU capacity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Capacity"),
 			},
 			{
-				Name:        "identity",
-				Description: "Managed service identity of the factory.",
-				Type:        proto.ColumnType_JSON,
+				Name:        "sku_name",
+				Description: "Iot hub SKU name.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
 			},
 			{
-				Name:        "encryption",
-				Description: "Properties to enable Customer Managed Key for the factory.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.EncryptionConfiguration"),
+				Name:        "sku_tier",
+				Description: "Iot hub SKU tier.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
-				Name:        "repo_configuration",
-				Description: "Git repo information of the factory.",
+				Name:        "authorization_policies",
+				Description: "The shared access policies you can use to secure a connection to the iot hub.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.RepoConfiguration"),
+				Transform:   transform.FromField("Properties.AuthorizationPolicies"),
 			},
 			{
-				Name:        "global_parameters",
-				Description: "List of parameters for factory.",
+				Name:        "cloud_to_device",
+				Description: "CloudToDevice properties of the iot hub.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
+				Transform:   transform.FromField("Properties.CloudToDevice"),
+			},
+			{
+				Name:        "event_hub_endpoints",
+				Description: "The event hub-compatible endpoint properties.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.EventHubEndpoints"),
+			},
+			{
+				Name:        "ip_filter_rules",
+				Description: "The IP filter rules of the iot hub.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.IPFilterRules"),
+			},
+			{
+				Name:        "locations",
+				Description: "Primary and secondary location for iot hub.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.Locations"),
+			},
+			{
+				Name:        "messaging_endpoints",
+				Description: "The messaging endpoint properties for the file upload notification queue.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.MessagingEndpoints"),
+			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "Private endpoint connections created on this iot hub.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
+			},
+			{
+				Name:        "routing",
+				Description: "Routing properties of the iot hub.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.Routing"),
+			},
+			{
+				Name:        "storage_endpoints",
+				Description: "The list of azure storage endpoints where you can upload files.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.StorageEndpoints"),
 			},
 
 			// Steampipe standard columns
@@ -151,17 +218,17 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotHubClient := iothub.NewIotHubClientAPI(subscriptionID)
+	iotHubClient := devices.NewIotHubResourceClient(subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
 
 	pagesLeft := true
 	for pagesLeft {
-		result, err := iotHubClient.List(context.Background())
+		result, err := iotHubClient.ListBySubscription(context.Background())
 		if err != nil {
 			return nil, err
 		}
-		for _, factory := range result.Values() {
-			d.StreamListItem(ctx, factory)
+		for _, iotHubDescription := range result.Values() {
+			d.StreamListItem(ctx, iotHubDescription)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
@@ -181,7 +248,7 @@ func getIotHub(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotHubClient := iothub.NewIotHubClientAPI(subscriptionID)
+	iotHubClient := devices.NewIotHubResourceClient(subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -192,7 +259,7 @@ func getIotHub(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 		return nil, nil
 	}
 
-	op, err := iotHubClient.Get(ctx, resourceGroup, name, "*")
+	op, err := iotHubClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
