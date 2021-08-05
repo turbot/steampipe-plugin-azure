@@ -10,10 +10,12 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
@@ -22,7 +24,10 @@ type Session struct {
 	SubscriptionID string
 	TenantID       string
 	Authorizer     autorest.Authorizer
+	Expires        *time.Time
 }
+
+// Expires time.Now().Add(60 * time.Second),
 
 // GetNewSession creates an session configured from environment variables/CLI in the order:
 // 1. Client credentials
@@ -31,33 +36,39 @@ type Session struct {
 // 4. MSI
 // 5. CLI
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
+	serviceCacheKey := "GetNewSession"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
+		session = cachedData.(*Session)
+		if (session.Expires != nil && !WillExpireIn(*session.Expires, 0)) || session.Expires == nil {
+			return cachedData.(*Session), nil
+		}
+	}
+
 	azureConfig := GetConfig(d.Connection)
 
-	if &azureConfig != nil {
-		if azureConfig.TenantID != nil {
-			os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
-		}
-		if azureConfig.SubscriptionID != nil {
-			os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
-		}
-		if azureConfig.ClientID != nil {
-			os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
-		}
-		if azureConfig.ClientSecret != nil {
-			os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
-		}
-		if azureConfig.CertificatePath != nil {
-			os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
-		}
-		if azureConfig.CertificatePassword != nil {
-			os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
-		}
-		if azureConfig.Username != nil {
-			os.Setenv("AZURE_USERNAME", *azureConfig.Username)
-		}
-		if azureConfig.Username != nil {
-			os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
-		}
+	if azureConfig.TenantID != nil {
+		os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
+	}
+	if azureConfig.SubscriptionID != nil {
+		os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
+	}
+	if azureConfig.ClientID != nil {
+		os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
+	}
+	if azureConfig.ClientSecret != nil {
+		os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
+	}
+	if azureConfig.CertificatePath != nil {
+		os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
+	}
+	if azureConfig.CertificatePassword != nil {
+		os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
+	}
+	if azureConfig.Username != nil {
+		os.Setenv("AZURE_USERNAME", *azureConfig.Username)
+	}
+	if azureConfig.Username != nil {
+		os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
 	}
 
 	logger := plugin.Logger(ctx)
@@ -71,13 +82,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	var authorizer autorest.Authorizer
-
-	// have we already created and cached the session?
-	serviceCacheKey := tokenAudience + resource + authMethod
-
-	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
-		return cachedData.(*Session), nil
-	}
+	var expiresOn time.Time
 
 	// so if it was not in cache - create session
 	switch authMethod {
@@ -102,7 +107,16 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
-		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
+		// authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
+		token, err := cli.GetTokenFromCLI(resource)
+		if err != nil {
+			return nil, err
+		}
+
+		// var adalToken adal.Token
+		adalToken, err := token.ToADALToken()
+		expiresOn = adalToken.Expires()
+
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
@@ -111,6 +125,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			}
 			return nil, err
 		}
+		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	}
 
 	if authMethod == "CLI" {
@@ -131,6 +146,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		SubscriptionID: subscriptionID,
 		Authorizer:     authorizer,
 		TenantID:       tenantID,
+		Expires:        &expiresOn,
 	}
 
 	d.ConnectionManager.Cache.Set(serviceCacheKey, sess)
@@ -254,4 +270,10 @@ func getSubscriptionFromCLI(resource string) (*subscription, error) {
 		SubscriptionID: tokenResponse["subscription"].(string),
 		TenantID:       tokenResponse["tenant"].(string),
 	}, nil
+}
+
+// WillExpireIn returns true if the Token will expire after the passed time.Duration interval
+// from now, false otherwise.
+func WillExpireIn(t time.Time, d time.Duration) bool {
+	return !t.After(time.Now().Add(d))
 }
