@@ -20,7 +20,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getLogicAppWorkflow,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogicAppWorkflows,
@@ -45,7 +45,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Workflow provisioning state.",
+				Description: "The provisioning state of the workflow.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("WorkflowProperties.ProvisioningState"),
 			},
@@ -62,7 +62,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "created_time",
-				Description: "Specifies the time, the workflow was created.",
+				Description: "The time when workflow was created.",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("WorkflowProperties.CreatedTime").Transform(convertDateToTime),
 			},
