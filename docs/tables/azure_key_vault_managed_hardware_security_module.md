@@ -18,7 +18,7 @@ from
   azure_key_vault_managed_hardware_security_module;
 ```
 
-### List disabled soft delete
+### List soft delete disabled hsm
 
 ```sql
 select
