@@ -10,8 +10,22 @@ Azure IoT Hub is Microsoft’s Internet of Things connector to the cloud. It’s
 select
   name,
   id,
-  location,
+  region,
   type
 from
   azure_iothub;
+```
+
+### List hubs which are not active
+
+```sql
+select
+  name,
+  id,
+  region,
+  type
+from
+  azure_iothub
+where
+  state <> 'Active';
 ```
