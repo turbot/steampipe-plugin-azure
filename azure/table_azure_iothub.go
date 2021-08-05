@@ -56,13 +56,13 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "comments",
-				Description: "IoT hub comments.",
+				Description: "Iot hub comments.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Comments"),
 			},
 			{
 				Name:        "enable_file_upload_notifications",
-				Description: "If True, file upload notifications are enabled.",
+				Description: "If True, file upload notifications are enabled for the iot hub.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Properties.EnableFileUploadNotifications"),
 			},
@@ -85,7 +85,7 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "min_tls_version",
-				Description: "Specifies the minimum TLS version to support for this hub.",
+				Description: "Specifies the minimum TLS version to support for this iot hub.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.MinTLSVersion"),
 			},
