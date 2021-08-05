@@ -13,7 +13,7 @@ select
   hsm_uri,
   type,
   enable_soft_delete,
-  location
+  region
 from
   azure_key_vault_managed_hardware_security_module;
 ```
