@@ -45,7 +45,7 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Iot hub provisioning state.",
+				Description: "The iot hub provisioning state.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
@@ -62,7 +62,7 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "enable_file_upload_notifications",
-				Description: "If True, file upload notifications are enabled for the iot hub.",
+				Description: "Indicates if file upload notifications are enabled for the iot hub.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Properties.EnableFileUploadNotifications"),
 			},
@@ -91,7 +91,7 @@ func tableAzureIotHub(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Whether requests from public network are allowed.",
+				Description: "Indicates whether requests from public network are allowed.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.PublicNetworkAccess").Transform(transform.ToString),
 			},
