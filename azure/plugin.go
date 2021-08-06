@@ -65,6 +65,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_kubernetes_cluster":                                    tableAzureKubernetesCluster(ctx),
 			"azure_lb":                                                    tableAzureLoadBalancer(ctx),
 			"azure_lb_rule":                                               tableAzureLoadBalancerRule(ctx),
+			"azure_lb_probe":                                              tableAzureLoadBalancerProbe(ctx),
 			"azure_location":                                              tableAzureLocation(ctx),
 			"azure_log_alert":                                             tableAzureLogAlert(ctx),
 			"azure_log_profile":                                           tableAzureLogProfile(ctx),
