@@ -36,10 +36,12 @@ type Session struct {
 // 4. MSI
 // 5. CLI
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
-	serviceCacheKey := "GetNewSession"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
+	cacheKey := "GetNewSession"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		session = cachedData.(*Session)
-		if (session.Expires != nil && !WillExpireIn(*session.Expires, 0)) || session.Expires == nil {
+		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
+			d.ConnectionManager.Cache.Delete("GetNewSession")
+		} else {
 			return cachedData.(*Session), nil
 		}
 	}
@@ -149,7 +151,11 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		Expires:        &expiresOn,
 	}
 
-	d.ConnectionManager.Cache.Set(serviceCacheKey, sess)
+	if sess.Expires != nil {
+		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
+	} else {
+		d.ConnectionManager.Cache.Set(cacheKey, sess)
+	}
 
 	return sess, err
 }
