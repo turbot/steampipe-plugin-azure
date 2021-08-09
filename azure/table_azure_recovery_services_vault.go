@@ -75,10 +75,10 @@ func tableAzureRecoveryServicesVault(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
-				Name:        "back_up_jobs",
-				Description: "Back up jobs of the recovery services vault.",
+				Name:        "backup_jobs",
+				Description: "Backup jobs of the recovery services vault.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listRecoveryServicesVaultBackUpJobs,
+				Hydrate:     listRecoveryServicesVaultBackupJobs,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -206,7 +206,7 @@ func getRecoveryServicesVault(ctx context.Context, d *plugin.QueryData, h *plugi
 	return op, nil
 }
 
-func listRecoveryServicesVaultBackUpJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listRecoveryServicesVaultBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	vault := h.Item.(recoveryservices.Vault)
 	resourceGroup := strings.Split(*vault.ID, "/")[4]
 
@@ -220,8 +220,8 @@ func listRecoveryServicesVaultBackUpJobs(ctx context.Context, d *plugin.QueryDat
 	backupJobClient.Authorizer = session.Authorizer
 
 	// If we return the API response directly, the output only gives
-	// the contents of BackUpJobs
-	var backUpJobs []map[string]interface{}
+	// the contents of BackupJobs
+	var backupJobs []map[string]interface{}
 	pagesLeft := true
 	for pagesLeft {
 		result, err := backupJobClient.List(ctx, *vault.Name, resourceGroup, "", "")
@@ -229,35 +229,35 @@ func listRecoveryServicesVaultBackUpJobs(ctx context.Context, d *plugin.QueryDat
 			return nil, err
 		}
 		for _, vault := range result.Values() {
-			backUpJob := make(map[string]interface{})
+			backupJob := make(map[string]interface{})
 			if vault.ID != nil {
-				backUpJob["id"] = vault.ID
+				backupJob["id"] = vault.ID
 			}
 			if vault.Name != nil {
-				backUpJob["name"] = vault.Name
+				backupJob["name"] = vault.Name
 			}
 			if vault.Type != nil {
-				backUpJob["type"] = vault.Type
+				backupJob["type"] = vault.Type
 			}
 			if vault.Location != nil {
-				backUpJob["Location"] = vault.Location
+				backupJob["Location"] = vault.Location
 			}
 			if vault.Tags != nil {
-				backUpJob["Tags"] = vault.Tags
+				backupJob["Tags"] = vault.Tags
 			}
 			if vault.ETag != nil {
-				backUpJob["ETag"] = vault.ETag
+				backupJob["ETag"] = vault.ETag
 			}
 			if vault.Properties != nil {
-				backUpJob["properties"] = vault.Properties
+				backupJob["properties"] = vault.Properties
 			}
-			backUpJobs = append(backUpJobs, backUpJob)
+			backupJobs = append(backupJobs, backupJob)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
 	}
 
-	return backUpJobs, nil
+	return backupJobs, nil
 }
 
 func listRecoveryServicesVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
