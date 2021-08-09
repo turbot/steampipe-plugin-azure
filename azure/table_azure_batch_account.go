@@ -44,7 +44,7 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioned state of the resource.",
+				Description: "The provisioned state of the batch account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AccountProperties.ProvisioningState"),
 			},
@@ -62,7 +62,7 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "dedicated_core_quota",
-				Description: "The dedicated core quota of the batch service.",
+				Description: "The dedicated core quota of the batch account.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("AccountProperties.DedicatedCoreQuota"),
 			},
