@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/batch/mgmt/2020-09-01/batch"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -19,7 +20,7 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getBatchAccount,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listBatchAccounts,
@@ -42,62 +43,100 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "AccountEndpoint",
-				Description: "The account endpoint used to interact with the Batch service.",
+				Name:        "provisioning_state",
+				Description: "The provisioned state of the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AccountProperties.ProvisioningState"),
+			},
+			{
+				Name:        "account_endpoint",
+				Description: "The account endpoint used to interact with the batch service.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AccountProperties.AccountEndpoint"),
 			},
 			{
-				Name:        "create_time",
-				Description: "Specifies the time, the factory was created.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("FactoryProperties.CreateTime").Transform(convertDateToTime),
+				Name:        "active_job_and_job_schedule_quota",
+				Description: "Active job and job schedule quota of the batch account.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AccountProperties.ActiveJobAndJobScheduleQuota"),
 			},
 			{
-				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ETag"),
+				Name:        "dedicated_core_quota",
+				Description: "The dedicated core quota of the batch service.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("AccountProperties.DedicatedCoreQuota"),
 			},
 			{
-				Name:        "provisioning_state",
-				Description: "Factory provisioning state, example Succeeded.",
+				Name:        "dedicated_core_quota_per_vm_family_enforced",
+				Description: "Batch is transitioning its core quota system for dedicated cores to be enforced per Virtual Machine family. During this transitional phase, the dedicated core quota per Virtual Machine family may not yet be enforced.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("AccountProperties.DedicatedCoreQuotaPerVMFamilyEnforced"),
+			},
+			{
+				Name:        "low_priority_core_quota",
+				Description: "The low priority core quota of the batch account.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("AccountProperties.LowPriorityCoreQuota"),
+			},
+			{
+				Name:        "pool_allocation_mode",
+				Description: "The pool allocation mode of the batch account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.ProvisioningState"),
+				Transform:   transform.FromField("AccountProperties.PoolAllocationMode"),
+			},
+			{
+				Name:        "pool_quota",
+				Description: "The pool quota of the batch account.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("AccountProperties.PoolQuota"),
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Whether or not public network access is allowed for the data factory.",
+				Description: "Whether or not public network access is allowed for the batch account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FactoryProperties.PublicNetworkAccess").Transform(transform.ToString),
+				Transform:   transform.FromField("AccountProperties.PublicNetworkAccess").Transform(transform.ToString),
 			},
 			{
-				Name:        "additional_properties",
-				Description: "Unmatched properties from the message are deserialized this collection.",
+				Name:        "auto_storage",
+				Description: "The auto storage properties of the batch account.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AccountProperties.AutoStorage"),
 			},
 			{
-				Name:        "identity",
-				Description: "Managed service identity of the factory.",
+				Name:        "dedicated_core_quota_per_vm_family",
+				Description: "A list of the dedicated core quota per virtual machine family for the batch account.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AccountProperties.DedicatedCoreQuotaPerVMFamily"),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the batch account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listBatchAccountDiagnosticSettings,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "encryption",
-				Description: "Properties to enable Customer Managed Key for the factory.",
+				Description: "Properties to enable customer managed key for the batch account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.EncryptionConfiguration"),
+				Transform:   transform.FromField("AccountProperties.Encryption"),
 			},
 			{
-				Name:        "repo_configuration",
-				Description: "Git repo information of the factory.",
+				Name:        "identity",
+				Description: "The identity of the batch account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.RepoConfiguration"),
 			},
 			{
-				Name:        "global_parameters",
-				Description: "List of parameters for factory.",
+				Name:        "key_vault_reference",
+				Description: "Key vault reference of the batch account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
+				Transform:   transform.FromField("AccountProperties.KeyVaultReference"),
+			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "The properties associated with the private endpoint connection.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AccountProperties.PrivateEndpointConnections"),
 			},
 
 			// Steampipe standard columns
@@ -198,4 +237,45 @@ func getBatchAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	return op, nil
+}
+
+func listBatchAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listBatchAccountDiagnosticSettings")
+	id := *h.Item.(batch.Account).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }

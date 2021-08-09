@@ -5,9 +5,6 @@
       "{{ output.resource_aka_lower.value }}"
     ],
     "name": "{{ resourceName }}",
-    "tags": {
-      "name": "{{ resourceName }}"
-    },
     "title": "{{ resourceName }}"
   }
 ]

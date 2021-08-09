@@ -2,6 +2,6 @@
   {
     "id": "{{ output.resource_id.value }}",
     "name": "{{ resourceName }}",
-    "type": "Microsoft.DataFactory/factories"
+    "type": "Microsoft.Batch/batchAccounts"
   }
 ]

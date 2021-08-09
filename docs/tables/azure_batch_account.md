@@ -8,12 +8,12 @@ An Azure Batch account is a uniquely identified entity within the Batch service.
 
 ```sql
 select
-  display_name,
-  user_principal_name,
-  given_name,
-  mail,
-  account_enabled,
-  object_id
+  name,
+  id,
+  type,
+  provisioning_state,
+  dedicated_core_quota,
+  region
 from
   azure_batch_account;
 ```
