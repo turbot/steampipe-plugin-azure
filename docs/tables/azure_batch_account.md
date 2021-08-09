@@ -17,3 +17,19 @@ select
 from
   azure_batch_account;
 ```
+
+### List failed batch accounts
+
+```sql
+select
+  name,
+  id,
+  type,
+  provisioning_state,
+  dedicated_core_quota,
+  region
+from
+  azure_batch_account
+where
+provisioning_state = 'Failed';
+```
