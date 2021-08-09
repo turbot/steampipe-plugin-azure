@@ -473,10 +473,6 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 		return nil, err
 	}
 
-	if op.Value != nil {
-		return op.Value, nil
-	}
-
 	// If we return the API response directly, the output only gives
 	// the contents of FirewallRuleProperties
 	var firewallRules []map[string]interface{}
