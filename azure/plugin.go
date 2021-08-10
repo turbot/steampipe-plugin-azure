@@ -100,6 +100,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_storage_queue":                                         tableAzureStorageQueue(ctx),
 			"azure_storage_table":                                         tableAzureStorageTable(ctx),
 			"azure_storage_table_service":                                 tableAzureStorageTableService(ctx),
+			"azure_stream_analytics_job":                                  tableAzureStreamAnalyticsJob(ctx),
 			"azure_subnet":                                                tableAzureSubnet(ctx),
 			"azure_subscription":                                          tableAzureSubscription(ctx),
 			"azure_tenant":                                                tableAzureTenant(ctx),
