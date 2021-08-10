@@ -2,11 +2,9 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
-	"github.com/Azure/azure-sdk-for-go/services/recoveryservices/mgmt/2021-01-01/backup"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -73,13 +71,6 @@ func tableAzureRecoveryServicesVault(_ context.Context) *plugin.Table {
 				Description: "The sku name of the recovery services vault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Name"),
-			},
-			{
-				Name:        "backup_jobs",
-				Description: "Backup jobs of the recovery services vault.",
-				Type:        proto.ColumnType_JSON,
-				Hydrate:     listRecoveryServicesVaultBackupJobs,
-				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -204,60 +195,6 @@ func getRecoveryServicesVault(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	return op, nil
-}
-
-func listRecoveryServicesVaultBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	vault := h.Item.(recoveryservices.Vault)
-	resourceGroup := strings.Split(*vault.ID, "/")[4]
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
-	backupJobClient := backup.NewJobsClient(subscriptionID)
-	backupJobClient.Authorizer = session.Authorizer
-
-	// If we return the API response directly, the output only gives
-	// the contents of BackupJobs
-	var backupJobs []map[string]interface{}
-	pagesLeft := true
-	for pagesLeft {
-		result, err := backupJobClient.List(ctx, *vault.Name, resourceGroup, "", "")
-		if err != nil {
-			return nil, err
-		}
-		for _, vault := range result.Values() {
-			backupJob := make(map[string]interface{})
-			if vault.ID != nil {
-				backupJob["id"] = vault.ID
-			}
-			if vault.Name != nil {
-				backupJob["name"] = vault.Name
-			}
-			if vault.Type != nil {
-				backupJob["type"] = vault.Type
-			}
-			if vault.Location != nil {
-				backupJob["Location"] = vault.Location
-			}
-			if vault.Tags != nil {
-				backupJob["Tags"] = vault.Tags
-			}
-			if vault.ETag != nil {
-				backupJob["ETag"] = vault.ETag
-			}
-			// if vault.Properties != nil {
-			// 	backupJob["properties"] = vault.Properties
-			// }
-			backupJobs = append(backupJobs, backupJob)
-		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
-	}
-
-	return backupJobs, nil
 }
 
 func listRecoveryServicesVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
