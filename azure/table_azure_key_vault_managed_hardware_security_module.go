@@ -24,7 +24,7 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listKeyVaultManagedHardwareSecurityModule,
+			Hydrate: listKeyVaultManagedHardwareSecurityModules,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -44,6 +44,12 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "provisioning_state",
+				Description: "Provisioning state. Possible values include: 'ProvisioningStateSucceeded', 'ProvisioningStateProvisioning', 'ProvisioningStateFailed', 'ProvisioningStateUpdating', 'ProvisioningStateDeleting', 'ProvisioningStateActivated', 'ProvisioningStateSecurityDomainRestore', 'ProvisioningStateRestoring'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.ProvisioningState"),
+			},
+			{
 				Name:        "hsm_uri",
 				Description: "The URI of the managed hsm pool for performing operations on keys.",
 				Type:        proto.ColumnType_STRING,
@@ -57,7 +63,7 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 			},
 			{
 				Name:        "soft_delete_retention_in_days",
-				Description: "softDelete data retention days. It accepts >=7 and <=90.",
+				Description: "Indicates softDelete data retention days. It accepts >=7 and <=90.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Properties.SoftDeleteRetentionInDays"),
 			},
@@ -75,31 +81,25 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 			},
 			{
 				Name:        "create_mode",
-				Description: "The create mode to indicate whether the resource is being created or is being recovered from a deleted resource. Possible values include: 'CreateModeRecover', 'CreateModeDefault'",
+				Description: "The create mode to indicate whether the resource is being created or is being recovered from a deleted resource. Possible values include: 'CreateModeRecover', 'CreateModeDefault'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.CreateMode"),
 			},
 			{
-				Name:        "provisioning_state",
-				Description: "Provisioning state. Possible values include: 'ProvisioningStateSucceeded', 'ProvisioningStateProvisioning', 'ProvisioningStateFailed', 'ProvisioningStateUpdating', 'ProvisioningStateDeleting', 'ProvisioningStateActivated', 'ProvisioningStateSecurityDomainRestore', 'ProvisioningStateRestoring'",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.ProvisioningState"),
-			},
-			{
 				Name:        "sku_family",
-				Description: "Contains SKU family name",
+				Description: "Contains SKU family name.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Sku.Family"),
 			},
 			{
 				Name:        "sku_name",
-				Description: "SKU name to specify whether the key vault is a standard vault or a premium vault",
+				Description: "SKU name to specify whether the key vault is a standard vault or a premium vault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "tenant_id",
-				Description: "The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault",
+				Description: "The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.TenantID").Transform(transform.ToString),
 			},
@@ -155,7 +155,7 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 
 //// LIST FUNCTION
 
-func listKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func listKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.Qu
 //// HYDRATE FUNCTIONS
 
 func getKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getKeyVaultManagedHardwareSecurityService")
+	plugin.Logger(ctx).Trace("getKeyVaultManagedHardwareSecurityModule")
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -199,6 +199,10 @@ func getKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.Que
 	} else {
 		name = d.KeyColumnQuals["name"].GetStringValue()
 		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
+	}
+
+	if name == "" || resourceGroup == "" {
+		return nil, nil
 	}
 
 	client := keyvault.NewManagedHsmsClient(subscriptionID)
