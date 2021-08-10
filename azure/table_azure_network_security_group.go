@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -28,63 +29,70 @@ func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the network security group",
+				Description: "The friendly name that identifies the network security group.",
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a network security group uniquely",
+				Description: "Contains ID to identify a network security group uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
-				Description: "The resource type of the network security group",
+				Description: "The resource type of the network security group.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The resource type of the network security group",
+				Description: "The resource type of the network security group.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.ProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "resource_guid",
-				Description: "The resource GUID property of the network security group resource",
+				Description: "The resource GUID property of the network security group resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.ResourceGUID"),
 			},
 			{
 				Name:        "default_security_rules",
-				Description: "A list of default security rules of network security group",
+				Description: "A list of default security rules of network security group.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.DefaultSecurityRules"),
 			},
 			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the network security group.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listNetworkSecurityGroupDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "flow_logs",
-				Description: "A collection of references to flow log resources",
+				Description: "A collection of references to flow log resources.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.FlowLogs"),
 			},
 			{
 				Name:        "network_interfaces",
-				Description: "A collection of references to network interfaces",
+				Description: "A collection of references to network interfaces.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.NetworkInterfaces"),
 			},
 			{
 				Name:        "security_rules",
-				Description: "A list of security rules of network security group",
+				Description: "A list of security rules of network security group.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.SecurityRules"),
 			},
 			{
 				Name:        "subnets",
-				Description: "A collection of references to subnets",
+				Description: "A collection of references to subnets.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.Subnets"),
 			},
@@ -186,4 +194,45 @@ func getNetworkSecurityGroup(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	return nil, nil
+}
+
+func listNetworkSecurityGroupDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listNetworkSecurityGroupDiagnosticSettings")
+	id := *h.Item.(network.SecurityGroup).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }
