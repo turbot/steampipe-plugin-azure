@@ -17,7 +17,7 @@ from
   azure_lb;
 ```
 
-### List load balancer with failed provisioning state
+### List failed load balancers
 
 ```sql
 select
