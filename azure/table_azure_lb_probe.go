@@ -199,6 +199,8 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	return nil, nil
 }
 
+//// TRANSFORM FUNCTIONS
+
 func extractLoadBalancerNameFromProbeID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(network.Probe)
 	vaultName := strings.Split(*data.ID, "/")[8]
