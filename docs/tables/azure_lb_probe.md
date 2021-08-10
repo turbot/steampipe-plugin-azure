@@ -17,7 +17,7 @@ from
   azure_lb_probe;
 ```
 
-### List load balancer probe with succeeded provisioning state
+### List succeeded load balancer probe
 
 ```sql
 select
@@ -29,7 +29,7 @@ where
   provisioning_state = 'Succeeded'
 ```
 
-### Order load balancer probe by interval
+### List load balancer probe order by interval
 
 ```sql
 select

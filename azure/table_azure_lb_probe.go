@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -34,7 +34,7 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Resource ID.",
+				Description: "The resource ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -46,9 +46,9 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the probe resource. Possible values include: 'ProvisioningStateSucceeded', 'ProvisioningStateUpdating', 'ProvisioningStateDeleting', 'ProvisioningStateFailed'.",
+				Description: "The provisioning state of the probe resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ProbePropertiesFormat.ProvisioningState").Transform(transform.ToString),
+				Transform:   transform.FromField("ProbePropertiesFormat.ProvisioningState"),
 			},
 			{
 				Name:        "type",
@@ -80,7 +80,7 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "protocol",
-				Description: "The protocol of the end point. If 'Tcp' is specified, a received ACK is required for the probe to be successful. If 'Http' or 'Https' is specified, a 200 OK response from the specifies URI is required for the probe to be successful. Possible values include: 'ProbeProtocolHTTP', 'ProbeProtocolTCP', 'ProbeProtocolHTTPS'.",
+				Description: "The protocol of the end point. If 'Tcp' is specified, a received ACK is required for the probe to be successful. If 'Http' or 'Https' is specified, a 200 OK response from the specifies URI is required for the probe to be successful. Possible values include: 'HTTP', 'TCP', 'HTTPS'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ProbePropertiesFormat.Protocol"),
 			},
@@ -91,7 +91,7 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ProbePropertiesFormat.RequestPath"),
 			},
 			{
-				Name:        "load_balancing_rules_id",
+				Name:        "load_balancing_rules",
 				Description: "The load balancer rules that use this probe.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ProbePropertiesFormat.LoadBalancingRules"),
@@ -162,7 +162,7 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancerProbe")
@@ -170,6 +170,11 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	loadBalancerName := d.KeyColumnQuals["load_balancer_name"].GetStringValue()
 	probeName := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Handle empty loadBalancerName, probeName or resourceGroup
+	if loadBalancerName == "" || probeName == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

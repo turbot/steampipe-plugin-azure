@@ -1,3 +1,3 @@
 select name, akas, title
 from azure.azure_lb_probe
-where name = '{{resourceName}}' and resource_group = '{{resourceName}}'
+where name = '{{ resourceName }}' and resource_group = '{{ resourceName }}'
