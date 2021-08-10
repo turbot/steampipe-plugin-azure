@@ -61,7 +61,7 @@ func tableAzureStreamAnalyticsJob(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "compatibility_level",
-				Description: "Controls certain runtime behaviors of the streaming job..",
+				Description: "Controls certain runtime behaviors of the streaming job.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("StreamingJobProperties.CompatibilityLevel"),
 			},
