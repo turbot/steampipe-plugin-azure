@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -97,7 +97,7 @@ func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SecurityGroupPropertiesFormat.Subnets"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -115,6 +115,8 @@ func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -137,7 +139,7 @@ func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTION
 
 func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -165,7 +167,7 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getNetworkSecurityGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getNetworkSecurityGroup")
