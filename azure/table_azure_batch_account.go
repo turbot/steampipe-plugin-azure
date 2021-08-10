@@ -92,7 +92,7 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Whether or not public network access is allowed for the batch account.",
+				Description: "Indicates whether or not public network access is allowed for the batch account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AccountProperties.PublicNetworkAccess").Transform(transform.ToString),
 			},
