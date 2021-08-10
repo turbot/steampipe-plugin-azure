@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -42,13 +42,13 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 				Name:        "load_balancer_name",
 				Description: "The friendly name that identifies the load balancer.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(extractLoadBalancerNameFromID),
+				Transform:   transform.From(extractLoadBalancerNameFromRuleID),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the load balancing rule resource. Possible values include: 'ProvisioningStateSucceeded', 'ProvisioningStateUpdating', 'ProvisioningStateDeleting', 'ProvisioningStateFailed'.",
+				Description: "The provisioning state of the load balancing rule resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("LoadBalancingRulePropertiesFormat.ProvisioningState").Transform(transform.ToString),
+				Transform:   transform.FromField("LoadBalancingRulePropertiesFormat.ProvisioningState"),
 			},
 			{
 				Name:        "type",
@@ -113,7 +113,7 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "load_distribution",
-				Description: "The load distribution policy for this rule. Possible values include: 'LoadDistributionDefault', 'LoadDistributionSourceIP', 'LoadDistributionSourceIPProtocol'.",
+				Description: "The load distribution policy for this rule. Possible values include: 'Default', 'SourceIP', 'SourceIPProtocol'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("LoadBalancingRulePropertiesFormat.LoadDistribution"),
 			},
@@ -125,7 +125,7 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "protocol",
-				Description: "The reference to the transport protocol used by the load balancing rule. Possible values include: 'TransportProtocolUDP', 'TransportProtocolTCP', 'TransportProtocolAll'.",
+				Description: "The reference to the transport protocol used by the load balancing rule. Possible values include: 'UDP', 'TCP', 'All'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("LoadBalancingRulePropertiesFormat.Protocol"),
 			},
@@ -206,7 +206,7 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancerRule")
@@ -214,6 +214,11 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	loadBalancerName := d.KeyColumnQuals["load_balancer_name"].GetStringValue()
 	loadBalancerRuleName := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Handle empty loadBalancerName, loadBalancerRuleName or resourceGroup
+	if loadBalancerName == "" || loadBalancerRuleName == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -240,7 +245,7 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 //// TRANSFORM FUNCTIONS
 
-func extractLoadBalancerNameFromID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractLoadBalancerNameFromRuleID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(network.LoadBalancingRule)
 	vaultName := strings.Split(*data.ID, "/")[8]
 	return vaultName, nil
