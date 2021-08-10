@@ -28,5 +28,5 @@ select
 from
   azure_recovery_services_vault
 where
-provisioning_state = 'Failed';
+  provisioning_state = 'Failed';
 ```
