@@ -221,7 +221,7 @@ func listRecoveryServicesVaultBackupJobs(ctx context.Context, d *plugin.QueryDat
 
 	// If we return the API response directly, the output only gives
 	// the contents of BackupJobs
-	var backupJobs []backup.JobResource
+	var backupJobs []map[string]interface{}
 	pagesLeft := true
 	for pagesLeft {
 		result, err := backupJobClient.List(ctx, *vault.Name, resourceGroup, "", "")
@@ -229,7 +229,29 @@ func listRecoveryServicesVaultBackupJobs(ctx context.Context, d *plugin.QueryDat
 			return nil, err
 		}
 		for _, vault := range result.Values() {
-			backupJobs = append(backupJobs, vault)
+			backupJob := make(map[string]interface{})
+			if vault.ID != nil {
+				backupJob["id"] = vault.ID
+			}
+			if vault.Name != nil {
+				backupJob["name"] = vault.Name
+			}
+			if vault.Type != nil {
+				backupJob["type"] = vault.Type
+			}
+			if vault.Location != nil {
+				backupJob["Location"] = vault.Location
+			}
+			if vault.Tags != nil {
+				backupJob["Tags"] = vault.Tags
+			}
+			if vault.ETag != nil {
+				backupJob["ETag"] = vault.ETag
+			}
+			// if vault.Properties != nil {
+			// 	backupJob["properties"] = vault.Properties
+			// }
+			backupJobs = append(backupJobs, backupJob)
 		}
 		result.NextWithContext(context.Background())
 		pagesLeft = result.NotDone()
