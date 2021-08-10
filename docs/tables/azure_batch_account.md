@@ -31,5 +31,5 @@ select
 from
   azure_batch_account
 where
-provisioning_state = 'Failed';
+  provisioning_state = 'Failed';
 ```
