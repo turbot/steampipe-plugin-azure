@@ -17,3 +17,18 @@ select
 from
   azure_stream_analytics_job;
 ```
+
+### List failed stream analytics jobs
+
+```sql
+select
+  name,
+  id,
+  type,
+  provisioning_state,
+  region
+from
+  azure_stream_analytics_job
+where
+  provisioning_state = 'Failed';
+```
