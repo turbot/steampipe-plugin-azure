@@ -180,7 +180,7 @@ func tableAzureStreamAnalyticsJob(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location").Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(formatRegion).Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
