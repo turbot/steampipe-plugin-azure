@@ -180,9 +180,17 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	computeClient := compute.NewImagesClient(subscriptionID)
 	computeClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := computeClient.List(ctx)
+	result, err := computeClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, image := range result.Values() {
+		d.StreamListItem(ctx, image)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -190,8 +198,6 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		for _, image := range result.Values() {
 			d.StreamListItem(ctx, image)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

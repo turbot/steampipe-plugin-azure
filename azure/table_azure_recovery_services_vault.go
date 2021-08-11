@@ -147,21 +147,24 @@ func listRecoveryServicesVaults(ctx context.Context, d *plugin.QueryData, _ *plu
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	recoveryServicesVaultClient := recoveryservices.NewVaultsClient(subscriptionID)
 	recoveryServicesVaultClient.Authorizer = session.Authorizer
+	result, err := recoveryServicesVaultClient.ListBySubscriptionID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, vault := range result.Values() {
+		d.StreamListItem(ctx, vault)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := recoveryServicesVaultClient.ListBySubscriptionID(context.Background())
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, vault := range result.Values() {
 			d.StreamListItem(ctx, vault)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
