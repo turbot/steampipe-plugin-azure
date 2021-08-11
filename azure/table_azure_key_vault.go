@@ -307,11 +307,11 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 }
 
 func getKeyVaultID(item interface{}) string {
-	switch item.(type) {
+	switch item := item.(type) {
 	case keyvault.Vault:
-		return *item.(keyvault.Vault).ID
+		return *item.ID
 	case keyvault.Resource:
-		return *item.(keyvault.Resource).ID
+		return *item.ID
 	}
 	return ""
 }

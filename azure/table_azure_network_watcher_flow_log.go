@@ -195,7 +195,6 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 		for _, flowLog := range result.Values() {
 			d.StreamListItem(ctx, flowLogInfo{flowLog, *networkWatcherDetails.Name})
 		}
-		result.NextWithContext(ctx)
 	}
 
 	return nil, err
