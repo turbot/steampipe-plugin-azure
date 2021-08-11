@@ -177,7 +177,7 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 
-			// Standard columns
+			// Azure standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
