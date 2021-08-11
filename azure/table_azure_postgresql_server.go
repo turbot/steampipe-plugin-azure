@@ -261,7 +261,7 @@ func listPostgreSqlServers(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	client := postgresql.NewServersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(context.Background())
+	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
 	}

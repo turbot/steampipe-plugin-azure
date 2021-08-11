@@ -154,11 +154,16 @@ func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin
 	if err != nil {
 		return nil, err
 	}
+	for _, servicePrincipal := range result.Values() {
+		d.StreamListItem(ctx, servicePrincipal)
+	}
 
-	for result.Response().OdataNextLink != nil && *result.Response().OdataNextLink != "" {
-		if err := result.NextWithContext(ctx); err != nil {
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
 			return nil, err
 		}
+
 		for _, servicePrincipal := range result.Values() {
 			d.StreamListItem(ctx, servicePrincipal)
 		}

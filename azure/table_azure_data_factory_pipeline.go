@@ -160,17 +160,22 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := pipelineClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
+	result, err := pipelineClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, pipeline := range result.Values() {
+		d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, pipeline := range result.Values() {
 			d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

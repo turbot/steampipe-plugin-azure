@@ -1,0 +1,13 @@
+[
+  {
+    "enable_soft_delete": true,
+    "hsm_uri": "https://{{ resourceName }}.managedhsm.azure.net/",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "region": "eastus",
+    "resource_group": "{{ resourceName }}",
+    "soft_delete_retention_in_days": 8,
+    "tenant_id": "{{ output.tenant_id.value }}",
+    "type": "Microsoft.KeyVault/managedHSMs"
+  }
+]
