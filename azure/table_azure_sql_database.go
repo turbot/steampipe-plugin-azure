@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -167,6 +168,34 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseProperties.ZoneRedundant"),
 			},
 			{
+				Name:        "retention_policy_id",
+				Description: "Retention policy ID.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
+				Transform:   transform.FromField("ID"),
+			},
+			{
+				Name:        "retention_policy_name",
+				Description: "Retention policy Name.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
+				Transform:   transform.FromField("Name"),
+			},
+			{
+				Name:        "retention_policy_type",
+				Description: "Long term Retention policy Type.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
+				Transform:   transform.FromField("Type"),
+			},
+			{
+				Name:        "retention_policy_property",
+				Description: "Long term Retention policy Property.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
+				Transform:   transform.FromField("BaseLongTermRetentionPolicyProperties"),
+			},
+			{
 				Name:        "create_mode",
 				Description: "Specifies the mode of database creation.",
 				Type:        proto.ColumnType_JSON,
@@ -187,7 +216,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 			{
 				Name:        "requested_service_objective_name",
 				Description: "The name of the configured service level objective of the database.",
-				Type:        proto.ColumnType_JSON,
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveName"),
 			},
 			{
@@ -360,6 +389,46 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	}
 
 	return nil, nil
+}
+
+func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	var serverName, databaseName, resourceGroupName string
+	plugin.Logger(ctx).Trace("Hydrate Database Propery", h.Item)
+	if h.Item != nil {
+		database := h.Item.(sql.Database)
+		serverName = strings.Split(*database.ID, "/")[8]
+		databaseName = *database.Name
+		plugin.Logger(ctx).Trace("Hydrate Database Id", *database.ID)
+		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
+	} else {
+		serverName = d.KeyColumnQuals["server_name"].GetStringValue()
+		databaseName = d.KeyColumnQuals["name"].GetStringValue()
+		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sqlV5.NewLongTermRetentionPoliciesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	if err != nil {
+		return nil, err
+	}
+
+	// We can add only one retention policy per SQL Database.
+	res := op.Values()
+
+	// For master database we are getting the response as empty array 
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	return res[0], nil
 }
 
 //// TRANSFORM FUNCTION
