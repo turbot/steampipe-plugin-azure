@@ -193,18 +193,24 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	batchAccountClient := batch.NewAccountClient(subscriptionID)
 	batchAccountClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := batchAccountClient.List(context.Background())
+	result, err := batchAccountClient.List(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for _, account := range result.Values() {
+		d.StreamListItem(ctx, account)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, account := range result.Values() {
 			d.StreamListItem(ctx, account)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
+
 	return nil, err
 }
 
