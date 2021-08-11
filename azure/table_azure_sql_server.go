@@ -189,21 +189,25 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	client := sql.NewServersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, server := range result.Values() {
+		d.StreamListItem(ctx, server)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, server := range result.Values() {
 			d.StreamListItem(ctx, server)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
@@ -473,10 +477,6 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 		return nil, err
 	}
 
-	if op.Value != nil {
-		return op.Value, nil
-	}
-
 	// If we return the API response directly, the output only gives
 	// the contents of FirewallRuleProperties
 	var firewallRules []map[string]interface{}
@@ -517,32 +517,40 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	// If we return the API response directly, the output only gives
 	// the contents of VirtualNetworkRuleProperties
 	var NetworkRules []map[string]interface{}
+	result, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, networkRule := range result.Values() {
+		NetworkRules = append(NetworkRules, networkRuleMap(networkRule))
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	for result.NotDone() {
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, networkRule := range result.Values() {
-			objectMap := make(map[string]interface{})
-			if networkRule.ID != nil {
-				objectMap["id"] = networkRule.ID
-			}
-			if networkRule.Name != nil {
-				objectMap["name"] = networkRule.Name
-			}
-			if networkRule.Type != nil {
-				objectMap["type"] = networkRule.Type
-			}
-			if networkRule.VirtualNetworkRuleProperties != nil {
-				objectMap["properties"] = networkRule.VirtualNetworkRuleProperties
-			}
-			NetworkRules = append(NetworkRules, objectMap)
+			NetworkRules = append(NetworkRules, networkRuleMap(networkRule))
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return NetworkRules, nil
+}
+
+func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
+	objectMap := make(map[string]interface{})
+	if rule.ID != nil {
+		objectMap["id"] = rule.ID
+	}
+	if rule.Name != nil {
+		objectMap["name"] = rule.Name
+	}
+	if rule.Type != nil {
+		objectMap["type"] = rule.Type
+	}
+	if rule.VirtualNetworkRuleProperties != nil {
+		objectMap["properties"] = rule.VirtualNetworkRuleProperties
+	}
+	return objectMap
 }

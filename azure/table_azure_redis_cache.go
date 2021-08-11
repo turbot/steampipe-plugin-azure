@@ -227,10 +227,17 @@ func listRedisCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	subscriptionID := session.SubscriptionID
 	client := redis.NewClient(subscriptionID)
 	client.Authorizer = session.Authorizer
+	result, err := client.ListBySubscription(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.ListBySubscription(context.Background())
+	for _, cache := range result.Values() {
+		d.StreamListItem(ctx, cache)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -238,8 +245,6 @@ func listRedisCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		for _, cache := range result.Values() {
 			d.StreamListItem(ctx, cache)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -267,7 +272,7 @@ func getRedisCache(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	client := redis.NewClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}

@@ -188,9 +188,19 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 	webClient := web.NewAppsClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := webClient.List(ctx)
+	result, err := webClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, functionApp := range result.Values() {
+		// Filtering out all the web apps
+		if strings.Contains(string(*functionApp.Kind), "functionapp") {
+			d.StreamListItem(ctx, functionApp)
+		}
+	}
+
+	for result.NotDone() {
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -201,8 +211,7 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 				d.StreamListItem(ctx, functionApp)
 			}
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+
 	}
 	return nil, err
 }

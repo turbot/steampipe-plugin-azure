@@ -191,22 +191,25 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	client := storage.NewBlobContainersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		containerList, err := client.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
+	result, err := client.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+	for _, container := range result.Values() {
+		d.StreamLeafListItem(ctx, container)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, container := range containerList.Values() {
+		for _, container := range result.Values() {
 			d.StreamLeafListItem(ctx, container)
 		}
-		containerList.NextWithContext(context.Background())
-		pagesLeft = containerList.NotDone()
 	}
 
 	return nil, err

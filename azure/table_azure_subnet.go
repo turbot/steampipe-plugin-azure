@@ -165,22 +165,25 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	subnetClient := network.NewSubnetsClient(subscriptionID)
 	subnetClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := subnetClient.List(ctx, *resourceGroupName, *virtualNetwork.Name)
+	result, err := subnetClient.List(ctx, *resourceGroupName, *virtualNetwork.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, subnet := range result.Values() {
+		d.StreamLeafListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, subnet := range result.Values() {
 			d.StreamLeafListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, nil
 }

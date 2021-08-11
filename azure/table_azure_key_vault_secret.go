@@ -172,10 +172,17 @@ func listKeyVaultSecrets(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	client := secret.New()
 	client.Authorizer = session.Authorizer
+	result, err := client.GetSecrets(ctx, vaultURI, &maxResults)
+	if err != nil {
+		return nil, err
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.GetSecrets(ctx, vaultURI, &maxResults)
+	for _, secret := range result.Values() {
+		d.StreamLeafListItem(ctx, secret)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -183,8 +190,6 @@ func listKeyVaultSecrets(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		for _, secret := range result.Values() {
 			d.StreamLeafListItem(ctx, secret)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
