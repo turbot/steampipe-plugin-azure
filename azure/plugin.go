@@ -80,6 +80,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_provider":                                              tableAzureProvider(ctx),
 			"azure_public_ip":                                             tableAzurePublicIP(ctx),
 			"azure_redis_cache":                                           tableAzureRedisCache(ctx),
+			"azure_resource_link":                                         tableAzureResourceLink(ctx),
 			"azure_resource_group":                                        tableAzureResourceGroup(ctx),
 			"azure_role_assignment":                                       tableAzureIamRoleAssignment(ctx),
 			"azure_role_definition":                                       tableAzureIamRoleDefinition(ctx),
