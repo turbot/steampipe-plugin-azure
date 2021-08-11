@@ -4,6 +4,6 @@
     "name": "{{ resourceName }}",
     "resource_group": "{{ resourceName }}",
     "subscription_id": "{{ output.subscription_id.value }}",
-    "type": "Microsoft.DataLakeStore/accounts"
+    "type": "Microsoft.DataLakeAnalytics/accounts"
   }
 ]
