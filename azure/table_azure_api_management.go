@@ -231,9 +231,16 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	apiManagementClient := apimanagement.NewServiceClient(subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := apiManagementClient.List(ctx)
+	result, err := apiManagementClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, apiManagement := range result.Values() {
+		d.StreamListItem(ctx, apiManagement)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -241,8 +248,6 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		for _, apiManagement := range result.Values() {
 			d.StreamListItem(ctx, apiManagement)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

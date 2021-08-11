@@ -111,9 +111,17 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClient(subscriptionID)
 	applicationSecurityGroupClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := applicationSecurityGroupClient.ListAll(ctx)
+	result, err := applicationSecurityGroupClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, applicationSecurityGroup := range result.Values() {
+		d.StreamListItem(ctx, applicationSecurityGroup)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -121,8 +129,6 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 		for _, applicationSecurityGroup := range result.Values() {
 			d.StreamListItem(ctx, applicationSecurityGroup)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

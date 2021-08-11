@@ -150,10 +150,17 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 
 	NetworkSecurityGroupClient := network.NewSecurityGroupsClient(subscriptionID)
 	NetworkSecurityGroupClient.Authorizer = session.Authorizer
+	result, err := NetworkSecurityGroupClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := NetworkSecurityGroupClient.ListAll(ctx)
+	for _, networkSecurityGroup := range result.Values() {
+		d.StreamListItem(ctx, networkSecurityGroup)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -161,8 +168,6 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 		for _, networkSecurityGroup := range result.Values() {
 			d.StreamListItem(ctx, networkSecurityGroup)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
