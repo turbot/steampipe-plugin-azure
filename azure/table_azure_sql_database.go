@@ -245,7 +245,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("TransparentDataEncryptionProperties"),
 			},
 
-			// Standard columns
+			// Azure Standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
