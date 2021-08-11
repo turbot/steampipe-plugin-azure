@@ -178,9 +178,16 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 	client := network.NewFlowLogsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(ctx, resourceGroupID, *networkWatcherDetails.Name)
+	result, err := client.List(ctx, resourceGroupID, *networkWatcherDetails.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, flowLog := range result.Values() {
+		d.StreamListItem(ctx, flowLogInfo{flowLog, *networkWatcherDetails.Name})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -188,8 +195,7 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 		for _, flowLog := range result.Values() {
 			d.StreamListItem(ctx, flowLogInfo{flowLog, *networkWatcherDetails.Name})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+		result.NextWithContext(ctx)
 	}
 
 	return nil, err
