@@ -141,10 +141,17 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	client := compute.NewAvailabilitySetsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
+	result, err := client.ListBySubscription(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 
-	for pagesLeft {
-		result, err := client.ListBySubscription(context.Background(), "")
+	for _, availabilitySet := range result.Values() {
+		d.StreamListItem(ctx, availabilitySet)
+	}
+
+	for result.NotDone() {
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -152,8 +159,6 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 		for _, availabilitySet := range result.Values() {
 			d.StreamListItem(ctx, availabilitySet)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -175,7 +180,7 @@ func getAzureComputeAvailabilitySet(ctx context.Context, d *plugin.QueryData, h 
 	client := compute.NewAvailabilitySetsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}

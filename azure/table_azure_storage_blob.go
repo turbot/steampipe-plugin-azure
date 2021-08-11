@@ -381,18 +381,18 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	containerClient := storage.NewBlobContainersClient(subscriptionID)
 	containerClient.Authorizer = session.Authorizer
 	var containers []storage.ListContainerItem
-	pagesLeft := true
-	for pagesLeft {
-		containerList, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
+
+	result, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+	containers = append(containers, result.Values()...)
+	for result.NotDone() {
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, container := range containerList.Values() {
-			containers = append(containers, container)
-		}
-		containerList.NextWithContext(context.Background())
-		pagesLeft = containerList.NotDone()
+		containers = append(containers, result.Values()...)
 	}
 
 	var wg sync.WaitGroup

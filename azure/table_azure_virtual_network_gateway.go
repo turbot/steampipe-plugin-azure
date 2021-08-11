@@ -217,13 +217,19 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 
 	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
-
 	data := h.Item.(resources.Group)
 	resourceGroupName := *data.Name
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.List(ctx, resourceGroupName)
+	result, err := networkClient.List(ctx, resourceGroupName)
+	if err != nil {
+		return nil, err
+	}
+	for _, networkGateway := range result.Values() {
+		d.StreamListItem(ctx, networkGateway)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -231,8 +237,6 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 		for _, networkGateway := range result.Values() {
 			d.StreamListItem(ctx, networkGateway)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
@@ -287,15 +291,18 @@ func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData
 	networkClient.Authorizer = session.Authorizer
 
 	var gatewayConnections []network.VirtualNetworkGatewayConnectionListEntity
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.ListConnections(ctx, resourceGroup, name)
+	result, err := networkClient.ListConnections(ctx, resourceGroup, name)
+	if err != nil {
+		return nil, err
+	}
+	gatewayConnections = append(gatewayConnections, result.Values()...)
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		gatewayConnections = append(gatewayConnections, result.Values()...)
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return gatewayConnections, nil

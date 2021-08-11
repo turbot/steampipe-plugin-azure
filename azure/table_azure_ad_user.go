@@ -135,18 +135,22 @@ func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	graphClient := graphrbac.NewUsersClient(tenantID)
 	graphClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := graphClient.List(ctx, "", "")
+	result, err := graphClient.List(ctx, "", "")
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range result.Values() {
+		d.StreamListItem(ctx, user)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, user := range result.Values() {
 			d.StreamListItem(ctx, user)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

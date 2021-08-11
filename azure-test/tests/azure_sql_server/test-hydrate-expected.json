@@ -12,7 +12,17 @@
 				"type": "Microsoft.Sql/servers/encryptionProtector"
 			}
 		],
-		"firewall_rules": [],
+		"firewall_rules": [
+			{
+				"id": "{{ output.firewall_rule_id.value }}",
+				"name": "{{ resourceName }}",
+				"properties":{
+					"endIpAddress":"10.0.17.62",
+					"startIpAddress":"10.0.17.62"
+				},
+				"type": "Microsoft.Sql/servers/firewallRules"
+			}
+		],
 		"name": "{{ resourceName }}",
 		"server_audit_policy": [
 			{
