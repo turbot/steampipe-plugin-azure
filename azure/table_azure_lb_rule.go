@@ -34,7 +34,7 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Resource ID.",
+				Description: "The resource ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -155,7 +155,7 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -189,24 +189,29 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	listLoadBalancerRulesClient := network.NewLoadBalancerLoadBalancingRulesClient(subscriptionID)
 	listLoadBalancerRulesClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := listLoadBalancerRulesClient.List(ctx, resourceGroup, *loadBalancer.Name)
+	result, err := listLoadBalancerRulesClient.List(ctx, resourceGroup, *loadBalancer.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rule := range result.Values() {
+		d.StreamListItem(ctx, rule)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, key := range result.Values() {
-			d.StreamLeafListItem(ctx, key)
+		for _, rule := range result.Values() {
+			d.StreamListItem(ctx, rule)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS
+//// HYDRATE FUNCTION
 
 func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancerRule")
@@ -243,7 +248,7 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	return nil, nil
 }
 
-//// TRANSFORM FUNCTIONS
+//// TRANSFORM FUNCTION
 
 func extractLoadBalancerNameFromRuleID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(network.LoadBalancingRule)
