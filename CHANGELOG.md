@@ -1,3 +1,29 @@
+## v0.16.0 [2021-08-10]
+
+_What's new?_
+
+- New tables added
+  - [azure_data_lake_store](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_lake_store) ([#217](https://github.com/turbot/steampipe-plugin-azure/pull/217))
+  - [azure_iothub](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_iothub) ([#232](https://github.com/turbot/steampipe-plugin-azure/pull/232))
+  - [azure_key_vault_managed_hardware_security_module](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_managed_hardware_security_module) ([#236](https://github.com/turbot/steampipe-plugin-azure/pull/236))
+  - [azure_logic_app_workflow](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_logic_app_workflow) ([#230](https://github.com/turbot/steampipe-plugin-azure/pull/230))
+  - [azure_recovery_services_vault](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_vault) ([#243](https://github.com/turbot/steampipe-plugin-azure/pull/243))
+
+_Enhancements_
+
+- Updated: Add `diagnostic_settings` column in `azure_network_security_group` table ([#247](https://github.com/turbot/steampipe-plugin-azure/pull/247))
+- Updated: Add `ExtensionType` property in `extensions` column for `azure_compute_virtual_machine` table ([#229](https://github.com/turbot/steampipe-plugin-azure/pull/229))
+- Updated: Add `enable_automatic_updates`, `provision_vm_agent_windows`, `time_zone`, `additional_unattend_content`, `patch_settings` and `win_rm` columns in `azure_compute_virtual_machine` table ([#223](https://github.com/turbot/steampipe-plugin-azure/pull/223))
+- Updated: Add `diagnostic_settings` column in `azure_servicebus_namespace` table ([#225](https://github.com/turbot/steampipe-plugin-azure/pull/225))
+- Updated: Add `diagnostic_settings` column in `azure_eventhub_namespace` table ([#226](https://github.com/turbot/steampipe-plugin-azure/pull/226))
+- Updated: Add `network_acls` column in `azure_key_vault` table ([#220](https://github.com/turbot/steampipe-plugin-azure/pull/220))
+- Updated: Add `virtual_network_rules` column in `azure_sql_server` table ([#227](https://github.com/turbot/steampipe-plugin-azure/pull/227))
+- Updated: Recompiled plugin with [steampipe-plugin-sdk v1.4.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v141--2021-07-20) ([#207](https://github.com/turbot/steampipe-plugin-azure/pull/207))
+
+_Bug fixes_
+
+- Fixed: Improve properties of `firewall_rules` column in `azure_sql_server` table ([#237](https://github.com/turbot/steampipe-plugin-azure/pull/237))
+
 ## v0.15.0 [2021-07-31]
 
 _What's new?_
@@ -205,6 +231,7 @@ _Bug fixes_
 ## v0.2.2 [2021-03-02]
 
 _Bug fixes_
+
 - Recompiled plugin with latest [steampipe-plugin-sdk](https://github.com/turbot/steampipe-plugin-sdk) to resolve issue:
   - Fix tables failing with error similar to `Error: pq: rpc error: code = Internal desc = get hydrate function getAdGroup failed with panic interface conversion: interface {} is nil, not *graphrbac.ADGroup`([#29](https://github.com/turbot/steampipe-plugin-azure/issues/29)).
 
