@@ -15,16 +15,6 @@ _What's new?_
 _Enhancements_
 
 - Updated: Add `diagnostic_settings` column in `azure_network_security_group` table ([#247](https://github.com/turbot/steampipe-plugin-azure/pull/247))
-- Updated: Type details of extensions for table azure_compute_virtual_machine ([#229](https://github.com/turbot/steampipe-plugin-azure/pull/229))
-- Updated: Virtual Network Rules details in table azure_sql_server ([#227](https://github.com/turbot/steampipe-plugin-azure/pull/227))
-- Updated: Missing properties of osProfile in table azure_compute_virtual_machine ([#223](https://github.com/turbot/steampipe-plugin-azure/pull/223))
-- Updated: Diagnostic settings details in table azure_servicebus_namespace ([#225](https://github.com/turbot/steampipe-plugin-azure/pull/225))
-- Updated: Diagnostic settings details in table azure_eventhub_namespace ([#226](https://github.com/turbot/steampipe-plugin-azure/pull/226))
-- Updated: Compile with steampipe-plugin-sdk v1.4.1 ([#207](https://github.com/turbot/steampipe-plugin-azure/pull/207))
-- Updated: NetworkAcls details in table azure_key_vault ([#220](https://github.com/turbot/steampipe-plugin-azure/pull/220))
-- Updated: Recompiled plugin with [steampipe-plugin-sdk v1.4.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v141--2021-07-20) ([#207](https://github.com/turbot/steampipe-plugin-azure/pull/207))
-
-- Updated: Add `diagnostic_settings` column in `azure_network_security_group` table ([#247](https://github.com/turbot/steampipe-plugin-azure/pull/247))
 - Updated: Add `ExtensionType` property in `extensions` column for `azure_compute_virtual_machine` table ([#229](https://github.com/turbot/steampipe-plugin-azure/pull/229))
 - Updated: Add `enable_automatic_updates`, `provision_vm_agent_windows`, `time_zone`, `additional_unattend_content`, `patch_settings` and `win_rm` columns in `azure_compute_virtual_machine` table ([#223](https://github.com/turbot/steampipe-plugin-azure/pull/223))
 - Updated: Add `diagnostic_settings` column in `azure_servicebus_namespace` table ([#225](https://github.com/turbot/steampipe-plugin-azure/pull/225))
