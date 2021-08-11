@@ -36,11 +36,6 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
-				Name:        "type",
-				Type:        proto.ColumnType_STRING,
-				Description: "The type of the resource. E.g. 'Microsoft.Compute/virtualMachines' or 'Microsoft.Storage/storageAccounts'.",
-			},
-			{
 				Name:        "provisioning_state",
 				Type:        proto.ColumnType_STRING,
 				Description: "The state of the last provisioning operation performed on the search service. Provisioning is an intermediate state that occurs while service capacity is being established. After capacity is set up, provisioningState changes to either 'succeeded' or 'failed'. Client applications can poll provisioning status (the recommended polling interval is from 30 seconds to one minute) by using the Get Search Service operation to see when an operation is completed. If you are using the free service, this value tends to come back as 'succeeded' directly in the call to Create search service. This is because the free service uses capacity that is already set up. Possible values include: 'Succeeded', 'Provisioning', 'Failed'.",
@@ -59,10 +54,9 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.StatusDetails"),
 			},
 			{
-				Name:        "sku_name",
+				Name:        "type",
 				Type:        proto.ColumnType_STRING,
-				Description: "The SKU of the Search Service, which determines price tier and capacity limits. This property is required when creating a new Search Service.",
-				Transform:   transform.FromField("Sku.Name"),
+				Description: "The type of the resource. E.g. 'Microsoft.Compute/virtualMachines' or 'Microsoft.Storage/storageAccounts'.",
 			},
 			{
 				Name:        "hosting_mode",
@@ -89,6 +83,18 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.ReplicaCount"),
 			},
 			{
+				Name:        "sku_name",
+				Type:        proto.ColumnType_STRING,
+				Description: "The SKU of the Search Service, which determines price tier and capacity limits. This property is required when creating a new Search Service.",
+				Transform:   transform.FromField("Sku.Name"),
+			},
+			{
+				Name:        "identity",
+				Type:        proto.ColumnType_JSON,
+				Description: "The identity of the resource.",
+				Transform:   transform.FromField("Identity"),
+			},		
+			{
 				Name:        "network_rule_set",
 				Type:        proto.ColumnType_JSON,
 				Description: "Network specific rules that determine how the Azure Cognitive Search service may be reached.",
@@ -105,12 +111,6 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Description: "The list of shared private link resources managed by the Azure Cognitive Search service.",
 				Transform:   transform.FromField("ServiceProperties.SharedPrivateLinkResources"),
-			},
-			{
-				Name:        "identity",
-				Type:        proto.ColumnType_JSON,
-				Description: "The identity of the resource.",
-				Transform:   transform.FromField("Identity"),
 			},
 			{
 				Name:        "tags_src",
