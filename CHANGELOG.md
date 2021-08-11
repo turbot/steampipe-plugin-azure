@@ -36,7 +36,7 @@ _Enhancements_
 _Bug fixes_
 
 - Fixed: Paging for listing resources for all tables ([#254](https://github.com/turbot/steampipe-plugin-azure/pull/254))<br/>
-  _This bug impacted all the tables in plugin. Now table will not go into infinitely loop for large number of resources._
+  _This bug impacted all the tables in plugin. Now tables will not go into infinitely loop for large number of resources._
 - Fixed: Improve properties of `firewall_rules` column in `azure_sql_server` table ([#237](https://github.com/turbot/steampipe-plugin-azure/pull/237))
 
 ## v0.15.0 [2021-07-31]
