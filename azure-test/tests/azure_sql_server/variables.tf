@@ -66,6 +66,14 @@ resource "azurerm_sql_server" "named_test_resource" {
   }
 }
 
+resource "azurerm_sql_firewall_rule" "named_test_resource" {
+  name                = var.resource_name
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  server_name         = azurerm_sql_server.named_test_resource.name
+  start_ip_address    = "10.0.17.62"
+  end_ip_address      = "10.0.17.62"
+}
+
 output "resource_aka" {
   value = "azure://${azurerm_sql_server.named_test_resource.id}"
 }
@@ -76,6 +84,10 @@ output "resource_aka_lower" {
 
 output "resource_name" {
   value = var.resource_name
+}
+
+output "firewall_rule_id" {
+  value = azurerm_sql_firewall_rule.named_test_resource.id
 }
 
 output "resource_id" {

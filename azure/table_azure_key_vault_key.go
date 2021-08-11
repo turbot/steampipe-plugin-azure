@@ -190,19 +190,23 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	client := keyvault.NewKeysClient(subscriptionID)
 	client.Authorizer = session.Authorizer
+	result, err := client.List(ctx, resourceGroup, *vault.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, key := range result.Values() {
+		d.StreamListItem(ctx, key)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(ctx, resourceGroup, *vault.Name)
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, key := range result.Values() {
-			d.StreamLeafListItem(ctx, key)
+			d.StreamListItem(ctx, key)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

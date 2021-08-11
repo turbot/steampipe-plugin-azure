@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -188,10 +189,16 @@ func listAppServicePlans(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	webClient := web.NewAppServicePlansClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		param := true
-		result, err := webClient.List(ctx, &param)
+	result, err := webClient.List(ctx, types.Bool(true))
+	if err != nil {
+		return nil, err
+	}
+	for _, servicePlan := range result.Values() {
+		d.StreamListItem(ctx, servicePlan)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -199,8 +206,6 @@ func listAppServicePlans(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, servicePlan := range result.Values() {
 			d.StreamListItem(ctx, servicePlan)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

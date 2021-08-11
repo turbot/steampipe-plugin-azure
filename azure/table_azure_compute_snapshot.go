@@ -260,10 +260,17 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 	subscriptionID := session.SubscriptionID
 	client := compute.NewSnapshotsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	for _, snapshot := range result.Values() {
+		d.StreamListItem(ctx, snapshot)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -271,8 +278,6 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 		for _, snapshot := range result.Values() {
 			d.StreamListItem(ctx, snapshot)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -294,7 +299,7 @@ func getAzureComputeSnapshot(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := compute.NewSnapshotsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
