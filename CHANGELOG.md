@@ -1,15 +1,28 @@
-## v0.16.0 [2021-08-10]
+## v0.16.0 [2021-08-11]
 
 _What's new?_
 
 - New tables added
+  - [azure_batch_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_batch_account) ([#242](https://github.com/turbot/steampipe-plugin-azure/pull/242))
   - [azure_data_lake_store](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_lake_store) ([#217](https://github.com/turbot/steampipe-plugin-azure/pull/217))
   - [azure_iothub](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_iothub) ([#232](https://github.com/turbot/steampipe-plugin-azure/pull/232))
   - [azure_key_vault_managed_hardware_security_module](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_managed_hardware_security_module) ([#236](https://github.com/turbot/steampipe-plugin-azure/pull/236))
   - [azure_logic_app_workflow](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_logic_app_workflow) ([#230](https://github.com/turbot/steampipe-plugin-azure/pull/230))
   - [azure_recovery_services_vault](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_vault) ([#243](https://github.com/turbot/steampipe-plugin-azure/pull/243))
+  - [azure_stream_analytics_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_stream_analytics_job) ([#246](https://github.com/turbot/steampipe-plugin-azure/pull/246))
+  - [key_vault_managed_hardware_security_module](https://hub.steampipe.io/plugins/turbot/azure/tables/key_vault_managed_hardware_security_module) ([#236](https://github.com/turbot/steampipe-plugin-azure/pull/236))
 
 _Enhancements_
+
+- Updated: Add `diagnostic_settings` column in `azure_network_security_group` table ([#247](https://github.com/turbot/steampipe-plugin-azure/pull/247))
+- Updated: Type details of extensions for table azure_compute_virtual_machine ([#229](https://github.com/turbot/steampipe-plugin-azure/pull/229))
+- Updated: Virtual Network Rules details in table azure_sql_server ([#227](https://github.com/turbot/steampipe-plugin-azure/pull/227))
+- Updated: Missing properties of osProfile in table azure_compute_virtual_machine ([#223](https://github.com/turbot/steampipe-plugin-azure/pull/223))
+- Updated: Diagnostic settings details in table azure_servicebus_namespace ([#225](https://github.com/turbot/steampipe-plugin-azure/pull/225))
+- Updated: Diagnostic settings details in table azure_eventhub_namespace ([#226](https://github.com/turbot/steampipe-plugin-azure/pull/226))
+- Updated: Compile with steampipe-plugin-sdk v1.4.1 ([#207](https://github.com/turbot/steampipe-plugin-azure/pull/207))
+- Updated: NetworkAcls details in table azure_key_vault ([#220](https://github.com/turbot/steampipe-plugin-azure/pull/220))
+- Updated: Recompiled plugin with [steampipe-plugin-sdk v1.4.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v141--2021-07-20) ([#207](https://github.com/turbot/steampipe-plugin-azure/pull/207))
 
 - Updated: Add `diagnostic_settings` column in `azure_network_security_group` table ([#247](https://github.com/turbot/steampipe-plugin-azure/pull/247))
 - Updated: Add `ExtensionType` property in `extensions` column for `azure_compute_virtual_machine` table ([#229](https://github.com/turbot/steampipe-plugin-azure/pull/229))
@@ -22,6 +35,8 @@ _Enhancements_
 
 _Bug fixes_
 
+- Fixed: Paging for listing resources for all tables ([#254](https://github.com/turbot/steampipe-plugin-azure/pull/254))
+  _**This bug impacted all the tables in plugin.**_
 - Fixed: Improve properties of `firewall_rules` column in `azure_sql_server` table ([#237](https://github.com/turbot/steampipe-plugin-azure/pull/237))
 
 ## v0.15.0 [2021-07-31]
