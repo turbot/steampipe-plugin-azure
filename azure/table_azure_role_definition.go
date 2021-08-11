@@ -101,13 +101,18 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	authorizationClient := authorization.NewRoleDefinitionsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
+	result, err := authorizationClient.List(ctx, "/subscriptions/"+subscriptionID, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, roleDefinition := range result.Values() {
+		d.StreamListItem(ctx, roleDefinition)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := authorizationClient.List(ctx, "/subscriptions/"+subscriptionID, "")
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -115,8 +120,6 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		for _, roleDefinition := range result.Values() {
 			d.StreamListItem(ctx, roleDefinition)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

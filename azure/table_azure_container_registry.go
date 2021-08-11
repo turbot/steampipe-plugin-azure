@@ -236,9 +236,17 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 	client := containerregistry.NewRegistriesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, registry := range result.Values() {
+		d.StreamListItem(ctx, registry)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -246,8 +254,6 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 		for _, registry := range result.Values() {
 			d.StreamListItem(ctx, registry)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -275,7 +281,7 @@ func getContainerRegistry(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	client := containerregistry.NewRegistriesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +304,7 @@ func listContainerRegistryLoginCredentials(ctx context.Context, d *plugin.QueryD
 	data := h.Item.(containerregistry.Registry)
 	resourceGroup := strings.Split(*data.ID, "/")[4]
 
-	op, err := client.ListCredentials(context.Background(), resourceGroup, *data.Name)
+	op, err := client.ListCredentials(ctx, resourceGroup, *data.Name)
 	if err != nil {
 		if strings.Contains(err.Error(), "UnAuthorizedForCredentialOperations") {
 			return nil, nil
@@ -324,7 +330,7 @@ func listContainerRegistryUsages(ctx context.Context, d *plugin.QueryData, h *pl
 	data := h.Item.(containerregistry.Registry)
 	resourceGroup := strings.Split(*data.ID, "/")[4]
 
-	op, err := client.ListUsages(context.Background(), resourceGroup, *data.Name)
+	op, err := client.ListUsages(ctx, resourceGroup, *data.Name)
 	if err != nil {
 		return nil, err
 	}

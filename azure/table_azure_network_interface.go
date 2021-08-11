@@ -195,9 +195,17 @@ func listNetworkInterfaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	networkClient := network.NewInterfacesClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.ListAll(ctx)
+	result, err := networkClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, networkInterface := range result.Values() {
+		d.StreamListItem(ctx, networkInterface)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -205,8 +213,6 @@ func listNetworkInterfaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		for _, networkInterface := range result.Values() {
 			d.StreamListItem(ctx, networkInterface)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
