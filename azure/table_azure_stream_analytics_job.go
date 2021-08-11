@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/streamanalytics/mgmt/2016-03-01/streamanalytics"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -132,6 +133,13 @@ func tableAzureStreamAnalyticsJob(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("StreamingJobProperties.Sku.Name"),
 			},
 			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the streaming job.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listStreamAnalyticsJobDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "functions",
 				Description: "A list of one or more functions for the streaming job.",
 				Type:        proto.ColumnType_JSON,
@@ -254,4 +262,45 @@ func getStreamAnalyticsJob(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 
 	return op, nil
+}
+
+func listStreamAnalyticsJobDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listStreamAnalyticsJobDiagnosticSettings")
+	id := *h.Item.(streamanalytics.StreamingJob).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }
