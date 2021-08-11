@@ -111,17 +111,22 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 	datasetClient := datafactory.NewDatasetsClient(subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := datasetClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
+	result, err := datasetClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, dataset := range result.Values() {
+		d.StreamListItem(ctx, DatasetInfo{dataset, *factoryInfo.Name})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, dataset := range result.Values() {
 			d.StreamListItem(ctx, DatasetInfo{dataset, *factoryInfo.Name})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

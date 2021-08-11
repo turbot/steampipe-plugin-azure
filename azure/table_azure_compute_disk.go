@@ -306,10 +306,17 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDisksClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	for _, disk := range result.Values() {
+		d.StreamListItem(ctx, disk)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -317,8 +324,6 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		for _, disk := range result.Values() {
 			d.StreamListItem(ctx, disk)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -340,7 +345,7 @@ func getAzureComputeDisk(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client := compute.NewDisksClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}

@@ -228,18 +228,22 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 	iotHubClient := devices.NewIotHubResourceClient(subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
+	result, err := iotHubClient.ListBySubscription(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, iotHubDescription := range result.Values() {
+		d.StreamListItem(ctx, iotHubDescription)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := iotHubClient.ListBySubscription(context.Background())
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, iotHubDescription := range result.Values() {
 			d.StreamListItem(ctx, iotHubDescription)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

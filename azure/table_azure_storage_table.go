@@ -108,7 +108,7 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	storageClient := storage.NewTableClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	result, err := storageClient.List(context.Background(), *account.ResourceGroup, *account.Name)
+	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	storageDetails, err := storageClient.GetProperties(context.Background(), resourceGroup, accountName, "")
+	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
 
 	if err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	tableClient := storage.NewTableClient(subscriptionID)
 	tableClient.Authorizer = session.Authorizer
 
-	op, err := tableClient.Get(context.Background(), resourceGroup, accountName, name)
+	op, err := tableClient.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}

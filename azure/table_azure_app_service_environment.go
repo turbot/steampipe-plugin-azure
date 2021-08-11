@@ -175,9 +175,16 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	webClient := web.NewAppServiceEnvironmentsClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := webClient.List(ctx)
+	result, err := webClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, environment := range result.Values() {
+		d.StreamListItem(ctx, environment)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -185,8 +192,7 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 		for _, environment := range result.Values() {
 			d.StreamListItem(ctx, environment)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+
 	}
 	return nil, err
 }

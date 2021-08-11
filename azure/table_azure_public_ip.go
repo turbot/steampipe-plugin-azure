@@ -199,10 +199,16 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	networkClient := network.NewPublicIPAddressesClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+	result, err := networkClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, publicIP := range result.Values() {
+		d.StreamListItem(ctx, publicIP)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.ListAll(ctx)
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -210,8 +216,6 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		for _, publicIP := range result.Values() {
 			d.StreamListItem(ctx, publicIP)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
