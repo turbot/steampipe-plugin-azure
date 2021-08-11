@@ -12,17 +12,17 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureVirtualMachineScaleSet(_ context.Context) *plugin.Table {
+func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_virtual_machine_scale_set",
-		Description: "Azure Virtual Machine Scale Set",
+		Name:        "azure_compute_virtual_machine_scale_set",
+		Description: "Azure Compute Virtual Machine Scale Set",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAzureVirtualMachineScaleSet,
+			Hydrate:           getAzureComputeVirtualMachineScaleSet,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureVirtualMachineScaleSets,
+			Hydrate: listAzureComputeVirtualMachineScaleSets,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -219,8 +219,8 @@ func tableAzureVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listAzureVirtualMachineScaleSets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureVirtualMachineScaleSet")
+func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachineScaleSet")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -252,8 +252,8 @@ func listAzureVirtualMachineScaleSets(ctx context.Context, d *plugin.QueryData, 
 
 //// HYDRATE FUNCTION
 
-func getAzureVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAzureVirtualMachineScaleSet")
+func getAzureComputeVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineScaleSet")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
