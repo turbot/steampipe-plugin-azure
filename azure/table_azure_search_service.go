@@ -119,7 +119,7 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Tags"),
 			},
 
-			// Standard columns
+			// Azure standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
