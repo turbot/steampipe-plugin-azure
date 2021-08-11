@@ -8,6 +8,7 @@ A health probe is used to determine the health status of the instances in the ba
 
 ```sql
 select
+  id,
   name,
   type,
   provisioning_state,
@@ -21,22 +22,24 @@ from
 
 ```sql
 select
+  id,
   name,
   provisioning_state
 from
   azure_lb_probe
 where
-  provisioning_state = 'Succeeded'
+  provisioning_state = 'Succeeded';
 ```
 
 ### List load balancer probe order by interval
 
 ```sql
 select
+  id,
   name,
   interval_in_seconds
 from
   azure_lb_probe
 order by 
-  interval_in_seconds
+  interval_in_seconds;
 ```

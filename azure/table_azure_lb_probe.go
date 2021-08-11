@@ -111,7 +111,7 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -145,24 +145,28 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	listLoadBalancerProbesClient := network.NewLoadBalancerProbesClient(subscriptionID)
 	listLoadBalancerProbesClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := listLoadBalancerProbesClient.List(ctx, resourceGroup, *loadBalancer.Name)
+	result, err := listLoadBalancerProbesClient.List(ctx, resourceGroup, *loadBalancer.Name)
+	if err != nil {
+		return nil, err
+	}
+	for _, probe := range result.Values() {
+		d.StreamListItem(ctx, probe)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, key := range result.Values() {
-			d.StreamLeafListItem(ctx, key)
+		for _, probe := range result.Values() {
+			d.StreamListItem(ctx, probe)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS
+//// HYDRATE FUNCTION
 
 func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancerProbe")
@@ -199,7 +203,7 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	return nil, nil
 }
 
-//// TRANSFORM FUNCTIONS
+//// TRANSFORM FUNCTION
 
 func extractLoadBalancerNameFromProbeID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(network.Probe)
