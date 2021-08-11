@@ -185,17 +185,22 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := expressRouteCircuitClient.ListAll(ctx)
+	result, err := expressRouteCircuitClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, routeCircuit := range result.Values() {
+		d.StreamListItem(ctx, routeCircuit)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, routeCircuit := range result.Values() {
 			d.StreamListItem(ctx, routeCircuit)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil

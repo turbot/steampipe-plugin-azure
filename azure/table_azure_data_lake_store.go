@@ -231,17 +231,23 @@ func listDataLakeStores(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	accountClient := account.NewAccountsClient(subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := accountClient.List(context.Background(), "", nil, nil, "", "", nil)
+	result, err := accountClient.List(ctx, "", nil, nil, "", "", nil)
+	if err != nil {
+		return nil, err
+	}
+	for _, account := range result.Values() {
+		d.StreamListItem(ctx, account)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, account := range result.Values() {
 			d.StreamListItem(ctx, account)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+
 	}
 	return nil, err
 }

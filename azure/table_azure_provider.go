@@ -81,10 +81,16 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	resourcesClient := resources.NewProvidersClient(subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
+	result, err := resourcesClient.List(ctx, nil, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, provider := range result.Values() {
+		d.StreamListItem(ctx, provider)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := resourcesClient.List(ctx, nil, "")
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -92,8 +98,6 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		for _, provider := range result.Values() {
 			d.StreamListItem(ctx, provider)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

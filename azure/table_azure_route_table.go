@@ -119,13 +119,19 @@ func listRouteTables(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	routeTableClient := network.NewRouteTablesClient(subscriptionID)
 	routeTableClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := routeTableClient.ListAll(ctx)
+	result, err := routeTableClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, routeTable := range result.Values() {
+		d.StreamListItem(ctx, routeTable)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -133,8 +139,6 @@ func listRouteTables(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		for _, routeTable := range result.Values() {
 			d.StreamListItem(ctx, routeTable)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

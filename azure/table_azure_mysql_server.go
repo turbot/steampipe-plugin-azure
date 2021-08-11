@@ -245,7 +245,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	client := mysql.NewServersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(context.Background())
+	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
 	}

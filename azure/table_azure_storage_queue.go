@@ -114,7 +114,7 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	storageClient := storage.NewQueueClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	result, err := storageClient.List(context.Background(), *account.ResourceGroup, *account.Name, "", "")
+	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	storageDetails, err := storageClient.GetProperties(context.Background(), resourceGroup, accountName, "")
+	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
 
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	queueClient := storage.NewQueueClient(subscriptionID)
 	queueClient.Authorizer = session.Authorizer
 
-	op, err := queueClient.Get(context.Background(), resourceGroup, accountName, name)
+	op, err := queueClient.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
 	}

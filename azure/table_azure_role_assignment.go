@@ -98,19 +98,22 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
+	result, err := authorizationClient.List(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, roleAssignment := range result.Values() {
+		d.StreamListItem(ctx, roleAssignment)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := authorizationClient.List(ctx, "")
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, roleAssignment := range result.Values() {
 			d.StreamListItem(ctx, roleAssignment)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
