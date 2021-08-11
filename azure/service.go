@@ -27,8 +27,6 @@ type Session struct {
 	Expires        *time.Time
 }
 
-// Expires time.Now().Add(60 * time.Second),
-
 // GetNewSession creates an session configured from environment variables/CLI in the order:
 // 1. Client credentials
 // 2. Client certificate
