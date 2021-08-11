@@ -33,31 +33,29 @@ type Session struct {
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	azureConfig := GetConfig(d.Connection)
 
-	if &azureConfig != nil {
-		if azureConfig.TenantID != nil {
-			os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
-		}
-		if azureConfig.SubscriptionID != nil {
-			os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
-		}
-		if azureConfig.ClientID != nil {
-			os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
-		}
-		if azureConfig.ClientSecret != nil {
-			os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
-		}
-		if azureConfig.CertificatePath != nil {
-			os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
-		}
-		if azureConfig.CertificatePassword != nil {
-			os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
-		}
-		if azureConfig.Username != nil {
-			os.Setenv("AZURE_USERNAME", *azureConfig.Username)
-		}
-		if azureConfig.Username != nil {
-			os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
-		}
+	if azureConfig.TenantID != nil {
+		os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
+	}
+	if azureConfig.SubscriptionID != nil {
+		os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
+	}
+	if azureConfig.ClientID != nil {
+		os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
+	}
+	if azureConfig.ClientSecret != nil {
+		os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
+	}
+	if azureConfig.CertificatePath != nil {
+		os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
+	}
+	if azureConfig.CertificatePassword != nil {
+		os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
+	}
+	if azureConfig.Username != nil {
+		os.Setenv("AZURE_USERNAME", *azureConfig.Username)
+	}
+	if azureConfig.Username != nil {
+		os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
 	}
 
 	logger := plugin.Logger(ctx)

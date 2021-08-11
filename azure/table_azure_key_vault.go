@@ -212,6 +212,17 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		d.StreamListItem(ctx, vault)
 	}
 
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, vault := range result.Values() {
+			d.StreamListItem(ctx, vault)
+		}
+
+	}
+
 	return nil, err
 }
 
