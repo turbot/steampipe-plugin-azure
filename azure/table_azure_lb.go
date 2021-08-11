@@ -39,7 +39,7 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the load balancer resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'",
+				Description: "The provisioning state of the load balancer resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("LoadBalancerPropertiesFormat.ProvisioningState"),
 			},
@@ -152,7 +152,7 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
