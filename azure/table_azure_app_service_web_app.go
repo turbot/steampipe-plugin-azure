@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -206,9 +207,19 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	webClient := web.NewAppsClient(subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := webClient.List(ctx)
+	result, err := webClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, webApp := range result.Values() {
+		// Filtering out all the function apps
+		if string(*webApp.Kind) != "functionapp" {
+			d.StreamListItem(ctx, webApp)
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -219,8 +230,6 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 				d.StreamListItem(ctx, webApp)
 			}
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }
@@ -356,7 +365,7 @@ func webAppIdentity(ctx context.Context, d *transform.TransformData) (interface{
 	data := d.HydrateItem.(web.Site)
 	objectMap := make(map[string]interface{})
 	if data.Identity != nil {
-		if &data.Identity.Type != nil {
+		if types.SafeString(data.Identity.Type) != "" {
 			objectMap["Type"] = data.Identity.Type
 		}
 		if data.Identity.TenantID != nil {

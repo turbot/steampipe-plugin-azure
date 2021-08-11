@@ -260,9 +260,16 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	client := containerservice.NewManagedClustersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(ctx)
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, cluster := range result.Values() {
+		d.StreamListItem(ctx, cluster)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -270,8 +277,6 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		for _, cluster := range result.Values() {
 			d.StreamListItem(ctx, cluster)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

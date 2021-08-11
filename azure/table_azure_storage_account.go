@@ -422,13 +422,21 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	storageClient := storage.NewAccountsClient(subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := storageClient.List(ctx)
+	result, err := storageClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, account := range result.Values() {
+		resourceGroup := &strings.Split(string(*account.ID), "/")[4]
+		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -437,8 +445,6 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			resourceGroup := &strings.Split(string(*account.ID), "/")[4]
 			d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
@@ -642,7 +648,7 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 			// using 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues" to logging details
 			// https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage#QueueServicePropertiesProperties
 			// In azure SDK for GO, we still don't have logging properties in its output
-			resp, err := queuesClient.GetServiceProperties(context.Background(), *accountData.Name)
+			resp, err := queuesClient.GetServiceProperties(ctx, *accountData.Name)
 
 			if err != nil {
 				if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {

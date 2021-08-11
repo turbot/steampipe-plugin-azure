@@ -373,10 +373,17 @@ func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachinesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
+	result, err := client.ListAll(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 
-	for pagesLeft {
-		result, err := client.ListAll(context.Background(), "")
+	for _, virtualMachine := range result.Values() {
+		d.StreamListItem(ctx, virtualMachine)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -384,8 +391,6 @@ func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _
 		for _, virtualMachine := range result.Values() {
 			d.StreamListItem(ctx, virtualMachine)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -407,7 +412,7 @@ func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *
 	client := compute.NewVirtualMachinesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name, "")
+	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +440,7 @@ func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryD
 	client := compute.NewVirtualMachinesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.InstanceView(context.Background(), resourceGroupName, *virtualMachine.Name)
+	op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -468,9 +473,7 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 			return nil, err
 		}
 
-		for _, ipConfig := range *nic.IPConfigurations {
-			ipConfigs = append(ipConfigs, ipConfig)
-		}
+		ipConfigs = append(ipConfigs, *nic.IPConfigurations...)
 	}
 
 	return ipConfigs, nil
@@ -533,7 +536,7 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 	client := compute.NewVirtualMachineExtensionsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.List(context.Background(), resourceGroupName, *virtualMachine.Name, "")
+	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +575,7 @@ func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}
 		return nil, nil
 	}
 	statuses, ok := d.Value.(*[]compute.InstanceViewStatus)
-	if ok != true {
+	if !ok {
 		return nil, fmt.Errorf("Conversion failed for virtual machine statuses")
 	}
 
@@ -587,7 +590,7 @@ func getPrivateIpsFromIpconfig(ctx context.Context, d *transform.TransformData) 
 
 	var ips []string
 	ipConfigs, ok := d.Value.([]network.InterfaceIPConfiguration)
-	if ok != true {
+	if !ok {
 		return nil, fmt.Errorf("Conversion failed for virtual machine ip configs")
 	}
 	for _, ipConfig := range ipConfigs {

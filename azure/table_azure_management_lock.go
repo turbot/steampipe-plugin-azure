@@ -115,9 +115,18 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	locksClient := locks.NewManagementLocksClient(subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := locksClient.ListAtSubscriptionLevel(ctx, subscriptionID)
+	result, err := locksClient.ListAtSubscriptionLevel(ctx, subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, managementLock := range result.Values() {
+		resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
+		d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -126,8 +135,6 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
 			d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
