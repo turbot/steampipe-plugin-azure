@@ -1,0 +1,10 @@
+[
+  {
+    "name": "{{ resourceName }}",
+    "network_rule_set": {
+      "ipRules": []
+    },
+    "partition_count": 1,
+    "replica_count": 1
+  }
+]
