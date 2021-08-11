@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -98,6 +99,13 @@ func tableAzureVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 				Description: "Specifies the tier of virtual machines in a scale set.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Sku.Capacity"),
+			},
+			{
+				Name:        "extensions",
+				Description: "Specifies the details of VM Scale Set Extensions.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureComputeVirtualMachineScalesetExtensions,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "plan",
@@ -264,4 +272,47 @@ func getAzureVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryData, h 
 	}
 
 	return nil, nil
+}
+
+func getAzureComputeVirtualMachineScalesetExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineScalesetExtensions")
+
+	virtualMachineScaleSet := h.Item.(compute.VirtualMachineScaleSet)
+	resourceGroupName := strings.Split(string(*virtualMachineScaleSet.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachineScaleSetExtensionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(context.Background(), resourceGroupName, *virtualMachineScaleSet.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives the contents of VirtualMachineScaleSetExtensionsListResult
+	var extensions []map[string]interface{}
+
+	for _, extension := range op.Values() {
+		extensionMap := make(map[string]interface{})
+		extensionMap["Id"] = extension.ID
+		extensionMap["Name"] = extension.Name
+		extensionMap["Type"] = extension.Type
+		extensionMap["ProvisionAfterExtensions"] = extension.ProvisionAfterExtensions
+		extensionMap["Publisher"] = extension.VirtualMachineScaleSetExtensionProperties.Publisher
+		extensionMap["ExtensionType"] = extension.VirtualMachineScaleSetExtensionProperties.Type
+		extensionMap["TypeHandlerVersion"] = extension.VirtualMachineScaleSetExtensionProperties.TypeHandlerVersion
+		extensionMap["AutoUpgradeMinorVersion"] = extension.VirtualMachineScaleSetExtensionProperties.AutoUpgradeMinorVersion
+		extensionMap["EnableAutomaticUpgrade"] = extension.VirtualMachineScaleSetExtensionProperties.EnableAutomaticUpgrade
+		extensionMap["ForceUpdateTag"] = extension.VirtualMachineScaleSetExtensionProperties.ForceUpdateTag
+		extensionMap["Settings"] = extension.VirtualMachineScaleSetExtensionProperties.Settings
+		extensionMap["ProtectedSettings"] = extension.VirtualMachineScaleSetExtensionProperties.ProtectedSettings
+		extensionMap["ProvisioningState"] = extension.VirtualMachineScaleSetExtensionProperties.ProvisioningState
+		plugin.Logger(ctx).Trace("Extensions ==>", extensionMap)
+		extensions = append(extensions, extensionMap)
+	}
+	return extensions, nil
 }
