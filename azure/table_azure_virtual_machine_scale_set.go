@@ -229,19 +229,23 @@ func listAzureVirtualMachineScaleSets(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	pagesLeft := true
 
-	for pagesLeft {
-		result, err := client.ListAll(context.Background())
+	result, err := client.ListAll(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, scaleSet := range result.Values() {
+		d.StreamListItem(ctx, scaleSet)
+	}
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, scaleSet := range result.Values() {
 			d.StreamListItem(ctx, scaleSet)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, nil
 }
@@ -253,6 +257,10 @@ func getAzureVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryData, h 
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

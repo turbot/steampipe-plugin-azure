@@ -1,6 +1,6 @@
 # Table: azure_virtual_machine_scale_set
 
-A virtual network gateway is used to establish secure, cross-premises connectivity.
+Azure virtual machine scale sets let you create and manage a group of load balanced VMs. The number of VM instances can automatically increase or decrease in response to demand or a defined schedule. Scale sets provide high availability to your applications, and allow you to centrally manage, configure, and update a large number of VMs.
 
 ## Examples
 
