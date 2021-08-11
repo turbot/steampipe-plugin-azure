@@ -218,25 +218,32 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 	streamingJobsClient := streamanalytics.NewStreamingJobsClient(subscriptionID)
 	streamingJobsClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := streamingJobsClient.List(context.Background(), "")
+	result, err := streamingJobsClient.List(context.Background(), "")
+	if err != nil {
+		return nil, err
+	}
+	for _, streamingJob := range result.Values() {
+		d.StreamListItem(ctx, streamingJob)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
+
 		for _, streamingJob := range result.Values() {
 			d.StreamListItem(ctx, streamingJob)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
+
 	return nil, err
 }
 
 //// HYDRATE FUNCTIONS
 
 func getStreamAnalyticsJob(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getStreamAnalyticsJob")
+	plugin.Logger(ctx).Trace("getStrestreamingJobamAnalyticsJob")
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
