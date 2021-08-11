@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -64,7 +64,7 @@ resource "azurerm_network_interface" "named_test_resource" {
 }
 
 resource "azurerm_virtual_machine" "named_test_resource" {
-  name = var.resource_name
+  name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
   network_interface_ids = [
@@ -74,20 +74,20 @@ resource "azurerm_virtual_machine" "named_test_resource" {
 
   storage_image_reference {
     publisher = "Canonical"
-    offer = "UbuntuServer"
-    sku = "16.04-LTS"
-    version = "latest"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
   }
 
   storage_os_disk {
-    name = azurerm_virtual_network.named_test_resource.name
-    caching = "ReadWrite"
-    create_option = "FromImage"
+    name              = azurerm_virtual_network.named_test_resource.name
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name = "hostname"
+    computer_name  = "hostname"
     admin_username = "testadmin"
     admin_password = "Password1234!"
   }

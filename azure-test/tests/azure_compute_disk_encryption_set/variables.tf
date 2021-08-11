@@ -13,13 +13,13 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=2.41.0"
+  version = "=2.41.0"
   features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
@@ -71,8 +71,8 @@ resource "azurerm_key_vault_key" "named_test_resource" {
 
 resource "azurerm_key_vault_access_policy" "local_user" {
   key_vault_id = azurerm_key_vault.named_test_resource.id
-  tenant_id = data.azurerm_client_config.current.tenant_id
-  object_id = data.azurerm_client_config.current.object_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azurerm_client_config.current.object_id
   key_permissions = [
     "create",
     "get",
@@ -82,15 +82,15 @@ resource "azurerm_key_vault_access_policy" "local_user" {
 }
 
 resource "azurerm_disk_encryption_set" "named_test_resource" {
-  name = var.resource_name
+  name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
-  key_vault_key_id = azurerm_key_vault_key.named_test_resource.id
-  
+  key_vault_key_id    = azurerm_key_vault_key.named_test_resource.id
+
   identity {
     type = "SystemAssigned"
   }
-  
+
   tags = {
     name = var.resource_name
   }
