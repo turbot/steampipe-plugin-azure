@@ -11,10 +11,10 @@ run_test () {
    echo -e "${BLACK}Running $1 ${ENDCOLOR}"
  if ! ./tint.js $1 >> output.txt
    then
-    echo -e "${RED}Failed${ENDCOLOR}"
+    echo -e "${RED}Failed -> $1 ${ENDCOLOR}"
     echo $1 >> failed_tests.txt
   else
-    echo -e "${BOLDGREEN}Passed${ENDCOLOR}"
+    echo -e "${BOLDGREEN}Passed -> $1 ${ENDCOLOR}"
     echo $1 >> passed_tests.txt
    fi
  }
