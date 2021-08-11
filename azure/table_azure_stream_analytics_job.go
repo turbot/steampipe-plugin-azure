@@ -231,7 +231,6 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 		if err != nil {
 			return nil, err
 		}
-
 		for _, streamingJob := range result.Values() {
 			d.StreamListItem(ctx, streamingJob)
 		}
