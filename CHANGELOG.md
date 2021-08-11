@@ -10,7 +10,6 @@ _What's new?_
   - [azure_logic_app_workflow](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_logic_app_workflow) ([#230](https://github.com/turbot/steampipe-plugin-azure/pull/230))
   - [azure_recovery_services_vault](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_vault) ([#243](https://github.com/turbot/steampipe-plugin-azure/pull/243))
   - [azure_stream_analytics_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_stream_analytics_job) ([#246](https://github.com/turbot/steampipe-plugin-azure/pull/246))
-  - [key_vault_managed_hardware_security_module](https://hub.steampipe.io/plugins/turbot/azure/tables/key_vault_managed_hardware_security_module) ([#236](https://github.com/turbot/steampipe-plugin-azure/pull/236))
 
 _Enhancements_
 
@@ -25,8 +24,8 @@ _Enhancements_
 
 _Bug fixes_
 
-- Fixed: Paging for listing resources for all tables ([#254](https://github.com/turbot/steampipe-plugin-azure/pull/254))<br/>
-  _This bug impacted all the tables in plugin. Now tables will not go into infinitely loop for large number of resources._
+- Fixed: Pagination for listing resources for all tables ([#254](https://github.com/turbot/steampipe-plugin-azure/pull/254))<br/>
+  _This bug impacted all the tables in plugin. Now tables will not go into infinite loop for large number of resources._
 - Fixed: Improve properties of `firewall_rules` column in `azure_sql_server` table ([#237](https://github.com/turbot/steampipe-plugin-azure/pull/237))
 
 ## v0.15.0 [2021-07-31]
