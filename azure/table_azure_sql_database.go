@@ -150,24 +150,6 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseProperties.RestorePointInTime").Transform(convertDateToTime),
 			},
 			{
-				Name:        "source_database_deletion_date",
-				Description: "Specifies the time that the database was deleted when createMode is Restore and sourceDatabaseId is the deleted database's original resource id.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseDeletionDate").Transform(convertDateToTime),
-			},
-			{
-				Name:        "source_database_id",
-				Description: "Specifies the resource ID of the source database if createMode is Copy, NonReadableSecondary, OnlineSecondary, PointInTimeRestore, Recovery, or Restore.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseID"),
-			},
-			{
-				Name:        "zone_redundant",
-				Description: "Indicates if the database is zone redundant or not.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("DatabaseProperties.ZoneRedundant"),
-			},
-			{
 				Name:        "retention_policy_id",
 				Description: "Retention policy ID.",
 				Type:        proto.ColumnType_STRING,
@@ -194,6 +176,24 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
 				Transform:   transform.FromField("BaseLongTermRetentionPolicyProperties"),
+			},
+			{
+				Name:        "source_database_deletion_date",
+				Description: "Specifies the time that the database was deleted when createMode is Restore and sourceDatabaseId is the deleted database's original resource id.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseDeletionDate").Transform(convertDateToTime),
+			},
+			{
+				Name:        "source_database_id",
+				Description: "Specifies the resource ID of the source database if createMode is Copy, NonReadableSecondary, OnlineSecondary, PointInTimeRestore, Recovery, or Restore.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseID"),
+			},
+			{
+				Name:        "zone_redundant",
+				Description: "Indicates if the database is zone redundant or not.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DatabaseProperties.ZoneRedundant"),
 			},
 			{
 				Name:        "create_mode",
