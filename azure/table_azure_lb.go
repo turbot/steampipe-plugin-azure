@@ -187,19 +187,25 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	LoadBalancersClient := network.NewLoadBalancersClient(subscriptionID)
 	LoadBalancersClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := LoadBalancersClient.ListAll(ctx)
+	result, err := LoadBalancersClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, loadBalancer := range result.Values() {
+		d.StreamListItem(ctx, loadBalancer)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, loadBalancer := range result.Values() {
 			d.StreamListItem(ctx, loadBalancer)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
+	
 	return nil, err
 }
 
