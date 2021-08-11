@@ -184,7 +184,7 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for result.NotDone() {
-		err = result.NextWithContext(context.Background())
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
