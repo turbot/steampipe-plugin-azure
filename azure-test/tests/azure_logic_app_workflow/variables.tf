@@ -1,6 +1,6 @@
 variable "resource_name" {
   type        = string
-  default     = "turbot-test-20200125-create-update"
+  default     = "steampipe-test"
   description = "Name of the resource used throughout the test."
 }
 
@@ -12,8 +12,8 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53c0616fc6c1"
-  description = "Azure environment used for the test."
+  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  description = "Azure subscription used for the test."
 }
 
 provider "azurerm" {
@@ -23,33 +23,31 @@ provider "azurerm" {
   subscription_id = var.azure_subscription
 }
 
-data "azuread_client_config" "current" {}
+data "azurerm_client_config" "current" {}
 
-resource "azurerm_resource_group" "named_test_resource" {
-  name     = var.resource_name
-  location = "West Europe"
-}
-
-resource "azurerm_lb" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  tags = {
-    name = var.resource_name
+data "null_data_source" "resource" {
+  inputs = {
+    scope = "azure:///subscriptions/${data.azurerm_client_config.current.subscription_id}"
   }
 }
 
-output "region" {
-  value = azurerm_resource_group.named_test_resource.location
+resource "azurerm_resource_group" "named_test_resource" {
+  name     = var.resource_name
+  location = "East US"
+}
+
+resource "azurerm_logic_app_workflow" "named_test_resource" {
+  name                = var.resource_name
+  location            = azurerm_resource_group.named_test_resource.location
+  resource_group_name = azurerm_resource_group.named_test_resource.name
 }
 
 output "resource_aka" {
-  depends_on = [azurerm_lb.named_test_resource]
-  value      = "azure://${azurerm_lb.named_test_resource.id}"
+  value = "azure://${azurerm_logic_app_workflow.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_lb.named_test_resource.id)}"
+  value = "azure://${lower(azurerm_logic_app_workflow.named_test_resource.id)}"
 }
 
 output "resource_name" {
@@ -57,7 +55,11 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = azurerm_lb.named_test_resource.id
+  value = azurerm_logic_app_workflow.named_test_resource.id
+}
+
+output "location" {
+  value = azurerm_logic_app_workflow.named_test_resource.location
 }
 
 output "subscription_id" {

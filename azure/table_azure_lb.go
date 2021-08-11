@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -10,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -27,24 +28,24 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{
 				Name:        "name",
-				Description: "Resource name.",
+				Description: "The resource name.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
-				Description: "Resource ID.",
+				Description: "The resource ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the load balancer resource. Possible values include: 'ProvisioningStateSucceeded', 'ProvisioningStateUpdating', 'ProvisioningStateDeleting', 'ProvisioningStateFailed'",
+				Description: "The provisioning state of the load balancer resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("LoadBalancerPropertiesFormat.ProvisioningState").Transform(transform.ToString),
+				Transform:   transform.FromField("LoadBalancerPropertiesFormat.ProvisioningState"),
 			},
 			{
 				Name:        "type",
-				Description: "Resource type.",
+				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -72,21 +73,28 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sku_name",
-				Description: "Name of a load balancer SKU. Possible values include: 'LoadBalancerSkuNameBasic', 'LoadBalancerSkuNameStandard', 'LoadBalancerSkuNameGateway'.",
+				Description: "Name of the load balancer SKU. Possible values include: 'Basic', 'Standard', 'Gateway'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_tier",
-				Description: "Tier of a load balancer SKU. Possible values include: 'LoadBalancerSkuTierRegional', 'LoadBalancerSkuTierGlobal'.",
+				Description: "Tier of the load balancer SKU. Possible values include: 'Regional', 'Global'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier").Transform(transform.ToString),
 			},
 			{
 				Name:        "backend_address_pools",
-				Description: "Collection of backend address pools used by a load balancer.",
+				Description: "Collection of backend address pools used by the load balancer.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("LoadBalancerPropertiesFormat.BackendAddressPools"),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the load balancer.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listLoadBalancerDiagnosticSettings,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "frontend_ip_configurations",
@@ -96,13 +104,13 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "inbound_nat_pools",
-				Description: "Defines an external port range for inbound NAT to a single backend port on NICs associated with a load balancer. Inbound NAT rules are created automatically for each NIC associated with the Load Balancer using an external port from this range. Defining an Inbound NAT pool on your Load Balancer is mutually exclusive with defining inbound Nat rules. Inbound NAT pools are referenced from virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an inbound NAT pool. They have to reference individual inbound NAT rules.",
+				Description: "Defines an external port range for inbound NAT to a single backend port on NICs associated with the load balancer. Inbound NAT rules are created automatically for each NIC associated with the Load Balancer using an external port from this range. Defining an Inbound NAT pool on the Load Balancer is mutually exclusive with defining inbound Nat rules. Inbound NAT pools are referenced from virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an inbound NAT pool. They have to reference individual inbound NAT rules.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("LoadBalancerPropertiesFormat.InboundNatPools"),
 			},
 			{
 				Name:        "inbound_nat_rules",
-				Description: "Collection of inbound NAT Rules used by a load balancer. Defining inbound NAT rules on your load balancer is mutually exclusive with defining an inbound NAT pool. Inbound NAT pools are referenced from virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an Inbound NAT pool. They have to reference individual inbound NAT rules.",
+				Description: "Collection of inbound NAT Rules used by the load balancer. Defining inbound NAT rules on the load balancer is mutually exclusive with defining an inbound NAT pool. Inbound NAT pools are referenced from virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an Inbound NAT pool. They have to reference individual inbound NAT rules.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("LoadBalancerPropertiesFormat.InboundNatRules"),
 			},
@@ -124,7 +132,7 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("LoadBalancerPropertiesFormat.Probes"),
 			},
-			
+
 			// Steampipe standard columns
 			{
 				Name:        "title",
@@ -167,7 +175,7 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 	}
 }
 
-//// FETCH FUNCTIONS ////
+//// LIST FUNCTIONS
 
 func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -195,13 +203,18 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS ////
+//// HYDRATE FUNCTIONS
 
 func getLoadBalancer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancer")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Handle empty name or resourceGroup
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -224,4 +237,45 @@ func getLoadBalancer(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	return nil, nil
+}
+
+func listLoadBalancerDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listAzureLoadBalancerDiagnosticSettings")
+	id := *h.Item.(network.LoadBalancer).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }

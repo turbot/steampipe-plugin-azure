@@ -548,6 +548,7 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 		extensionMap["Type"] = extension.Type
 		extensionMap["Location"] = extension.Location
 		extensionMap["Publisher"] = extension.VirtualMachineExtensionProperties.Publisher
+		extensionMap["ExtensionType"] = extension.VirtualMachineExtensionProperties.Type
 		extensionMap["TypeHandlerVersion"] = extension.VirtualMachineExtensionProperties.TypeHandlerVersion
 		extensionMap["AutoUpgradeMinorVersion"] = extension.VirtualMachineExtensionProperties.AutoUpgradeMinorVersion
 		extensionMap["EnableAutomaticUpgrade"] = extension.VirtualMachineExtensionProperties.EnableAutomaticUpgrade

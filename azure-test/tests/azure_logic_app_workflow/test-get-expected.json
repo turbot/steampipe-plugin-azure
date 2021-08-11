@@ -2,12 +2,9 @@
   {
     "id": "{{ output.resource_id.value }}",
     "name": "{{ resourceName }}",
-    "region": "{{ output.region.value }}",
+    "region": "{{ output.location.value }}",
     "resource_group": "{{ resourceName }}",
     "subscription_id": "{{ output.subscription_id.value }}",
-    "tags": {
-      "name": "{{ resourceName }}"
-    },
-    "type": "Microsoft.Network/loadBalancers"
+    "type": "Microsoft.Logic/workflows"
   }
 ]
