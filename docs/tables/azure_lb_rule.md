@@ -23,6 +23,7 @@ from
 select
   id,
   name,
+  type,
   provisioning_state
 from
   azure_lb_rule
@@ -36,6 +37,7 @@ where
 select
   id,
   name,
+  type,
   idle_timeout_in_minutes
 from
   azure_lb_rule
