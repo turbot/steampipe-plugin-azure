@@ -101,18 +101,22 @@ func listResourceLinks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	resourceLinkClient := links.NewResourceLinksClient(subscriptionID)
 	resourceLinkClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := resourceLinkClient.ListAtSubscription(ctx, "")
+	result, err := resourceLinkClient.ListAtSubscription(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, resourceLink := range result.Values() {
+		d.StreamListItem(ctx, resourceLink)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		for _, resourceLink := range result.Values() {
 			d.StreamListItem(ctx, resourceLink)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err
