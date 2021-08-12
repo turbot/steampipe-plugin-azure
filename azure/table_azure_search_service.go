@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/search/mgmt/2020-08-01/search"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -38,19 +39,19 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 			{
 				Name:        "provisioning_state",
 				Type:        proto.ColumnType_STRING,
-				Description: "The state of the last provisioning operation performed on the search service. Provisioning is an intermediate state that occurs while service capacity is being established. After capacity is set up, provisioningState changes to either 'succeeded' or 'failed'. Client applications can poll provisioning status (the recommended polling interval is from 30 seconds to one minute) by using the Get Search Service operation to see when an operation is completed. If you are using the free service, this value tends to come back as 'succeeded' directly in the call to Create search service. This is because the free service uses capacity that is already set up. Possible values include: 'Succeeded', 'Provisioning', 'Failed'.",
+				Description: "The state of the last provisioning operation performed on the search service.",
 				Transform:   transform.FromField("ServiceProperties.ProvisioningState"),
 			},
 			{
 				Name:        "status",
 				Type:        proto.ColumnType_STRING,
-				Description: "The status of the search service. Possible values include: 'running': The search service is running and no provisioning operations are underway. 'provisioning': The search service is being provisioned or scaled up or down. 'deleting': The search service is being deleted. 'degraded': The search service is degraded. This can occur when the underlying search units are not healthy. The search service is most likely operational, but performance might be slow and some requests might be dropped. 'disabled': The search service is disabled. In this state, the service will reject all API requests. 'error': The search service is in an error state. If your service is in the degraded, disabled, or error states, it means the Azure Cognitive Search team is actively investigating the underlying issue. Dedicated services in these states are still chargeable based on the number of search units provisioned. Possible values include: 'ServiceStatusRunning', 'ServiceStatusProvisioning', 'ServiceStatusDeleting', 'ServiceStatusDegraded', 'ServiceStatusDisabled', 'ServiceStatusError'",
+				Description: "The status of the search service. Possible values include: 'running', deleting', 'provisioning', 'degraded', 'disabled', 'error' etc.",
 				Transform:   transform.FromField("ServiceProperties.Status"),
 			},
 			{
 				Name:        "status_details",
 				Type:        proto.ColumnType_STRING,
-				Description: "The status of the search service. Possible values include: 'runniThe details of the search service status.",
+				Description: "The details of the search service status.",
 				Transform:   transform.FromField("ServiceProperties.StatusDetails"),
 			},
 			{
@@ -89,11 +90,18 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the search service.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSearchServiceDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "identity",
 				Type:        proto.ColumnType_JSON,
 				Description: "The identity of the resource.",
 				Transform:   transform.FromField("Identity"),
-			},		
+			},
 			{
 				Name:        "network_rule_set",
 				Type:        proto.ColumnType_JSON,
@@ -119,7 +127,7 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Tags"),
 			},
 
-			// Azure standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -131,6 +139,8 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
 			},
+
+			// Azure standard columns
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
@@ -200,6 +210,10 @@ func getSearchService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -219,4 +233,45 @@ func getSearchService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	return nil, nil
+}
+
+func listSearchServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSearchServiceDiagnosticSettings")
+	id := h.Item.(search.Service).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, *id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }
