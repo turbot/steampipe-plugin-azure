@@ -57,7 +57,7 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 			{
 				Name:        "type",
 				Type:        proto.ColumnType_STRING,
-				Description: "The type of the resource. E.g. 'Microsoft.Compute/virtualMachines' or 'Microsoft.Storage/storageAccounts'.",
+				Description: "The type of the resource.",
 			},
 			{
 				Name:        "hosting_mode",
@@ -100,7 +100,6 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Name:        "identity",
 				Type:        proto.ColumnType_JSON,
 				Description: "The identity of the resource.",
-				Transform:   transform.FromField("Identity"),
 			},
 			{
 				Name:        "network_rule_set",
@@ -119,12 +118,6 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Description: "The list of shared private link resources managed by the azure cognitive search service.",
 				Transform:   transform.FromField("ServiceProperties.SharedPrivateLinkResources"),
-			},
-			{
-				Name:        "tags_src",
-				Type:        proto.ColumnType_JSON,
-				Description: "The resource tags.",
-				Transform:   transform.FromField("Tags"),
 			},
 
 			// Steampipe standard columns
