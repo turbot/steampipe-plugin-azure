@@ -9,7 +9,7 @@ Linking is a feature of the Resource Manager. It enables declaring relationships
 ```sql
 select
   name,
-	id,
+  id,
   type,
   source_id,
   target_id
@@ -22,9 +22,9 @@ from
 ```sql
 select
   name,
-	id,
-	source_id,
-	target_id
+  id,
+  source_id,
+  target_id
 from
   azure_resource_link
 where
