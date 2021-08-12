@@ -18,7 +18,7 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_probe",
 		Description: "Azure Load Balancer Probe",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "region", "resource_group"}),
 			Hydrate:           getLoadBalancerProbe,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
@@ -42,7 +42,6 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 				Name:        "load_balancer_name",
 				Description: "The friendly name that identifies the load balancer.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(extractLoadBalancerNameFromProbeID),
 			},
 			{
 				Name:        "provisioning_state",
@@ -113,6 +112,11 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
+				Type:        proto.ColumnType_STRING,
+			},
+			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
@@ -126,6 +130,12 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 			},
 		},
 	}
+}
+
+type BalancerProbesInfo = struct {
+	network.Probe
+	LoadBalancerName string
+	Region string
 }
 
 //// LIST FUNCTION
@@ -150,7 +160,7 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 		return nil, err
 	}
 	for _, probe := range result.Values() {
-		d.StreamListItem(ctx, probe)
+		d.StreamListItem(ctx, BalancerProbesInfo{probe, *loadBalancer.Name, *loadBalancer.Location})
 	}
 
 	for result.NotDone() {
@@ -159,7 +169,7 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 			return nil, err
 		}
 		for _, probe := range result.Values() {
-			d.StreamListItem(ctx, probe)
+			d.StreamListItem(ctx, BalancerProbesInfo{probe, *loadBalancer.Name, *loadBalancer.Location})
 		}
 	}
 
@@ -173,6 +183,7 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	loadBalancerName := d.KeyColumnQuals["load_balancer_name"].GetStringValue()
 	probeName := d.KeyColumnQuals["name"].GetStringValue()
+	region := d.KeyColumnQuals["region"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	// Handle empty loadBalancerName, probeName or resourceGroup
@@ -197,16 +208,8 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return BalancerProbesInfo{op, loadBalancerName, region}, nil
 	}
 
 	return nil, nil
-}
-
-//// TRANSFORM FUNCTION
-
-func extractLoadBalancerNameFromProbeID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(network.Probe)
-	vaultName := strings.Split(*data.ID, "/")[8]
-	return vaultName, nil
 }

@@ -1,6 +1,6 @@
 # Table: azure_lb_probe
 
-A health probe is used to determine the health status of the instances in the backend pool. It will determine if an instance is healthy and can receive traffic.
+When using load-balancing rules with Azure Load Balancer, you need to specify health probes to allow Load Balancer to detect the backend endpoint status. The configuration of the health probe and probe responses determine which backend pool instances will receive new flows. You can use health probes to detect the failure of an application on a backend endpoint.
 
 ## Examples
 
@@ -18,7 +18,7 @@ from
   azure_lb_probe;
 ```
 
-### List succeeded load balancer probe
+### List failed load balancer probes
 
 ```sql
 select
@@ -29,10 +29,10 @@ select
 from
   azure_lb_probe
 where
-  provisioning_state = 'Succeeded';
+  provisioning_state = 'Failed';
 ```
 
-### List load balancer probe order by interval
+### List load balancer probes order by interval
 
 ```sql
 select
