@@ -2,7 +2,7 @@
   {
     "active_key_source_vault_id": "{{ output.vault_id.value }}",
     "active_key_url": "{{ output.key_id.value }}",
-    "encryption_tpe": "EncryptionAtRestWithCustomerKey",
+    "encryption_type": "EncryptionAtRestWithCustomerKey",
     "id": "{{ output.resource_id.value }}",
     "identity_tenant_id": "cdffd708-7da0-4cea-abeb-0a4c334d7f64",
     "identity_type": "SystemAssigned",

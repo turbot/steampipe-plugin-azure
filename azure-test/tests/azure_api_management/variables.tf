@@ -23,8 +23,9 @@ variable "azure_resource_group" {
   description = "Name of the resource group used throughout the test."
 }
 
-data "azurerm_resource_group" "data_resource_group" {
-  name = var.azure_resource_group
+resource "azurerm_resource_group" "named_test_resource" {
+  name     = var.resource_name
+  location = "West US"
 }
 
 provider "azurerm" {
@@ -44,8 +45,8 @@ data "null_data_source" "resource" {
 
 resource "azurerm_api_management" "named_test_resource" {
   name                = var.resource_name
-  location            = data.azurerm_resource_group.data_resource_group.location
-  resource_group_name = var.azure_resource_group
+  location            = azurerm_resource_group.named_test_resource.location
+  resource_group_name = azurerm_resource_group.named_test_resource.name
   publisher_name      = "TurbotHQ"
   publisher_email     = "test@turbot.com"
 
@@ -83,7 +84,7 @@ output "resource_id" {
 }
 
 output "location" {
-  value = data.azurerm_resource_group.data_resource_group.location
+  value = azurerm_resource_group.named_test_resource.location
 }
 
 output "subscription_id" {

@@ -3,8 +3,7 @@
     "id": "{{ output.resource_id.value }}",
     "identity": {
       "PrincipalID": "{{ output.principal_id.value }}",
-      "TenantID": "{{ output.tenant_id.value }}",
-      "Type": "SystemAssigned"
+      "TenantID": "{{ output.tenant_id.value }}"
     },
     "name": "{{resourceName}}"
   }

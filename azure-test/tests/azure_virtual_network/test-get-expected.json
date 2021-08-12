@@ -4,7 +4,7 @@
       "10.1.2.0/24"
     ],
     "enable_ddos_protection": false,
-    "enable_vm_protection": false,
+    "enable_vm_protection": null,
     "id": "{{ output.resource_id.value }}",
     "name": "{{resourceName}}",
     "region": "eastus",
