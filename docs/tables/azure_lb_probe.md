@@ -24,6 +24,7 @@ from
 select
   id,
   name,
+  type,
   provisioning_state
 from
   azure_lb_probe
@@ -37,6 +38,7 @@ where
 select
   id,
   name,
+  type,
   interval_in_seconds
 from
   azure_lb_probe
