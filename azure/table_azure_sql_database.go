@@ -177,13 +177,6 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Type"),
 			},
 			{
-				Name:        "retention_policy_property",
-				Description: "Long term Retention policy Property.",
-				Type:        proto.ColumnType_JSON,
-				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
-				Transform:   transform.FromField("BaseLongTermRetentionPolicyProperties"),
-			},
-			{
 				Name:        "source_database_deletion_date",
 				Description: "Specifies the time that the database was deleted when createMode is Restore and sourceDatabaseId is the deleted database's original resource id.",
 				Type:        proto.ColumnType_TIMESTAMP,
@@ -218,6 +211,13 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Description: "The recommended indices for this database.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseProperties.RecommendedIndex"),
+			},
+			{
+				Name:        "retention_policy_property",
+				Description: "Long term Retention policy Property.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
+				Transform:   transform.FromField("BaseLongTermRetentionPolicyProperties"),
 			},
 			{
 				Name:        "sample_name",
