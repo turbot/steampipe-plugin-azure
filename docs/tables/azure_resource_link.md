@@ -17,7 +17,7 @@ from
   azure_resource_link;
 ```
 
-### List of resource links with virtual machines
+### List resource links with virtual machines
 
 ```sql
 select
