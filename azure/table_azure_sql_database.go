@@ -398,7 +398,6 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 		database := h.Item.(sql.Database)
 		serverName = strings.Split(*database.ID, "/")[8]
 		databaseName = *database.Name
-		plugin.Logger(ctx).Trace("Hydrate Database Id", *database.ID)
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
 	} else {
 		serverName = d.KeyColumnQuals["server_name"].GetStringValue()
