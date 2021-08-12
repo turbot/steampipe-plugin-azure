@@ -150,6 +150,12 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseProperties.RestorePointInTime").Transform(convertDateToTime),
 			},
 			{
+				Name:        "requested_service_objective_name",
+				Description: "The name of the configured service level objective of the database.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveName"),
+			},
+			{
 				Name:        "retention_policy_id",
 				Description: "Retention policy ID.",
 				Type:        proto.ColumnType_STRING,
@@ -212,12 +218,6 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Description: "The recommended indices for this database.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseProperties.RecommendedIndex"),
-			},
-			{
-				Name:        "requested_service_objective_name",
-				Description: "The name of the configured service level objective of the database.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveName"),
 			},
 			{
 				Name:        "sample_name",
