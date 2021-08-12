@@ -9,9 +9,9 @@
       "TenantID": "{{ output.tenant_id.value }}"
     },
     "kind": "app",
-    "name": "{{resourceName}}",
+    "name": "{{ resourceName }}",
     "region": "east us",
     "reserved": false,
-    "resource_group": "{{resourceName}}"
+    "resource_group": "{{ resourceName }}"
   }
 ]
