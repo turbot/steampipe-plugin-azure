@@ -139,14 +139,14 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
 			},
-
-			// Azure standard columns
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
