@@ -15,10 +15,10 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_resource_link",
 		Description: "Azure Resource Link",
-		Get:         &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("id"),
-			Hydrate: getResourceLink,
-			ShouldIgnoreError: isNotFoundError([]string{"MissingSubscription", "404", }),
+		Get: &plugin.GetConfig{
+			KeyColumns:        plugin.SingleColumn("id"),
+			Hydrate:           getResourceLink,
+			ShouldIgnoreError: isNotFoundError([]string{"MissingSubscription", "404"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResourceLinks,
@@ -33,7 +33,7 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
 				Description: "The fully qualified ID of the resource link.",
-				Transform: transform.FromGo(),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "type",
@@ -44,20 +44,20 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 				Name:        "source_id",
 				Type:        proto.ColumnType_STRING,
 				Description: "The fully qualified ID of the source resource in the link.",
-				Transform: transform.FromField("Properties.SourceID"),
+				Transform:   transform.FromField("Properties.SourceID"),
 			},
 			{
 				Name:        "target_id",
 				Type:        proto.ColumnType_STRING,
 				Description: "The fully qualified ID of the target resource in the link.",
-				Transform: transform.FromField("Properties.TargetID"),
+				Transform:   transform.FromField("Properties.TargetID"),
 			},
 			{
 				Name:        "notes",
 				Type:        proto.ColumnType_STRING,
 				Description: "Notes about the resource link.",
 			},
-			
+
 			// Steampipe standard columns
 			{
 				Name:        "title",
