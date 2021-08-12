@@ -19,15 +19,15 @@ from
   azure_search_service;
 ```
 
-### List virtual machine type search service
+### List publicly accessible search services
 
 ```sql
 select
   name,
   id,
-  type
+  public_network_access
 from
   azure_search_service
 where
-  type = 'Microsoft.Compute/virtualMachines';
+  public_network_access = 'Enabled';
 ```
