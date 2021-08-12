@@ -10,10 +10,12 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
@@ -22,6 +24,7 @@ type Session struct {
 	SubscriptionID string
 	TenantID       string
 	Authorizer     autorest.Authorizer
+	Expires        *time.Time
 }
 
 // GetNewSession creates an session configured from environment variables/CLI in the order:
@@ -31,6 +34,16 @@ type Session struct {
 // 4. MSI
 // 5. CLI
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
+	cacheKey := "GetNewSession"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		session = cachedData.(*Session)
+		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
+			d.ConnectionManager.Cache.Delete("GetNewSession")
+		} else {
+			return cachedData.(*Session), nil
+		}
+	}
+
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.TenantID != nil {
@@ -69,13 +82,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	var authorizer autorest.Authorizer
-
-	// have we already created and cached the session?
-	serviceCacheKey := tokenAudience + resource + authMethod
-
-	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
-		return cachedData.(*Session), nil
-	}
+	var expiresOn time.Time
 
 	// so if it was not in cache - create session
 	switch authMethod {
@@ -100,7 +107,16 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
-		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
+		// authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
+		token, err := cli.GetTokenFromCLI(resource)
+		if err != nil {
+			return nil, err
+		}
+
+		// var adalToken adal.Token
+		adalToken, err := token.ToADALToken()
+		expiresOn = adalToken.Expires()
+
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
@@ -109,6 +125,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			}
 			return nil, err
 		}
+		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	}
 
 	if authMethod == "CLI" {
@@ -129,9 +146,14 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		SubscriptionID: subscriptionID,
 		Authorizer:     authorizer,
 		TenantID:       tenantID,
+		Expires:        &expiresOn,
 	}
 
-	d.ConnectionManager.Cache.Set(serviceCacheKey, sess)
+	if sess.Expires != nil {
+		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
+	} else {
+		d.ConnectionManager.Cache.Set(cacheKey, sess)
+	}
 
 	return sess, err
 }
@@ -252,4 +274,10 @@ func getSubscriptionFromCLI(resource string) (*subscription, error) {
 		SubscriptionID: tokenResponse["subscription"].(string),
 		TenantID:       tokenResponse["tenant"].(string),
 	}, nil
+}
+
+// WillExpireIn returns true if the Token will expire after the passed time.Duration interval
+// from now, false otherwise.
+func WillExpireIn(t time.Time, d time.Duration) bool {
+	return !t.After(time.Now().Add(d))
 }
