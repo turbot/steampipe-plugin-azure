@@ -38,7 +38,7 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 			{
 				Name:        "type",
 				Type:        proto.ColumnType_STRING,
-				Description: "The fully qualified ID of the resource link.",
+				Description: "The resource link type.",
 			},
 			{
 				Name:        "source_id",
@@ -58,7 +58,7 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 				Description: "Notes about the resource link.",
 			},
 			
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -71,6 +71,8 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,

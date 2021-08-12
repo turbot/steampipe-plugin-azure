@@ -8,25 +8,25 @@ Linking is a feature of the Resource Manager. It enables declaring relationships
 
 ```sql
 select
-	name,
-  id,
-	type,
+  name,
+	id,
+  type,
   source_id,
   target_id
 from
-	azure_resource_link;
+  azure_resource_link;
 ```
 
 ### List of resource links with virtual machines
 
 ```sql
 select
-	name,
+  name,
 	id,
-  source_id,
-  target_id
+	source_id,
+	target_id
 from
-	azure_resource_link
+  azure_resource_link
 where
-	source_id LIKE '%virtualmachines%';
+  source_id LIKE '%virtualmachines%';
 ```
