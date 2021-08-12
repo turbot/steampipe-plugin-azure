@@ -1,0 +1,7 @@
+[
+  {
+    "name": "{{ resourceName }}",
+    "partition_count": 1,
+    "replica_count": 1
+  }
+]
