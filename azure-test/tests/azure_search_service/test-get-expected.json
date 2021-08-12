@@ -3,7 +3,7 @@
     "id": "{{ output.resource_id.value }}",
     "name": "{{ resourceName }}",
     "provisioning_state": "succeeded",
-    "region": "{{ output.location.value }}",
+    "region": "east us",
     "resource_group": "{{ resourceName }}",
     "sku_name": "standard",
     "status": "running",
