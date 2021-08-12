@@ -17,7 +17,7 @@ from
   azure_lb_rule;
 ```
 
-### List succeeded load balancer rule
+### List failed load balancer rules
 
 ```sql
 select
@@ -28,10 +28,10 @@ select
 from
   azure_lb_rule
 where
-  provisioning_state = 'Succeeded';
+  provisioning_state = 'Failed';
 ```
 
-### List load balancer rule order by idle timeout
+### List load balancer rules order by idle timeout
 
 ```sql
 select

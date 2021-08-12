@@ -18,7 +18,7 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_rule",
 		Description: "Azure Load Balancer Rule",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "region", "resource_group"}),
 			Hydrate:           getLoadBalancerRule,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
@@ -42,7 +42,6 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 				Name:        "load_balancer_name",
 				Description: "The friendly name that identifies the load balancer.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(extractLoadBalancerNameFromRuleID),
 			},
 			{
 				Name:        "provisioning_state",
@@ -157,6 +156,11 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
+				Type:        proto.ColumnType_STRING,
+			},
+			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
@@ -170,6 +174,12 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 			},
 		},
 	}
+}
+
+type BalancerRulesInfo = struct {
+	network.LoadBalancingRule
+	LoadBalancerName string
+	Region string
 }
 
 //// LIST FUNCTION
@@ -193,9 +203,8 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	if err != nil {
 		return nil, err
 	}
-
 	for _, rule := range result.Values() {
-		d.StreamListItem(ctx, rule)
+		d.StreamListItem(ctx, BalancerRulesInfo{rule, *loadBalancer.Name, *loadBalancer.Location})
 	}
 
 	for result.NotDone() {
@@ -204,7 +213,7 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 			return nil, err
 		}
 		for _, rule := range result.Values() {
-			d.StreamListItem(ctx, rule)
+			d.StreamListItem(ctx, BalancerRulesInfo{rule, *loadBalancer.Name, *loadBalancer.Location})
 		}
 	}
 
@@ -218,6 +227,7 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	loadBalancerName := d.KeyColumnQuals["load_balancer_name"].GetStringValue()
 	loadBalancerRuleName := d.KeyColumnQuals["name"].GetStringValue()
+	region := d.KeyColumnQuals["region"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	// Handle empty loadBalancerName, loadBalancerRuleName or resourceGroup
@@ -242,16 +252,8 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return BalancerRulesInfo{op, loadBalancerName, region}, nil
 	}
 
 	return nil, nil
-}
-
-//// TRANSFORM FUNCTION
-
-func extractLoadBalancerNameFromRuleID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(network.LoadBalancingRule)
-	vaultName := strings.Split(*data.ID, "/")[8]
-	return vaultName, nil
 }
