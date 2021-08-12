@@ -187,18 +187,22 @@ func listLogicAppWorkflows(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	workflowClient := logic.NewWorkflowsClient(subscriptionID)
 	workflowClient.Authorizer = session.Authorizer
+	result, err := workflowClient.ListBySubscription(ctx, nil, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, workflow := range result.Values() {
+		d.StreamListItem(ctx, workflow)
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := workflowClient.ListBySubscription(context.Background(), nil, "")
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, workflow := range result.Values() {
 			d.StreamListItem(ctx, workflow)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

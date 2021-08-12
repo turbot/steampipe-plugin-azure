@@ -194,10 +194,17 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	networkClient := network.NewAzureFirewallsClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+	result, err := networkClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.ListAll(ctx)
+	for _, firewall := range result.Values() {
+		d.StreamListItem(ctx, firewall)
+	}
+
+	for result.NotDone() {
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -205,8 +212,6 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		for _, firewall := range result.Values() {
 			d.StreamListItem(ctx, firewall)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 	return nil, err
 }

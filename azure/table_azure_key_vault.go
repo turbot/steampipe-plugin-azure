@@ -212,6 +212,17 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		d.StreamListItem(ctx, vault)
 	}
 
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, vault := range result.Values() {
+			d.StreamListItem(ctx, vault)
+		}
+
+	}
+
 	return nil, err
 }
 
@@ -296,11 +307,11 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 }
 
 func getKeyVaultID(item interface{}) string {
-	switch item.(type) {
+	switch item := item.(type) {
 	case keyvault.Vault:
-		return *item.(keyvault.Vault).ID
+		return *item.ID
 	case keyvault.Resource:
-		return *item.(keyvault.Resource).ID
+		return *item.ID
 	}
 	return ""
 }

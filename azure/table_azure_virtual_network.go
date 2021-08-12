@@ -137,13 +137,19 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
 	networkClient := network.NewVirtualNetworksClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := networkClient.ListAll(ctx)
+	result, err := networkClient.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, network := range result.Values() {
+		d.StreamListItem(ctx, network)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -151,8 +157,7 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, network := range result.Values() {
 			d.StreamListItem(ctx, network)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+
 	}
 
 	return nil, err

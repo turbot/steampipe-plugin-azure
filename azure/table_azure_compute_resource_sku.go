@@ -156,9 +156,17 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	locksClient := skus.NewResourceSkusClient(subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := locksClient.List(ctx)
+	result, err := locksClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, sku := range result.Values() {
+		d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -166,9 +174,6 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		for _, sku := range result.Values() {
 			d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
 		}
-
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

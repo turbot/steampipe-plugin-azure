@@ -204,9 +204,17 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	client := eventhub.NewNamespacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, namespace := range result.Values() {
+		d.StreamListItem(ctx, namespace)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -214,8 +222,6 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		for _, namespace := range result.Values() {
 			d.StreamListItem(ctx, namespace)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -243,7 +249,7 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	client := eventhub.NewNamespacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +272,7 @@ func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	namespace := h.Item.(eventhub.EHNamespace)
 	resourceGroupName := strings.Split(string(*namespace.ID), "/")[4]
 
-	op, err := networkClient.GetNetworkRuleSet(context.Background(), resourceGroupName, *namespace.Name)
+	op, err := networkClient.GetNetworkRuleSet(ctx, resourceGroupName, *namespace.Name)
 	if err != nil {
 		return nil, err
 	}

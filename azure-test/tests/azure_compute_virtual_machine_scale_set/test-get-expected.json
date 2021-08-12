@@ -1,0 +1,11 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "sku_name": "Standard_F2",
+    "sku_tier": "Standard",
+    "tags": {
+      "Name": "{{ resourceName }}"
+    }
+  }
+]

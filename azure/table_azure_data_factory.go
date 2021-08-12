@@ -154,17 +154,23 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	factoryClient := datafactory.NewFactoriesClient(subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := factoryClient.List(context.Background())
+	result, err := factoryClient.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, factory := range result.Values() {
+		d.StreamListItem(ctx, factory)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, factory := range result.Values() {
 			d.StreamListItem(ctx, factory)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
+
 	}
 	return nil, err
 }

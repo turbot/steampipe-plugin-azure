@@ -103,9 +103,16 @@ func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	graphClient := graphrbac.NewGroupsClient(tenantID)
 	graphClient.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := graphClient.List(ctx, "")
+	result, err := graphClient.List(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, group := range result.Values() {
+		d.StreamListItem(ctx, group)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -113,8 +120,6 @@ func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		for _, group := range result.Values() {
 			d.StreamListItem(ctx, group)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, err

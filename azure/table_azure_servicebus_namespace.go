@@ -174,9 +174,17 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 	client := servicebus.NewNamespacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	pagesLeft := true
-	for pagesLeft {
-		result, err := client.List(context.Background())
+	result, err := client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, namespace := range result.Values() {
+		d.StreamListItem(ctx, namespace)
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -184,8 +192,6 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 		for _, namespace := range result.Values() {
 			d.StreamListItem(ctx, namespace)
 		}
-		result.NextWithContext(context.Background())
-		pagesLeft = result.NotDone()
 	}
 
 	return nil, nil
@@ -214,7 +220,7 @@ func getServiceBusNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.
 	client := servicebus.NewNamespacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +243,7 @@ func getServiceBusNamespaceNetworkRuleSet(ctx context.Context, d *plugin.QueryDa
 	data := h.Item.(servicebus.SBNamespace)
 	resourceGroup := strings.Split(*data.ID, "/")[4]
 
-	op, err := client.GetNetworkRuleSet(context.Background(), resourceGroup, *data.Name)
+	op, err := client.GetNetworkRuleSet(ctx, resourceGroup, *data.Name)
 	if err != nil {
 		return nil, err
 	}
