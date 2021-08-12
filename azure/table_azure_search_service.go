@@ -86,7 +86,7 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 			{
 				Name:        "sku_name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The SKU of the Search Service, which determines price tier and capacity limits. This property is required when creating a new Search Service.",
+				Description: "The SKU of the Search Service, which determines price tier and capacity limits. This property is required when creating a new search service.",
 				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
@@ -105,19 +105,19 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 			{
 				Name:        "network_rule_set",
 				Type:        proto.ColumnType_JSON,
-				Description: "Network specific rules that determine how the Azure Cognitive Search service may be reached.",
+				Description: "Network specific rules that determine how the azure cognitive search service may be reached.",
 				Transform:   transform.FromField("ServiceProperties.NetworkRuleSet"),
 			},
 			{
 				Name:        "private_endpoint_connections",
 				Type:        proto.ColumnType_JSON,
-				Description: "The list of private endpoint connections to the Azure Cognitive Search service.",
+				Description: "The list of private endpoint connections to the azure cognitive search service.",
 				Transform:   transform.FromField("ServiceProperties.PrivateEndpointConnections"),
 			},
 			{
 				Name:        "shared_private_link_resources",
 				Type:        proto.ColumnType_JSON,
-				Description: "The list of shared private link resources managed by the Azure Cognitive Search service.",
+				Description: "The list of shared private link resources managed by the azure cognitive search service.",
 				Transform:   transform.FromField("ServiceProperties.SharedPrivateLinkResources"),
 			},
 			{
