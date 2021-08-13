@@ -152,6 +152,11 @@ func getDeletedKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	region := d.KeyColumnQuals["region"].GetStringValue()
 
+	// Return nil, if no input provide
+	if name == "" || region == "" {
+		return nil, nil
+	}
+
 	client := keyvault.NewVaultsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
