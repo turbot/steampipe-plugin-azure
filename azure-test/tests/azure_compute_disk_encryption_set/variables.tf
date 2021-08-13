@@ -46,7 +46,7 @@ resource "azurerm_key_vault" "named_test_resource" {
   enabled_for_disk_encryption = true
   soft_delete_enabled         = true
   soft_delete_retention_days  = 7
-  purge_protection_enabled    = false
+  purge_protection_enabled    = true
   sku_name                    = "standard"
 }
 

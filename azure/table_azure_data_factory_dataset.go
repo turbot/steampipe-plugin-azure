@@ -155,7 +155,7 @@ func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		return nil, nil
 	}
 
-	op, err := datasetClient.Get(ctx, resourceGroup, factoryName, datasetName, "*")
+	op, err := datasetClient.Get(ctx, resourceGroup, factoryName, datasetName, "")
 	if err != nil {
 		return nil, err
 	}

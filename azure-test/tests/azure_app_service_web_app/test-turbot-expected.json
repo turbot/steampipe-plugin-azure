@@ -4,10 +4,10 @@
       "{{ output.resource_aka.value }}",
       "{{ output.resource_aka_lower.value }}"
     ],
-    "name": "{{resourceName}}",
+    "name": "{{ resourceName }}",
     "tags": {
-      "name": "{{resourceName}}"
+      "name": "{{ resourceName }}"
     },
-    "title": "{{resourceName}}"
+    "title": "{{ resourceName }}"
   }
 ]
