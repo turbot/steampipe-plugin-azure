@@ -12,17 +12,17 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureDeletedKeyVault(_ context.Context) *plugin.Table {
+func tableAzureKeyVaultDeletedVault(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_deleted_key_vault",
-		Description: "Azure Deleted Key Vault",
+		Name:        "azure_key_vault_deleted_vault",
+		Description: "Azure Key Vault Deleted Vault",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "region"}),
-			Hydrate:           getDeletedKeyVault,
+			Hydrate:           getKeyVaultDeletedVault,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listDeletedKeyVaults,
+			Hydrate: listKeyVaultDeletedVaults,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -105,7 +105,7 @@ func tableAzureDeletedKeyVault(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listDeletedKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listKeyVaultDeletedVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -139,8 +139,8 @@ func listDeletedKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 //// HYDRATE FUNCTIONS
 
-func getDeletedKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDeletedKeyVault")
+func getKeyVaultDeletedVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getKeyVaultDeletedVault")
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

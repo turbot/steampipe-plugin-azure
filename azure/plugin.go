@@ -58,7 +58,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_factory_pipeline":                                 tableAzureDataFactoryPipeline(ctx),
 			"azure_data_lake_analytics_account":                           tableAzureDataLakeAnalyticsAccount(ctx),
 			"azure_data_lake_store":                                       tableAzureDataLakeStore(ctx),
-			"azure_deleted_key_vault":                                     tableAzureDeletedKeyVault(ctx),
+			"azure_key_vault_deleted_vault":                               tableAzureKeyVaultDeletedVault(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
 			"azure_eventhub_namespace":                                    tableAzureEventHubNamespace(ctx),
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),

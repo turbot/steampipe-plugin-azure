@@ -1,4 +1,4 @@
-# Table: azure_deleted_key_vault
+# Table: azure_key_vault_deleted_vault
 
 Azure Key Vault's soft-delete feature allows recovery of the deleted vaults and deleted key vault objects.
 
@@ -14,7 +14,7 @@ select
   deletion_date,
   scheduled_purge_date
 from
-  azure_deleted_key_vault;
+  azure_key_vault_deleted_vault;
 ```
 
 ### List vaults with scheduled purge date more than 1 day
@@ -27,7 +27,7 @@ select
   deletion_date,
   scheduled_purge_date
 from
-  azure_deleted_key_vault
+  azure_key_vault_deleted_vault
 where
 scheduled_purge_date > (current_date - interval '1' day);
 ```
