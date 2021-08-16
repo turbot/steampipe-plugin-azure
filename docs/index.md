@@ -113,7 +113,8 @@ The Azure plugin support multiple formats / authentication mechanisms, and they 
 
 1. [Client Secret Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-saml-bearer-assertion#prerequisites) if set; otherwise
 2. [Client Certificate Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) if set; otherwise
-3. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
+3. [Resource Owner Password](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) if set; otherwise
+4. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
 
 If connection arguments are provided, they will always take precedence over [Azure SDK environment variables](https://github.com/Azure/azure-sdk-for-go/blob/main/documentation/new-version-quickstart.md#setting-environment-variables), and they are tried in the below order:
 
