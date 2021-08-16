@@ -139,18 +139,18 @@ connection "azure_via_sp_secret" {
 
 - `tenant_id`: Specifies the Tenant to which to authenticate.
 - `client_id`: Specifies the app client ID to use.
-- `client_certificate_path`: Specifies the certificate Path to use.
-- `client_certificate_password`: Specifies the certificate password to use.
+- `certificate_path`: Specifies the certificate Path to use.
+- `certificate_password`: Specifies the certificate password to use.
 - `subscription_id`: Specifies the subscription to connect to/
 
 ```hcl
 connection "azure_via_sp_cert" {
-  plugin                      = "azure"
-  tenant_id                   = "00000000-0000-0000-0000-000000000000"
-  subscription_id             = "00000000-0000-0000-0000-000000000000"
-  client_id                   = "00000000-0000-0000-0000-000000000000"
-  client_certificate_path     = "parth/to/file.pem"
-  client_certificate_password = "my plaintext password"
+  plugin               = "azure"
+  tenant_id            = "00000000-0000-0000-0000-000000000000"
+  subscription_id      = "00000000-0000-0000-0000-000000000000"
+  client_id            = "00000000-0000-0000-0000-000000000000"
+  certificate_path     = "parth/to/file.pem"
+  certificate_password = "my plaintext password"
 }
 ```
 

@@ -10,8 +10,8 @@ type azureConfig struct {
 	SubscriptionID      *string `cty:"subscription_id"`
 	ClientID            *string `cty:"client_id"`
 	ClientSecret        *string `cty:"client_secret"`
-	CertificatePath     *string `cty:"client_certificate_path"`
-	CertificatePassword *string `cty:"client_certificate_password"`
+	CertificatePath     *string `cty:"certificate_path"`
+	CertificatePassword *string `cty:"certificate_password"`
 	Username            *string `cty:"username"`
 	Password            *string `cty:"password"`
 }
@@ -29,10 +29,10 @@ var ConfigSchema = map[string]*schema.Attribute{
 	"client_secret": {
 		Type: schema.TypeString,
 	},
-	"client_certificate_path": {
+	"certificate_path": {
 		Type: schema.TypeString,
 	},
-	"client_certificate_password": {
+	"certificate_password": {
 		Type: schema.TypeString,
 	},
 	"username": {
@@ -41,9 +41,6 @@ var ConfigSchema = map[string]*schema.Attribute{
 	"password": {
 		Type: schema.TypeString,
 	},
-	// "use_msi": {
-	// 	Type: schema.TypeString,
-	// },
 }
 
 func ConfigInstance() interface{} {
