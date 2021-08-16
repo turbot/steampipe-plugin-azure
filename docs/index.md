@@ -14,7 +14,7 @@ og_image: "/images/plugins/turbot/azure-social-graphic.png"
 
 [Azure](https://azure.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
+[Steampipe](https://steampipe.io) is an open-source CLI to instantly query cloud APIs using SQL.
 
 For example:
 
@@ -109,7 +109,7 @@ connection "azure" {
 
 ## Configuring Azure Credentials
 
-The Azure plugin support multiple formats / authentication mechanisms, and they are tried in the below order:
+The Azure plugin support multiple formats/authentication mechanisms and they are tried in the below order:
 
 1. [Client Secret Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-saml-bearer-assertion#prerequisites) if set; otherwise
 2. [Client Certificate Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) if set; otherwise
@@ -194,9 +194,9 @@ connection "azure" {
 
 ### Azure CLI: If no credentials are specified
 
-If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` cli. You can run `az login` to set up these credentials.
+If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` CLI. You can run `az login` to set up these credentials.
 
-- `subscription_id`: Specifies the subscription to connect to; Otherwise uses the subscription_id set for azure cli(`az account show`)
+- `subscription_id`: Specifies the subscription to connect to; Otherwise uses the subscription_id set for azure CLI(`az account show`)
 
 ```hcl
 connection "azure" {
