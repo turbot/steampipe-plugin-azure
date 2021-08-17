@@ -44,42 +44,96 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		}
 	}
 
+	settings := auth.EnvironmentSettings{
+		Values:      map[string]string{},
+		Environment: azure.PublicCloud,
+	}
+
+	var subscriptionID, tenantID string
 	azureConfig := GetConfig(d.Connection)
 
+	// os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
 	if azureConfig.TenantID != nil {
-		os.Setenv("AZURE_TENANT_ID", *azureConfig.TenantID)
+		tenantID = *azureConfig.TenantID
+		settings.Values[auth.TenantID] = *azureConfig.TenantID
+	} else {
+		tenantID = os.Getenv(auth.TenantID)
+		settings.Values[auth.TenantID] = os.Getenv(auth.TenantID)
 	}
+
+	// os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
 	if azureConfig.SubscriptionID != nil {
-		os.Setenv("AZURE_SUBSCRIPTION_ID", *azureConfig.SubscriptionID)
+		subscriptionID = *azureConfig.SubscriptionID
+		settings.Values[auth.SubscriptionID] = *azureConfig.SubscriptionID
+	} else {
+		subscriptionID = os.Getenv(auth.SubscriptionID)
+		settings.Values[auth.SubscriptionID] = os.Getenv(auth.SubscriptionID)
 	}
+
+	// os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
 	if azureConfig.ClientID != nil {
-		os.Setenv("AZURE_CLIENT_ID", *azureConfig.ClientID)
+		settings.Values[auth.ClientID] = *azureConfig.ClientID
+	} else {
+		settings.Values[auth.ClientID] = os.Getenv(auth.ClientID)
 	}
+
+	// os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
 	if azureConfig.ClientSecret != nil {
-		os.Setenv("AZURE_CLIENT_SECRET", *azureConfig.ClientSecret)
+		settings.Values[auth.ClientSecret] = *azureConfig.ClientSecret
+	} else {
+		settings.Values[auth.ClientSecret] = os.Getenv(auth.ClientSecret)
 	}
+
+	// os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
 	if azureConfig.CertificatePath != nil {
-		os.Setenv("AZURE_CERTIFICATE_PATH", *azureConfig.CertificatePath)
+		settings.Values[auth.CertificatePath] = *azureConfig.CertificatePath
+	} else {
+		settings.Values[auth.CertificatePath] = os.Getenv(auth.CertificatePath)
 	}
+
+	// os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
 	if azureConfig.CertificatePassword != nil {
-		os.Setenv("AZURE_CERTIFICATE_PASSWORD", *azureConfig.CertificatePassword)
+		settings.Values[auth.CertificatePassword] = *azureConfig.CertificatePassword
+	} else {
+		settings.Values[auth.CertificatePassword] = os.Getenv(auth.CertificatePassword)
 	}
+
+	// os.Setenv("AZURE_USERNAME", *azureConfig.Username)
 	if azureConfig.Username != nil {
-		os.Setenv("AZURE_USERNAME", *azureConfig.Username)
+		settings.Values[auth.Username] = *azureConfig.Username
+	} else {
+		settings.Values[auth.Username] = os.Getenv(auth.Username)
 	}
-	if azureConfig.Username != nil {
-		os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
+
+	// os.Setenv("AZURE_PASSWORD", *azureConfig.Password)
+	if azureConfig.Password != nil {
+		settings.Values[auth.Password] = *azureConfig.Password
+	} else {
+		settings.Values[auth.Password] = os.Getenv(auth.Password)
+	}
+
+	if azureConfig.Password != nil {
+		settings.Values[auth.Password] = *azureConfig.Password
+	} else {
+		settings.Values[auth.Password] = os.Getenv(auth.Password)
+	}
+
+	if azureConfig.Environment != nil {
+		settings.Values[auth.EnvironmentName] = *azureConfig.Environment
+	} else {
+		settings.Values[auth.EnvironmentName] = os.Getenv(auth.EnvironmentName)
 	}
 
 	logger := plugin.Logger(ctx)
-	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	tenantID := os.Getenv("AZURE_TENANT_ID")
+	// subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
+	// tenantID := os.Getenv("AZURE_TENANT_ID")
 
-	authMethod, resource, err := getApplicableAuthorizationDetails(ctx, tokenAudience)
+	authMethod, resource, err := getApplicableAuthorizationDetails(ctx, settings, tokenAudience)
 	if err != nil {
 		logger.Debug("GetNewSession__", "getApplicableAuthorizationDetails error", err)
 		return nil, err
 	}
+	settings.Values[auth.Resource] = resource
 
 	var authorizer autorest.Authorizer
 	var expiresOn time.Time
@@ -87,7 +141,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	// so if it was not in cache - create session
 	switch authMethod {
 	case "Environment":
-		authorizer, err = auth.NewAuthorizerFromEnvironmentWithResource(resource)
+		authorizer, err = settings.GetAuthorizer()
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromEnvironmentWithResource error", err)
 			return nil, err
@@ -107,7 +161,6 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
-		// authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
 			return nil, err
@@ -152,28 +205,32 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	if sess.Expires != nil {
 		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
 	} else {
-		d.ConnectionManager.Cache.Set(cacheKey, sess)
+		// Cache for 55 minutes to avoid expiry issue
+		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Minute*55)
 	}
 
 	return sess, err
 }
 
-func getApplicableAuthorizationDetails(ctx context.Context, tokenAudience string) (authMethod string, resource string, err error) {
+func getApplicableAuthorizationDetails(ctx context.Context, settings auth.EnvironmentSettings, tokenAudience string) (authMethod string, resource string, err error) {
 	logger := plugin.Logger(ctx)
-	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	tenantID := os.Getenv("AZURE_TENANT_ID")
+	subscriptionID := settings.Values[auth.SubscriptionID]
+	tenantID := settings.Values[auth.TenantID]
 
 	// 1. Client credentials
-	clientID := os.Getenv("AZURE_CLIENT_ID")
-	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
+	clientID := settings.Values[auth.ClientID]
+	clientSecret := settings.Values[auth.ClientSecret]
 
 	// 2. Client certificate
-	certificatePath := os.Getenv("AZURE_CERTIFICATE_PATH")
-	certificatePassword := os.Getenv("AZURE_CERTIFICATE_PASSWORD")
+	certificatePath := settings.Values[auth.CertificatePath]
+	certificatePassword := settings.Values[auth.CertificatePassword]
 
 	// 3. Username password
-	username := os.Getenv("AZURE_USERNAME")
-	password := os.Getenv("AZURE_PASSWORD")
+	username := settings.Values[auth.Username]
+	password := settings.Values[auth.Password]
+
+	// Azure environment name
+	environmentName := settings.Values[auth.EnvironmentName]
 
 	authMethod = "CLI"
 	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
@@ -188,26 +245,29 @@ func getApplicableAuthorizationDetails(ctx context.Context, tokenAudience string
 
 	var environment azure.Environment
 	// get the environment endpoint to be used for authorization
-	if v := os.Getenv("AZURE_ENVIRONMENT"); v == "" {
+	if environmentName == "" {
 		environment = azure.PublicCloud
+		settings.Environment = azure.PublicCloud
 	} else {
-		environment, err = azure.EnvironmentFromName(v)
+		environment, err = azure.EnvironmentFromName(environmentName)
 		if err != nil {
 			logger.Error("Unable to get environment", "ERROR", err)
 			return
 		}
+		settings.Environment = environment
 	}
+
 	logger.Trace("getApplicableAuthorizationDetails_", "tokenAudience: ", tokenAudience)
 
 	switch tokenAudience {
 	case "GRAPH":
-		resource = environment.GraphEndpoint
+		resource = settings.Environment.GraphEndpoint
 	case "VAULT":
-		resource = strings.TrimSuffix(environment.KeyVaultEndpoint, "/")
+		resource = strings.TrimSuffix(settings.Environment.KeyVaultEndpoint, "/")
 	case "MANAGEMENT":
-		resource = environment.ResourceManagerEndpoint
+		resource = settings.Environment.ResourceManagerEndpoint
 	default:
-		resource = environment.ResourceManagerEndpoint
+		resource = settings.Environment.ResourceManagerEndpoint
 	}
 
 	logger.Trace("getApplicableAuthorizationDetails_", "resource: ", resource)

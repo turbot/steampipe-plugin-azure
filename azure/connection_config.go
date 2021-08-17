@@ -14,6 +14,7 @@ type azureConfig struct {
 	CertificatePassword *string `cty:"certificate_password"`
 	Username            *string `cty:"username"`
 	Password            *string `cty:"password"`
+	Environment         *string `cty:"environment"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
@@ -39,6 +40,9 @@ var ConfigSchema = map[string]*schema.Attribute{
 		Type: schema.TypeString,
 	},
 	"password": {
+		Type: schema.TypeString,
+	},
+	"environment": {
 		Type: schema.TypeString,
 	},
 }

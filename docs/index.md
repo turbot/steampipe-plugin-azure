@@ -71,6 +71,9 @@ Installing the latest azure plugin will create a config file (~/.steampipe/confi
 connection "azure" {
   plugin = "azure"
 
+  # "Defaults to "AZUREPUBLICCLOUD". Can be one of "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
+  # environment = "AZUREPUBLICCLOUD"
+
   # You may connect to azure using more than one option
   # 1. For client secret authentication, specify TenantID, ClientID and ClientSecret.
   # required options:
@@ -99,7 +102,6 @@ connection "azure" {
 
   # 4. Azure CLI authentication (if enabled) is attempted last
 }
-
 ```
 
 ## Get involved
@@ -184,6 +186,7 @@ export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_SECRET="my plaintext secret"
 export AZURE_CERTIFICATE_PATH=path/to/file.pem
 export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
+export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # 	Default to "AZUREPUBLICCLOUD". Can be one of "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD
 ```
 
 ```hcl
