@@ -7,26 +7,26 @@ connection "azure" {
   # You may connect to azure using more than one option
   # 1. For client secret authentication, specify TenantID, ClientID and ClientSecret.
   # required options:
-  # tenant_id             = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  # subscription_id       = "SSSSSSSS-SSSS-SSSS-SSSS-SSSSSSSSSSSS"
-  # client_id             = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
-  # client_secret         = "ZZZZZZZZZZZZZZZZZZZZZZZZ"
+  # tenant_id             = "00000000-0000-0000-0000-000000000000"
+  # subscription_id       = "00000000-0000-0000-0000-000000000000"
+  # client_id             = "00000000-0000-0000-0000-000000000000"
+  # client_secret         = "~dummy@3password"
 
 
   # 2. client certificate authentication, specify TenantID, ClientID and ClientCertData / ClientCertPath.
   # required options:
-  # tenant_id             = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  # subscription_id       = "SSSSSSSS-SSSS-SSSS-SSSS-SSSSSSSSSSSS"
-  # client_id             = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
+  # tenant_id             = "00000000-0000-0000-0000-000000000000"
+  # subscription_id       = "00000000-0000-0000-0000-000000000000"
+  # client_id             = "00000000-0000-0000-0000-000000000000"
   # certificate_path      = "~/home/azure_cert.pem"
   # certificate_password  = "notreal~pwd"
   #
 
   # 3. resource owner password
   # required options:
-  # tenant_id       = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  # subscription_id = "SSSSSSSS-SSSS-SSSS-SSSS-SSSSSSSSSSSS"
-  # client_id       = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
+  # tenant_id       = "00000000-0000-0000-0000-000000000000"
+  # subscription_id = "00000000-0000-0000-0000-000000000000"
+  # client_id       = "00000000-0000-0000-0000-000000000000"
   # username        = "my-username"
   # password        = "plaintext password"
 
