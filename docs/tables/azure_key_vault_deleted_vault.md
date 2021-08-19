@@ -17,7 +17,7 @@ from
   azure_key_vault_deleted_vault;
 ```
 
-### List vaults with scheduled purge date more than 1 day
+### List deleted vaults with scheduled purge date more than 1 day
 
 ```sql
 select
@@ -29,5 +29,5 @@ select
 from
   azure_key_vault_deleted_vault
 where
-scheduled_purge_date > (current_date - interval '1' day);
+  scheduled_purge_date > (current_date - interval '1' day);
 ```
