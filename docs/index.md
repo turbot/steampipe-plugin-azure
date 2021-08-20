@@ -118,12 +118,14 @@ The Azure plugin support multiple formats/authentication mechanisms and they are
 
 If connection arguments are provided, they will always take precedence over [Azure SDK environment variables](https://github.com/Azure/azure-sdk-for-go/blob/main/documentation/new-version-quickstart.md#setting-environment-variables), and they are tried in the below order:
 
-### Client Secret Credentials: Azure AD Application ID and Secret.
+### Client Secret Credentials
 
-- `tenant_id`: Specifies the Tenant to which to authenticate.
-- `client_id`: Specifies the app client ID to use.
-- `client_secret`: Specifies the app secret to use.
-- `subscription_id`: Specifies the subscription to connect to.
+You may specify the tenant ID, subscription ID, client ID, and client secret to authenticate:
+
+- `tenant_id`: Specify the tenant to authenticate with.
+- `subscription_id`: Specify the subscription to query.
+- `client_id`: Specify the app client ID to use.
+- `client_secret`: Specify the app secret to use.
 
 ```hcl
 connection "azure_via_sp_secret" {
@@ -135,13 +137,15 @@ connection "azure_via_sp_secret" {
 }
 ```
 
-### Client Certificate Credentials: Azure AD Application ID and X.509 Certificate.
+### Client Certificate Credentials
 
-- `tenant_id`: Specifies the Tenant to which to authenticate.
-- `client_id`: Specifies the app client ID to use.
-- `certificate_path`: Specifies the certificate Path to use.
-- `certificate_password`: Specifies the certificate password to use.
-- `subscription_id`: Specifies the subscription to connect to/
+You may specify the tenant ID, subscription ID, client ID, certificate path, and certificate password to authenticate:
+
+- `tenant_id`: Specify the tenant to authenticate with.
+- `subscription_id`: Specify the subscription to query.
+- `client_id`: Specify the app client ID to use.
+- `certificate_path`: Specify the certificate path to use.
+- `certificate_password`: Specify the certificate password to use.
 
 ```hcl
 connection "azure_via_sp_cert" {
@@ -154,13 +158,17 @@ connection "azure_via_sp_cert" {
 }
 ```
 
-### Resource Owner Password: Azure AD User and Password. This grant type is _not recommended_, use device login instead if you need interactive login.
+### Resource Owner Password
 
-- `tenant_id`: Specifies the Tenant to which to authenticate.
-- `client_id`: Specifies the app client ID to use.
-- `username`: Specifies the username to use.
-- `password`: Specifies the password to use.
-- `subscription_id`: Specifies the subscription to connect to.
+**Note:** This grant type is _not recommended_, use device login instead if you need interactive login.
+
+You may specify the tenant ID, subscription ID, client ID, username, and password to authenticate:
+
+- `tenant_id`: Specify the tenant to authenticate with.
+- `subscription_id`: Specify the subscription to query.
+- `client_id`: Specify the app client ID to use.
+- `username`: Specify the username to use.
+- `password`: Specify the password to use.
 
 ```hcl
 connection "password_not_recommended" {
@@ -173,19 +181,11 @@ connection "password_not_recommended" {
 }
 ```
 
-### Credentials from Environment Variables
+### Azure CLI
 
-The Azure AD plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
+If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` CLI. You can run `az login` to set up these credentials.
 
-```sh
-export AZURE_TENANT_ID="00000000-0000-0000-0000-000000000000"
-export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
-export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
-export AZURE_CLIENT_SECRET="my plaintext secret"
-export AZURE_CERTIFICATE_PATH=path/to/file.pem
-export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
-export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # 	Default to "AZUREPUBLICCLOUD". Can be one of "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD
-```
+- `subscription_id`: Specifies the subscription to connect to; Otherwise uses the subscription_id set for azure CLI(`az account show`)
 
 ```hcl
 connection "azure" {
@@ -193,11 +193,19 @@ connection "azure" {
 }
 ```
 
-### Azure CLI: If no credentials are specified
+### Credentials from Environment Variables
 
-If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` CLI. You can run `az login` to set up these credentials.
+The Azure AD plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
 
-- `subscription_id`: Specifies the subscription to connect to; Otherwise uses the subscription_id set for azure CLI(`az account show`)
+```sh
+export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # 	Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
+export AZURE_TENANT_ID="00000000-0000-0000-0000-000000000000"
+export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
+export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
+export AZURE_CLIENT_SECRET="my plaintext secret"
+export AZURE_CERTIFICATE_PATH="path/to/file.pem"
+export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
+```
 
 ```hcl
 connection "azure" {
