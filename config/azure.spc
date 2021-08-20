@@ -28,5 +28,11 @@ connection "azure" {
   # username        = "my-username"
   # password        = "plaintext password"
 
+  # Use a managed identity (https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)
+  # This method is useful with Azure virtual machines
+  # tenant_id       = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  # client_id       = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
+  # subscription_id = "00000000-0000-0000-0000-000000000000"
+
   # If no credentials are specified, the plugin will use Azure CLI authentication
 }

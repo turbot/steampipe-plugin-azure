@@ -27,12 +27,14 @@ type Session struct {
 	Expires        *time.Time
 }
 
-// GetNewSession creates an session configured from environment variables/CLI in the order:
-// 1. Client credentials
-// 2. Client certificate
-// 3. Username password
-// 4. MSI
-// 5. CLI
+/*
+GetNewSession creates an session configured from environment variables/CLI in the order:
+	1. Client Secret Credentials if set; otherwise
+	2. Client Certificate Credentials if set; otherwise
+	3. Resource Owner Password if set; otherwise
+	3. MSI credentials if set; otherwise
+	5. If no credentials are supplied, then the az cli credentials are used
+*/
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
 	cacheKey := "GetNewSession"
@@ -199,29 +201,16 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	logger := plugin.Logger(ctx)
 	subscriptionID := settings.Values[auth.SubscriptionID]
 	tenantID := settings.Values[auth.TenantID]
-
-	// 1. Client credentials
 	clientID := settings.Values[auth.ClientID]
-	clientSecret := settings.Values[auth.ClientSecret]
-
-	// 2. Client certificate
-	certificatePath := settings.Values[auth.CertificatePath]
-	certificatePassword := settings.Values[auth.CertificatePassword]
-
-	// 3. Username password
-	username := settings.Values[auth.Username]
-	password := settings.Values[auth.Password]
-
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
 
+	// cli is the defaulr authentication method
 	authMethod = "CLI"
 	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		authMethod = "CLI"
-	} else if (subscriptionID != "" && tenantID != "" && clientID != "") && (clientSecret != "" ||
-		(certificatePath != "" && certificatePassword != "") ||
-		(username != "" && password != "")) {
-		authMethod = "Environment"
+	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
+		authMethod = "Environment" // Will work for Client secret credentials, Client certificate credentials, resource owner paswword and MSI
 	}
 
 	logger.Trace("getApplicableAuthorizationDetails_", "Auth Method: ", authMethod)

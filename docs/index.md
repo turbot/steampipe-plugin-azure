@@ -98,6 +98,12 @@ connection "azure" {
   # username        = "my-username"
   # password        = "plaintext password"
 
+  # Use a managed identity (https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)
+  # This method is useful with Azure virtual machines
+  # tenant_id       = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  # client_id       = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
+  # subscription_id = "00000000-0000-0000-0000-000000000000"
+
   # If no credentials are specified, the plugin will use Azure CLI authentication
 }
 ```
@@ -181,6 +187,23 @@ connection "password_not_recommended" {
 }
 ```
 
+### Azure Managed Identity
+
+Steampipe works with managed identities (formerly known as Managed Service Identity), provided it is running in Azure, e.g., on a VM. All configuration is handled by Azure. See [Azure Managed Identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) for more details.
+
+- `tenant_id`: Specify the tenant to authenticate with.
+- `subscription_id`: Specify the subscription to query.
+- `client_id`: Specify the app client ID of managed identity to use.
+
+```hcl
+connection "azure_msi" {
+  plugin          = "azuread"
+  tenant_id       = "00000000-0000-0000-0000-000000000000"
+  client_id       = "00000000-0000-0000-0000-000000000000"
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+}
+```
+
 ### Azure CLI
 
 If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` CLI. You can run `az login` to set up these credentials.
@@ -198,7 +221,7 @@ connection "azure" {
 The Azure AD plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
 
 ```sh
-export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # 	Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
+export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
 export AZURE_TENANT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
