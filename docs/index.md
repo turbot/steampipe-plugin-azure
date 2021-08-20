@@ -14,7 +14,7 @@ og_image: "/images/plugins/turbot/azure-social-graphic.png"
 
 [Azure](https://azure.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-[Steampipe](https://steampipe.io) is an open-source CLI to instantly query cloud APIs using SQL.
+[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
 
 For example:
 
@@ -77,19 +77,17 @@ connection "azure" {
   # You can connect to Azure using one of options below:
 
   # Use client secret authentication (https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-2-create-a-new-application-secret)
-  # tenant_id             = "00000000-0000-0000-0000-000000000000"
-  # subscription_id       = "00000000-0000-0000-0000-000000000000"
-  # client_id             = "00000000-0000-0000-0000-000000000000"
-  # client_secret         = "~dummy@3password"
-
+  # tenant_id       = "00000000-0000-0000-0000-000000000000"
+  # subscription_id = "00000000-0000-0000-0000-000000000000"
+  # client_id       = "00000000-0000-0000-0000-000000000000"
+  # client_secret   = "~dummy@3password"
 
   # Use client certificate authentication (https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-1-upload-a-certificate)
-  # tenant_id             = "00000000-0000-0000-0000-000000000000"
-  # subscription_id       = "00000000-0000-0000-0000-000000000000"
-  # client_id             = "00000000-0000-0000-0000-000000000000"
-  # certificate_path      = "~/home/azure_cert.pem"
-  # certificate_password  = "notreal~pwd"
-  #
+  # tenant_id            = "00000000-0000-0000-0000-000000000000"
+  # subscription_id      = "00000000-0000-0000-0000-000000000000"
+  # client_id            = "00000000-0000-0000-0000-000000000000"
+  # certificate_path     = "~/home/azure_cert.pem"
+  # certificate_password = "notreal~pwd"
 
   # Use resource owner password authentication (https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
   # tenant_id       = "00000000-0000-0000-0000-000000000000"
@@ -159,7 +157,7 @@ connection "azure_via_sp_cert" {
   tenant_id            = "00000000-0000-0000-0000-000000000000"
   subscription_id      = "00000000-0000-0000-0000-000000000000"
   client_id            = "00000000-0000-0000-0000-000000000000"
-  certificate_path     = "parth/to/file.pem"
+  certificate_path     = "path/to/file.pem"
   certificate_password = "my plaintext password"
 }
 ```
