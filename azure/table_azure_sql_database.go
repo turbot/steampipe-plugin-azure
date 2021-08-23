@@ -459,8 +459,17 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 		if i.Type != nil {
 			objectMap["type"] = i.Type
 		}
-		if i.DatabaseVulnerabilityAssessmentProperties != nil {
-			objectMap["DatabaseVulnerabilityAssessmentProperties"] = i.DatabaseVulnerabilityAssessmentProperties
+		if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
+			objectMap["RecurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+			objectMap["StorageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+			objectMap["StorageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+			objectMap["StorageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
 		}
 		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 	}
@@ -500,8 +509,29 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 		if i.Type != nil {
 			objectMap["type"] = i.Type
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties != nil {
-			objectMap["VulnerabilityAssessmentScanRecordProperties"] = i.VulnerabilityAssessmentScanRecordProperties
+		if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
+			objectMap["ScanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
+		}
+		if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
+			objectMap["TriggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
+		}
+		if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
+			objectMap["State"] = i.VulnerabilityAssessmentScanRecordProperties.State
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
+			objectMap["StartTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
+			objectMap["EndTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
+			objectMap["Errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
+			objectMap["StorageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
+			objectMap["NumberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
 		}
 		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
 	}
