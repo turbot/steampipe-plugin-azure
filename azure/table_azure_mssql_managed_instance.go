@@ -57,7 +57,7 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Name:        "administrator_login_password",
 				Description: "The resource location.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.AdministratorLogin"),
+				Transform:   transform.FromField("ManagedInstanceProperties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "collation",

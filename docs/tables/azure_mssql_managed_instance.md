@@ -17,7 +17,7 @@ from
   azure_mssql_managed_instance;
 ```
 
-### List managed instances with public data endpoint enabled
+### List managed instances with public endpoint enabled
 
 ```sql
 select
