@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
+  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
   description = "Azure subscription used for the test."
 }
 
@@ -59,8 +59,8 @@ resource "azurerm_mssql_elasticpool" "named_test_resource" {
   }
 
   per_database_settings {
-    min_capacity = 0.25
-    max_capacity = 4
+    min_capacity = 0
+    max_capacity = 5
   }
 }
 
