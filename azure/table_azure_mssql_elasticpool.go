@@ -16,15 +16,15 @@ import (
 func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_mssql_elasticpool",
-		Description: "Azure MS SQL Elastic Pool",
+		Description: "Azure Microsoft SQL Elastic Pool",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
-			Hydrate:           getSQLElasticPool,
+			Hydrate:           getMSSQLElasticPool,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
-			Hydrate:       listSQLElasticPool,
+			Hydrate:       listMSSQLElasticPool,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -36,7 +36,7 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 				Name:        "server_name",
 				Description: "The name of the parent server of the elastic pool.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(idToServerName),
+				Transform:   transform.From(elasticPoolIdToServerName),
 			},
 			{
 				Name:        "id",
@@ -147,7 +147,7 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -173,8 +173,8 @@ func listSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 //// HYDRATE FUNCTIONS
 
-func getSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLElasticPool")
+func getMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getMSSQLElasticPool")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
@@ -201,4 +201,12 @@ func getSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	return nil, nil
+}
+
+//// TRANSFORM FUNCTION
+
+func elasticPoolIdToServerName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(sql.ElasticPool)
+	serverName := strings.Split(string(*data.ID), "/")[8]
+	return serverName, nil
 }

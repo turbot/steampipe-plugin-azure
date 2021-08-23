@@ -1,4 +1,3 @@
-
 variable "resource_name" {
   type        = string
   default     = "steampipe-test"
@@ -51,12 +50,12 @@ resource "azurerm_mssql_elasticpool" "named_test_resource" {
   resource_group_name = azurerm_resource_group.named_test_resource.name
   location            = azurerm_resource_group.named_test_resource.location
   server_name         = azurerm_sql_server.named_test_resource.name
-  max_size_gb         = 32
+  max_size_gb         = 4.8828125
 
   sku {
     name     = "BasicPool"
     tier     = "Basic"
-    capacity = 4
+    capacity = 50
   }
 
   per_database_settings {
