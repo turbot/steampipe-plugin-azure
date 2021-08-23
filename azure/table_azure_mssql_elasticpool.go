@@ -24,7 +24,7 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
-			Hydrate:       listMSSQLElasticPool,
+			Hydrate:       listMSSQLElasticPools,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -147,7 +147,7 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
