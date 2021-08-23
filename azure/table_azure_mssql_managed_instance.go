@@ -55,7 +55,7 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "administrator_login_password",
-				Description: "The resource location.",
+				Description: "Administrator password for the managed instance.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ManagedInstanceProperties.AdministratorLoginPassword"),
 			},
@@ -67,7 +67,7 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "dns_zone",
-				Description: "The Dns Zone that the managed instance is in.",
+				Description: "The Dns zone that the managed instance is in.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ManagedInstanceProperties.DNSZone"),
 			},
@@ -157,13 +157,13 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "v_cores",
-				Description: "The number of vCores of the managed instance.",
+				Description: "The number of vcores of the managed instance.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("ManagedInstanceProperties.VCores"),
 			},
 			{
 				Name:        "identity",
-				Description: "The Azure Active Directory identity of the managed instance.",
+				Description: "The azure active directory identity of the managed instance.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
