@@ -253,6 +253,11 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Return nil, of no input provided
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
