@@ -339,6 +339,32 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, managedInstanceEncryptionProtector)
 	}
 
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			managedInstanceEncryptionProtector := make(map[string]interface{})
+			if i.ID != nil {
+				managedInstanceEncryptionProtector["id"] = *i.ID
+			}
+			if i.Name != nil {
+				managedInstanceEncryptionProtector["name"] = *i.Name
+			}
+			if i.Type != nil {
+				managedInstanceEncryptionProtector["type"] = *i.Type
+			}
+			if i.Kind != nil {
+				managedInstanceEncryptionProtector["kind"] = *i.Kind
+			}
+			if i.ManagedInstanceEncryptionProtectorProperties != nil {
+				managedInstanceEncryptionProtector["encryptionProtectorProperties"] = i.ManagedInstanceEncryptionProtectorProperties
+			}
+			managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, managedInstanceEncryptionProtector)
+		}
+	}
+
 	return managedInstanceEncryptionProtectors, nil
 }
 
@@ -380,6 +406,29 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 			managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = i.ManagedInstanceVulnerabilityAssessmentProperties
 		}
 		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, managedInstanceVulnerabilityAssessment)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			managedInstanceVulnerabilityAssessment := make(map[string]interface{})
+			if i.ID != nil {
+				managedInstanceVulnerabilityAssessment["id"] = *i.ID
+			}
+			if i.Name != nil {
+				managedInstanceVulnerabilityAssessment["name"] = *i.Name
+			}
+			if i.Type != nil {
+				managedInstanceVulnerabilityAssessment["type"] = *i.Type
+			}
+			if i.ManagedInstanceVulnerabilityAssessmentProperties != nil {
+				managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = i.ManagedInstanceVulnerabilityAssessmentProperties
+			}
+			managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, managedInstanceVulnerabilityAssessment)
+		}
 	}
 
 	return managedInstanceVulnerabilityAssessments, nil
