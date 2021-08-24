@@ -2,12 +2,13 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 )
 
 //// TABLE DEFINITION
@@ -162,6 +163,13 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ManagedInstanceProperties.VCores"),
 			},
 			{
+				Name:        "encryption_protector",
+				Description: "The managed instance encryption protector.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getMSSQLManagedInstanceEncryptionProtector,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "identity",
 				Description: "The azure active directory identity of the managed instance.",
 				Type:        proto.ColumnType_JSON,
@@ -170,6 +178,13 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Name:        "sku",
 				Description: "Managed instance SKU.",
 				Type:        proto.ColumnType_JSON,
+			},
+			{
+				Name:        "vulnerability_assessment",
+				Description: "The managed instance vulnerability assessment.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getMSSQLManagedInstanceVulnerabilityAssessment,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -225,7 +240,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 	client := sql.NewManagedInstancesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx)
+	result, err := client.List(ctx, "")
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +282,7 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := sql.NewManagedInstancesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -279,4 +294,85 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	return nil, nil
+}
+
+func getMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getMSSQLManagedInstanceEncryptionProtector")
+
+	managedInstance := h.Item.(sql.ManagedInstance)
+	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
+	managedInstanceName := *managedInstance.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sql.NewManagedInstanceEncryptionProtectorsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroup, managedInstanceName)
+	if err != nil {
+		return nil, err
+	}
+
+	managedInstanceEncryptionProtector := make(map[string]interface{})
+
+	if op.ID != nil {
+		managedInstanceEncryptionProtector["id"] = *op.ID
+	}
+	if op.Name != nil {
+		managedInstanceEncryptionProtector["name"] = *op.Name
+	}
+	if op.Type != nil {
+		managedInstanceEncryptionProtector["type"] = *op.Type
+	}
+	if op.Kind != nil {
+		managedInstanceEncryptionProtector["kind"] = *op.Kind
+	}
+	if op.ManagedInstanceEncryptionProtectorProperties != nil {
+		managedInstanceEncryptionProtector["encryptionProtectorProperties"] = op.ManagedInstanceEncryptionProtectorProperties
+	}
+
+	return managedInstanceEncryptionProtector, nil
+}
+
+func getMSSQLManagedInstanceVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getMSSQLManagedInstanceVulnerabilityAssessment")
+
+	managedInstance := h.Item.(sql.ManagedInstance)
+	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
+	managedInstanceName := *managedInstance.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sql.NewManagedInstanceVulnerabilityAssessmentsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroup, managedInstanceName)
+	if err != nil {
+		return nil, err
+	}
+
+	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
+
+	if op.ID != nil {
+		managedInstanceVulnerabilityAssessment["id"] = *op.ID
+	}
+	if op.Name != nil {
+		managedInstanceVulnerabilityAssessment["name"] = *op.Name
+	}
+	if op.Type != nil {
+		managedInstanceVulnerabilityAssessment["type"] = *op.Type
+	}
+	if op.ManagedInstanceVulnerabilityAssessmentProperties != nil {
+		managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = op.ManagedInstanceVulnerabilityAssessmentProperties
+	}
+
+	return managedInstanceVulnerabilityAssessment, nil
 }
