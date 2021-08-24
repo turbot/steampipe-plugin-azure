@@ -333,9 +333,22 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 		if i.Kind != nil {
 			managedInstanceEncryptionProtector["kind"] = *i.Kind
 		}
-		if i.ManagedInstanceEncryptionProtectorProperties != nil {
-			managedInstanceEncryptionProtector["encryptionProtectorProperties"] = i.ManagedInstanceEncryptionProtectorProperties
+		if i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled != nil {
+			managedInstanceEncryptionProtector["autoRotationEnabled"] = i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled
 		}
+		if i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName != nil {
+			managedInstanceEncryptionProtector["serverKeyName"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName
+		}
+		if len(i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType) > 0 {
+			managedInstanceEncryptionProtector["serverKeyType"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType
+		}
+		if i.ManagedInstanceEncryptionProtectorProperties.Thumbprint != nil {
+			managedInstanceEncryptionProtector["thumbprint"] = i.ManagedInstanceEncryptionProtectorProperties.Thumbprint
+		}
+		if i.ManagedInstanceEncryptionProtectorProperties.URI != nil {
+			managedInstanceEncryptionProtector["uri"] = i.ManagedInstanceEncryptionProtectorProperties.URI
+		}
+
 		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, managedInstanceEncryptionProtector)
 	}
 
@@ -358,9 +371,22 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 			if i.Kind != nil {
 				managedInstanceEncryptionProtector["kind"] = *i.Kind
 			}
-			if i.ManagedInstanceEncryptionProtectorProperties != nil {
-				managedInstanceEncryptionProtector["encryptionProtectorProperties"] = i.ManagedInstanceEncryptionProtectorProperties
+			if i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled != nil {
+				managedInstanceEncryptionProtector["autoRotationEnabled"] = i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled
 			}
+			if i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName != nil {
+				managedInstanceEncryptionProtector["serverKeyName"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName
+			}
+			if len(i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType) > 0 {
+				managedInstanceEncryptionProtector["serverKeyType"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType
+			}
+			if i.ManagedInstanceEncryptionProtectorProperties.Thumbprint != nil {
+				managedInstanceEncryptionProtector["thumbprint"] = i.ManagedInstanceEncryptionProtectorProperties.Thumbprint
+			}
+			if i.ManagedInstanceEncryptionProtectorProperties.URI != nil {
+				managedInstanceEncryptionProtector["uri"] = i.ManagedInstanceEncryptionProtectorProperties.URI
+			}
+
 			managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, managedInstanceEncryptionProtector)
 		}
 	}
@@ -402,9 +428,19 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 		if i.Type != nil {
 			managedInstanceVulnerabilityAssessment["type"] = *i.Type
 		}
-		if i.ManagedInstanceVulnerabilityAssessmentProperties != nil {
-			managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = i.ManagedInstanceVulnerabilityAssessmentProperties
+		if i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans != nil {
+			managedInstanceVulnerabilityAssessment["recurringScans"] = i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans
 		}
+		if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+			managedInstanceVulnerabilityAssessment["storageAccountAccessKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey
+		}
+		if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+			managedInstanceVulnerabilityAssessment["storageContainerPath"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath
+		}
+		if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+			managedInstanceVulnerabilityAssessment["storageContainerSasKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey
+		}
+
 		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, managedInstanceVulnerabilityAssessment)
 	}
 
@@ -424,9 +460,19 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 			if i.Type != nil {
 				managedInstanceVulnerabilityAssessment["type"] = *i.Type
 			}
-			if i.ManagedInstanceVulnerabilityAssessmentProperties != nil {
-				managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = i.ManagedInstanceVulnerabilityAssessmentProperties
+			if i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans != nil {
+				managedInstanceVulnerabilityAssessment["recurringScans"] = i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans
 			}
+			if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+				managedInstanceVulnerabilityAssessment["storageAccountAccessKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey
+			}
+			if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+				managedInstanceVulnerabilityAssessment["storageContainerPath"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath
+			}
+			if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+				managedInstanceVulnerabilityAssessment["storageContainerSasKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey
+			}
+
 			managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, managedInstanceVulnerabilityAssessment)
 		}
 	}
