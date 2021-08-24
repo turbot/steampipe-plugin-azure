@@ -180,6 +180,11 @@ func getMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	serverName := d.KeyColumnQuals["server_name"].GetStringValue()
 
+	// Return nil, of no input provided
+	if name == "" || resourceGroup == "" || serverName == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
