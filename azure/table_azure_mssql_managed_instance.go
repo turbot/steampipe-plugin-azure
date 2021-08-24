@@ -166,7 +166,7 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Name:        "encryption_protectors",
 				Description: "The managed instance encryption protectors.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listMSSQLManagedInstanceEncryptionProtector,
+				Hydrate:     listMSSQLManagedInstanceEncryptionProtectors,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -183,7 +183,7 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Name:        "vulnerability_assessments",
 				Description: "The managed instance vulnerability assessments.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listMSSQLManagedInstanceVulnerabilityAssessment,
+				Hydrate:     listMSSQLManagedInstanceVulnerabilityAssessments,
 				Transform:   transform.FromValue(),
 			},
 
@@ -296,8 +296,8 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	return nil, nil
 }
 
-func listMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceEncryptionProtector")
+func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceEncryptionProtectors")
 
 	managedInstance := h.Item.(sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
@@ -342,8 +342,8 @@ func listMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.
 	return managedInstanceEncryptionProtectors, nil
 }
 
-func listMSSQLManagedInstanceVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceVulnerabilityAssessment")
+func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceVulnerabilityAssessments")
 
 	managedInstance := h.Item.(sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
