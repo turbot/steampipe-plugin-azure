@@ -163,10 +163,10 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ManagedInstanceProperties.VCores"),
 			},
 			{
-				Name:        "encryption_protector",
-				Description: "The managed instance encryption protector.",
+				Name:        "encryption_protectors",
+				Description: "The managed instance encryption protectors.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getMSSQLManagedInstanceEncryptionProtector,
+				Hydrate:     listMSSQLManagedInstanceEncryptionProtector,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -180,10 +180,10 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 			{
-				Name:        "vulnerability_assessment",
-				Description: "The managed instance vulnerability assessment.",
+				Name:        "vulnerability_assessments",
+				Description: "The managed instance vulnerability assessments.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getMSSQLManagedInstanceVulnerabilityAssessment,
+				Hydrate:     listMSSQLManagedInstanceVulnerabilityAssessment,
 				Transform:   transform.FromValue(),
 			},
 
@@ -296,8 +296,8 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	return nil, nil
 }
 
-func getMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getMSSQLManagedInstanceEncryptionProtector")
+func listMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceEncryptionProtector")
 
 	managedInstance := h.Item.(sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
@@ -312,34 +312,38 @@ func getMSSQLManagedInstanceEncryptionProtector(ctx context.Context, d *plugin.Q
 	client := sql.NewManagedInstanceEncryptionProtectorsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroup, managedInstanceName)
+	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
 	if err != nil {
 		return nil, err
 	}
 
-	managedInstanceEncryptionProtector := make(map[string]interface{})
+	var managedInstanceEncryptionProtectors []map[string]interface{}
 
-	if op.ID != nil {
-		managedInstanceEncryptionProtector["id"] = *op.ID
-	}
-	if op.Name != nil {
-		managedInstanceEncryptionProtector["name"] = *op.Name
-	}
-	if op.Type != nil {
-		managedInstanceEncryptionProtector["type"] = *op.Type
-	}
-	if op.Kind != nil {
-		managedInstanceEncryptionProtector["kind"] = *op.Kind
-	}
-	if op.ManagedInstanceEncryptionProtectorProperties != nil {
-		managedInstanceEncryptionProtector["encryptionProtectorProperties"] = op.ManagedInstanceEncryptionProtectorProperties
+	for _, i := range op.Values() {
+		managedInstanceEncryptionProtector := make(map[string]interface{})
+		if i.ID != nil {
+			managedInstanceEncryptionProtector["id"] = *i.ID
+		}
+		if i.Name != nil {
+			managedInstanceEncryptionProtector["name"] = *i.Name
+		}
+		if i.Type != nil {
+			managedInstanceEncryptionProtector["type"] = *i.Type
+		}
+		if i.Kind != nil {
+			managedInstanceEncryptionProtector["kind"] = *i.Kind
+		}
+		if i.ManagedInstanceEncryptionProtectorProperties != nil {
+			managedInstanceEncryptionProtector["encryptionProtectorProperties"] = i.ManagedInstanceEncryptionProtectorProperties
+		}
+		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, managedInstanceEncryptionProtector)
 	}
 
-	return managedInstanceEncryptionProtector, nil
+	return managedInstanceEncryptionProtectors, nil
 }
 
-func getMSSQLManagedInstanceVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getMSSQLManagedInstanceVulnerabilityAssessment")
+func listMSSQLManagedInstanceVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceVulnerabilityAssessment")
 
 	managedInstance := h.Item.(sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
@@ -354,25 +358,29 @@ func getMSSQLManagedInstanceVulnerabilityAssessment(ctx context.Context, d *plug
 	client := sql.NewManagedInstanceVulnerabilityAssessmentsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroup, managedInstanceName)
+	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
 	if err != nil {
 		return nil, err
 	}
 
-	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
+	var managedInstanceVulnerabilityAssessments []map[string]interface{}
 
-	if op.ID != nil {
-		managedInstanceVulnerabilityAssessment["id"] = *op.ID
-	}
-	if op.Name != nil {
-		managedInstanceVulnerabilityAssessment["name"] = *op.Name
-	}
-	if op.Type != nil {
-		managedInstanceVulnerabilityAssessment["type"] = *op.Type
-	}
-	if op.ManagedInstanceVulnerabilityAssessmentProperties != nil {
-		managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = op.ManagedInstanceVulnerabilityAssessmentProperties
+	for _, i := range op.Values() {
+		managedInstanceVulnerabilityAssessment := make(map[string]interface{})
+		if i.ID != nil {
+			managedInstanceVulnerabilityAssessment["id"] = *i.ID
+		}
+		if i.Name != nil {
+			managedInstanceVulnerabilityAssessment["name"] = *i.Name
+		}
+		if i.Type != nil {
+			managedInstanceVulnerabilityAssessment["type"] = *i.Type
+		}
+		if i.ManagedInstanceVulnerabilityAssessmentProperties != nil {
+			managedInstanceVulnerabilityAssessment["vulnerabilityAssessmentProperties"] = i.ManagedInstanceVulnerabilityAssessmentProperties
+		}
+		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, managedInstanceVulnerabilityAssessment)
 	}
 
-	return managedInstanceVulnerabilityAssessment, nil
+	return managedInstanceVulnerabilityAssessments, nil
 }
