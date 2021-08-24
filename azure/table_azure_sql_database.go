@@ -448,6 +448,7 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	}
 
 	var vulnerabilityAssessments []map[string]interface{}
+
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
 		if i.ID != nil {
@@ -474,6 +475,38 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 	}
 
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
+				objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+				objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+				objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
+			}
+			vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
+		}
+	}
+
 	return vulnerabilityAssessments, nil
 }
 
@@ -498,6 +531,7 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	}
 
 	var vulnerabilityAssessmentScanRecords []map[string]interface{}
+
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
 		if i.ID != nil {
@@ -534,6 +568,50 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 			objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
 		}
 		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
+				objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
+			}
+			if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
+				objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
+			}
+			if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
+				objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
+				objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
+				objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
+				objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
+				objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
+			}
+			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+		}
 	}
 
 	return vulnerabilityAssessmentScanRecords, nil
