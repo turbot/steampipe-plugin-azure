@@ -30,17 +30,3 @@ from
 where
   provisioning_state = 'Failed';
 ```
-
-### Get load balancer backend address pool by load balancer name and backend address pool name
-
-```sql
-select
-  id,
-  name,
-  type,
-  provisioning_state
-from
-  azure_lb_backend_address_pool
-where
-  load_balancer_name = 'test_load_balancer' and name = 'test_backend_pool_1';
-```

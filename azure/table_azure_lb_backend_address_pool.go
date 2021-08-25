@@ -67,16 +67,22 @@ func tableAzureLoadBalancerBackendAddressPool(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.OutboundRule.ID"),
 			},
 			{
-				Name:        "backend_addresses",
-				Description: "An array of backend addresses.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.LoadBalancerBackendAddresses"),
-			},
-			{
 				Name:        "backend_ip_configurations",
 				Description: "An array of references to IP addresses defined in network interfaces.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.BackendIPConfigurations"),
+			},
+			{
+				Name:        "gateway_load_balancer_tunnel_interface",
+				Description: "An array of gateway load balancer tunnel interfaces.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.GatewayLoadBalancerTunnelInterface"),
+			},
+			{
+				Name:        "load_balancer_backend_addresses",
+				Description: "An array of backend addresses.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.LoadBalancerBackendAddresses"),
 			},
 			{
 				Name:        "load_balancing_rules",
@@ -89,12 +95,6 @@ func tableAzureLoadBalancerBackendAddressPool(_ context.Context) *plugin.Table {
 				Description: "An array of references to outbound rules that use this backend address pool.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.OutboundRules"),
-			},
-			{
-				Name:        "tunnel_interfaces",
-				Description: "An array of gateway load balancer tunnel interfaces.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.GatewayLoadBalancerTunnelInterface"),
 			},
 
 			// Steampipe standard columns
@@ -112,12 +112,6 @@ func tableAzureLoadBalancerBackendAddressPool(_ context.Context) *plugin.Table {
 			},
 
 			// Azure standard columns
-			{
-				Name:        "region",
-				Description: ColumnDescriptionRegion,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("BackendAddressPoolPropertiesFormat.Location").Transform(toLower),
-			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
