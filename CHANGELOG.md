@@ -1,3 +1,20 @@
+## v0.18.0 [2021-08-25]
+
+_What's new?_
+
+- New tables added
+  - [azure_key_vault_deleted_vault](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_deleted_vault) ([#263](https://github.com/turbot/steampipe-plugin-azure/pull/263))
+  - [azure_lb_backend_address_pool](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb_backend_address_pool) ([#266](https://github.com/turbot/steampipe-plugin-azure/pull/266))
+  - [azure_lb_nat_rule](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb_nat_rule) ([#267](https://github.com/turbot/steampipe-plugin-azure/pull/267))
+  - [azure_lb_outbound_rule](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb_outbound_rule) ([#264](https://github.com/turbot/steampipe-plugin-azure/pull/264))
+  - [azure_mssql_elasticpool](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mssql_elasticpool) ([#276](https://github.com/turbot/steampipe-plugin-azure/pull/276))
+  - [azure_mssql_managed_instance](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mssql_managed_instance) ([#277](https://github.com/turbot/steampipe-plugin-azure/pull/277))
+
+_Enhancements_
+
+- Updated: Add `vulnerability_assessments` and `vulnerability_assessment_scan_records` columns in `azure_sql_database` table ([#279](https://github.com/turbot/steampipe-plugin-azure/pull/279))
+
+
 ## v0.17.0 [2021-08-13]
 
 _What's new?_
