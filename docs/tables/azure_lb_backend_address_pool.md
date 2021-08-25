@@ -1,6 +1,6 @@
 # Table: azure_lb_backend_address_pool
 
-The backend pool is a critical component of the load balancer. The backend pool defines the group of resources that will serve traffic for a given load-balancing rule.
+An Azure load balancer's backend address pool consists of IP addresses associated with the virtual machine NICs. This pool is used to distribute traffic to the virtual machines behind the load balancer.
 
 ## Examples
 
