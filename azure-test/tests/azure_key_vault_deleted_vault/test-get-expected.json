@@ -1,0 +1,10 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ output.resource_name.value }}",
+    "region": "{{ output.region.value }}",
+    "resource_group": "{{ output.resource_name.value }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.KeyVault/deletedVaults"
+  }
+]

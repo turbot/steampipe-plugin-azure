@@ -1,3 +1,25 @@
+## v0.17.0 [2021-08-13]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_scale_set](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_scale_set) ([#249](https://github.com/turbot/steampipe-plugin-azure/pull/249))
+  - [azure_data_lake_analytics_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_lake_analytics_account) ([#253](https://github.com/turbot/steampipe-plugin-azure/pull/253))
+  - [azure_lb](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb) ([#231](https://github.com/turbot/steampipe-plugin-azure/pull/231))
+  - [azure_lb_probe](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb_probe) ([#238](https://github.com/turbot/steampipe-plugin-azure/pull/238))
+  - [azure_lb_rule](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lb_rule) ([#235](https://github.com/turbot/steampipe-plugin-azure/pull/235))
+  - [azure_resource_link](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_resource_link) ([#252](https://github.com/turbot/steampipe-plugin-azure/pull/252))
+  - [azure_search_service](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_search_service) ([#257](https://github.com/turbot/steampipe-plugin-azure/pull/257))
+
+_Enhancements_
+
+- Updated: Add `retention_policy_id`, `retention_policy_name`, `retention_policy_type` and `retention_policy_property` columns in `azure_sql_database` table ([#255](https://github.com/turbot/steampipe-plugin-azure/pull/255))
+
+_Bug fixes_
+
+- Fixed: Integration test issues for several tables ([#259](https://github.com/turbot/steampipe-plugin-azure/pull/259))
+- Fixed: Expired CLI authentication tokens will now automatically be refreshed ([#234](https://github.com/turbot/steampipe-plugin-azure/pull/234))
+
 ## v0.16.0 [2021-08-11]
 
 _What's new?_
