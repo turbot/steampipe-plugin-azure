@@ -27,13 +27,12 @@ type Session struct {
 	Expires        *time.Time
 }
 
-/*
-GetNewSession creates an session configured from environment variables/CLI in the order:
-	1. Client Secret Credentials if set; otherwise
-	2. Client Certificate Credentials if set; otherwise
-	3. Resource Owner Password if set; otherwise
-	3. MSI credentials if set; otherwise
-	5. If no credentials are supplied, then the az cli credentials are used
+/* GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
+1. Client secret
+2. Client certificate
+3. Username and password
+4. MSI
+5. CLI
 */
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
@@ -205,18 +204,19 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
 
-	// cli is the defaulr authentication method
+	// CLI is the default authentication method
 	authMethod = "CLI"
 	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		authMethod = "CLI"
 	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
-		authMethod = "Environment" // Will work for Client secret credentials, Client certificate credentials, resource owner paswword and MSI
+                // Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
+		authMethod = "Environment"
 	}
 
 	logger.Trace("getApplicableAuthorizationDetails_", "Auth Method: ", authMethod)
 
 	var environment azure.Environment
-	// get the environment endpoint to be used for authorization
+	// Get the environment endpoint to be used for authorization
 	if environmentName == "" {
 		settings.Environment = azure.PublicCloud
 	} else {
