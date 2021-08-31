@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -244,6 +244,20 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Hydrate:     getSqlDatabaseTransparentDataEncryption,
 				Transform:   transform.FromField("TransparentDataEncryptionProperties"),
 			},
+			{
+				Name:        "vulnerability_assessments",
+				Description: "The vulnerability assessments for this database.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSqlDatabaseVulnerabilityAssessments,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "vulnerability_assessment_scan_records",
+				Description: "The vulnerability assessment scan records for this database.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSqlDatabaseVulnerabilityAssessmentScans,
+				Transform:   transform.FromValue(),
+			},
 
 			// Azure standard columns
 			{
@@ -354,19 +368,10 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 }
 
 func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSqlDatabaseTransparentDataEncryption")
-
-	var serverName, databaseName, resourceGroupName string
-	if h.Item != nil {
-		database := h.Item.(sql.Database)
-		serverName = strings.Split(*database.ID, "/")[8]
-		databaseName = *database.Name
-		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
-	} else {
-		serverName = d.KeyColumnQuals["server_name"].GetStringValue()
-		databaseName = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
-	}
+	database := h.Item.(sql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	databaseName := *database.Name
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -392,18 +397,10 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 }
 
 func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	var serverName, databaseName, resourceGroupName string
-	plugin.Logger(ctx).Trace("Hydrate Database Propery", h.Item)
-	if h.Item != nil {
-		database := h.Item.(sql.Database)
-		serverName = strings.Split(*database.ID, "/")[8]
-		databaseName = *database.Name
-		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
-	} else {
-		serverName = d.KeyColumnQuals["server_name"].GetStringValue()
-		databaseName = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
-	}
+	database := h.Item.(sql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	databaseName := *database.Name
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -422,12 +419,202 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	// We can add only one retention policy per SQL Database.
 	res := op.Values()
 
-	// For master database we are getting the response as empty array 
+	// For master database we are getting the response as empty array
 	if len(res) == 0 {
 		return nil, nil
 	}
 
 	return res[0], nil
+}
+
+func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(sql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	databaseName := *database.Name
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sqlV5.NewDatabaseVulnerabilityAssessmentsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	if err != nil {
+		return nil, err
+	}
+
+	var vulnerabilityAssessments []map[string]interface{}
+
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
+			objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+			objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+			objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
+		}
+		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+			objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
+		}
+		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
+				objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
+				objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
+			}
+			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
+				objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
+			}
+			vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
+		}
+	}
+
+	return vulnerabilityAssessments, nil
+}
+
+func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(sql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	databaseName := *database.Name
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	if err != nil {
+		return nil, err
+	}
+
+	var vulnerabilityAssessmentScanRecords []map[string]interface{}
+
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
+			objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
+		}
+		if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
+			objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
+		}
+		if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
+			objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
+			objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
+			objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
+			objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
+			objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
+		}
+		if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
+			objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
+		}
+		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
+				objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
+			}
+			if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
+				objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
+			}
+			if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
+				objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
+				objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
+				objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
+				objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
+			}
+			if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
+				objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
+			}
+			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+		}
+	}
+
+	return vulnerabilityAssessmentScanRecords, nil
 }
 
 //// TRANSFORM FUNCTION
