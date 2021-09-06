@@ -137,7 +137,7 @@ type diskAccesssInfo struct {
 	ProvisioningState *string `json:"provisioningState,omitempty"`
 	// TimeCreated - READ-ONLY; The time when the disk access was created.
 	TimeCreated *date.Time `json:"timeCreated,omitempty"`
-	// PrivateEndpointConnections - READ-ONLY; A readonly collection of private endpoint connections created on the disk. Currently only one endpoint connection is supported.
+	// PrivateEndpointConnections - READ-ONLY; A readonly collection of private endpoint connections created on the disk.
 	PrivateEndpointConnections     *[]compute.PrivateEndpointConnection `json:"privateEndpointConnections,omitempty"`
 	PrivateEndpointsID             []string
 	PrivateEndpointConnectionsID   []string
