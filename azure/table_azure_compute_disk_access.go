@@ -167,11 +167,13 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 		var PrivateEndpointConnectionsID []string
 		var PrivateEndpointConnectionsName []string
 		var PrivateEndpointConnectionsType []string
-		for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
-			PrivateEndpointConnectionsID = append(PrivateEndpointConnectionsID, *connection.ID)
-			PrivateEndpointConnectionsName = append(PrivateEndpointConnectionsName, *connection.Name)
-			PrivateEndpointConnectionsType = append(PrivateEndpointConnectionsType, *connection.Type)
-			PrivateEndpointID = append(PrivateEndpointID, *connection.PrivateEndpoint.ID)
+		if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
+			for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
+				PrivateEndpointConnectionsID = append(PrivateEndpointConnectionsID, *connection.ID)
+				PrivateEndpointConnectionsName = append(PrivateEndpointConnectionsName, *connection.Name)
+				PrivateEndpointConnectionsType = append(PrivateEndpointConnectionsType, *connection.Type)
+				PrivateEndpointID = append(PrivateEndpointID, *connection.PrivateEndpoint.ID)
+			}
 		}
 		d.StreamListItem(ctx, diskAccesssInfo{diskAccesss.ID, diskAccesss.Name, diskAccesss.Type, diskAccesss.Location, diskAccesss.Tags, diskAccesss.DiskAccessProperties.ProvisioningState, diskAccesss.DiskAccessProperties.TimeCreated, diskAccesss.DiskAccessProperties.PrivateEndpointConnections, PrivateEndpointID, PrivateEndpointConnectionsID, PrivateEndpointConnectionsName, PrivateEndpointConnectionsType})
 	}
@@ -187,11 +189,13 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 			var PrivateEndpointConnectionsID []string
 			var PrivateEndpointConnectionsName []string
 			var PrivateEndpointConnectionsType []string
-			for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
-				PrivateEndpointConnectionsID = append(PrivateEndpointConnectionsID, *connection.ID)
-				PrivateEndpointConnectionsName = append(PrivateEndpointConnectionsName, *connection.Name)
-				PrivateEndpointConnectionsType = append(PrivateEndpointConnectionsType, *connection.Type)
-				PrivateEndpointID = append(PrivateEndpointID, *connection.PrivateEndpoint.ID)
+			if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
+				for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
+					PrivateEndpointConnectionsID = append(PrivateEndpointConnectionsID, *connection.ID)
+					PrivateEndpointConnectionsName = append(PrivateEndpointConnectionsName, *connection.Name)
+					PrivateEndpointConnectionsType = append(PrivateEndpointConnectionsType, *connection.Type)
+					PrivateEndpointID = append(PrivateEndpointID, *connection.PrivateEndpoint.ID)
+				}
 			}
 			d.StreamListItem(ctx, diskAccesssInfo{diskAccesss.ID, diskAccesss.Name, diskAccesss.Type, diskAccesss.Location, diskAccesss.Tags, diskAccesss.DiskAccessProperties.ProvisioningState, diskAccesss.DiskAccessProperties.TimeCreated, diskAccesss.DiskAccessProperties.PrivateEndpointConnections, PrivateEndpointID, PrivateEndpointConnectionsID, PrivateEndpointConnectionsName, PrivateEndpointConnectionsType})
 		}
@@ -208,6 +212,11 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Return nil, if no input provide
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -221,21 +230,18 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if diskAccesss.ID != nil {
-		var PrivateEndpointID []string
-		var PrivateEndpointConnectionsID []string
-		var PrivateEndpointConnectionsName []string
-		var PrivateEndpointConnectionsType []string
+	var PrivateEndpointID []string
+	var PrivateEndpointConnectionsID []string
+	var PrivateEndpointConnectionsName []string
+	var PrivateEndpointConnectionsType []string
+	if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
 		for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
 			PrivateEndpointConnectionsID = append(PrivateEndpointConnectionsID, *connection.ID)
 			PrivateEndpointConnectionsName = append(PrivateEndpointConnectionsName, *connection.Name)
 			PrivateEndpointConnectionsType = append(PrivateEndpointConnectionsType, *connection.Type)
 			PrivateEndpointID = append(PrivateEndpointID, *connection.PrivateEndpoint.ID)
 		}
-		return diskAccesssInfo{diskAccesss.ID, diskAccesss.Name, diskAccesss.Type, diskAccesss.Location, diskAccesss.Tags, diskAccesss.DiskAccessProperties.ProvisioningState, diskAccesss.DiskAccessProperties.TimeCreated, diskAccesss.DiskAccessProperties.PrivateEndpointConnections, PrivateEndpointID, PrivateEndpointConnectionsID, PrivateEndpointConnectionsName, PrivateEndpointConnectionsType}, nil
 	}
+	return diskAccesssInfo{diskAccesss.ID, diskAccesss.Name, diskAccesss.Type, diskAccesss.Location, diskAccesss.Tags, diskAccesss.DiskAccessProperties.ProvisioningState, diskAccesss.DiskAccessProperties.TimeCreated, diskAccesss.DiskAccessProperties.PrivateEndpointConnections, PrivateEndpointID, PrivateEndpointConnectionsID, PrivateEndpointConnectionsName, PrivateEndpointConnectionsType}, nil
 
-	return nil, nil
 }

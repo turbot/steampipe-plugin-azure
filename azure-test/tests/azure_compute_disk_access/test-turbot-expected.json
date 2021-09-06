@@ -4,7 +4,7 @@
       "{{ output.resource_aka.value }}",
       "{{ output.resource_aka_lower.value }}"
     ],
-    "name": "{{ resourceName }}",
-    "title": "{{ resourceName }}"
+    "name": "{{ output.resource_name.value }}",
+    "title": "{{ output.resource_name.value }}"
   }
 ]

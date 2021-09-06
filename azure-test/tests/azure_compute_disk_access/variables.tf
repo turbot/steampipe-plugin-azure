@@ -36,28 +36,44 @@ resource "azurerm_resource_group" "named_test_resource" {
   location = "East US"
 }
 
-resource "azurerm_disk_access" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
+locals {
+  path = "${path.cwd}/info.json"
+}
+
+resource "null_resource" "named_test_resource" {
+  depends_on = [azurerm_resource_group.named_test_resource]
+  provisioner "local-exec" {
+    command = "az disk-access create -g ${var.resource_name} -l ${azurerm_resource_group.named_test_resource.location} -n ${var.resource_name} > ${local.path}"
+  }
+}
+
+data "local_file" "input" {
+  depends_on = [null_resource.named_test_resource]
+  filename   = local.path
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_disk_access.named_test_resource.id}"
+  depends_on = [null_resource.named_test_resource]
+  value      = "azure://${jsondecode(data.local_file.input.content).id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_disk_access.named_test_resource.id)}"
+  depends_on = [null_resource.named_test_resource]
+  value      = "azure://${lower(jsondecode(data.local_file.input.content).id)}"
 }
 
 output "resource_name" {
-  value = var.resource_name
+  value = jsondecode(data.local_file.input.content).name
 }
 
 output "resource_id" {
-  value = azurerm_disk_access.named_test_resource.id
+  value = jsondecode(data.local_file.input.content).id
 }
 
 output "subscription_id" {
   value = var.azure_subscription
+}
+
+output "resource_name_upper" {
+  value = upper(jsondecode(data.local_file.input.content).name)
 }

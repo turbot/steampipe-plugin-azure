@@ -1,8 +1,8 @@
 [
   {
     "id": "{{ output.resource_id.value }}",
-    "name": "{{ resourceName }}",
-    "resource_group": "{{ resourceName }}",
+    "name": "{{ output.resource_name.value }}",
+    "resource_group": "{{ output.resource_name.value }}",
     "subscription_id": "{{ output.subscription_id.value }}",
     "type": "Microsoft.Compute/diskAccesses"
   }
