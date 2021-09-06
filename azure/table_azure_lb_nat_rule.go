@@ -169,6 +169,10 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	for _, rule := range result.Values() {
 		d.StreamListItem(ctx, LoadBalancerNatRulesInfo{rule, *loadBalancer.Name})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -178,6 +182,10 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 		}
 		for _, rule := range result.Values() {
 			d.StreamListItem(ctx, LoadBalancerNatRulesInfo{rule, *loadBalancer.Name})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 
@@ -207,7 +215,7 @@ func getLoadBalancerNatRule(ctx context.Context, d *plugin.QueryData, h *plugin.
 	natClient := network.NewInboundNatRulesClient(subscriptionID)
 	natClient.Authorizer = session.Authorizer
 
-	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName,"")
+	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName, "")
 	if err != nil {
 		return nil, err
 	}

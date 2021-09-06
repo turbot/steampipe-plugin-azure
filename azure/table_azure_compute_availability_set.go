@@ -148,6 +148,10 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 
 	for _, availabilitySet := range result.Values() {
 		d.StreamListItem(ctx, availabilitySet)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -158,6 +162,10 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 
 		for _, availabilitySet := range result.Values() {
 			d.StreamListItem(ctx, availabilitySet)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

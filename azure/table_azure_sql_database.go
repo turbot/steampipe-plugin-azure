@@ -322,6 +322,10 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	for _, database := range *result.Value {
 		d.StreamLeafListItem(ctx, database)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err

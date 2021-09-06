@@ -184,6 +184,10 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	for _, flowLog := range result.Values() {
 		d.StreamListItem(ctx, flowLogInfo{flowLog, *networkWatcherDetails.Name})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -194,6 +198,10 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 
 		for _, flowLog := range result.Values() {
 			d.StreamListItem(ctx, flowLogInfo{flowLog, *networkWatcherDetails.Name})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

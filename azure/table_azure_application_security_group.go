@@ -118,6 +118,10 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 
 	for _, applicationSecurityGroup := range result.Values() {
 		d.StreamListItem(ctx, applicationSecurityGroup)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -128,6 +132,10 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 
 		for _, applicationSecurityGroup := range result.Values() {
 			d.StreamListItem(ctx, applicationSecurityGroup)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

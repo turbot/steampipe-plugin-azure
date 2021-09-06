@@ -196,6 +196,10 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	for _, key := range result.Values() {
 		d.StreamListItem(ctx, key)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -206,6 +210,10 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 		for _, key := range result.Values() {
 			d.StreamListItem(ctx, key)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

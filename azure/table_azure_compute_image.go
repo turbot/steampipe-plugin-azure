@@ -187,6 +187,10 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	for _, image := range result.Values() {
 		d.StreamListItem(ctx, image)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -197,6 +201,10 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 		for _, image := range result.Values() {
 			d.StreamListItem(ctx, image)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

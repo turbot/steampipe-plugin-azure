@@ -246,6 +246,10 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 	for _, managedInstance := range result.Values() {
 		d.StreamListItem(ctx, managedInstance)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -255,6 +259,10 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 		}
 		for _, managedInstance := range result.Values() {
 			d.StreamListItem(ctx, managedInstance)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

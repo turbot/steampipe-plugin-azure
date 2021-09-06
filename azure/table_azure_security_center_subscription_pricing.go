@@ -92,14 +92,19 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 	settingClient := security.NewPricingsClient(subscriptionID, "")
 	settingClient.Authorizer = session.Authorizer
 
-	pricingList, err := settingClient.List(ctx)
+	result, err := settingClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, pricing := range *pricingList.Value {
+	for _, pricing := range *result.Value {
 		d.StreamListItem(ctx, pricing)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
+
 	return nil, nil
 }
 

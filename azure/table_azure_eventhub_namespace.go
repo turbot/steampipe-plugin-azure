@@ -211,6 +211,7 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	for _, namespace := range result.Values() {
 		d.StreamListItem(ctx, namespace)
+		
 	}
 
 	for result.NotDone() {

@@ -160,6 +160,10 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	for _, factory := range result.Values() {
 		d.StreamListItem(ctx, factory)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -169,6 +173,10 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		}
 		for _, factory := range result.Values() {
 			d.StreamListItem(ctx, factory)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 
 	}

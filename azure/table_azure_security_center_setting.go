@@ -89,14 +89,33 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 	settingClient := security.NewSettingsClient(subscriptionID, "")
 	settingClient.Authorizer = session.Authorizer
 
-	settingList, err := settingClient.List(ctx)
+	result, err := settingClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, setting := range settingList.Values() {
+	for _, setting := range result.Values() {
 		d.StreamListItem(ctx, setting)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return err, nil
+		}
+		for _, setting := range result.Values() {
+			d.StreamListItem(ctx, setting)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
+	}
+
 	return nil, nil
 }
 

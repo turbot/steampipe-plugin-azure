@@ -166,14 +166,31 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 	hsmClient.Authorizer = session.Authorizer
 	maxResults := int32(100)
 
-	// Pagination is not handled, as the API always sends value of NotDone() as true,
-	// and the list goes to infinite
 	result, err := hsmClient.ListBySubscription(ctx, &maxResults)
 	if err != nil {
 		return nil, err
 	}
 	for _, vault := range result.Values() {
 		d.StreamListItem(ctx, vault)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, vault := range result.Values() {
+			d.StreamListItem(ctx, vault)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
+
 	}
 
 	return nil, err

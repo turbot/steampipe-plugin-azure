@@ -181,6 +181,10 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 	for _, environment := range result.Values() {
 		d.StreamListItem(ctx, environment)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -191,6 +195,10 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 
 		for _, environment := range result.Values() {
 			d.StreamListItem(ctx, environment)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 
 	}

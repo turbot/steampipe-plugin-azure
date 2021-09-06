@@ -156,6 +156,10 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 	}
 	for _, rule := range result.Values() {
 		d.StreamListItem(ctx, LoadBalancerOutboundRulesInfo{rule, *loadBalancer.Name})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -165,6 +169,10 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 		}
 		for _, rule := range result.Values() {
 			d.StreamListItem(ctx, LoadBalancerOutboundRulesInfo{rule, *loadBalancer.Name})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

@@ -433,6 +433,10 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for _, account := range result.Values() {
 		resourceGroup := &strings.Split(string(*account.ID), "/")[4]
 		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -444,6 +448,10 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, account := range result.Values() {
 			resourceGroup := &strings.Split(string(*account.ID), "/")[4]
 			d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

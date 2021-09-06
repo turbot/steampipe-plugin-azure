@@ -226,6 +226,10 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	for _, networkGateway := range result.Values() {
 		d.StreamListItem(ctx, networkGateway)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -236,6 +240,10 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 
 		for _, networkGateway := range result.Values() {
 			d.StreamListItem(ctx, networkGateway)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

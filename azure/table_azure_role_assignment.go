@@ -104,6 +104,10 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	for _, roleAssignment := range result.Values() {
 		d.StreamListItem(ctx, roleAssignment)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -113,6 +117,10 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		}
 		for _, roleAssignment := range result.Values() {
 			d.StreamListItem(ctx, roleAssignment)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

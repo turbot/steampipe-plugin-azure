@@ -138,6 +138,10 @@ func listLogAlerts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	for _, alertLog := range *result.Value {
 		d.StreamListItem(ctx, alertLog)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err

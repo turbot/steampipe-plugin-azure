@@ -166,6 +166,10 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	for _, elasticPool := range *result.Value {
 		d.StreamListItem(ctx, elasticPool)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err

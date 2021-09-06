@@ -224,6 +224,10 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 	for _, streamingJob := range result.Values() {
 		d.StreamListItem(ctx, streamingJob)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -233,6 +237,10 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 		}
 		for _, streamingJob := range result.Values() {
 			d.StreamListItem(ctx, streamingJob)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

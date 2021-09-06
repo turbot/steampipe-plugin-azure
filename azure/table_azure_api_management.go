@@ -237,6 +237,10 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	for _, apiManagement := range result.Values() {
 		d.StreamListItem(ctx, apiManagement)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -247,6 +251,10 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 
 		for _, apiManagement := range result.Values() {
 			d.StreamListItem(ctx, apiManagement)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

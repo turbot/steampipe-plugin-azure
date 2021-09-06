@@ -266,6 +266,10 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	for _, cluster := range result.Values() {
 		d.StreamListItem(ctx, cluster)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -276,6 +280,10 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 		for _, cluster := range result.Values() {
 			d.StreamListItem(ctx, cluster)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

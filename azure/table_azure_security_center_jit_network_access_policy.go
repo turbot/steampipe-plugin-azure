@@ -91,13 +91,32 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 	client := security.NewJitNetworkAccessPoliciesClient(subscriptionID, "")
 	client.Authorizer = session.Authorizer
 
-	policy, err := client.List(ctx)
+	result, err := client.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, contact := range policy.Values() {
-		d.StreamListItem(ctx, contact)
+	for _, jitNetworkAccessPolicy := range result.Values() {
+		d.StreamListItem(ctx, jitNetworkAccessPolicy)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return err, nil
+		}
+		for _, jitNetworkAccessPolicy := range result.Values() {
+			d.StreamListItem(ctx, jitNetworkAccessPolicy)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
+	}
+
 	return nil, nil
 }

@@ -205,6 +205,10 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	for _, publicIP := range result.Values() {
 		d.StreamListItem(ctx, publicIP)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -215,6 +219,10 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 		for _, publicIP := range result.Values() {
 			d.StreamListItem(ctx, publicIP)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

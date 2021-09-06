@@ -196,6 +196,10 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 		// Filtering out all the web apps
 		if strings.Contains(string(*functionApp.Kind), "functionapp") {
 			d.StreamListItem(ctx, functionApp)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 
@@ -209,6 +213,10 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 			// Filtering out all the web apps
 			if strings.Contains(string(*functionApp.Kind), "functionapp") {
 				d.StreamListItem(ctx, functionApp)
+				// Context can be cancelled due to manual cancellation or the limit has been hit
+				if plugin.IsCancelled(ctx) {
+					return nil, nil
+				}
 			}
 		}
 

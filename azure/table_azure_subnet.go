@@ -173,7 +173,11 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		return nil, err
 	}
 	for _, subnet := range result.Values() {
-		d.StreamLeafListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
+		d.StreamListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -182,7 +186,11 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 			return nil, err
 		}
 		for _, subnet := range result.Values() {
-			d.StreamLeafListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
+			d.StreamListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, nil

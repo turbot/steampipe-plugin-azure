@@ -267,6 +267,10 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 
 	for _, snapshot := range result.Values() {
 		d.StreamListItem(ctx, snapshot)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -277,6 +281,10 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 
 		for _, snapshot := range result.Values() {
 			d.StreamListItem(ctx, snapshot)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

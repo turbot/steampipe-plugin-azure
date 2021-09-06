@@ -117,6 +117,10 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	for _, dataset := range result.Values() {
 		d.StreamListItem(ctx, DatasetInfo{dataset, *factoryInfo.Name})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -126,6 +130,10 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 		}
 		for _, dataset := range result.Values() {
 			d.StreamListItem(ctx, DatasetInfo{dataset, *factoryInfo.Name})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

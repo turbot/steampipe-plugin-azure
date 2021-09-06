@@ -159,6 +159,10 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 	for _, mongoDatabase := range *result.Value {
 		resourceGroup := &strings.Split(string(*mongoDatabase.ID), "/")[4]
 		d.StreamLeafListItem(ctx, mongoDatabaseInfo{mongoDatabase, account.Name, mongoDatabase.Name, resourceGroup, account.DatabaseAccount.Location})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err

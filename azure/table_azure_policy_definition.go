@@ -123,13 +123,32 @@ func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	PolicyClient := policy.NewDefinitionsClient(subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
-	policyList, err := PolicyClient.List(ctx)
+	result, err := PolicyClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, policy := range policyList.Values() {
+	for _, policy := range result.Values() {
 		d.StreamListItem(ctx, policy)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, policy := range result.Values() {
+			d.StreamListItem(ctx, policy)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
 	}
 
 	return nil, nil

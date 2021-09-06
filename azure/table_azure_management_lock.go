@@ -123,6 +123,10 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for _, managementLock := range result.Values() {
 		resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
 		d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -134,6 +138,10 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, managementLock := range result.Values() {
 			resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
 			d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

@@ -180,6 +180,10 @@ func listSearchServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	for _, service := range result.Values() {
 		d.StreamListItem(ctx, service)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -189,6 +193,10 @@ func listSearchServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		}
 		for _, service := range result.Values() {
 			d.StreamListItem(ctx, service)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

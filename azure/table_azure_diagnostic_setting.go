@@ -143,6 +143,10 @@ func listDiagnosticSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	for _, diagnosticSetting := range *result.Value {
 		d.StreamListItem(ctx, diagnosticSetting)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err

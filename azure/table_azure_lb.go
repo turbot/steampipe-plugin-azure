@@ -194,6 +194,10 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	for _, loadBalancer := range result.Values() {
 		d.StreamListItem(ctx, loadBalancer)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -203,9 +207,13 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		}
 		for _, loadBalancer := range result.Values() {
 			d.StreamListItem(ctx, loadBalancer)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
-	
+
 	return nil, err
 }
 

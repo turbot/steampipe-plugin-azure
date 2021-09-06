@@ -151,6 +151,10 @@ func listBackendAddressPools(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	for _, backendAddressPool := range result.Values() {
 		d.StreamListItem(ctx, backendAddressPool)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -160,6 +164,10 @@ func listBackendAddressPools(ctx context.Context, d *plugin.QueryData, h *plugin
 		}
 		for _, backendAddressPool := range result.Values() {
 			d.StreamListItem(ctx, backendAddressPool)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

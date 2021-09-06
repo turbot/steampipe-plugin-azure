@@ -313,6 +313,10 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	for _, disk := range result.Values() {
 		d.StreamListItem(ctx, disk)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -323,6 +327,10 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 		for _, disk := range result.Values() {
 			d.StreamListItem(ctx, disk)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

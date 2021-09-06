@@ -151,6 +151,10 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 	for _, probe := range result.Values() {
 		d.StreamListItem(ctx, probe)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -160,6 +164,10 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 		}
 		for _, probe := range result.Values() {
 			d.StreamListItem(ctx, probe)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

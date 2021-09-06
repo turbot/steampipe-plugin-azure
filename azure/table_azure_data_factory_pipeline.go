@@ -166,6 +166,10 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	for _, pipeline := range result.Values() {
 		d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -175,6 +179,10 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 		}
 		for _, pipeline := range result.Values() {
 			d.StreamListItem(ctx, pipelineInfo{pipeline, *factoryInfo.Name})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

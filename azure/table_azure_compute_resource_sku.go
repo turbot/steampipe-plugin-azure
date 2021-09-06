@@ -163,6 +163,10 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 	for _, sku := range result.Values() {
 		d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -173,6 +177,10 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 		for _, sku := range result.Values() {
 			d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

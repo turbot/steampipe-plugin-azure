@@ -102,14 +102,33 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 	contactClient := security.NewContactsClient(subscriptionID, "")
 	contactClient.Authorizer = session.Authorizer
 
-	contactList, err := contactClient.List(ctx)
+	result, err := contactClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, contact := range contactList.Values() {
+	for _, contact := range result.Values() {
 		d.StreamListItem(ctx, contact)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return err, nil
+		}
+		for _, contact := range result.Values() {
+			d.StreamListItem(ctx, contact)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
+	}
+
 	return nil, nil
 }
 

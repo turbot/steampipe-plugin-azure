@@ -267,6 +267,10 @@ func listPostgreSqlServers(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	for _, server := range *result.Value {
 		d.StreamListItem(ctx, server)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 	return nil, err
 }

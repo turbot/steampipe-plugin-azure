@@ -243,6 +243,10 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 	for _, registry := range result.Values() {
 		d.StreamListItem(ctx, registry)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -253,6 +257,10 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 		for _, registry := range result.Values() {
 			d.StreamListItem(ctx, registry)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

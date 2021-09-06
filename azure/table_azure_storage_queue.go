@@ -120,7 +120,25 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	for _, queue := range result.Values() {
-		d.StreamLeafListItem(ctx, &queueInfo{queue, account.Name, queue.Name, account.ResourceGroup, account.Account.Location})
+		d.StreamListItem(ctx, &queueInfo{queue, account.Name, queue.Name, account.ResourceGroup, account.Account.Location})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, queue := range result.Values() {
+			d.StreamListItem(ctx, queue)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
 	}
 
 	return nil, err

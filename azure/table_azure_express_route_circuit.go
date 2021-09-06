@@ -191,6 +191,10 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 	for _, routeCircuit := range result.Values() {
 		d.StreamListItem(ctx, routeCircuit)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -200,6 +204,10 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 		}
 		for _, routeCircuit := range result.Values() {
 			d.StreamListItem(ctx, routeCircuit)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

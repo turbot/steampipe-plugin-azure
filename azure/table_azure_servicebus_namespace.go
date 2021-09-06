@@ -181,6 +181,10 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 
 	for _, namespace := range result.Values() {
 		d.StreamListItem(ctx, namespace)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -191,6 +195,10 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 
 		for _, namespace := range result.Values() {
 			d.StreamListItem(ctx, namespace)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

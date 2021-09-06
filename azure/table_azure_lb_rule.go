@@ -190,6 +190,10 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	for _, rule := range result.Values() {
 		d.StreamListItem(ctx, rule)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -199,6 +203,10 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		}
 		for _, rule := range result.Values() {
 			d.StreamListItem(ctx, rule)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

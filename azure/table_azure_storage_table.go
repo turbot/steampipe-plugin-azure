@@ -114,7 +114,25 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	for _, table := range result.Values() {
-		d.StreamLeafListItem(ctx, &tableInfo{table, account.Name, table.Name, account.ResourceGroup, account.Account.Location})
+		d.StreamListItem(ctx, &tableInfo{table, account.Name, table.Name, account.ResourceGroup, account.Account.Location})
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, table := range result.Values() {
+			d.StreamListItem(ctx, table)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
+		}
 	}
 
 	return nil, err

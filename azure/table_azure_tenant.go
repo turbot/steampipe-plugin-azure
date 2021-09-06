@@ -110,6 +110,6 @@ func getNameOrID(ctx context.Context, d *transform.TransformData) (interface{}, 
 	data := d.HydrateItem.(subscriptions.TenantIDDescription)
 	if data.DisplayName != nil {
 		return data.DisplayName, nil
-	} 
+	}
 	return data.TenantID, nil
 }

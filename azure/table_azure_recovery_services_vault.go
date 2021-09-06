@@ -155,6 +155,10 @@ func listRecoveryServicesVaults(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 	for _, vault := range result.Values() {
 		d.StreamListItem(ctx, vault)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -164,6 +168,10 @@ func listRecoveryServicesVaults(ctx context.Context, d *plugin.QueryData, _ *plu
 		}
 		for _, vault := range result.Values() {
 			d.StreamListItem(ctx, vault)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

@@ -104,6 +104,10 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	for _, resourceGroup := range result.Values() {
 		d.StreamListItem(ctx, resourceGroup)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -113,6 +117,10 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		}
 		for _, resourceGroup := range result.Values() {
 			d.StreamListItem(ctx, resourceGroup)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

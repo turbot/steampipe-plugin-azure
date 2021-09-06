@@ -234,6 +234,10 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	}
 	for _, iotHubDescription := range result.Values() {
 		d.StreamListItem(ctx, iotHubDescription)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -243,6 +247,10 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		}
 		for _, iotHubDescription := range result.Values() {
 			d.StreamListItem(ctx, iotHubDescription)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 	return nil, err

@@ -199,7 +199,11 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		return nil, err
 	}
 	for _, container := range result.Values() {
-		d.StreamLeafListItem(ctx, container)
+		d.StreamListItem(ctx, container)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -208,7 +212,11 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 			return nil, err
 		}
 		for _, container := range result.Values() {
-			d.StreamLeafListItem(ctx, container)
+			d.StreamListItem(ctx, container)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 	}
 

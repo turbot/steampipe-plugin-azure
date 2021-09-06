@@ -138,6 +138,10 @@ func listLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	for _, logProfile := range *result.Value {
 		d.StreamListItem(ctx, logProfile)
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if plugin.IsCancelled(ctx) {
+			return nil, nil
+		}
 	}
 
 	return nil, err
