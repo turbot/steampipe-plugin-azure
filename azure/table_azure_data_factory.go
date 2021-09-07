@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/datafactory/mgmt/2018-06-01/datafactory"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -98,6 +99,13 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Description: "List of parameters for factory.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
+			},
+			{
+				Name:        "private_connections",
+				Description: "List of private connections for factory.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getDataFactoryPrivateConnections,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -204,4 +212,49 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	return op, nil
+}
+
+func getDataFactoryPrivateConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getDataFactoryPrivateConnections")
+	factory := h.Item.(datafactory.Factory)
+	factoryName := factory.Name
+	resourceGroup := strings.Split(*factory.ID, "/")[4]
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Trace("getDataFactoryPrivateConnections", "connection", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	connClient := datafactory.NewPrivateEndPointConnectionsClient(subscriptionID)
+	connClient.Authorizer = session.Authorizer
+
+	op, err := connClient.ListByFactory(ctx, resourceGroup, *factoryName)
+	if err != nil {
+		return nil, err
+	}
+
+	var connections []PrivateConnection
+	for _, connection := range op.Values() {
+		plugin.Logger(ctx).Trace("Private Connections =>", connection)
+		connections = append(connections, PrivateConnection{
+			Properties: connection.Properties,
+			Id:         connection.ID,
+			Name:       connection.Name,
+			Type:       connection.Type,
+			Etag:       connection.Etag,
+		})
+	}
+
+	return connections, nil
+}
+
+type PrivateConnection struct {
+	Properties interface{}
+	Id         *string
+	Name       *string
+	Type       *string
+	Etag       *string
 }
