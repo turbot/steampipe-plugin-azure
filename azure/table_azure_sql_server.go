@@ -126,6 +126,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "private_endpoint_connactions",
+				Description: "The server private endpoint connections.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSQLServerPrivateEndpointConnections,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "tags_src",
 				Description: "Specifies the set of tags attached to the server.",
 				Type:        proto.ColumnType_JSON,
@@ -284,6 +291,32 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	return auditPolicies, nil
 }
 
+func getSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSQLServerPrivateEndpointConnections")
+	server := h.Item.(sql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := sqlv.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	var privateEndpointConnections []sqlv.PrivateEndpointConnection
+	for _, connection := range op.Values() {
+		privateEndpointConnections = append(privateEndpointConnections, connection)
+	}
+
+	return privateEndpointConnections, nil
+}
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
 	server := h.Item.(sql.Server)
