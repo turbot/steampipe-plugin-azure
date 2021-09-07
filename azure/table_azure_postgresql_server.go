@@ -206,6 +206,13 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Hydrate:     getPostgreSQLServerConfigurations,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "server_keys",
+				Description: "A list of server keys for a server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getPostgreSQLServerKeys,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -348,6 +355,32 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	return firewallRules, nil
+}
+
+func getPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getPostgreSQLServerKeys")
+	server := h.Item.(postgresql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := postgresql.NewServerKeysClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	var serverKeys []postgresql.ServerKey
+	for _, key := range op.Values() {
+		serverKeys = append(serverKeys, key)
+	}
+	return serverKeys, nil
 }
 
 func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
