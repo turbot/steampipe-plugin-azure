@@ -46,7 +46,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Gets the status of the cognitive services account at the time the operation was called. Possible values include: 'ProvisioningStateAccepted', 'ProvisioningStateCreating', 'ProvisioningStateDeleting', 'ProvisioningStateMoving', 'ProvisioningStateFailed', 'ProvisioningStateSucceeded', 'ProvisioningStateResolvingDNS'.",
+				Description: "Gets the status of the cognitive services account at the time the operation was called. Possible values include: 'Accepted', 'Creating', 'Deleting', 'Moving', 'Failed', 'Succeeded', 'ResolvingDNS'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Properties.ProvisioningState"),
 			},
@@ -102,7 +102,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "public_network_access",
-				Description: "Whether or not public endpoint access is allowed for this account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'. Possible values include: 'PublicNetworkAccessEnabled', 'PublicNetworkAccessDisabled'.",
+				Description: "Whether or not public endpoint access is allowed for this account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'. Possible values include: 'Enabled', 'Disabled'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.Properties.PublicNetworkAccess"),
 			},
