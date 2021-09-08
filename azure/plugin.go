@@ -83,6 +83,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_mariadb_server":                                        tableAzureMariaDBServer(ctx),
 			"azure_mssql_elasticpool":                                     tableAzureMSSQLElasticPool(ctx),
 			"azure_mssql_managed_instance":                                tableAzureMSSQLManagedInstance(ctx),
+			"azure_mssql_virtual_machine":                                 tableAzureMSSQLVirtualMachine(ctx),
 			"azure_mysql_server":                                          tableAzureMySQLServer(ctx),
 			"azure_network_interface":                                     tableAzureNetworkInterface(ctx),
 			"azure_network_security_group":                                tableAzureNetworkSecurityGroup(ctx),
