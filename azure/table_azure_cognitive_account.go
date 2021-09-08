@@ -146,7 +146,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the load balancer.",
+				Description: "A list of active diagnostic settings for the cognitive service.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listCognitiveAccountDiagnosticSettings,
 				Transform:   transform.FromValue(),
