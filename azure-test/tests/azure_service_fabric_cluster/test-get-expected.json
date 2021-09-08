@@ -1,0 +1,14 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "management_endpoint": "{{ output.management_endpoint.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.region.value }}",
+    "reliability_level": "{{ output.reliability_level.value }}",
+    "resource_group": "{{ resourceName }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.ServiceFabric/clusters",
+    "upgrade_mode": "{{ output.upgrade_mode.value }}",
+    "vm_image": "{{ output.vm_image.value }}"
+  }
+]
