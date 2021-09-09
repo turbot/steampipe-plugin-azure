@@ -1,0 +1,402 @@
+package azure
+
+import (
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
+	"github.com/Azure/azure-sdk-for-go/services/preview/eventgrid/mgmt/2021-06-01-preview/eventgrid"
+	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
+)
+
+//// TABLE DEFINITION
+
+func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
+	return &plugin.Table{
+		Name:        "azure_eventgrid_domain",
+		Description: "Azure Event Grid Domain",
+		Get: &plugin.GetConfig{
+			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:           getEventGridDomain,
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+		},
+		List: &plugin.ListConfig{
+			Hydrate: listEventGridDomains,
+		},
+		Columns: []*plugin.Column{
+			{
+				Name:        "name",
+				Description: "The name of the resource.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "id",
+				Description: "Fully qualified identifier of the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromGo(),
+			},
+			{
+				Name:        "type",
+				Description: "The resource type.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "provisioning_state",
+				Description: "Provisioning state of the Event Grid Domain Resource, Possible values include: 'DomainProvisioningStateCreating', 'DomainProvisioningStateUpdating', 'DomainProvisioningStateDeleting', 'DomainProvisioningStateSucceeded', 'DomainProvisioningStateCanceled', 'DomainProvisioningStateFailed'.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "auto_create_topic_with_first_subscription",
+				Description: "This Boolean is used to specify the creation mechanism for 'all' the Event Grid Domain Topics associated with this Event Grid Domain resource.",
+				Type:        proto.ColumnType_BOOL,
+			},
+			{
+				Name:        "auto_delete_topic_with_last_subscription",
+				Description: "This Boolean is used to specify the deletion mechanism for 'all' the Event Grid Domain Topics associated with this Event Grid Domain resource.",
+				Type:        proto.ColumnType_BOOL,
+			},
+			{
+				Name:        "created_at",
+				Description: "The timestamp of resource creation (UTC).",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("SystemData.CreatedAt").Transform(convertDateToTime),
+			},
+			{
+				Name:        "created_by",
+				Description: "The identity that created the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SystemData.CreatedBy"),
+			},
+			{
+				Name:        "created_by_type",
+				Description: "The type of identity that created the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SystemData.CreatedByType").Transform(convertDateToTime),
+			},
+			{
+				Name:        "disable_local_auth",
+				Description: "This boolean is used to enable or disable local auth. Default value is false. When the property is set to true, only AAD token will be used to authenticate if user is allowed to publish to the domain.",
+				Type:        proto.ColumnType_BOOL,
+			},
+			{
+				Name:        "endpoint",
+				Description: "Endpoint for the Event Grid Domain Resource which is used for publishing the events.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "identity_type",
+				Description: "The type of managed identity used. The type 'SystemAssigned, UserAssigned' includes both an implicitly created identity and a set of user-assigned identities. The type 'None' will remove any identity. Possible values include: 'IdentityTypeNone', 'IdentityTypeSystemAssigned', 'IdentityTypeUserAssigned', 'IdentityTypeSystemAssignedUserAssigned'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.Type").Transform(transform.ToString),
+			},
+			{
+				Name:        "input_schema",
+				Description: "This determines the format that Event Grid should expect for incoming events published to the Event Grid Domain Resource. Possible values include: 'InputSchemaEventGridSchema', 'InputSchemaCustomEventSchema', 'InputSchemaCloudEventSchemaV10'.",
+				Type:        proto.ColumnType_STRING,
+			},		
+			{
+				Name:        "last_modified_at",
+				Description: "The timestamp of resource last modification (UTC).",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("SystemData.LastModifiedAt").Transform(convertDateToTime),
+			},
+			{
+				Name:        "last_modified_by",
+				Description: "The identity that last modified the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SystemData.LastModifiedBy"),
+			},
+			{
+				Name:        "last_modified_by_type",
+				Description: "The type of identity that last modified the resource. Possible values include: 'CreatedByTypeUser', 'CreatedByTypeApplication', 'CreatedByTypeManagedIdentity', 'CreatedByTypeKey'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SystemData.LastModifiedByType"),
+			},
+			{
+				Name:        "location",
+				Description: "Location of the resource.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "principal_id",
+				Description: "The principal ID of resource identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.PrincipalID").Transform(transform.ToString),
+			},
+			{
+				Name:        "public_network_access",
+				Description: "This determines if traffic is allowed over public network. By default it is enabled.",
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "sku_name",
+				Description: "Name of this SKU. Possible values include: 'Basic', 'Standard'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
+			},
+			{
+				Name:        "user_assigned_identities",
+				Description: "The list of user identities associated with the resource. The user identity dictionary key references will be ARM resource ids.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.UserAssignedIdentities").Transform(transform.ToString),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the eventhub namespace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listEventGridDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "inbound_ip_rules",
+				Description: "This can be used to restrict traffic from specific IPs instead of all IPs. Note: These are considered only if PublicNetworkAccess is enabled.",
+				Type:        proto.ColumnType_JSON,
+				Transform: transform.FromField("InboundIPRules"),
+			},
+			{
+				Name:        "input_schema_mapping",
+				Description: "Information about the InputSchemaMapping which specified the info about mapping event payload.",
+				Type:        proto.ColumnType_JSON,
+				Transform: transform.FromField("InputSchemaMapping"),
+			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "List of private endpoint connections.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PrivateEndpointConnections"),
+			},
+
+			// Steampipe standard columns
+			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name"),
+			},
+			{
+				Name:        "tags",
+				Description: ColumnDescriptionTags,
+				Type:        proto.ColumnType_JSON,
+			},
+			{
+				Name:        "akas",
+				Description: ColumnDescriptionAkas,
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ID").Transform(idToAkas),
+			},
+
+			// Azure standard column
+			{
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Location").Transform(formatRegion).Transform(toLower),
+			},
+			{
+				Name:        "resource_group",
+				Description: ColumnDescriptionResourceGroup,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
+			},
+			{
+				Name:        "subscription_id",
+				Description: ColumnDescriptionSubscription,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
+			},
+		},
+	}
+}
+
+type DomainInfo struct {
+	Identity                             interface{}
+	SystemData                           interface{}
+	PrivateEndpointConnections           interface{}
+	ProvisioningState                    *string
+	Endpoint                             *string
+	InputSchema                          interface{}
+	InputSchemaMapping                   interface{}
+	MetricResourceID                     *string
+	PublicNetworkAccess                  interface{}
+	InboundIPRules                       interface{}
+	DisableLocalAuth                     *bool
+	AutoCreateTopicWithFirstSubscription *bool
+	AutoDeleteTopicWithLastSubscription  *bool
+	Sku                                  interface{}
+	Location                             *string
+	Tags                                 map[string]*string
+	ID                                   *string
+	Name                                 *string
+	Type                                 *string
+}
+
+//// LIST FUNCTION
+
+func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventGridDomains")
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+
+	subscriptionID := session.SubscriptionID
+	client := eventgrid.NewDomainsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+	top := int32(100)
+
+	result, err := client.ListBySubscription(ctx, "", &top)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, domain := range result.Values() {
+		d.StreamListItem(ctx, DomainInfo{
+			Identity:                             domain.Identity,
+			SystemData:                           domain.SystemData,
+			PrivateEndpointConnections:           domain.PrivateEndpointConnections,
+			ProvisioningState:                    (*string)(&domain.ProvisioningState),
+			Endpoint:                             domain.Endpoint,
+			InputSchema:                          domain.InputSchema,
+			InputSchemaMapping:                   domain.InputSchemaMapping,
+			MetricResourceID:                     domain.MetricResourceID,
+			PublicNetworkAccess:                  domain.PublicNetworkAccess,
+			InboundIPRules:                       domain.InboundIPRules,
+			DisableLocalAuth:                     domain.DisableLocalAuth,
+			AutoCreateTopicWithFirstSubscription: domain.AutoCreateTopicWithFirstSubscription,
+			AutoDeleteTopicWithLastSubscription:  domain.AutoDeleteTopicWithLastSubscription,
+			Sku:                                  domain.Sku,
+			Location:                             domain.Location,
+			Tags:                                 domain.Tags,
+			ID:                                   domain.ID,
+			Name:                                 domain.Name,
+			Type:                                 domain.Type,
+		})
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, domain := range result.Values() {
+			d.StreamListItem(ctx, DomainInfo{
+				Identity:                             domain.Identity,
+				SystemData:                           domain.SystemData,
+				PrivateEndpointConnections:           domain.PrivateEndpointConnections,
+				ProvisioningState:                    (*string)(&domain.ProvisioningState),
+				Endpoint:                             domain.Endpoint,
+				InputSchema:                          domain.InputSchema,
+				InputSchemaMapping:                   domain.InputSchemaMapping,
+				MetricResourceID:                     domain.MetricResourceID,
+				PublicNetworkAccess:                  domain.PublicNetworkAccess,
+				InboundIPRules:                       domain.InboundIPRules,
+				DisableLocalAuth:                     domain.DisableLocalAuth,
+				AutoCreateTopicWithFirstSubscription: domain.AutoCreateTopicWithFirstSubscription,
+				AutoDeleteTopicWithLastSubscription:  domain.AutoDeleteTopicWithLastSubscription,
+				Sku:                                  domain.Sku,
+				Location:                             domain.Location,
+				Tags:                                 domain.Tags,
+				ID:                                   domain.ID,
+				Name:                                 domain.Name,
+				Type:                                 domain.Type,
+			})
+		}
+	}
+
+	return nil, nil
+}
+
+//// HYDRATE FUNCTIONS
+
+func getEventGridDomain(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getEventGridDomain")
+
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Return nil, if no input provided
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := eventgrid.NewDomainsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroup, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return DomainInfo{
+		Identity:                             op.Identity,
+		SystemData:                           op.SystemData,
+		PrivateEndpointConnections:           op.PrivateEndpointConnections,
+		ProvisioningState:                    (*string)(&op.ProvisioningState),
+		Endpoint:                             op.Endpoint,
+		InputSchema:                          op.InputSchema,
+		InputSchemaMapping:                   op.InputSchemaMapping,
+		MetricResourceID:                     op.MetricResourceID,
+		PublicNetworkAccess:                  op.PublicNetworkAccess,
+		InboundIPRules:                       op.InboundIPRules,
+		DisableLocalAuth:                     op.DisableLocalAuth,
+		AutoCreateTopicWithFirstSubscription: op.AutoCreateTopicWithFirstSubscription,
+		AutoDeleteTopicWithLastSubscription:  op.AutoDeleteTopicWithLastSubscription,
+		Sku:                                  op.Sku,
+		Location:                             op.Location,
+		Tags:                                 op.Tags,
+		ID:                                   op.ID,
+		Name:                                 op.Name,
+		Type:                                 op.Type,
+	}, nil
+}
+
+func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventGridDiagnosticSettings")
+	id := *h.Item.(DomainInfo).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
+}
