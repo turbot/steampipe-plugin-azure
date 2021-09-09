@@ -23,7 +23,7 @@ select
   name,
   id,
   type,
-
+  private_endpoint_connections
 from
   azure_eventgrid_domain
 where
