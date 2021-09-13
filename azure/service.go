@@ -281,3 +281,22 @@ func getSubscriptionFromCLI(resource string) (*subscription, error) {
 func WillExpireIn(t time.Time, d time.Duration) bool {
 	return !t.After(time.Now().Add(d))
 }
+
+func getSubscriptionID(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSubscriptionID")
+	cacheKey := "getSubscriptionID"
+
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+
+	// cache tenant id for the session
+	d.ConnectionManager.Cache.Set(cacheKey, session.SubscriptionID)
+
+	return session.SubscriptionID, nil
+}

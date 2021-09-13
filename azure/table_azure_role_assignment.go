@@ -81,7 +81,8 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
+				Hydrate:     plugin.HydrateFunc(getSubscriptionID).WithCache(),
+				Transform:   transform.FromValue(),
 			},
 		},
 	}
