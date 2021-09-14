@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -23,6 +24,12 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleAssignments,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "principal_id",
+					Require: plugin.Optional,
+				},
+			},
 		},
 		Columns: []*plugin.Column{
 			{
@@ -99,7 +106,13 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
-	result, err := authorizationClient.List(ctx, "")
+
+	var filter string
+	if d.KeyColumnQuals["principal_id"] != nil {
+		filter = fmt.Sprintf("principalId eq '%s'", d.KeyColumnQuals["principal_id"].GetStringValue())
+	}
+
+	result, err := authorizationClient.List(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
