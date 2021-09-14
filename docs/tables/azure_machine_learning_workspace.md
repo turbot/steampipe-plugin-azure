@@ -11,8 +11,7 @@ select
   name,
   id,
   type,
-  provisioning_state,
-  etag
+  provisioning_state
 from
   azure_machine_learning_workspace;
 ```
@@ -31,7 +30,7 @@ where
   identity ->> 'type' = 'SystemAssigned';
 ```
 
-### List key vault used by workspaces with soft deleteion disabled
+### List key vault used by workspaces with soft deletion disabled
 
 ```sql
 select
