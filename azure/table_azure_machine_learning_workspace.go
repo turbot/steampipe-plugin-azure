@@ -16,7 +16,7 @@ import (
 func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_machine_learning_workspace",
-		Description: "Azure Machine Learning Worspace",
+		Description: "Azure Machine Learning Workspace",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getMachineLearningWorkspace,
@@ -145,7 +145,7 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -193,6 +193,7 @@ type WorkspaceInfo struct {
 //// LIST FUNCTION
 
 func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	logger := plugin.Logger(ctx)
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -204,6 +205,7 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 
 	result, err := worspaceClient.ListBySubscription(ctx, "")
 	if err != nil {
+		logger.Error("listMachineLearningWorkspaces", "list", err)
 		return nil, err
 	}
 	for _, workspace := range result.Values() {
@@ -266,7 +268,7 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 //// HYDRATE FUNCTIONS
 
 func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDataFactory")
+	plugin.Logger(ctx).Trace("getMachineLearningWorkspace")
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -275,8 +277,8 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	worspaceClient := machinelearningservices.NewWorkspacesClient(subscriptionID)
-	worspaceClient.Authorizer = session.Authorizer
+	workspaceClient := machinelearningservices.NewWorkspacesClient(subscriptionID)
+	workspaceClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
@@ -286,8 +288,9 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 		return nil, nil
 	}
 
-	workspace, err := worspaceClient.Get(ctx, resourceGroup, name)
+	workspace, err := workspaceClient.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getMachineLearningWorkspace", "get", err)
 		return nil, err
 	}
 
