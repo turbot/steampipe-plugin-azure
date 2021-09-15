@@ -377,9 +377,7 @@ func getPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	var serverKeys []postgresql.ServerKey
-	for _, key := range op.Values() {
-		serverKeys = append(serverKeys, key)
-	}
+	serverKeys = append(serverKeys, op.Values()...)
 	return serverKeys, nil
 }
 
