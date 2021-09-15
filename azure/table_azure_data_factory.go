@@ -238,7 +238,6 @@ func getDataFactoryPrivateConnections(ctx context.Context, d *plugin.QueryData, 
 
 	var connections []PrivateConnection
 	for _, connection := range op.Values() {
-		plugin.Logger(ctx).Trace("Private Connections =>", connection)
 		connections = append(connections, PrivateConnection{
 			Properties: connection.Properties,
 			Id:         connection.ID,
