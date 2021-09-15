@@ -137,7 +137,6 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Description: "A list of 0 to 1024 identities that have access to the key vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
-				Transform:   transform.FromField("Properties.AccessPolicies"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -158,7 +157,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Description: "List of private endpoint connections associated with the key vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
-				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
+				Transform:   transform.From(getPrivateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -201,6 +200,17 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 			},
 		},
 	}
+}
+
+type PrivateEndpointConnectionInfo struct {
+	PrivateEndpointId string
+	PrivateLinkServiceConnectionStateStatus string 
+	PrivateLinkServiceConnectionStateDescription string  
+	PrivateLinkServiceConnectionStateActionRequired string 
+	ProvisioningState string
+	// PrivateEndpoint *keyvault.PrivateEndpoint
+	// PrivateLinkServiceConnectionState *keyvault.PrivateLinkServiceConnectionState
+	// ProvisioningState *keyvault.PrivateEndpointConnectionProvisioningState
 }
 
 //// LIST FUNCTION
@@ -318,6 +328,35 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+func getPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	if d.HydrateItem == nil {
+		return nil, nil
+	}
+	privateConnections := d.HydrateItem.(keyvault.Vault).Properties
+	var privateEndpointDetails []*PrivateEndpointConnectionInfo
+	var privateEndpoint *PrivateEndpointConnectionInfo
+	for _, connection := range *privateConnections.PrivateEndpointConnections {
+		plugin.Logger(ctx).Trace("Endpoint =>", connection)
+		if connection.PrivateEndpointConnectionProperties.PrivateEndpoint != nil {
+			privateEndpoint.PrivateEndpointId = *connection.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+		}
+		if connection.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+			privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *connection.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionRequired 
+			privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description
+			privateEndpoint.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status)
+		}
+		// if connection.PrivateLinkServiceConnectionState.Description != nil {
+		// }
+		// if connection.PrivateLinkServiceConnectionState.Status != "" {
+		// }
+		if connection.PrivateEndpointConnectionProperties.ProvisioningState != "" {
+			privateEndpoint.ProvisioningState = string(connection.PrivateEndpointConnectionProperties.ProvisioningState)
+		}	
+		privateEndpointDetails = append(privateEndpointDetails, privateEndpoint)
+	}
+	return privateEndpointDetails, nil
 }
 
 func getKeyVaultID(item interface{}) string {
