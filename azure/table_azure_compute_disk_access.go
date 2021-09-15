@@ -104,7 +104,7 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 type diskAccesssInfo struct {
 	compute.DiskAccess
 	// PrivateEndpointConnections - READ-ONLY; A readonly collection of private endpoint connections created on the disk.
-	PrivateEndpointConnections []PrivateEndpointConnection `json:"privateEndpointConnections,omitempty"`
+	PrivateEndpointConnections []PrivateEndpointConnection
 }
 
 type PrivateEndpointConnection struct {
