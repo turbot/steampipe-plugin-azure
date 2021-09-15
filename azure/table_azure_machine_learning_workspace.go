@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/preview/machinelearningservices/mgmt/2020-02-18-preview/machinelearningservices"
-	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -35,6 +35,7 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Name:        "friendly_name",
 				Description: "The friendly name for this workspace. This name in mutable.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.FriendlyName"),
 			},
 			{
 				Name:        "id",
@@ -46,49 +47,55 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Name:        "provisioning_state",
 				Description: "The current deployment state of workspace resource, The provisioningState is to indicate states for resource provisioning. Possible values include: 'Unknown', 'Updating', 'Creating', 'Deleting', 'Succeeded', 'Failed', 'Canceled'.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.ProvisioningState"),
 			},
 			{
 				Name:        "creation_time",
 				Description: "The creation time for this workspace resource.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("CreationTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("WorkspaceProperties.CreationTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "workspace_id",
 				Description: "The immutable id associated with this workspace.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceID"),
+				Transform:   transform.FromField("WorkspaceProperties.WorkspaceID"),
 			},
 			{
 				Name:        "application_insights",
 				Description: "ARM id of the application insights associated with this workspace. This cannot be changed once the workspace has been created.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.ApplicationInsights"),
 			},
 			{
 				Name:        "container_registry",
 				Description: "ARM id of the container registry associated with this workspace. This cannot be changed once the workspace has been created.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.ContainerRegistry"),
 			},
 			{
 				Name:        "description",
 				Description: "The description of this workspace.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.Description"),
 			},
 			{
 				Name:        "discovery_url",
 				Description: "ARM id of the container registry associated with this workspace. This cannot be changed once the workspace has been created.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DiscoveryURL"),
+				Transform:   transform.FromField("WorkspaceProperties.DiscoveryURL"),
 			},
 			{
 				Name:        "hbi_workspace",
 				Description: "The flag to signal HBI data in the workspace and reduce diagnostic data collected by the service.",
 				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("WorkspaceProperties.HbiWorkspace"),
 			},
 			{
 				Name:        "key_vault",
 				Description: "ARM id of the key vault associated with this workspace, This cannot be changed once the workspace has been created.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.KeyVault"),
 			},
 			{
 				Name:        "location",
@@ -99,11 +106,25 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Name:        "service_provisioned_resource_group",
 				Description: "The name of the managed resource group created by workspace RP in customer subscription if the workspace is CMK workspace.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.ServiceProvisionedResourceGroup"),
+			},
+			{
+				Name:        "sku_name",
+				Description: "Name of the sku.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Name"),
+			},
+			{
+				Name:        "sku_tier",
+				Description: "Tier of the sku like Basic or Enterprise.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
 				Name:        "storage_account",
 				Description: "ARM id of the storage account associated with this workspace. This cannot be changed once the workspace has been created.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("WorkspaceProperties.StorageAccount"),
 			},
 			{
 				Name:        "studio_endpoint",
@@ -116,9 +137,17 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "diagnostic_settings",
+				Description: "A list of active diagnostic settings for the n workspace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMachineLearningDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "encryption",
 				Description: "The encryption settings of Azure ML workspace.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("WorkspaceProperties.Encryption"),
 			},
 			{
 				Name:        "identity",
@@ -168,28 +197,6 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 	}
 }
 
-type WorkspaceInfo struct {
-	ID                              *string
-	Name                            *string
-	WorkspaceID                     *string
-	Description                     *string
-	FriendlyName                    *string
-	CreationTime                    *date.Time
-	Encryption                      interface{}
-	HbiWorkspace                    *bool
-	KeyVault                        *string
-	ApplicationInsights             *string
-	ContainerRegistry               *string
-	StorageAccount                  *string
-	ServiceProvisionedResourceGroup *string
-	DiscoveryURL                    *string
-	ProvisioningState               string
-	Identity                        interface{}
-	Location                        *string
-	Type                            *string
-	Tags                            map[string]*string
-}
-
 //// LIST FUNCTION
 
 func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -209,27 +216,7 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 		return nil, err
 	}
 	for _, workspace := range result.Values() {
-		d.StreamListItem(ctx, WorkspaceInfo{
-			ID:                              workspace.ID,
-			Name:                            workspace.Name,
-			WorkspaceID:                     workspace.WorkspaceID,
-			FriendlyName:                    workspace.FriendlyName,
-			Description:                     workspace.Description,
-			CreationTime:                    workspace.CreationTime,
-			Encryption:                      workspace.Encryption,
-			HbiWorkspace:                    workspace.HbiWorkspace,
-			ServiceProvisionedResourceGroup: workspace.ServiceProvisionedResourceGroup,
-			KeyVault:                        workspace.KeyVault,
-			ApplicationInsights:             workspace.ApplicationInsights,
-			ContainerRegistry:               workspace.ContainerRegistry,
-			StorageAccount:                  workspace.StorageAccount,
-			DiscoveryURL:                    workspace.DiscoveryURL,
-			ProvisioningState:               string(workspace.ProvisioningState),
-			Identity:                        workspace.Identity,
-			Location:                        workspace.Location,
-			Type:                            workspace.Type,
-			Tags:                            workspace.Tags,
-		})
+		d.StreamListItem(ctx, workspace)
 	}
 
 	for result.NotDone() {
@@ -238,27 +225,7 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 			return nil, err
 		}
 		for _, workspace := range result.Values() {
-			d.StreamListItem(ctx, WorkspaceInfo{
-				ID:                              workspace.ID,
-				Name:                            workspace.Name,
-				WorkspaceID:                     workspace.WorkspaceID,
-				FriendlyName:                    workspace.FriendlyName,
-				Description:                     workspace.Description,
-				CreationTime:                    workspace.CreationTime,
-				Encryption:                      workspace.Encryption,
-				HbiWorkspace:                    workspace.HbiWorkspace,
-				ServiceProvisionedResourceGroup: workspace.ServiceProvisionedResourceGroup,
-				KeyVault:                        workspace.KeyVault,
-				ApplicationInsights:             workspace.ApplicationInsights,
-				ContainerRegistry:               workspace.ContainerRegistry,
-				StorageAccount:                  workspace.StorageAccount,
-				DiscoveryURL:                    workspace.DiscoveryURL,
-				ProvisioningState:               string(workspace.ProvisioningState),
-				Identity:                        workspace.Identity,
-				Location:                        workspace.Location,
-				Type:                            workspace.Type,
-				Tags:                            workspace.Tags,
-			})
+			d.StreamListItem(ctx, workspace)
 		}
 
 	}
@@ -294,25 +261,47 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 		return nil, err
 	}
 
-	return WorkspaceInfo{
-		ID:                              workspace.ID,
-		Name:                            workspace.Name,
-		WorkspaceID:                     workspace.WorkspaceID,
-		FriendlyName:                    workspace.FriendlyName,
-		Description:                     workspace.Description,
-		CreationTime:                    workspace.CreationTime,
-		Encryption:                      workspace.Encryption,
-		HbiWorkspace:                    workspace.HbiWorkspace,
-		ServiceProvisionedResourceGroup: workspace.ServiceProvisionedResourceGroup,
-		KeyVault:                        workspace.KeyVault,
-		ApplicationInsights:             workspace.ApplicationInsights,
-		ContainerRegistry:               workspace.ContainerRegistry,
-		StorageAccount:                  workspace.StorageAccount,
-		DiscoveryURL:                    workspace.DiscoveryURL,
-		ProvisioningState:               string(workspace.ProvisioningState),
-		Identity:                        workspace.Identity,
-		Location:                        workspace.Location,
-		Type:                            workspace.Type,
-		Tags:                            workspace.Tags,
-	}, nil
+	return workspace, nil
+}
+
+func listMachineLearningDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMachineLearningDiagnosticSettings")
+	id := *h.Item.(machinelearningservices.Workspace).ID
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, id)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMachineLearningDiagnosticSettings", "Error", err)
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives
+	// the contents of DiagnosticSettings
+	var diagnosticSettings []map[string]interface{}
+	for _, i := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DiagnosticSettings != nil {
+			objectMap["properties"] = i.DiagnosticSettings
+		}
+		diagnosticSettings = append(diagnosticSettings, objectMap)
+	}
+	return diagnosticSettings, nil
 }
