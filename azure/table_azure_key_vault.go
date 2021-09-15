@@ -208,9 +208,6 @@ type PrivateEndpointConnectionInfo struct {
 	PrivateLinkServiceConnectionStateDescription    string
 	PrivateLinkServiceConnectionStateActionRequired string
 	ProvisioningState                               string
-	// PrivateEndpoint *keyvault.PrivateEndpoint
-	// PrivateLinkServiceConnectionState *keyvault.PrivateLinkServiceConnectionState
-	// ProvisioningState *keyvault.PrivateEndpointConnectionProvisioningState
 }
 
 //// LIST FUNCTION
@@ -332,35 +329,27 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 
 func getPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	vault := d.HydrateItem.(keyvault.Vault)
-	plugin.Logger(ctx).Error("Endpoint =>", "vault:", *vault.ID)
-
+	plugin.Logger(ctx).Trace("getPrivateEndpointConnections")
 	var privateEndpointDetails []PrivateEndpointConnectionInfo
 	var privateEndpoint PrivateEndpointConnectionInfo
 	for _, connection := range *vault.Properties.PrivateEndpointConnections {
-		plugin.Logger(ctx).Error("Endpoint =>", "1-connection", *connection.PrivateEndpoint.ID)
+		// Below checks are required for handling invalid memory address or nil pointer dereference error
 		if connection.PrivateEndpointConnectionProperties != nil {
-			plugin.Logger(ctx).Error("Endpoint =>", "2.connection", *connection.PrivateEndpoint.ID)
 			if connection.PrivateEndpoint != nil {
-				plugin.Logger(ctx).Error("Endpoint =>", "3.connection", *connection.PrivateEndpoint.ID)
 				privateEndpoint.PrivateEndpointId = *connection.PrivateEndpoint.ID
 			}
-			plugin.Logger(ctx).Error("Endpoint =>", "PrivateEndpoint")
 			if connection.PrivateLinkServiceConnectionState != nil {
 				if connection.PrivateLinkServiceConnectionState.ActionRequired != nil {
-					plugin.Logger(ctx).Error("Endpoint =>", "4.connection", *connection.PrivateLinkServiceConnectionState.ActionRequired)
 					privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *connection.PrivateLinkServiceConnectionState.ActionRequired
 				}
 				if connection.PrivateLinkServiceConnectionState.Description != nil {
-					plugin.Logger(ctx).Error("Endpoint =>", "5.connection", *connection.PrivateLinkServiceConnectionState.Description)
 					privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description
 				}
 				if connection.PrivateLinkServiceConnectionState.Status != "" {
-					plugin.Logger(ctx).Error("Endpoint =>", "6.connection", string(connection.PrivateLinkServiceConnectionState.Status))
 					privateEndpoint.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateLinkServiceConnectionState.Status)
 				}
 			}
 			if connection.ProvisioningState != "" {
-				plugin.Logger(ctx).Error("Endpoint =>", "7.connection", string(connection.ProvisioningState))
 				privateEndpoint.ProvisioningState = string(connection.ProvisioningState)
 			}
 		}
