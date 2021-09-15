@@ -101,7 +101,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
 			},
 			{
-				Name:        "private_connections",
+				Name:        "private_endpoint_connections",
 				Description: "List of private connections for factory.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getDataFactoryPrivateConnections,
@@ -223,7 +223,7 @@ func getDataFactoryPrivateConnections(ctx context.Context, d *plugin.QueryData, 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Trace("getDataFactoryPrivateConnections", "connection", err)
+		plugin.Logger(ctx).Error("getDataFactoryPrivateConnections", "connection", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
