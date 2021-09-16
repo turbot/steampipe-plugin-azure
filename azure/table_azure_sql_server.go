@@ -615,6 +615,8 @@ func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
 	return objectMap
 }
 
+// If we return the API response directly, the output will not give
+// all the contents of PrivateEndpointConnection
 func privateEndpointConnectionMap(conn sqlv.PrivateEndpointConnection) PrivateConnectionInfo {
 	var connection PrivateConnectionInfo
 	if conn.ID != nil {
