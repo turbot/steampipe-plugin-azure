@@ -188,6 +188,16 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 	}
 }
 
+type PrivateConnectionInfo struct {
+	PrivateEndpointConnectionId                      string
+	PrivateEndpointConnectionName                    string
+	PrivateEndpointConnectionType                    string
+	PrivateLinkServiceConnectionStateStatus          string
+	PrivateLinkServiceConnectionStateDescription     string
+	PrivateLinkServiceConnectionStateActionsRequired string
+	ProvisioningState                                string
+}
+
 //// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -307,16 +317,43 @@ func getSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Query
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getSQLServerPrivateEndpointConnections", "ListByServer", err)
 		return nil, err
 	}
 
-	var privateEndpointConnections []sqlv.PrivateEndpointConnection
-	for _, connection := range op.Values() {
+	var privateEndpointConnections []PrivateConnectionInfo
+	var connection PrivateConnectionInfo
+
+	for _, conn := range op.Values() {
+		if conn.ID != nil {
+			connection.PrivateEndpointConnectionId = *conn.ID
+		}
+		if conn.Name != nil {
+			connection.PrivateEndpointConnectionName = *conn.Name
+		}
+		if conn.Type != nil {
+			connection.PrivateEndpointConnectionType = *conn.Type
+		}
+		if conn.PrivateLinkServiceConnectionState != nil {
+			if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = *conn.PrivateLinkServiceConnectionState.ActionsRequired
+			}
+			if conn.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = *conn.PrivateLinkServiceConnectionState.Status
+			}
+			if conn.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
+			}
+		}
+		if conn.ProvisioningState != nil {
+			connection.ProvisioningState = *conn.ProvisioningState
+		}
 		privateEndpointConnections = append(privateEndpointConnections, connection)
 	}
 
 	return privateEndpointConnections, nil
 }
+
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
 	server := h.Item.(sql.Server)
