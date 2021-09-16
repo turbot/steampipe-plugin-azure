@@ -127,7 +127,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "The server private endpoint connections.",
+				Description: "The private endpoint connections of the sql server.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listSQLServerPrivateEndpointConnections,
 				Transform:   transform.FromValue(),
@@ -333,7 +333,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "pagging", err)
+			plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer_pagination", err)
 			return nil, err
 		}
 		for _, conn := range op.Values() {
