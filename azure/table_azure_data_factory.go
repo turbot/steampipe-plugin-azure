@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/datafactory/mgmt/2018-06-01/datafactory"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -98,6 +99,13 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Description: "List of parameters for factory.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("FactoryProperties.GlobalParameters"),
+			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "List of private endpoint connections for data factory.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listDataFactoryPrivateEndpointConnections,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -204,4 +212,103 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	return op, nil
+}
+
+func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listDataFactoryPrivateEndpointConnections")
+	factory := h.Item.(datafactory.Factory)
+	factoryName := factory.Name
+	resourceGroup := strings.Split(*factory.ID, "/")[4]
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "connection", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	connClient := datafactory.NewPrivateEndPointConnectionsClient(subscriptionID)
+	connClient.Authorizer = session.Authorizer
+
+	op, err := connClient.ListByFactory(ctx, resourceGroup, *factoryName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory", err)
+		return nil, err
+	}
+
+	var connections []PrivateConnection
+	var connection PrivateConnection
+
+	for _, conn := range op.Values() {
+		connection = factoryPrivateEndpointConnectionMap(conn)
+		connections = append(connections, connection)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory_pagination", err)
+			return nil, err
+		}
+		for _, conn := range op.Values() {
+			connection = factoryPrivateEndpointConnectionMap(conn)
+			connections = append(connections, connection)
+		}
+	}
+
+	return connections, nil
+}
+
+// If we return the API response directly, the output will not give
+// all the properties of PrivateEndpointConnection
+func factoryPrivateEndpointConnectionMap(conn datafactory.PrivateEndpointConnectionResource) PrivateConnection {
+	var connection PrivateConnection
+	if conn.ID != nil {
+		connection.PrivateEndpointConnectionId = conn.ID
+	}
+	if conn.Name != nil {
+		connection.PrivateEndpointConnectionName = conn.Name
+	}
+	if conn.Type != nil {
+		connection.PrivateEndpointConnectionType = conn.Type
+	}
+	if conn.Etag != nil {
+		connection.Etag = conn.Etag
+	}
+	if conn.Properties != nil {
+		if conn.Properties.PrivateEndpoint != nil {
+			if conn.Properties.PrivateEndpoint.ID != nil {
+				connection.PrivateEndpointId = conn.Properties.PrivateEndpoint.ID
+			}
+		}
+		if conn.Properties.PrivateLinkServiceConnectionState != nil {
+			if conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired
+			}
+			if conn.Properties.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = conn.Properties.PrivateLinkServiceConnectionState.Status
+			}
+			if conn.Properties.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = conn.Properties.PrivateLinkServiceConnectionState.Description
+			}
+		}
+		if conn.Properties.ProvisioningState != nil {
+			connection.ProvisioningState = conn.Properties.ProvisioningState
+		}
+	}
+
+	return connection
+}
+
+type PrivateConnection struct {
+	ProvisioningState                                *string
+	PrivateEndpointConnectionId                      *string
+	PrivateEndpointId                                *string
+	PrivateLinkServiceConnectionStateStatus          *string
+	PrivateLinkServiceConnectionStateDescription     *string
+	PrivateLinkServiceConnectionStateActionsRequired *string
+	PrivateEndpointConnectionName                    *string
+	PrivateEndpointConnectionType                    *string
+	Etag                                             *string
 }
