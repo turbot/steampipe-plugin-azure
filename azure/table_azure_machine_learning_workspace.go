@@ -127,11 +127,6 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("WorkspaceProperties.StorageAccount"),
 			},
 			{
-				Name:        "studio_endpoint",
-				Description: "The regional endpoint for the machine learning studio service which hosts this workspace.",
-				Type:        proto.ColumnType_STRING,
-			},
-			{
 				Name:        "type",
 				Description: "The resource type.",
 				Type:        proto.ColumnType_STRING,
