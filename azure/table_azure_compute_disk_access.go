@@ -56,7 +56,7 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "The private endpoint connections details.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("PrivateEndpointConnections"),
+				Transform:   transform.From(privateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -101,12 +101,6 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 	}
 }
 
-type diskAccesssInfo struct {
-	compute.DiskAccess
-	// PrivateEndpointConnections - READ-ONLY; A readonly collection of private endpoint connections created on the disk.
-	PrivateEndpointConnections []PrivateEndpointConnection
-}
-
 type PrivateEndpointConnection struct {
 	// ID - READ-ONLY; private endpoint connection Id
 	ID string
@@ -141,46 +135,8 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 		return nil, err
 	}
 
-	// If we return the API response directly, the output will not provide
-	// all the properties of diskAccesss
-	for _, diskAccesss := range result.Values() {
-		var PrivateEndpointConnections []PrivateEndpointConnection
-		if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
-			for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
-				var PrivateConnection PrivateEndpointConnection
-				if connection.ID != nil {
-					PrivateConnection.ID = *connection.ID
-				}
-				if connection.Name != nil {
-					PrivateConnection.Name = *connection.Name
-				}
-				if connection.Type != nil {
-					PrivateConnection.Type = *connection.Type
-				}
-				if connection.PrivateEndpointConnectionProperties != nil {
-					if connection.PrivateEndpoint != nil {
-						PrivateConnection.PrivateEndpointID = *connection.PrivateEndpoint.ID
-					}
-					if connection.PrivateLinkServiceConnectionState != nil {
-						if connection.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-							PrivateConnection.PrivateLinkServiceConnectionStateActionsRequired = *connection.PrivateLinkServiceConnectionState.ActionsRequired
-						}
-						if connection.PrivateLinkServiceConnectionState.Description != nil {
-							PrivateConnection.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description
-						}
-						if connection.PrivateLinkServiceConnectionState.Status != "" {
-							PrivateConnection.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateLinkServiceConnectionState.Status)
-						}
-					}
-					if connection.ProvisioningState != "" {
-						PrivateConnection.ProvisioningState = string(connection.ProvisioningState)
-					}
-				}
-
-				PrivateEndpointConnections = append(PrivateEndpointConnections, PrivateConnection)
-			}
-		}
-		d.StreamListItem(ctx, diskAccesssInfo{diskAccesss, PrivateEndpointConnections})
+	for _, diskAccess := range result.Values() {
+		d.StreamListItem(ctx, diskAccess)
 	}
 
 	for result.NotDone() {
@@ -189,44 +145,8 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 			plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "list_err", err)
 			return nil, err
 		}
-		for _, diskAccesss := range result.Values() {
-			var PrivateEndpointConnections []PrivateEndpointConnection
-			if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
-				for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
-					var PrivateConnection PrivateEndpointConnection
-					if connection.ID != nil {
-						PrivateConnection.ID = *connection.ID
-					}
-					if connection.Name != nil {
-						PrivateConnection.Name = *connection.Name
-					}
-					if connection.Type != nil {
-						PrivateConnection.Type = *connection.Type
-					}
-					if connection.PrivateEndpointConnectionProperties != nil {
-						if connection.PrivateEndpoint != nil {
-							PrivateConnection.PrivateEndpointID = *connection.PrivateEndpoint.ID
-						}
-						if connection.PrivateLinkServiceConnectionState != nil {
-							if connection.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-								PrivateConnection.PrivateLinkServiceConnectionStateActionsRequired = *connection.PrivateLinkServiceConnectionState.ActionsRequired
-							}
-							if connection.PrivateLinkServiceConnectionState.Description != nil {
-								PrivateConnection.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description
-							}
-							if connection.PrivateLinkServiceConnectionState.Status != "" {
-								PrivateConnection.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateLinkServiceConnectionState.Status)
-							}
-						}
-						if connection.ProvisioningState != "" {
-							PrivateConnection.ProvisioningState = string(connection.ProvisioningState)
-						}
-					}
-
-					PrivateEndpointConnections = append(PrivateEndpointConnections, PrivateConnection)
-				}
-			}
-			d.StreamListItem(ctx, diskAccesssInfo{diskAccesss, PrivateEndpointConnections})
+		for _, diskAccess := range result.Values() {
+			d.StreamListItem(ctx, diskAccess)
 		}
 	}
 
@@ -254,17 +174,24 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 	client := compute.NewDiskAccessesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	diskAccesss, err := client.Get(ctx, resourceGroup, name)
+	diskAccess, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "get_err", err)
 		return nil, err
 	}
 
-	// If we return the API response directly, the output will not provide
-	// all the properties of diskAccesss
+	return diskAccess, nil
+}
+
+//// TRANSFORM FUNCTIONS
+
+// If we return the API response directly, the output will not provide
+// all the properties of PrivateEndpointConnections
+func privateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	diskAccess := d.HydrateItem.(compute.DiskAccess)
 	var PrivateEndpointConnections []PrivateEndpointConnection
-	if diskAccesss.DiskAccessProperties.PrivateEndpointConnections != nil {
-		for _, connection := range *diskAccesss.DiskAccessProperties.PrivateEndpointConnections {
+	if diskAccess.DiskAccessProperties.PrivateEndpointConnections != nil {
+		for _, connection := range *diskAccess.DiskAccessProperties.PrivateEndpointConnections {
 			var PrivateConnection PrivateEndpointConnection
 			if connection.ID != nil {
 				PrivateConnection.ID = *connection.ID
@@ -298,6 +225,5 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 			PrivateEndpointConnections = append(PrivateEndpointConnections, PrivateConnection)
 		}
 	}
-
-	return diskAccesssInfo{diskAccesss, PrivateEndpointConnections}, nil
+	return PrivateEndpointConnections, nil
 }
