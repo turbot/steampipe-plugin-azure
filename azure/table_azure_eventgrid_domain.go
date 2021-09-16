@@ -43,12 +43,12 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Provisioning state of the Event Grid Domain Resource, Possible values include: 'DomainProvisioningStateCreating', 'DomainProvisioningStateUpdating', 'DomainProvisioningStateDeleting', 'DomainProvisioningStateSucceeded', 'DomainProvisioningStateCanceled', 'DomainProvisioningStateFailed'.",
+				Description: "Provisioning state of the event grid domain resource. Possible values include: 'Creating', 'Updating', 'Deleting', 'Succeeded', 'Canceled', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "auto_create_topic_with_first_subscription",
-				Description: "This Boolean is used to specify the creation mechanism for 'all' the Event Grid Domain Topics associated with this Event Grid Domain resource.",
+				Description: "This Boolean is used to specify the creation mechanism for 'all' the event grid domain topics associated with this event grid domain resource.",
 				Type:        proto.ColumnType_BOOL,
 			},
 			{
@@ -72,7 +72,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "created_by_type",
 				Description: "The type of identity that created the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedByType").Transform(convertDateToTime),
+				Transform:   transform.FromField("SystemData.CreatedByType"),
 			},
 			{
 				Name:        "disable_local_auth",
@@ -94,7 +94,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "input_schema",
 				Description: "This determines the format that Event Grid should expect for incoming events published to the Event Grid Domain Resource. Possible values include: 'InputSchemaEventGridSchema', 'InputSchemaCustomEventSchema', 'InputSchemaCloudEventSchemaV10'.",
 				Type:        proto.ColumnType_STRING,
-			},		
+			},
 			{
 				Name:        "last_modified_at",
 				Description: "The timestamp of resource last modification (UTC).",
@@ -143,7 +143,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the eventhub namespace.",
+				Description: "A list of active diagnostic settings for the eventgrid domain.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listEventGridDiagnosticSettings,
 				Transform:   transform.FromValue(),
@@ -152,13 +152,12 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "inbound_ip_rules",
 				Description: "This can be used to restrict traffic from specific IPs instead of all IPs. Note: These are considered only if PublicNetworkAccess is enabled.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("InboundIPRules"),
+				Transform:   transform.FromField("InboundIPRules"),
 			},
 			{
 				Name:        "input_schema_mapping",
 				Description: "Information about the InputSchemaMapping which specified the info about mapping event payload.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("InputSchemaMapping"),
 			},
 			{
 				Name:        "private_endpoint_connections",
@@ -186,7 +185,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -245,10 +244,10 @@ func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	subscriptionID := session.SubscriptionID
 	client := eventgrid.NewDomainsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	top := int32(100)
 
-	result, err := client.ListBySubscription(ctx, "", &top)
+	result, err := client.ListBySubscription(ctx, "", nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("listEventGridDomains", "ListBySubscription", err)
 		return nil, err
 	}
 
@@ -334,6 +333,7 @@ func getEventGridDomain(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getEventGridDomain", "get", err)
 		return nil, err
 	}
 
@@ -376,6 +376,7 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 
 	op, err := client.List(ctx, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("listEventGridDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
