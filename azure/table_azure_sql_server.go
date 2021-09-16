@@ -129,7 +129,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "The server private endpoint connections.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getSQLServerPrivateEndpointConnections,
+				Hydrate:     listSQLServerPrivateEndpointConnections,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -190,6 +190,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 
 type PrivateConnectionInfo struct {
 	PrivateEndpointConnectionId                      string
+	PrivateEndpointId                                string
 	PrivateEndpointConnectionName                    string
 	PrivateEndpointConnectionType                    string
 	PrivateLinkServiceConnectionStateStatus          string
@@ -301,8 +302,8 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	return auditPolicies, nil
 }
 
-func getSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerPrivateEndpointConnections")
+func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSQLServerPrivateEndpointConnections")
 	server := h.Item.(sql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -317,7 +318,7 @@ func getSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Query
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
-		plugin.Logger(ctx).Error("getSQLServerPrivateEndpointConnections", "ListByServer", err)
+		plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer", err)
 		return nil, err
 	}
 
@@ -325,32 +326,21 @@ func getSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Query
 	var connection PrivateConnectionInfo
 
 	for _, conn := range op.Values() {
-		if conn.ID != nil {
-			connection.PrivateEndpointConnectionId = *conn.ID
-		}
-		if conn.Name != nil {
-			connection.PrivateEndpointConnectionName = *conn.Name
-		}
-		if conn.Type != nil {
-			connection.PrivateEndpointConnectionType = *conn.Type
-		}
-		if conn.PrivateLinkServiceConnectionState != nil {
-			if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-				connection.PrivateLinkServiceConnectionStateActionsRequired = *conn.PrivateLinkServiceConnectionState.ActionsRequired
-			}
-			if conn.PrivateLinkServiceConnectionState.Status != nil {
-				connection.PrivateLinkServiceConnectionStateStatus = *conn.PrivateLinkServiceConnectionState.Status
-			}
-			if conn.PrivateLinkServiceConnectionState.Description != nil {
-				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
-			}
-		}
-		if conn.ProvisioningState != nil {
-			connection.ProvisioningState = *conn.ProvisioningState
-		}
+		connection = privateEndpointConnectionMap(conn)
 		privateEndpointConnections = append(privateEndpointConnections, connection)
 	}
 
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "pagging", err)
+			return nil, err
+		}
+		for _, conn := range op.Values() {
+			connection = privateEndpointConnectionMap(conn)
+			privateEndpointConnections = append(privateEndpointConnections, connection)
+		}
+	}
 	return privateEndpointConnections, nil
 }
 
@@ -623,4 +613,40 @@ func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
 		objectMap["properties"] = rule.VirtualNetworkRuleProperties
 	}
 	return objectMap
+}
+
+func privateEndpointConnectionMap(conn sqlv.PrivateEndpointConnection) PrivateConnectionInfo {
+	var connection PrivateConnectionInfo
+	if conn.ID != nil {
+		connection.PrivateEndpointConnectionId = *conn.ID
+	}
+	if conn.Name != nil {
+		connection.PrivateEndpointConnectionName = *conn.Name
+	}
+	if conn.Type != nil {
+		connection.PrivateEndpointConnectionType = *conn.Type
+	}
+	if conn.PrivateEndpointConnectionProperties != nil {
+		if conn.PrivateEndpoint != nil {
+			if conn.PrivateEndpoint.ID != nil {
+				connection.PrivateEndpointId = *conn.PrivateEndpoint.ID
+			}
+		}
+		if conn.PrivateLinkServiceConnectionState != nil {
+			if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = *conn.PrivateLinkServiceConnectionState.ActionsRequired
+			}
+			if conn.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = *conn.PrivateLinkServiceConnectionState.Status
+			}
+			if conn.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
+			}
+		}
+		if conn.ProvisioningState != nil {
+			connection.ProvisioningState = *conn.ProvisioningState
+		}
+	}
+
+	return connection
 }
