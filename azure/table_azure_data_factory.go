@@ -102,7 +102,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "List of private connections for factory.",
+				Description: "List of private endpoint connections for data factory.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listDataFactoryPrivateEndpointConnections,
 				Transform:   transform.FromValue(),
@@ -260,6 +260,8 @@ func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Qu
 	return connections, nil
 }
 
+// If we return the API response directly, the output will not give
+// all the properties of PrivateEndpointConnection
 func factoryPrivateEndpointConnectionMap(conn datafactory.PrivateEndpointConnectionResource) PrivateConnection {
 	var connection PrivateConnection
 	if conn.ID != nil {
