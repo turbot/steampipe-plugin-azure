@@ -104,7 +104,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "List of private connections for factory.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getDataFactoryPrivateEndpointConnections,
+				Hydrate:     listDataFactoryPrivateEndpointConnections,
 				Transform:   transform.FromValue(),
 			},
 
@@ -214,8 +214,8 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	return op, nil
 }
 
-func getDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDataFactoryPrivateConnections")
+func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listDataFactoryPrivateEndpointConnections")
 	factory := h.Item.(datafactory.Factory)
 	factoryName := factory.Name
 	resourceGroup := strings.Split(*factory.ID, "/")[4]
@@ -223,7 +223,7 @@ func getDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Que
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("getDataFactoryPrivateConnections", "connection", err)
+		plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "connection", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -233,27 +233,80 @@ func getDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Que
 
 	op, err := connClient.ListByFactory(ctx, resourceGroup, *factoryName)
 	if err != nil {
+		plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory", err)
 		return nil, err
 	}
 
 	var connections []PrivateConnection
-	for _, connection := range op.Values() {
-		connections = append(connections, PrivateConnection{
-			Properties: connection.Properties,
-			Id:         connection.ID,
-			Name:       connection.Name,
-			Type:       connection.Type,
-			Etag:       connection.Etag,
-		})
+	var connection PrivateConnection
+
+	for _, conn := range op.Values() {
+		connection = factoryPrivateEndpointConnectionMap(conn)
+		connections = append(connections, connection)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory pagging", err)
+			return nil, err
+		}
+		for _, conn := range op.Values() {
+			connection = factoryPrivateEndpointConnectionMap(conn)
+			connections = append(connections, connection)
+		}
 	}
 
 	return connections, nil
 }
 
+func factoryPrivateEndpointConnectionMap(conn datafactory.PrivateEndpointConnectionResource) PrivateConnection {
+	var connection PrivateConnection
+	if conn.ID != nil {
+		connection.PrivateEndpointConnectionId = conn.ID
+	}
+	if conn.Name != nil {
+		connection.PrivateEndpointConnectionName = conn.Name
+	}
+	if conn.Type != nil {
+		connection.PrivateEndpointConnectionType = conn.Type
+	}
+	if conn.Etag != nil {
+		connection.Etag = conn.Etag
+	}
+	if conn.Properties != nil {
+		if conn.Properties.PrivateEndpoint != nil {
+			if conn.Properties.PrivateEndpoint.ID != nil {
+				connection.PrivateEndpointId = conn.Properties.PrivateEndpoint.ID
+			}
+		}
+		if conn.Properties.PrivateLinkServiceConnectionState != nil {
+			if conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired
+			}
+			if conn.Properties.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = conn.Properties.PrivateLinkServiceConnectionState.Status
+			}
+			if conn.Properties.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = conn.Properties.PrivateLinkServiceConnectionState.Description
+			}
+		}
+		if conn.Properties.ProvisioningState != nil {
+			connection.ProvisioningState = conn.Properties.ProvisioningState
+		}
+	}
+
+	return connection
+}
+
 type PrivateConnection struct {
-	Properties interface{}
-	Id         *string
-	Name       *string
-	Type       *string
-	Etag       *string
+	ProvisioningState                                *string
+	PrivateEndpointConnectionId                      *string
+	PrivateEndpointId                                *string
+	PrivateLinkServiceConnectionStateStatus          *string
+	PrivateLinkServiceConnectionStateDescription     *string
+	PrivateLinkServiceConnectionStateActionsRequired *string
+	PrivateEndpointConnectionName                    *string
+	PrivateEndpointConnectionType                    *string
+	Etag                                             *string
 }
