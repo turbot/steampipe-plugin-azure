@@ -104,7 +104,7 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "List of private connections for factory.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getDataFactoryPrivateConnections,
+				Hydrate:     getDataFactoryPrivateEndpointConnections,
 				Transform:   transform.FromValue(),
 			},
 
@@ -214,7 +214,7 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	return op, nil
 }
 
-func getDataFactoryPrivateConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getDataFactoryPrivateConnections")
 	factory := h.Item.(datafactory.Factory)
 	factoryName := factory.Name
