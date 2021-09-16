@@ -248,7 +248,7 @@ func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Qu
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory pagging", err)
+			plugin.Logger(ctx).Error("listDataFactoryPrivateEndpointConnections", "ListByFactory_pagination", err)
 			return nil, err
 		}
 		for _, conn := range op.Values() {
