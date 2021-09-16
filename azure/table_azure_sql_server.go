@@ -126,7 +126,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "private_endpoint_connactions",
+				Name:        "private_endpoint_connections",
 				Description: "The server private endpoint connections.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSQLServerPrivateEndpointConnections,
