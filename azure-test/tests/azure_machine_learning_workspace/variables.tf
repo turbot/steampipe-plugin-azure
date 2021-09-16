@@ -1,4 +1,3 @@
-
 variable "resource_name" {
   type        = string
   default     = "steampipe-test"
@@ -12,7 +11,7 @@ variable "azure_environment" {
 }
 
 variable "azure_subscription" {
-  type = string
+  type        = string
   default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
   description = "Azure subscription used for the test."
 }
@@ -72,7 +71,7 @@ resource "azurerm_machine_learning_workspace" "named_test_resource" {
   identity {
     type = "SystemAssigned"
   }
-  
+
   tags = {
     "name" = var.resource_name
   }
