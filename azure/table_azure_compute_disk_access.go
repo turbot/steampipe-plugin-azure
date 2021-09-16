@@ -56,7 +56,7 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "The private endpoint connections details.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(privateEndpointConnections),
+				Transform:   transform.From(extractPrivateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -187,7 +187,7 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 
 // If we return the API response directly, the output will not provide
 // all the properties of PrivateEndpointConnections
-func privateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	diskAccess := d.HydrateItem.(compute.DiskAccess)
 	var PrivateEndpointConnections []PrivateEndpointConnection
 	if diskAccess.DiskAccessProperties.PrivateEndpointConnections != nil {
