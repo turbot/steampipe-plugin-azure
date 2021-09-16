@@ -135,7 +135,7 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the azure ML workspace.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listMachineLearningDiagnosticSettings,
+				Hydrate:     listMachineLearningWorkspaceDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -260,7 +260,7 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 	return workspace, nil
 }
 
-func listMachineLearningDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listMachineLearningWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMachineLearningDiagnosticSettings")
 	id := *h.Item.(machinelearningservices.Workspace).ID
 
