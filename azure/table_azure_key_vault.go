@@ -52,7 +52,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "create_mode",
-				Description: "The vault's create mode to indicate whether the vault need to be recovered or not. Possible values include: 'CreateModeRecover', 'CreateModeDefault'.",
+				Description: "The vault's create mode to indicate whether the vault need to be recovered or not. Possible values include: 'default', 'recover'.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getKeyVault,
 				Transform:   transform.FromField("Properties.CreateMode"),
@@ -157,7 +157,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Description: "List of private endpoint connections associated with the key vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
-				Transform:   transform.From(getPrivateEndpointConnections),
+				Transform:   transform.From(extractPrivateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -327,9 +327,9 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	return diagnosticSettings, nil
 }
 
-func getPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	vault := d.HydrateItem.(keyvault.Vault)
-	plugin.Logger(ctx).Trace("getPrivateEndpointConnections")
+	plugin.Logger(ctx).Trace("extractPrivateEndpointConnections")
 	var privateEndpointDetails []PrivateEndpointConnectionInfo
 	var privateEndpoint PrivateEndpointConnectionInfo
 	for _, connection := range *vault.Properties.PrivateEndpointConnections {
