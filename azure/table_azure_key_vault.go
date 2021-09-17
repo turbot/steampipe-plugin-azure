@@ -327,6 +327,8 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	return diagnosticSettings, nil
 }
 
+//// TRANSFORM FUNCTIONS
+
 func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	vault := d.HydrateItem.(keyvault.Vault)
 	plugin.Logger(ctx).Trace("extractKeyVaultPrivateEndpointConnections")
