@@ -48,22 +48,6 @@ from
   jsonb_array_elements(private_endpoint_connections) as connections;
 ```
 
-### List restored accounts
-
-```sql
-select
-  name,
-  id,
-  kind,
-  type,
-  provisioning_state,
-  public_network_access
-from
-  azure_cognitive_account
-where
-  restore;
-```
-
 ### List diagnostic setting details for accounts
 
 ```sql
