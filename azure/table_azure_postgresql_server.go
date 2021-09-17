@@ -384,7 +384,7 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	op, err := client.List(ctx, resourceGroupName, *server.Name)
 	if err != nil {
-		plugin.Logger(ctx).Trace("listPostgreSQLServerKeys", "List", err)
+		plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "List", err)
 		return nil, err
 	}
 
@@ -398,7 +398,7 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Trace("listPostgreSQLServerKeys", "list_paging", err)
+			plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "list_paging", err)
 			return nil, err
 		}
 		for _, key := range op.Values() {
