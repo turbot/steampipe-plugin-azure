@@ -34,6 +34,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_batch_account":                                         tableAzureBatchAccount(ctx),
 			"azure_compute_availability_set":                              tableAzureComputeAvailabilitySet(ctx),
 			"azure_compute_disk":                                          tableAzureComputeDisk(ctx),
+			"azure_compute_disk_access":                                   tableAzureComputeDiskAccess(ctx),
 			"azure_compute_disk_encryption_set":                           tableAzureComputeDiskEncryptionSet(ctx),
 			"azure_compute_disk_metric_read_ops":                          tableAzureComputeDiskMetricReadOps(ctx),
 			"azure_compute_disk_metric_read_ops_daily":                    tableAzureComputeDiskMetricReadOpsDaily(ctx),
