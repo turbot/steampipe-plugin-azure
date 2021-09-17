@@ -157,7 +157,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Description: "List of private endpoint connections associated with the key vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
-				Transform:   transform.From(extractPrivateEndpointConnections),
+				Transform:   transform.From(extractKeyVaultPrivateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -327,9 +327,9 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	return diagnosticSettings, nil
 }
 
-func extractPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	vault := d.HydrateItem.(keyvault.Vault)
-	plugin.Logger(ctx).Trace("extractPrivateEndpointConnections")
+	plugin.Logger(ctx).Trace("extractKeyVaultPrivateEndpointConnections")
 	var privateEndpointDetails []PrivateEndpointConnectionInfo
 	var privateEndpoint PrivateEndpointConnectionInfo
 	for _, connection := range *vault.Properties.PrivateEndpointConnections {
