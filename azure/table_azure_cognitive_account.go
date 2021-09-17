@@ -30,119 +30,115 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "The name of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Name"),
 			},
 			{
 				Name:        "id",
 				Description: "Fully qualified resource ID for the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.ID"),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "kind",
 				Description: "The kind of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Kind"),
 			},
 			{
 				Name:        "provisioning_state",
 				Description: "Gets the status of the cognitive services account at the time the operation was called. Possible values include: 'Accepted', 'Creating', 'Deleting', 'Moving', 'Failed', 'Succeeded', 'ResolvingDNS'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.ProvisioningState"),
+				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
 			{
 				Name:        "type",
 				Description: "The type of the resource. E.g. 'Microsoft.Compute/virtualMachines' or 'Microsoft.Storage/storageAccounts'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Type"),
 			},
 			{
 				Name:        "custom_sub_domain_name",
 				Description: "The subdomain name used for token-based authentication.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.CustomSubDomainName"),
+				Transform:   transform.FromField("Properties.CustomSubDomainName"),
 			},
 			{
 				Name:        "date_created",
 				Description: "Gets the date of cognitive services account creation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.DateCreated"),
+				Transform:   transform.FromField("Properties.DateCreated"),
 			},
 			{
 				Name:        "disable_local_auth",
 				Description: "Checks if local auth is disabled for the resource.",
 				Type:        proto.ColumnType_BOOL,
 				Default:     false,
-				Transform:   transform.FromField("Account.Properties.DisableLocalAuth"),
+				Transform:   transform.FromField("Properties.DisableLocalAuth"),
 			},
 			{
 				Name:        "endpoint",
 				Description: "The endpoint of the created account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.Endpoint"),
+				Transform:   transform.FromField("Properties.Endpoint"),
 			},
 			{
 				Name:        "etag",
 				Description: "The resource etag.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Etag"),
 			},
 			{
 				Name:        "is_migrated",
 				Description: "Checks if the resource is migrated from an existing key.",
 				Type:        proto.ColumnType_BOOL,
 				Default:     false,
-				Transform:   transform.FromField("Account.Properties.IsMigrated"),
+				Transform:   transform.FromField("Properties.IsMigrated"),
 			},
 			{
 				Name:        "migration_token",
 				Description: "The resource migration token.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.MigrationToken"),
+				Transform:   transform.FromField("Properties.MigrationToken"),
 			},
 			{
 				Name:        "public_network_access",
 				Description: "Whether or not public endpoint access is allowed for this account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'. Possible values include: 'Enabled', 'Disabled'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Properties.PublicNetworkAccess"),
+				Transform:   transform.FromField("Properties.PublicNetworkAccess"),
 			},
 			{
 				Name:        "restore",
 				Description: "Checks if restore is enabled for the resource.",
 				Type:        proto.ColumnType_BOOL,
 				Default:     false,
-				Transform:   transform.FromField("Account.Properties.Restore"),
+				Transform:   transform.FromField("Properties.Restore"),
 			},
 			{
 				Name:        "restrict_outbound_network_access",
 				Description: "Checks if outbound network access is restricted for the resource.",
 				Type:        proto.ColumnType_BOOL,
 				Default:     false,
-				Transform:   transform.FromField("Account.Properties.RestrictOutboundNetworkAccess"),
+				Transform:   transform.FromField("Properties.RestrictOutboundNetworkAccess"),
 			},
 			{
 				Name:        "allowed_fqdn_list",
 				Description: "The allowed FQDN list for the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.AllowedFqdnList"),
+				Transform:   transform.FromField("Properties.AllowedFqdnList"),
 			},
 			{
 				Name:        "api_properties",
 				Description: "The api properties for special APIs.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.APIProperties"),
+				Transform:   transform.FromField("Properties.APIProperties"),
 			},
 			{
 				Name:        "call_rate_limit",
 				Description: "The call rate limit of the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.CallRateLimit"),
+				Transform:   transform.FromField("Properties.CallRateLimit"),
 			},
 			{
 				Name:        "capabilities",
 				Description: "Gets the capabilities of the cognitive services account. Each item indicates the capability of a specific feature. The values are read-only and for reference only.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.Capabilities"),
+				Transform:   transform.FromField("Properties.Capabilities"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -155,61 +151,59 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				Name:        "encryption",
 				Description: "The encryption properties for the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.Encryption"),
+				Transform:   transform.FromField("Properties.Encryption"),
 			},
 			{
 				Name:        "endpoints",
 				Description: "All endpoints of the cognitive services account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.Endpoints"),
+				Transform:   transform.FromField("Properties.Endpoints"),
 			},
 			{
 				Name:        "identity",
 				Description: "The identity for the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Identity"),
+				Transform:   transform.From(extractAccountIdentity),
 			},
 			{
 				Name:        "network_acls",
 				Description: "A collection of rules governing the accessibility from specific network locations.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.NetworkAcls"),
+				Transform:   transform.FromField("Properties.NetworkAcls"),
 			},
 			{
 				Name:        "private_endpoint_connections",
 				Description: "The private endpoint connection associated with the cognitive services account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("PrivateEndpointConnections"),
+				Transform:   transform.From(extractAccountPrivateEndpointConnections),
 			},
 			{
 				Name:        "quota_limit",
 				Description: "The quota limit of the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.QuotaLimit"),
+				Transform:   transform.FromField("Properties.QuotaLimit"),
 			},
 			{
 				Name:        "sku",
 				Description: "The resource model definition representing SKU.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Sku"),
 			},
 			{
 				Name:        "sku_change_info",
 				Description: "Sku change info of account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.SkuChangeInfo"),
+				Transform:   transform.FromField("Properties.SkuChangeInfo"),
 			},
 			{
 				Name:        "system_data",
 				Description: "The metadata pertaining to creation and last modification of the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.SystemData"),
 			},
 			{
 				Name:        "user_owned_storage",
 				Description: "The storage accounts for the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Properties.UserOwnedStorage"),
+				Transform:   transform.FromField("Properties.UserOwnedStorage"),
 			},
 
 			// Steampipe standard columns
@@ -217,19 +211,18 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Name"),
+				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.Tags"),
 			},
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Account.ID").Transform(idToAkas),
+				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
 			// Azure standard columns
@@ -237,27 +230,34 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.Location").Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.ID").Transform(extractResourceGroupFromID),
+				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
 			{
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.ID").Transform(idToSubscriptionID),
+				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},
 		},
 	}
 }
 
-type AccountInfo struct {
-	Account                    cognitiveservices.Account
-	PrivateEndpointConnections []PrivateEndpointConnectionInfo
+type Identity struct {
+	PrincipalID             *string
+	TenantID                *string
+	Type                    interface{}
+	UserAssignedIdentities []UserAssignedIdentitiesValue
+}
+
+type UserAssignedIdentitiesValue struct {
+	PrincipalID *string
+	ClientID    *string
 }
 
 type PrivateEndpointConnectionInfo struct {
@@ -281,7 +281,7 @@ type PrivateEndpointInfo struct {
 	ID *string
 }
 
-//// LIST FUNCTIONS
+//// LIST FUNCTION
 
 func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -295,22 +295,22 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	result, err := accountsClient.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listCognitiveAccounts", "list", err)
 		return nil, err
 	}
 
 	for _, account := range result.Values() {
-		privateEndpointConnectionInfo := getPrivateEndpointConnectionInfo(&account)
-		d.StreamListItem(ctx, AccountInfo{account, privateEndpointConnectionInfo})
+		d.StreamListItem(ctx, account)
 	}
 
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("listCognitiveAccounts", "list_paging", err)
 			return nil, err
 		}
 		for _, account := range result.Values() {
-			privateEndpointConnectionInfo := getPrivateEndpointConnectionInfo(&account)
-			d.StreamListItem(ctx, AccountInfo{account, privateEndpointConnectionInfo})
+			d.StreamListItem(ctx, account)
 		}
 	}
 	
@@ -341,14 +341,14 @@ func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	account, err := accountsClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
+		plugin.Logger(ctx).Error("getCognitiveAccount", "get", err)
 		return nil, err
 	}
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if account.ID != nil {
-		privateEndpointConnectionInfo := getPrivateEndpointConnectionInfo(&account)
-		return &AccountInfo{account, privateEndpointConnectionInfo}, nil
+		return account, nil
 	}
 
 	return nil, nil
@@ -356,7 +356,7 @@ func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listCognitiveAccountDiagnosticSettings")
-	id := *h.Item.(AccountInfo).Account.ID
+	id := *h.Item.(cognitiveservices.Account).ID
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -395,14 +395,48 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 	return diagnosticSettings, nil
 }
 
-func getPrivateEndpointConnectionInfo(account *cognitiveservices.Account) []PrivateEndpointConnectionInfo {
+//// TRANSFORM FUNCTIONS
+
+// If we return the API response directly, the output will not provide all the properties of Identity
+func extractAccountIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	account := d.HydrateItem.(cognitiveservices.Account)
+	var identity Identity
+
+	if account.Identity != nil {
+		identity.PrincipalID = account.Identity.PrincipalID
+		identity.TenantID = account.Identity.TenantID
+		identity.Type = account.Identity.Type
+		if account.Identity.UserAssignedIdentities != nil {
+			for _, userAssignedIdentity := range account.Identity.UserAssignedIdentities {
+				var userAssignedIdentitiesValue UserAssignedIdentitiesValue
+				if userAssignedIdentity.ClientID != nil {
+					userAssignedIdentitiesValue.ClientID = userAssignedIdentity.ClientID
+				}
+				if userAssignedIdentity.PrincipalID != nil {
+					userAssignedIdentitiesValue.PrincipalID = userAssignedIdentity.PrincipalID
+				}
+	
+				identity.UserAssignedIdentities = append(identity.UserAssignedIdentities, userAssignedIdentitiesValue)
+			}
+		}
+	}
+	
+	return identity, nil
+}
+
+// If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
+func extractAccountPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	account := d.HydrateItem.(cognitiveservices.Account)
 	privateEndpointConnectionInfo := []PrivateEndpointConnectionInfo{}
+
 	if account.Properties.PrivateEndpointConnections != nil {
 		for _, connection := range *account.Properties.PrivateEndpointConnections {
 			privateEndpointConnectionPropertiesInfo := PrivateEndpointConnectionPropertiesInfo{}
 			privateEndpointInfo := PrivateEndpointInfo{}
 			if connection.Properties != nil {
-				privateEndpointInfo.ID = connection.Properties.PrivateEndpoint.ID
+				if connection.Properties.PrivateEndpoint != nil {
+					privateEndpointInfo.ID = connection.Properties.PrivateEndpoint.ID
+				}
 				privateEndpointConnectionPropertiesInfo.PrivateEndpoint = privateEndpointInfo
 				privateEndpointConnectionPropertiesInfo.PrivateLinkServiceConnectionState = connection.Properties.PrivateLinkServiceConnectionState
 				privateEndpointConnectionPropertiesInfo.ProvisioningState = connection.Properties.ProvisioningState
@@ -420,7 +454,7 @@ func getPrivateEndpointConnectionInfo(account *cognitiveservices.Account) []Priv
 					Type:       connection.Type,
 				})
 			}
-		}
+	}
 	
-	return privateEndpointConnectionInfo
+	return privateEndpointConnectionInfo, nil
 }
