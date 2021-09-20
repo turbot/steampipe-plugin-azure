@@ -29,13 +29,12 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "Azure resource name.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.Name"),
 			},
 			{
 				Name:        "id",
 				Description: "Azure resource identifier.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.ID"),
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "provisioning_state",
@@ -47,7 +46,6 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Name:        "type",
 				Description: "Azure resource type.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.Type"),
 			},
 			{
 				Name:        "cluster_code_version",
@@ -84,7 +82,6 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Name:        "etag",
 				Description: "Azure resource etag.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.Etag"),
 			},
 			{
 				Name:        "management_endpoint",
@@ -194,19 +191,19 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.Name"),
+				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "tags",
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Cluster.Tags"),
+				Transform:   transform.FromField("Tags"),
 			},
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Cluster.ID").Transform(idToAkas),
+				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
 			// Azure standard columns
@@ -214,53 +211,22 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.Location").Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.ID").Transform(extractResourceGroupFromID),
+				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
 			{
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Cluster.ID").Transform(idToSubscriptionID),
+				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},
 		},
 	}
-}
-
-type ClusterInfo struct {
-	Cluster           servicefabric.Cluster
-	ClusterProperties ClusterPropertiesInfo
-}
-
-type ClusterPropertiesInfo struct {
-	AddOnFeatures                      *[]string
-	AvailableClusterVersions           interface{}
-	AzureActiveDirectory               interface{}
-	Certificate                        interface{}
-	CertificateCommonNames             interface{}
-	ClientCertificateCommonNames       interface{}
-	ClientCertificateThumbprints       interface{}
-	ClusterCodeVersion                 *string
-	ClusterEndpoint                    *string
-	ClusterID                          *string
-	ClusterState                       interface{}
-	DiagnosticsStorageAccountConfig    interface{}
-	EventStoreServiceEnabled           *bool
-	FabricSettings                     interface{}
-	ManagementEndpoint                 *string
-	NodeTypes                          interface{}
-	ProvisioningState                  interface{}
-	ReliabilityLevel                   interface{}
-	ReverseProxyCertificate            interface{}
-	ReverseProxyCertificateCommonNames interface{}
-	UpgradeDescription                 interface{}
-	UpgradeMode                        interface{}
-	VMImage                            *string
 }
 
 //// LIST FUNCTIONS
@@ -281,8 +247,7 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 
 	for _, cluster := range *result.Value {
-		clusterPropertiesInfo := getClusterPropertiesInfo(&cluster)
-		d.StreamListItem(ctx, ClusterInfo{cluster, clusterPropertiesInfo})
+		d.StreamListItem(ctx, cluster)
 	}
 	
 	return nil, err
@@ -318,40 +283,8 @@ func getServiceFabricCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if cluster.ID != nil {
-		clusterPropertiesInfo := getClusterPropertiesInfo(&cluster)
-		return &ClusterInfo{cluster, clusterPropertiesInfo}, nil
+		return cluster, nil
 	}
 
 	return nil, nil
-}
-
-func getClusterPropertiesInfo(cluster *servicefabric.Cluster) ClusterPropertiesInfo {
-	clusterPropertiesInfo := ClusterPropertiesInfo{}
-	if cluster.ClusterProperties != nil {
-		clusterPropertiesInfo.AddOnFeatures = cluster.AddOnFeatures
-		clusterPropertiesInfo.AvailableClusterVersions = cluster.AvailableClusterVersions
-		clusterPropertiesInfo.AzureActiveDirectory = cluster.AzureActiveDirectory
-		clusterPropertiesInfo.Certificate = cluster.Certificate
-		clusterPropertiesInfo.CertificateCommonNames = cluster.CertificateCommonNames
-		clusterPropertiesInfo.ClientCertificateCommonNames = cluster.ClientCertificateCommonNames
-		clusterPropertiesInfo.ClientCertificateThumbprints = cluster.ClientCertificateThumbprints
-		clusterPropertiesInfo.ClusterCodeVersion = cluster.ClusterCodeVersion
-		clusterPropertiesInfo.ClusterEndpoint = cluster.ClusterEndpoint
-		clusterPropertiesInfo.ClusterID = cluster.ClusterID
-		clusterPropertiesInfo.ClusterState = cluster.ClusterState
-		clusterPropertiesInfo.DiagnosticsStorageAccountConfig = cluster.DiagnosticsStorageAccountConfig
-		clusterPropertiesInfo.EventStoreServiceEnabled = cluster.EventStoreServiceEnabled
-		clusterPropertiesInfo.FabricSettings = cluster.FabricSettings
-		clusterPropertiesInfo.ManagementEndpoint = cluster.ManagementEndpoint
-		clusterPropertiesInfo.NodeTypes = cluster.NodeTypes
-		clusterPropertiesInfo.ProvisioningState = cluster.ProvisioningState
-		clusterPropertiesInfo.ReliabilityLevel = cluster.ReliabilityLevel
-		clusterPropertiesInfo.ReverseProxyCertificate = cluster.ReverseProxyCertificate
-		clusterPropertiesInfo.ReverseProxyCertificateCommonNames = cluster.ReverseProxyCertificateCommonNames
-		clusterPropertiesInfo.UpgradeDescription = cluster.UpgradeDescription
-		clusterPropertiesInfo.UpgradeMode = cluster.UpgradeMode
-		clusterPropertiesInfo.VMImage = cluster.VMImage
-	}
-
-	return clusterPropertiesInfo
 }
