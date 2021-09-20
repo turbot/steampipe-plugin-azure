@@ -19,7 +19,7 @@ from
   azure_mssql_virtual_machine;
 ```
 
-### List failed load balancers
+### List failed virtual machines
 
 ```sql
 select
@@ -28,7 +28,7 @@ select
   type,
   provisioning_state
 from
-  azure_lb
+  azure_mssql_virtual_machine
 where
   provisioning_state = 'Failed';
 ```
