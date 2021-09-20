@@ -93,7 +93,7 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "authentication_certificates",
 				Description: "Authentication certificates of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractAuthenticationCertificates),
+				Transform:   transform.From(extractGatewayAuthenticationCertificates),
 			},
 			{
 				Name:        "autoscale_configuration",
@@ -105,13 +105,13 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "backend_address_pools",
 				Description: "Backend address pool of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractBackendAddressPools),
+				Transform:   transform.From(extractGatewayBackendAddressPools),
 			},
 			{
 				Name:        "backend_http_settings_collection",
 				Description: "Backend http settings of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractBackendHTTPSettingsCollection),
+				Transform:   transform.From(extractGatewayBackendHTTPSettingsCollection),
 			},
 			{
 				Name:        "custom_error_configurations",
@@ -136,13 +136,13 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "frontend_ip_configurations",
 				Description: "Frontend IP addresses of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractFrontendIPConfigurations),
+				Transform:   transform.From(extractGatewayFrontendIPConfigurations),
 			},
 			{
 				Name:        "frontend_ports",
 				Description: "Frontend ports of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractFrontendPorts),
+				Transform:   transform.From(extractGatewayFrontendPorts),
 			},
 			{
 				Name:        "gateway_ip_configurations",
@@ -154,31 +154,30 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "http_listeners",
 				Description: "Http listeners of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractHTTPListeners),
+				Transform:   transform.From(extractGatewayHTTPListeners),
 			},
 			{
 				Name:        "identity",
 				Description: "The identity of the application gateway, if configured.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractIdentity),
 			},
 			{
 				Name:        "private_endpoint_connections",
 				Description: "Private endpoint connections on application gateway.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractPrivateEndpointConnections),
+				Transform:   transform.From(extractGatewayPrivateEndpointConnections),
 			},
 			{
 				Name:        "private_link_configurations",
 				Description: "PrivateLink configurations on application gateway.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractPrivateLinkConfigurations),
+				Transform:   transform.From(extractGatewayPrivateLinkConfigurations),
 			},
 			{
 				Name:        "probes",
 				Description: "Probes of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractProbes),
+				Transform:   transform.From(extractGatewayProbes),
 			},
 			{
 				Name:        "redirect_configurations",
@@ -190,13 +189,13 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "request_routing_rules",
 				Description: "Request routing rules of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractRequestRoutingRules),
+				Transform:   transform.From(extractGatewayRequestRoutingRules),
 			},
 			{
 				Name:        "rewrite_rule_sets",
 				Description: "Rewrite rules for the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractRewriteRuleSets),
+				Transform:   transform.From(extractGatewayRewriteRuleSets),
 			},
 			{
 				Name:        "sku",
@@ -208,7 +207,7 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "ssl_certificates",
 				Description: "SSL certificates of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractSslCertificates),
+				Transform:   transform.From(extractGatewaySslCertificates),
 			},
 			{
 				Name:        "ssl_policy",
@@ -220,25 +219,25 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Name:        "ssl_profiles",
 				Description: "SSL profiles of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractSslProfiles),
+				Transform:   transform.From(extractGatewaySslProfiles),
 			},
 			{
 				Name:        "trusted_client_certificates",
 				Description: "Trusted client certificates of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractTrustedClientCertificates),
+				Transform:   transform.From(extractGatewayTrustedClientCertificates),
 			},
 			{
 				Name:        "trusted_root_certificates",
 				Description: "Trusted root certificates of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractTrustedRootCertificates),
+				Transform:   transform.From(extractGatewayTrustedRootCertificates),
 			},
 			{
 				Name:        "url_path_maps",
 				Description: "URL path map of the application gateway resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractURLPathMaps),
+				Transform:   transform.From(extractGatewayURLPathMaps),
 			},
 			{
 				Name:        "web_application_firewall_configuration",
@@ -294,18 +293,6 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 			},
 		},
 	}
-}
-
-type Identity struct {
-	PrincipalID             *string
-	TenantID                *string
-	Type                    interface{}
-	UserAssignedIdentities []UserAssignedIdentitiesValue
-}
-
-type UserAssignedIdentitiesValue struct {
-	PrincipalID *string
-	ClientID    *string
 }
 
 //// LIST FUNCTION
@@ -399,7 +386,7 @@ func listApplicationGatewayDiagnosticSettings(ctx context.Context, d *plugin.Que
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// If we return the API response directly, the output only gives
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
@@ -422,28 +409,7 @@ func listApplicationGatewayDiagnosticSettings(ctx context.Context, d *plugin.Que
 	return diagnosticSettings, nil
 }
 
-// If we return the API response directly, the output will not provide all the properties of Identity
-func extractIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	gateway := d.HydrateItem.(network.ApplicationGateway)
-	var identity Identity
-	if gateway.Identity != nil {
-		identity.PrincipalID = gateway.Identity.PrincipalID
-		identity.TenantID = gateway.Identity.TenantID
-		identity.Type = gateway.Identity.Type
-		for _, userAssignedIdentity := range gateway.Identity.UserAssignedIdentities {
-			var userAssignedIdentitiesValue UserAssignedIdentitiesValue
-			if userAssignedIdentity.ClientID != nil {
-				userAssignedIdentitiesValue.ClientID = userAssignedIdentity.ClientID
-			}
-			if userAssignedIdentity.PrincipalID != nil {
-				userAssignedIdentitiesValue.PrincipalID = userAssignedIdentity.PrincipalID
-			}
-
-			identity.UserAssignedIdentities = append(identity.UserAssignedIdentities, userAssignedIdentitiesValue)
-		}
-	}
-	return identity, nil
-}
+//// TRANSFORM FUNCTIONS
 
 // If we return the API response directly, the output will not provide all the properties of GatewayIPConfigurations
 func extractGatewayIPConfigurations(ctx context.Context, d *transform.TransformData) (interface{}, error) {
@@ -477,7 +443,7 @@ func extractGatewayIPConfigurations(ctx context.Context, d *transform.TransformD
 }
 
 // If we return the API response directly, the output will not provide all the properties of AuthenticationCertificates
-func extractAuthenticationCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayAuthenticationCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -508,7 +474,7 @@ func extractAuthenticationCertificates(ctx context.Context, d *transform.Transfo
 }
 
 // If we return the API response directly, the output will not provide all the properties of TrustedRootCertificates
-func extractTrustedRootCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayTrustedRootCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -539,7 +505,7 @@ func extractTrustedRootCertificates(ctx context.Context, d *transform.TransformD
 }
 
 // If we return the API response directly, the output will not provide all the properties of TrustedClientCertificates
-func extractTrustedClientCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayTrustedClientCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -570,7 +536,7 @@ func extractTrustedClientCertificates(ctx context.Context, d *transform.Transfor
 }
 
 // If we return the API response directly, the output will not provide all the properties of SslCertificates
-func extractSslCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewaySslCertificates(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -601,7 +567,7 @@ func extractSslCertificates(ctx context.Context, d *transform.TransformData) (in
 }
 
 // If we return the API response directly, the output will not provide all the properties of FrontendIPConfigurations
-func extractFrontendIPConfigurations(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayFrontendIPConfigurations(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -632,7 +598,7 @@ func extractFrontendIPConfigurations(ctx context.Context, d *transform.Transform
 }
 
 // If we return the API response directly, the output will not provide all the properties of FrontendPorts
-func extractFrontendPorts(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayFrontendPorts(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -663,7 +629,7 @@ func extractFrontendPorts(ctx context.Context, d *transform.TransformData) (inte
 }
 
 // If we return the API response directly, the output will not provide all the properties of Probes
-func extractProbes(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayProbes(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -694,7 +660,7 @@ func extractProbes(ctx context.Context, d *transform.TransformData) (interface{}
 }
 
 // If we return the API response directly, the output will not provide all the properties of BackendAddressPools
-func extractBackendAddressPools(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayBackendAddressPools(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -725,7 +691,7 @@ func extractBackendAddressPools(ctx context.Context, d *transform.TransformData)
 }
 
 // If we return the API response directly, the output will not provide all the properties of BackendHTTPSettingsCollection
-func extractBackendHTTPSettingsCollection(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayBackendHTTPSettingsCollection(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -756,7 +722,7 @@ func extractBackendHTTPSettingsCollection(ctx context.Context, d *transform.Tran
 }
 
 // If we return the API response directly, the output will not provide all the properties of HTTPListeners
-func extractHTTPListeners(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayHTTPListeners(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -787,7 +753,7 @@ func extractHTTPListeners(ctx context.Context, d *transform.TransformData) (inte
 }
 
 // If we return the API response directly, the output will not provide all the properties of SslProfiles
-func extractSslProfiles(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewaySslProfiles(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -818,7 +784,7 @@ func extractSslProfiles(ctx context.Context, d *transform.TransformData) (interf
 }
 
 // If we return the API response directly, the output will not provide all the properties of URLPathMaps
-func extractURLPathMaps(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayURLPathMaps(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -849,7 +815,7 @@ func extractURLPathMaps(ctx context.Context, d *transform.TransformData) (interf
 }
 
 // If we return the API response directly, the output will not provide all the properties of RequestRoutingRules
-func extractRequestRoutingRules(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayRequestRoutingRules(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -880,7 +846,7 @@ func extractRequestRoutingRules(ctx context.Context, d *transform.TransformData)
 }
 
 // If we return the API response directly, the output will not provide all the properties of RewriteRuleSets
-func extractRewriteRuleSets(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayRewriteRuleSets(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -908,7 +874,7 @@ func extractRewriteRuleSets(ctx context.Context, d *transform.TransformData) (in
 }
 
 // If we return the API response directly, the output will not provide all the properties of PrivateLinkConfigurations
-func extractPrivateLinkConfigurations(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayPrivateLinkConfigurations(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
@@ -936,7 +902,7 @@ func extractPrivateLinkConfigurations(ctx context.Context, d *transform.Transfor
 }
 
 // If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
-func extractPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractGatewayPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	gateway := d.HydrateItem.(network.ApplicationGateway)
 	var properties []map[string]interface{}
 
