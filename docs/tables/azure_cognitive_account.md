@@ -41,7 +41,8 @@ select
   id,
   connections ->> 'ID' as connection_id,
   connections ->> 'Name' as connection_name,
-  jsonb_pretty(connections -> 'Properties') as connection_properties,
+  connections ->> 'PrivateEndpointID' as property_private_endpoint_id,
+  jsonb_pretty(connections -> 'PrivateLinkServiceConnectionState') as property_private_link_service_connection_state,
   connections ->> 'Type' as connection_type
 from
   azure_cognitive_account,

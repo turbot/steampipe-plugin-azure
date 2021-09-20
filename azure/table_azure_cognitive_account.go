@@ -163,7 +163,6 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				Name:        "identity",
 				Description: "The identity for the resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractAccountIdentity),
 			},
 			{
 				Name:        "network_acls",
@@ -248,37 +247,17 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-type Identity struct {
-	PrincipalID             *string
-	TenantID                *string
-	Type                    interface{}
-	UserAssignedIdentities []UserAssignedIdentitiesValue
-}
-
-type UserAssignedIdentitiesValue struct {
-	PrincipalID *string
-	ClientID    *string
-}
-
 type PrivateEndpointConnectionInfo struct {
-	Properties PrivateEndpointConnectionPropertiesInfo
-	SystemData interface{}
-	Location   *string
-	Etag       *string
-	ID         *string
-	Name       *string
-	Type       *string
-}
-
-type PrivateEndpointConnectionPropertiesInfo struct {
-	PrivateEndpoint                   PrivateEndpointInfo
+	PrivateEndpointID                 interface{}
 	PrivateLinkServiceConnectionState interface{}
 	ProvisioningState                 interface{}
 	GroupIds                          *[]string
-}
-
-type PrivateEndpointInfo struct {
-	ID *string
+	SystemData                        interface{}
+	Location                          *string
+	Etag                              *string
+	ID                                *string
+	Name                              *string
+	Type                              *string
 }
 
 //// LIST FUNCTION
@@ -354,6 +333,8 @@ func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	return nil, nil
 }
 
+//// TRANSFORM FUNCTIONS
+
 func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listCognitiveAccountDiagnosticSettings")
 	id := *h.Item.(cognitiveservices.Account).ID
@@ -370,6 +351,7 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	op, err := client.List(ctx, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("listCognitiveAccountDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
@@ -395,35 +377,6 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 	return diagnosticSettings, nil
 }
 
-//// TRANSFORM FUNCTIONS
-
-// If we return the API response directly, the output will not provide all the properties of Identity
-func extractAccountIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	account := d.HydrateItem.(cognitiveservices.Account)
-	var identity Identity
-
-	if account.Identity != nil {
-		identity.PrincipalID = account.Identity.PrincipalID
-		identity.TenantID = account.Identity.TenantID
-		identity.Type = account.Identity.Type
-		if account.Identity.UserAssignedIdentities != nil {
-			for _, userAssignedIdentity := range account.Identity.UserAssignedIdentities {
-				var userAssignedIdentitiesValue UserAssignedIdentitiesValue
-				if userAssignedIdentity.ClientID != nil {
-					userAssignedIdentitiesValue.ClientID = userAssignedIdentity.ClientID
-				}
-				if userAssignedIdentity.PrincipalID != nil {
-					userAssignedIdentitiesValue.PrincipalID = userAssignedIdentity.PrincipalID
-				}
-	
-				identity.UserAssignedIdentities = append(identity.UserAssignedIdentities, userAssignedIdentitiesValue)
-			}
-		}
-	}
-	
-	return identity, nil
-}
-
 // If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractAccountPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	account := d.HydrateItem.(cognitiveservices.Account)
@@ -431,29 +384,23 @@ func extractAccountPrivateEndpointConnections(ctx context.Context, d *transform.
 
 	if account.Properties.PrivateEndpointConnections != nil {
 		for _, connection := range *account.Properties.PrivateEndpointConnections {
-			privateEndpointConnectionPropertiesInfo := PrivateEndpointConnectionPropertiesInfo{}
-			privateEndpointInfo := PrivateEndpointInfo{}
+			properties := PrivateEndpointConnectionInfo{}
+			properties.SystemData = connection.SystemData
+			properties.Location = connection.Location
+			properties.Etag = connection.Etag
+			properties.ID = connection.ID
+			properties.Name = connection.Name
+			properties.Type = connection.Type
 			if connection.Properties != nil {
 				if connection.Properties.PrivateEndpoint != nil {
-					privateEndpointInfo.ID = connection.Properties.PrivateEndpoint.ID
+					properties.PrivateEndpointID = connection.Properties.PrivateEndpoint.ID
 				}
-				privateEndpointConnectionPropertiesInfo.PrivateEndpoint = privateEndpointInfo
-				privateEndpointConnectionPropertiesInfo.PrivateLinkServiceConnectionState = connection.Properties.PrivateLinkServiceConnectionState
-				privateEndpointConnectionPropertiesInfo.ProvisioningState = connection.Properties.ProvisioningState
-				privateEndpointConnectionPropertiesInfo.GroupIds = connection.Properties.GroupIds
+				properties.PrivateLinkServiceConnectionState = connection.Properties.PrivateLinkServiceConnectionState
+				properties.ProvisioningState = connection.Properties.ProvisioningState
+				properties.GroupIds = connection.Properties.GroupIds
 			}
-			privateEndpointConnectionInfo = append(
-				privateEndpointConnectionInfo,
-				PrivateEndpointConnectionInfo {
-					Properties: privateEndpointConnectionPropertiesInfo,
-					SystemData: connection.SystemData,
-					Location:   connection.Location,
-					Etag:       connection.Etag,
-					ID:         connection.ID,
-					Name:       connection.Name,
-					Type:       connection.Type,
-				})
-			}
+			privateEndpointConnectionInfo = append(privateEndpointConnectionInfo, properties)
+		}
 	}
 	
 	return privateEndpointConnectionInfo, nil
