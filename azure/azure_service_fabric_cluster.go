@@ -229,7 +229,7 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 	}
 }
 
-//// LIST FUNCTIONS
+//// LIST FUNCTION
 
 func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -243,9 +243,11 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 
 	result, err := clusterClient.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listServiceFabricClusters", "list", err)
 		return nil, err
 	}
 
+	// The API provides an URL for next set of data but accepts no param to implement pagination
 	for _, cluster := range *result.Value {
 		d.StreamListItem(ctx, cluster)
 	}
@@ -277,6 +279,7 @@ func getServiceFabricCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	cluster, err := clusterClient.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getServiceFabricCluster", "get", err)
 		return nil, err
 	}
 
