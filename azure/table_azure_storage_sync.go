@@ -126,7 +126,7 @@ func tableAzureStorageSync(_ context.Context) *plugin.Table {
 	}
 }
 
-type StoragePrivateEndpointConnections struct {
+type StorageSyncPrivateEndpointConnections struct {
 	PrivateEndpointPropertyID         interface{}
 	PrivateLinkServiceConnectionState interface{}
 	ProvisioningState                 interface{}
@@ -203,11 +203,11 @@ func getAzureStorageSync(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 // If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractStorageSyncPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	service := d.HydrateItem.(storagesync.Service)
-	info := []StoragePrivateEndpointConnections{}
+	info := []StorageSyncPrivateEndpointConnections{}
 
-	if service.ServiceProperties.PrivateEndpointConnections != nil {
+	if service.ServiceProperties != nil && service.ServiceProperties.PrivateEndpointConnections != nil {
 		for _, connection := range *service.ServiceProperties.PrivateEndpointConnections {
-			properties := StoragePrivateEndpointConnections{}
+			properties := StorageSyncPrivateEndpointConnections{}
 			properties.ID = connection.ID
 			properties.Name = connection.Name
 			properties.Type = connection.Type

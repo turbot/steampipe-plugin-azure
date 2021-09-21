@@ -16,7 +16,7 @@ from
   azure_storage_sync;
 ```
 
-### List storage sync which allows traffic only from private endpoints
+### List storage sync which allows traffic through private endpoints only
 
 ```sql
 select
