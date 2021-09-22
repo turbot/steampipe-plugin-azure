@@ -9,6 +9,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/postgresql/mgmt/2020-01-01/postgresql"
+	"github.com/Azure/go-autorest/autorest/date"
 )
 
 //// TABLE DEFINITION
@@ -206,6 +207,13 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Hydrate:     getPostgreSQLServerConfigurations,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "server_keys",
+				Description: "A list of server keys for a server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listPostgreSQLServerKeys,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -247,6 +255,16 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 			},
 		},
 	}
+}
+
+type ServerKeyInfo struct {
+	ServerKeyId           *string
+	ServerKeyName         *string
+	ServerKeyType         *string
+	ServerKeyKind         *string
+	Type                  *string
+	ServerKeyUri          *string
+	ServerKeyCreationDate *date.Time
 }
 
 //// LIST FUNCTION
@@ -354,6 +372,48 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 	return firewallRules, nil
 }
 
+func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listPostgreSQLServerKeys")
+	server := h.Item.(postgresql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := postgresql.NewServerKeysClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "List", err)
+		return nil, err
+	}
+
+	var serverKeys []ServerKeyInfo
+
+	for _, key := range op.Values() {
+		keyInfo := postgreSqlServerkeyMap(key)
+		serverKeys = append(serverKeys, keyInfo)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "list_paging", err)
+			return nil, err
+		}
+		for _, key := range op.Values() {
+			keyInfo := postgreSqlServerkeyMap(key)
+			serverKeys = append(serverKeys, keyInfo)
+		}
+	}
+
+	return serverKeys, nil
+}
+
 func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getPostgreSQLServerAdministrator")
 	server := h.Item.(postgresql.Server)
@@ -434,4 +494,34 @@ func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData,
 		serverParameters = append(serverParameters, objectMap)
 	}
 	return serverParameters, nil
+}
+
+func postgreSqlServerkeyMap(key postgresql.ServerKey) ServerKeyInfo {
+	var serverKey ServerKeyInfo
+	if key.ID != nil {
+		serverKey.ServerKeyId = key.ID
+	}
+	if key.Name != nil {
+		serverKey.ServerKeyName = key.Name
+	}
+	if key.Type != nil {
+		serverKey.Type = key.Type
+	}
+	if key.Kind != nil {
+		serverKey.ServerKeyKind = key.Kind
+	}
+
+	if key.ServerKeyProperties != nil {
+		if key.ServerKeyProperties.CreationDate != nil {
+			serverKey.ServerKeyCreationDate = key.ServerKeyProperties.CreationDate
+		}
+		if key.ServerKeyProperties.ServerKeyType != nil {
+			serverKey.ServerKeyType = key.ServerKeyProperties.ServerKeyType
+		}
+		if key.ServerKeyProperties.URI != nil {
+			serverKey.ServerKeyUri = key.ServerKeyProperties.URI
+		}
+	}
+
+	return serverKey
 }
