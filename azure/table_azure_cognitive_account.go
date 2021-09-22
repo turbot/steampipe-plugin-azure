@@ -247,7 +247,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-type PrivateEndpointConnectionInfo struct {
+type CognitiveAccountPrivateEndpointConnections struct {
 	PrivateEndpointID                 interface{}
 	PrivateLinkServiceConnectionState interface{}
 	ProvisioningState                 interface{}
@@ -380,11 +380,11 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 // If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractAccountPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	account := d.HydrateItem.(cognitiveservices.Account)
-	privateEndpointConnectionInfo := []PrivateEndpointConnectionInfo{}
+	privateEndpointConnectionInfo := []CognitiveAccountPrivateEndpointConnections{}
 
 	if account.Properties.PrivateEndpointConnections != nil {
 		for _, connection := range *account.Properties.PrivateEndpointConnections {
-			properties := PrivateEndpointConnectionInfo{}
+			properties := CognitiveAccountPrivateEndpointConnections{}
 			properties.SystemData = connection.SystemData
 			properties.Location = connection.Location
 			properties.Etag = connection.Etag
