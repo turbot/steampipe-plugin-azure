@@ -126,6 +126,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "private_endpoint_connections",
+				Description: "The private endpoint connections of the sql server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSQLServerPrivateEndpointConnections,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "tags_src",
 				Description: "Specifies the set of tags attached to the server.",
 				Type:        proto.ColumnType_JSON,
@@ -179,6 +186,17 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 		},
 	}
+}
+
+type PrivateConnectionInfo struct {
+	PrivateEndpointConnectionId                      string
+	PrivateEndpointId                                string
+	PrivateEndpointConnectionName                    string
+	PrivateEndpointConnectionType                    string
+	PrivateLinkServiceConnectionStateStatus          string
+	PrivateLinkServiceConnectionStateDescription     string
+	PrivateLinkServiceConnectionStateActionsRequired string
+	ProvisioningState                                string
 }
 
 //// LIST FUNCTION
@@ -282,6 +300,48 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 		auditPolicies = append(auditPolicies, objectMap)
 	}
 	return auditPolicies, nil
+}
+
+func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSQLServerPrivateEndpointConnections")
+	server := h.Item.(sql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := sqlv.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer", err)
+		return nil, err
+	}
+
+	var privateEndpointConnections []PrivateConnectionInfo
+	var connection PrivateConnectionInfo
+
+	for _, conn := range op.Values() {
+		connection = privateEndpointConnectionMap(conn)
+		privateEndpointConnections = append(privateEndpointConnections, connection)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer_pagination", err)
+			return nil, err
+		}
+		for _, conn := range op.Values() {
+			connection = privateEndpointConnectionMap(conn)
+			privateEndpointConnections = append(privateEndpointConnections, connection)
+		}
+	}
+	return privateEndpointConnections, nil
 }
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -553,4 +613,42 @@ func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
 		objectMap["properties"] = rule.VirtualNetworkRuleProperties
 	}
 	return objectMap
+}
+
+// If we return the API response directly, the output will not give
+// all the contents of PrivateEndpointConnection
+func privateEndpointConnectionMap(conn sqlv.PrivateEndpointConnection) PrivateConnectionInfo {
+	var connection PrivateConnectionInfo
+	if conn.ID != nil {
+		connection.PrivateEndpointConnectionId = *conn.ID
+	}
+	if conn.Name != nil {
+		connection.PrivateEndpointConnectionName = *conn.Name
+	}
+	if conn.Type != nil {
+		connection.PrivateEndpointConnectionType = *conn.Type
+	}
+	if conn.PrivateEndpointConnectionProperties != nil {
+		if conn.PrivateEndpoint != nil {
+			if conn.PrivateEndpoint.ID != nil {
+				connection.PrivateEndpointId = *conn.PrivateEndpoint.ID
+			}
+		}
+		if conn.PrivateLinkServiceConnectionState != nil {
+			if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = *conn.PrivateLinkServiceConnectionState.ActionsRequired
+			}
+			if conn.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = *conn.PrivateLinkServiceConnectionState.Status
+			}
+			if conn.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
+			}
+		}
+		if conn.ProvisioningState != nil {
+			connection.ProvisioningState = *conn.ProvisioningState
+		}
+	}
+
+	return connection
 }
