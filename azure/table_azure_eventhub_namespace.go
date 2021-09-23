@@ -148,7 +148,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "Private endpoint connections to the instance.",
+				Description: "The private endpoint connections of the namespace.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listEventHubNamespacePrivateEndpointConnections,
 				Transform:   transform.FromValue(),
