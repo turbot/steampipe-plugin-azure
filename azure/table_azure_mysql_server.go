@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -190,6 +191,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ServerProperties.PrivateEndpointConnections"),
 			},
+			{
+				Name:        "server_keys",
+				Description: "The server keys of the server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServersServerKeys,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -293,4 +301,97 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	return nil, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of ServerKeys
+func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMySQLServersServerKeys")
+
+	namespace := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	serverName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewServerKeysClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list", err)
+		return nil, err
+	}
+
+	var mySQLServersServerKeys []map[string]interface{}
+
+	for _, i := range op.Values() {
+		mySQLServersServerKey := make(map[string]interface{})
+		if i.ID != nil {
+			mySQLServersServerKey["id"] = *i.ID
+		}
+		if i.Name != nil {
+			mySQLServersServerKey["name"] = *i.Name
+		}
+		if i.Type != nil {
+			mySQLServersServerKey["type"] = *i.Type
+		}
+		if i.Type != nil {
+			mySQLServersServerKey["kind"] = *i.Kind
+		}
+		if i.ServerKeyProperties != nil {
+			if i.ServerKeyProperties.ServerKeyType != nil {
+				mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
+			}
+			if i.ServerKeyProperties.URI != nil {
+				mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
+			}
+			if i.ServerKeyProperties.CreationDate != nil {
+				mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
+			}
+		}
+
+		mySQLServersServerKeys = append(mySQLServersServerKeys, mySQLServersServerKey)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			mySQLServersServerKey := make(map[string]interface{})
+			if i.ID != nil {
+				mySQLServersServerKey["id"] = *i.ID
+			}
+			if i.Name != nil {
+				mySQLServersServerKey["name"] = *i.Name
+			}
+			if i.Type != nil {
+				mySQLServersServerKey["type"] = *i.Type
+			}
+			if i.Type != nil {
+				mySQLServersServerKey["kind"] = *i.Kind
+			}
+			if i.ServerKeyProperties != nil {
+				if i.ServerKeyProperties.ServerKeyType != nil {
+					mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
+				}
+				if i.ServerKeyProperties.URI != nil {
+					mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
+				}
+				if i.ServerKeyProperties.CreationDate != nil {
+					mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
+				}
+			}
+
+			mySQLServersServerKeys = append(mySQLServersServerKeys, mySQLServersServerKey)
+		}
+	}
+
+	return mySQLServersServerKeys, nil
 }
