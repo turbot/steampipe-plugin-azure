@@ -1,4 +1,3 @@
-
 variable "resource_name" {
   type        = string
   default     = "turbot-test-20200125-create-update"
@@ -17,62 +16,50 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
-variable "azure_resource_group" {
-  type        = string
-  default     = "integration_test_rg"
-  description = "Name of the resource group used throughout the test."
-}
-
-resource "azurerm_resource_group" "named_test_resource" {
-  name     = var.resource_name
-  location = "West US"
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.77.0"
+    }
+  }
 }
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
+  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
 }
 
-data "azurerm_client_config" "current" {}
-
-data "null_data_source" "resource" {
-  inputs = {
-    scope = "azure:///subscriptions/${data.azurerm_client_config.current.subscription_id}"
-  }
+resource "azurerm_resource_group" "named_test_resource" {
+ name     = var.resource_name
+ location = "West Europe"
+}
+ 
+resource "azurerm_api_management" "named_test_resource" {
+ name                = var.resource_name
+ location            = azurerm_resource_group.named_test_resource.location
+ resource_group_name = azurerm_resource_group.named_test_resource.name
+ publisher_name      = "TurbotHQ"
+ publisher_email     = "test@turbot.com"
+ 
+ sku_name = "Developer_1"
 }
 
-resource "azurerm_api_management" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  publisher_name      = "TurbotHQ"
-  publisher_email     = "test@turbot.com"
-
-  sku_name = "Developer_1"
-
-  policy {
-    xml_content = <<XML
-  <policies>
-    <inbound />
-    <backend />
-    <outbound />
-    <on-error />
-  </policies>
-XML
-  }
-  tags = {
-    name = var.resource_name
-  }
+output "region" {
+  depends_on = [azurerm_api_management.named_test_resource]
+  value      = azurerm_resource_group.named_test_resource.location
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_api_management.named_test_resource.id}"
+  depends_on = [azurerm_api_management.named_test_resource]
+  value      = "azure://${azurerm_api_management.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {
-  value = "azure://${lower(azurerm_api_management.named_test_resource.id)}"
+  depends_on = [azurerm_api_management.named_test_resource]
+  value      = "azure://${lower(azurerm_api_management.named_test_resource.id)}"
 }
 
 output "resource_name" {
@@ -80,17 +67,10 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = azurerm_api_management.named_test_resource.id
-}
-
-output "location" {
-  value = azurerm_resource_group.named_test_resource.location
+  depends_on = [azurerm_api_management.named_test_resource]
+  value      = azurerm_api_management.named_test_resource.id
 }
 
 output "subscription_id" {
   value = var.azure_subscription
-}
-
-output "resource_group_name" {
-  value = var.azure_resource_group
 }
