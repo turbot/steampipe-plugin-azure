@@ -1,0 +1,17 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "kind": "{{ output.kind.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.region.value }}",
+    "resource_group": "{{ resourceName }}",
+    "sku": {
+      "name": "{{ output.sku_name.value }}"
+    },
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "tags": {
+      "name": "{{ resourceName }}"
+    },
+    "type": "Microsoft.CognitiveServices/accounts"
+  }
+]
