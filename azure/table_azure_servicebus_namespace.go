@@ -116,6 +116,13 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Hydrate:     getServiceBusNamespaceNetworkRuleSet,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "The private endpoint connections of the namespace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listServiceBusNamespacePrivateEndpointConnections,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -290,4 +297,91 @@ func listServiceBusNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Qu
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listServiceBusNamespacePrivateEndpointConnections")
+
+	namespace := h.Item.(servicebus.SBNamespace)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	namespaceName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := servicebus.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroup, namespaceName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listServiceBusNamespacePrivateEndpointConnections", "list", err)
+		return nil, err
+	}
+
+	var serviceBusNamespacePrivateEndpointConnections []map[string]interface{}
+
+	for _, i := range op.Values() {
+		serviceBusNamespacePrivateEndpointConnection := make(map[string]interface{})
+		if i.ID != nil {
+			serviceBusNamespacePrivateEndpointConnection["id"] = *i.ID
+		}
+		if i.Name != nil {
+			serviceBusNamespacePrivateEndpointConnection["name"] = *i.Name
+		}
+		if i.Type != nil {
+			serviceBusNamespacePrivateEndpointConnection["type"] = *i.Type
+		}
+		if i.PrivateEndpointConnectionProperties != nil {
+			if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+				serviceBusNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+			}
+			if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+				serviceBusNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+			}
+			if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+				serviceBusNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+			}
+		}
+
+		serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, serviceBusNamespacePrivateEndpointConnection)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listServiceBusNamespacePrivateEndpointConnections", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			serviceBusNamespacePrivateEndpointConnection := make(map[string]interface{})
+			if i.ID != nil {
+				serviceBusNamespacePrivateEndpointConnection["id"] = *i.ID
+			}
+			if i.Name != nil {
+				serviceBusNamespacePrivateEndpointConnection["name"] = *i.Name
+			}
+			if i.Type != nil {
+				serviceBusNamespacePrivateEndpointConnection["type"] = *i.Type
+			}
+			if i.PrivateEndpointConnectionProperties != nil {
+				if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+					serviceBusNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+				}
+				if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+					serviceBusNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+				}
+				if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+					serviceBusNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+				}
+			}
+
+			serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, serviceBusNamespacePrivateEndpointConnection)
+		}
+	}
+
+	return serviceBusNamespacePrivateEndpointConnections, nil
 }
