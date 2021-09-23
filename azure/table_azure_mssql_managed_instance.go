@@ -175,6 +175,13 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 			{
+				Name:        "security_alert_policies",
+				Description: "The security alert policies of the managed instance.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMSSQLManagedInstanceSecurityAlertPolicies,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "sku",
 				Description: "Managed instance SKU.",
 				Type:        proto.ColumnType_JSON,
@@ -478,4 +485,126 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 	}
 
 	return managedInstanceVulnerabilityAssessments, nil
+}
+
+func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceSecurityAlertPolicies")
+
+	managedInstance := h.Item.(sql.ManagedInstance)
+	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
+	managedInstanceName := *managedInstance.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sql.NewManagedServerSecurityAlertPoliciesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list", err)
+		return nil, err
+	}
+
+	var managedInstanceSecurityAlertPolicies []map[string]interface{}
+
+	for _, i := range op.Values() {
+		managedInstanceSecurityAlertPolicy := make(map[string]interface{})
+		if i.ID != nil {
+			managedInstanceSecurityAlertPolicy["id"] = *i.ID
+		}
+		if i.Name != nil {
+			managedInstanceSecurityAlertPolicy["name"] = *i.Name
+		}
+		if i.Type != nil {
+			managedInstanceSecurityAlertPolicy["type"] = *i.Type
+		}
+		if i.SystemData != nil {
+			managedInstanceSecurityAlertPolicy["systemData"] = i.SystemData
+		}
+		if i.SecurityAlertsPolicyProperties != nil {
+			if len(i.SecurityAlertsPolicyProperties.State) > 0 {
+				managedInstanceSecurityAlertPolicy["state"] = i.SecurityAlertsPolicyProperties.State
+			}
+			if i.SecurityAlertsPolicyProperties.DisabledAlerts != nil {
+				managedInstanceSecurityAlertPolicy["disabledAlerts"] = i.SecurityAlertsPolicyProperties.DisabledAlerts
+			}
+			if i.SecurityAlertsPolicyProperties.EmailAddresses != nil {
+				managedInstanceSecurityAlertPolicy["emailAddresses"] = i.SecurityAlertsPolicyProperties.EmailAddresses
+			}
+			if i.SecurityAlertsPolicyProperties.EmailAccountAdmins != nil {
+				managedInstanceSecurityAlertPolicy["emailAccountAdmins"] = i.SecurityAlertsPolicyProperties.EmailAccountAdmins
+			}
+			if i.SecurityAlertsPolicyProperties.StorageEndpoint != nil {
+				managedInstanceSecurityAlertPolicy["storageEndpoint"] = i.SecurityAlertsPolicyProperties.StorageEndpoint
+			}
+			if i.SecurityAlertsPolicyProperties.StorageAccountAccessKey != nil {
+				managedInstanceSecurityAlertPolicy["storageAccountAccessKey"] = i.SecurityAlertsPolicyProperties.StorageAccountAccessKey
+			}
+			if i.SecurityAlertsPolicyProperties.RetentionDays != nil {
+				managedInstanceSecurityAlertPolicy["retentionDays"] = i.SecurityAlertsPolicyProperties.RetentionDays
+			}
+			if i.SecurityAlertsPolicyProperties.CreationTime != nil {
+				managedInstanceSecurityAlertPolicy["creationTime"] = i.SecurityAlertsPolicyProperties.CreationTime
+			}
+		}
+
+		managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, managedInstanceSecurityAlertPolicy)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			managedInstanceSecurityAlertPolicy := make(map[string]interface{})
+			if i.ID != nil {
+				managedInstanceSecurityAlertPolicy["id"] = *i.ID
+			}
+			if i.Name != nil {
+				managedInstanceSecurityAlertPolicy["name"] = *i.Name
+			}
+			if i.Type != nil {
+				managedInstanceSecurityAlertPolicy["type"] = *i.Type
+			}
+			if i.SystemData != nil {
+				managedInstanceSecurityAlertPolicy["systemData"] = i.SystemData
+			}
+			if i.SecurityAlertsPolicyProperties != nil {
+				if len(i.SecurityAlertsPolicyProperties.State) > 0 {
+					managedInstanceSecurityAlertPolicy["state"] = i.SecurityAlertsPolicyProperties.State
+				}
+				if i.SecurityAlertsPolicyProperties.DisabledAlerts != nil {
+					managedInstanceSecurityAlertPolicy["disabledAlerts"] = i.SecurityAlertsPolicyProperties.DisabledAlerts
+				}
+				if i.SecurityAlertsPolicyProperties.EmailAddresses != nil {
+					managedInstanceSecurityAlertPolicy["emailAddresses"] = i.SecurityAlertsPolicyProperties.EmailAddresses
+				}
+				if i.SecurityAlertsPolicyProperties.EmailAccountAdmins != nil {
+					managedInstanceSecurityAlertPolicy["emailAccountAdmins"] = i.SecurityAlertsPolicyProperties.EmailAccountAdmins
+				}
+				if i.SecurityAlertsPolicyProperties.StorageEndpoint != nil {
+					managedInstanceSecurityAlertPolicy["storageEndpoint"] = i.SecurityAlertsPolicyProperties.StorageEndpoint
+				}
+				if i.SecurityAlertsPolicyProperties.StorageAccountAccessKey != nil {
+					managedInstanceSecurityAlertPolicy["storageAccountAccessKey"] = i.SecurityAlertsPolicyProperties.StorageAccountAccessKey
+				}
+				if i.SecurityAlertsPolicyProperties.RetentionDays != nil {
+					managedInstanceSecurityAlertPolicy["retentionDays"] = i.SecurityAlertsPolicyProperties.RetentionDays
+				}
+				if i.SecurityAlertsPolicyProperties.CreationTime != nil {
+					managedInstanceSecurityAlertPolicy["creationTime"] = i.SecurityAlertsPolicyProperties.CreationTime
+				}
+			}
+
+			managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, managedInstanceSecurityAlertPolicy)
+		}
+	}
+
+	return managedInstanceSecurityAlertPolicies, nil
 }
