@@ -146,6 +146,13 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Hydrate:     getNetworkRuleSet,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "Private endpoint connections to the instance.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listEventHubNamespacePrivateEndpointConnections,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -319,4 +326,90 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventHubNamespacePrivateEndpointConnections")
+
+	namespace := h.Item.(eventhub.EHNamespace)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	namespaceName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := eventhub.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroup, namespaceName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listEventHubNamespacePrivateEndpointConnections", "list", err)
+		return nil, err
+	}
+
+	var eventHubNamespacePrivateEndpointConnections []map[string]interface{}
+
+	for _, i := range op.Values() {
+		eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
+		if i.ID != nil {
+			eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
+		}
+		if i.Name != nil {
+			eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
+		}
+		if i.Type != nil {
+			eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
+		}
+		if i.PrivateEndpointConnectionProperties != nil {
+			if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+				eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+			}
+			if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+				eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+			}
+			if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+				eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+			}
+		}
+
+		eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, eventHubNamespacePrivateEndpointConnection)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listEventHubNamespacePrivateEndpointConnections", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
+			if i.ID != nil {
+				eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
+			}
+			if i.Name != nil {
+				eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
+			}
+			if i.Type != nil {
+				eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
+			}
+			if i.PrivateEndpointConnectionProperties != nil {
+				if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+					eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+				}
+				if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+					eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+				}
+				if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+					eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+				}
+			}
+
+			eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, eventHubNamespacePrivateEndpointConnection)
+		}
+	}
+
+	return eventHubNamespacePrivateEndpointConnections, nil
 }
