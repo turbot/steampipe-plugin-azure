@@ -247,7 +247,7 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 		return nil, err
 	}
 
-	// The API provides an URL for next set of data but accepts no param to implement pagination
+	// The API does not support pagination
 	for _, cluster := range *result.Value {
 		d.StreamListItem(ctx, cluster)
 	}
