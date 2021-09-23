@@ -328,6 +328,7 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 	return diagnosticSettings, nil
 }
 
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listEventHubNamespacePrivateEndpointConnections")
 
