@@ -88,13 +88,13 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "identity_type",
-				Description: "The type of managed identity used. The type 'SystemAssigned, UserAssigned' includes both an implicitly created identity and a set of user-assigned identities. The type 'None' will remove any identity. Possible values include: 'IdentityTypeNone', 'IdentityTypeSystemAssigned', 'IdentityTypeUserAssigned', 'IdentityTypeSystemAssignedUserAssigned'.",
+				Description: "The type of managed identity used. The type 'SystemAssigned, UserAssigned' includes both an implicitly created identity and a set of user-assigned identities. The type 'None' will remove any identity. Possible values include: 'None', 'SystemAssigned', 'UserAssigned', 'SystemAssignedUserAssigned'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Identity.Type").Transform(transform.ToString),
 			},
 			{
 				Name:        "input_schema",
-				Description: "This determines the format that Event Grid should expect for incoming events published to the Event Grid Domain Resource. Possible values include: 'InputSchemaEventGridSchema', 'InputSchemaCustomEventSchema', 'InputSchemaCloudEventSchemaV10'.",
+				Description: "This determines the format that Event Grid should expect for incoming events published to the Event Grid Domain Resource. Possible values include: 'EventGridSchema', 'CustomEventSchema', 'CloudEventSchemaV10'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromP(extractEventGridDomainProperties, "InputSchema"),
 			},
@@ -112,7 +112,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "last_modified_by_type",
-				Description: "The type of identity that last modified the resource. Possible values include: 'CreatedByTypeUser', 'CreatedByTypeApplication', 'CreatedByTypeManagedIdentity', 'CreatedByTypeKey'.",
+				Description: "The type of identity that last modified the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SystemData.LastModifiedByType"),
 			},
@@ -302,8 +302,8 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
-	// the contents of DiagnosticSettings
+	// If we return the API response directly, the output does not provide
+	// all the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
