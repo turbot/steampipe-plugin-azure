@@ -44,7 +44,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Gets the status of the cognitive services account at the time the operation was called. Possible values include: 'Accepted', 'Creating', 'Deleting', 'Moving', 'Failed', 'Succeeded', 'ResolvingDNS'.",
+				Description: "The status of the cognitive services account at the time the operation was called. Possible values include: 'Accepted', 'Creating', 'Deleting', 'Moving', 'Failed', 'Succeeded', 'ResolvingDNS'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
@@ -61,7 +61,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "date_created",
-				Description: "Gets the date of cognitive services account creation.",
+				Description: "The date of cognitive services account creation.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.DateCreated"),
 			},
@@ -136,13 +136,13 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "capabilities",
-				Description: "Gets the capabilities of the cognitive services account. Each item indicates the capability of a specific feature. The values are read-only and for reference only.",
+				Description: "The capabilities of the cognitive services account. Each item indicates the capability of a specific feature. The values are read-only and for reference only.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.Capabilities"),
 			},
 			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the cognitive service.",
+				Description: "A list of active diagnostic settings for the cognitive service account.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listCognitiveAccountDiagnosticSettings,
 				Transform:   transform.FromValue(),
@@ -189,7 +189,7 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sku_change_info",
-				Description: "Sku change info of account.",
+				Description: "Sku change info of the resource.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.SkuChangeInfo"),
 			},
@@ -355,7 +355,7 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
+	// If we return the API response directly, the output does not provide
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
