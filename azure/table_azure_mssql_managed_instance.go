@@ -487,6 +487,8 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 	return managedInstanceVulnerabilityAssessments, nil
 }
 
+// If we return the API response directly, the output will not provide 
+// the properties of SecurityAlertPolicies
 func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceSecurityAlertPolicies")
 
