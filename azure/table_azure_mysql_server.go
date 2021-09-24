@@ -311,12 +311,27 @@ func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transf
 				objectMap["id"] = i.ID
 			}
 			if i.Properties != nil {
-				objectMap["properties"] = i.Properties
-				objectMap["provisioningState"] = i.Properties.ProvisioningState
+				if i.Properties.PrivateEndpoint != nil {
+					objectMap["privateEndpointPropertyId"] = i.Properties.PrivateEndpoint.ID
+				}
+				if i.Properties.PrivateLinkServiceConnectionState != nil {
+					if len(i.Properties.PrivateLinkServiceConnectionState.ActionsRequired) > 0 {
+						objectMap["privateLinkServiceConnectionStateActionsRequired"] = i.Properties.PrivateLinkServiceConnectionState.ActionsRequired
+					}
+					if len(i.Properties.PrivateLinkServiceConnectionState.Status) > 0 {
+						objectMap["privateLinkServiceConnectionStateStatus"] = i.Properties.PrivateLinkServiceConnectionState.Status
+					}
+					if i.Properties.PrivateLinkServiceConnectionState.Description != nil {
+						objectMap["privateLinkServiceConnectionStateDescription"] = i.Properties.PrivateLinkServiceConnectionState.Description
+					}
+				}
+				if len(i.Properties.ProvisioningState) > 0 {
+					objectMap["provisioningState"] = i.Properties.ProvisioningState
+				}
 			}
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
