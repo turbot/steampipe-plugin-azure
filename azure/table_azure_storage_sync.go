@@ -153,7 +153,7 @@ func listAzureStorageSyncs(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		return nil, err
 	}
 
-	// The API call currently doesn't support pagination
+	// The API doesn't support pagination
 	for _, storage := range *result.Value {
 		d.StreamListItem(ctx, storage)
 	}
