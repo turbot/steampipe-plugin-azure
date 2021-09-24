@@ -49,7 +49,7 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sql_image_offer",
-				Description: "SQL image offer.",
+				Description: "SQL image offer for the SQL virtual machine.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.SQLImageOffer"),
 			},
@@ -67,7 +67,7 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sql_server_license_type",
-				Description: "SQL Server license type. Possible values include: 'PAYG', 'AHUB', 'DR'.",
+				Description: "SQL server license type for the SQL virtual machine. Possible values include: 'PAYG', 'AHUB', 'DR'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.SQLServerLicenseType"),
 			},
@@ -97,24 +97,24 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "identity",
-				Description: "Azure Active Directory identity of the server.",
+				Description: "Azure Active Directory identity for the SQL virtual machine.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "key_vault_credential_settings",
-				Description: "Key vault credential settings.",
+				Description: "Key vault credential settings for the SQL virtual machine.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.KeyVaultCredentialSettings"),
 			},
 			{
 				Name:        "server_configurations_management_settings",
-				Description: "SQL Server configuration management settings.",
+				Description: "SQL server configuration management settings for the SQL virtual machine.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.ServerConfigurationsManagementSettings"),
 			},
 			{
 				Name:        "storage_configuration_settings",
-				Description: "Storage Configuration Settings.",
+				Description: "Storage configuration settings for the SQL virtual machine.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.StorageConfigurationSettings"),
 			},
@@ -182,6 +182,7 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 
 	result, err := client.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list", err)
 		return nil, err
 	}
 	
@@ -192,6 +193,7 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list_paging", err)
 			return nil, err
 		}
 
@@ -226,6 +228,7 @@ func getMSSQLVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
+		plugin.Logger(ctx).Error("getMSSQLVirtualMachine", "get", err)
 		return nil, err
 	}
 
