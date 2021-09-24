@@ -62,7 +62,7 @@ func tableAzureSignalRService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "host_name_prefix",
-				Description: "Prefix for the hostName of the SignalR service.",
+				Description: "Prefix for the host name of the SignalR service.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.HostNamePrefix"),
 			},
@@ -104,7 +104,7 @@ func tableAzureSignalRService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "features",
-				Description: "List of SignalR featureFlags.",
+				Description: "List of SignalR feature flags.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.Features"),
 			},
@@ -276,7 +276,7 @@ func listSignalRServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
+	// If we return the API response directly, the output does not provide
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
