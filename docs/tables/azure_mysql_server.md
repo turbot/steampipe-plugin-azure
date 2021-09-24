@@ -83,3 +83,17 @@ where
   minimal_tls_version = 'TLS1_0'
   or minimal_tls_version = 'TLS1_1';
 ```
+
+### List private endpoint connection details
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  connections ->> 'id' as connection_id,
+  jsonb_pretty(connections -> 'properties') as connection_property,
+  connections ->> 'provisioningState' as connection_provisioning_state
+from
+  azure_mysql_server,
+  jsonb_array_elements(private_endpoint_connections) as connections;
+```

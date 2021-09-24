@@ -11,15 +11,15 @@
 		"public_network_access": "Enabled",
 		"region": "eastus",
 		"resource_group": "{{ resourceName }}",
-		"sku_capacity": 1,
+		"sku_capacity": 2,
 		"sku_family": "Gen5",
-		"sku_name": "B_Gen5_1",
+		"sku_name": "B_Gen5_2",
 		"sku_tier": "Basic",
 		"ssl_enforcement": "Enabled",
 		"storage_auto_grow": "Disabled",
 		"storage_mb": 5120,
 		"subscription_id": "{{ output.subscription_id.value }}",
 		"type": "Microsoft.DBforMySQL/servers",
-		"version": "5.6"
+		"version": "5.7"
 	}
 ]

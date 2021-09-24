@@ -188,7 +188,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "A list of private endpoint connections on a server.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ServerProperties.PrivateEndpointConnections"),
+				Transform:   transform.From(extractMySQLServerPrivateEndpointConnections),
 			},
 
 			// Steampipe standard columns
@@ -247,6 +247,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 	result, err := client.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServers", "list", err)
 		return nil, err
 	}
 
@@ -258,7 +259,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	return nil, err
 }
 
-//// HYDRATE FUNCTIONS
+//// HYDRATE FUNCTION
 
 func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMySQLServer")
@@ -283,6 +284,7 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getMySQLServer", "get", err)
 		return nil, err
 	}
 
@@ -293,4 +295,28 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	return nil, nil
+}
+
+//// TRANSFORM FUNCTION
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	server := d.HydrateItem.(mysql.Server)
+	var properties []map[string]interface{}
+
+	if server.ServerProperties.PrivateEndpointConnections != nil {
+		for _, i := range *server.ServerProperties.PrivateEndpointConnections {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+				objectMap["provisioningState"] = i.Properties.ProvisioningState
+			}
+			properties = append(properties, objectMap)
+		}
+	}
+	
+	return properties, nil
 }
