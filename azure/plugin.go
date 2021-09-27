@@ -66,6 +66,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_eventhub_namespace":                                    tableAzureEventHubNamespace(ctx),
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),
 			"azure_firewall":                                              tableAzureFirewall(ctx),
+			"azure_healthcare_service":                                    tableAzureHealthcareService(ctx),
 			"azure_iothub":                                                tableAzureIotHub(ctx),
 			"azure_key_vault":                                             tableAzureKeyVault(ctx),
 			"azure_key_vault_deleted_vault":                               tableAzureKeyVaultDeletedVault(ctx),
