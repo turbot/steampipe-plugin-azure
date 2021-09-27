@@ -86,15 +86,15 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ConfigurationStoreProperties.Encryption"),
 			},
 			{
+				Name:        "identity",
+				Description: "The managed identity information, if configured.",
+				Type:        proto.ColumnType_JSON,
+			},
+			{
 				Name:        "private_endpoint_connections",
 				Description: "The list of private endpoint connections that are set up for this resource.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(extractAppConfigurationPrivateEndpointConnections),
-			},
-			{
-				Name:        "identity",
-				Description: "The managed identity information, if configured.",
-				Type:        proto.ColumnType_JSON,
 			},
 
 			// Steampipe standard columns
