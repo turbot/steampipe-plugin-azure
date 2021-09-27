@@ -225,6 +225,11 @@ func getHealthcareService(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Empty check for param
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

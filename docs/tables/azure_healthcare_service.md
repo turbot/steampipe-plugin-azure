@@ -1,4 +1,4 @@
-# Table: azure_diagnostic_setting
+# Table: azure_healthcare_service
 
 Azure Healthcare APIs provides pipelines that help you manage protected health information (PHI) data at scale. 
 
@@ -16,7 +16,7 @@ select
   audience,
   authority
 from
-  azure_diagnostic_setting;
+  azure_healthcare_service;
 ```
 
 ### List healthcare services of fhir-R4 kind 
