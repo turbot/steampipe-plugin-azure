@@ -89,7 +89,7 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "The list of private endpoint connections that are set up for this resource.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(extractPostgreSqlServerPrivateEndpointConnections),
+				Transform:   transform.From(extractAppConfigurationPrivateEndpointConnections),
 			},
 			{
 				Name:        "identity",
@@ -229,6 +229,7 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	op, err := client.List(ctx, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("listAppConfigurationDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
@@ -257,7 +258,7 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 // //// TRANSFORM FUNCTION
 
 // If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
-func extractPostgreSqlServerPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractAppConfigurationPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	server := d.HydrateItem.(appconfiguration.ConfigurationStore)
 	var properties []map[string]interface{}
 
