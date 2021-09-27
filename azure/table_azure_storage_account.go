@@ -433,8 +433,9 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for _, account := range result.Values() {
 		resourceGroup := &strings.Split(string(*account.ID), "/")[4]
 		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
-		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if plugin.IsCancelled(ctx) {
+		// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -448,8 +449,9 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, account := range result.Values() {
 			resourceGroup := &strings.Split(string(*account.ID), "/")[4]
 			d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
-			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if plugin.IsCancelled(ctx) {
+			// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
