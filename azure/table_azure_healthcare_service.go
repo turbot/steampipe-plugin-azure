@@ -276,6 +276,7 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	serviceClient := healthcareapis.NewPrivateEndpointConnectionsClient(subscriptionID)
 	serviceClient.Authorizer = session.Authorizer
 
+	// SDK does not support pagination yet
 	op, err := serviceClient.ListByService(ctx, resourceGroup, *resourceName)
 
 	if err != nil {
