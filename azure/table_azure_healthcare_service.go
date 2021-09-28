@@ -13,7 +13,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-//// TABLE DEFINITION ////
+//// TABLE DEFINITION
 
 func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 	return &plugin.Table{
