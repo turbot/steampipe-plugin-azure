@@ -50,6 +50,12 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "provisioning_state",
+				Description: "The provisioning state of the healthcare service resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.ProvisioningState").Transform(transform.ToString),
+			},
+			{
 				Name:        "allow_credentials",
 				Description: "If credentials are allowed via CORS.",
 				Type:        proto.ColumnType_BOOL,
@@ -75,7 +81,7 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "kind",
-				Description: "The kind of the service. Valid values are: fhir, fhir-Stu3 and fhir-R4. Possible values include: 'Fhir', 'FhirStu3', 'FhirR4'.",
+				Description: "The kind of the service. Possible values include: 'Fhir', 'FhirStu3', 'FhirR4'.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -88,12 +94,6 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 				Description: "The max age to be allowed via CORS.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Properties.CorsConfiguration.MaxAge"),
-			},
-			{
-				Name:        "provisioning_state",
-				Description: "The provisioning state of the healthcare service resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.ProvisioningState").Transform(transform.ToString),
 			},
 			{
 				Name:        "smart_proxy_enabled",
@@ -282,44 +282,45 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 		plugin.Logger(ctx).Error("getHealthcarePrivateEndpointConnections", "list", err)
 		return nil, err
 	}
-	var priventEndpoints []map[string]interface{}
-	priventEndpoint := make(map[string]interface{})
 
+	var privateEndpoints []map[string]interface{}
+	
 	for _, conn := range *op.Value {
+		privateEndpoint := make(map[string]interface{})
 		if conn.ID != nil {
-			priventEndpoint["PrivateEndpointConnectionId"] = conn.ID
+			privateEndpoint["PrivateEndpointConnectionId"] = conn.ID
 		}
 		if conn.Name != nil {
-			priventEndpoint["PrivateEndpointConnectionName"] = conn.Name
+			privateEndpoint["PrivateEndpointConnectionName"] = conn.Name
 		}
 		if conn.Type != nil {
-			priventEndpoint["PrivateEndpointConnectionType"] = conn.Type
+			privateEndpoint["PrivateEndpointConnectionType"] = conn.Type
 		}
 		if conn.PrivateEndpointConnectionProperties != nil {
 			if conn.PrivateEndpointConnectionProperties.PrivateEndpoint != nil {
 				if conn.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-					priventEndpoint["PrivateEndpointId"] = conn.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+					privateEndpoint["PrivateEndpointId"] = conn.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
 				}
 			}
 			if conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
 				if conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-					priventEndpoint["PrivateLinkServiceConnectionStateActionsRequired"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired
+					privateEndpoint["PrivateLinkServiceConnectionStateActionsRequired"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired
 				}
 				if conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status != "" {
-					priventEndpoint["PrivateLinkServiceConnectionStateStatus"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status
+					privateEndpoint["PrivateLinkServiceConnectionStateStatus"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status
 				}
 				if conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description != nil {
-					priventEndpoint["PrivateLinkServiceConnectionStateDescription"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description
+					privateEndpoint["PrivateLinkServiceConnectionStateDescription"] = conn.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description
 				}
 			}
 			if conn.PrivateEndpointConnectionProperties.ProvisioningState != "" {
-				priventEndpoint["ProvisioningState"] = conn.PrivateEndpointConnectionProperties.ProvisioningState
+				privateEndpoint["ProvisioningState"] = conn.PrivateEndpointConnectionProperties.ProvisioningState
 			}
 		}
-		priventEndpoints = append(priventEndpoints, priventEndpoint)
+		privateEndpoints = append(privateEndpoints, privateEndpoint)
 	}
 
-	return priventEndpoints, nil
+	return privateEndpoints, nil
 }
 
 func getHealthcareServiceDignosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -349,7 +350,7 @@ func getHealthcareServiceDignosticSettings(ctx context.Context, d *plugin.QueryD
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
+	// If we return the API response directly, the output will not provide all
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
