@@ -305,7 +305,6 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	return nil, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of ServerKeys
 func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMySQLServersServerKeys")
 
@@ -331,32 +330,7 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	var mySQLServersServerKeys []map[string]interface{}
 
 	for _, i := range op.Values() {
-		mySQLServersServerKey := make(map[string]interface{})
-		if i.ID != nil {
-			mySQLServersServerKey["id"] = *i.ID
-		}
-		if i.Name != nil {
-			mySQLServersServerKey["name"] = *i.Name
-		}
-		if i.Type != nil {
-			mySQLServersServerKey["type"] = *i.Type
-		}
-		if i.Type != nil {
-			mySQLServersServerKey["kind"] = *i.Kind
-		}
-		if i.ServerKeyProperties != nil {
-			if i.ServerKeyProperties.ServerKeyType != nil {
-				mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
-			}
-			if i.ServerKeyProperties.URI != nil {
-				mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
-			}
-			if i.ServerKeyProperties.CreationDate != nil {
-				mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
-			}
-		}
-
-		mySQLServersServerKeys = append(mySQLServersServerKeys, mySQLServersServerKey)
+		mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKeys(i))
 	}
 
 	for op.NotDone() {
@@ -366,32 +340,7 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 			return nil, err
 		}
 		for _, i := range op.Values() {
-			mySQLServersServerKey := make(map[string]interface{})
-			if i.ID != nil {
-				mySQLServersServerKey["id"] = *i.ID
-			}
-			if i.Name != nil {
-				mySQLServersServerKey["name"] = *i.Name
-			}
-			if i.Type != nil {
-				mySQLServersServerKey["type"] = *i.Type
-			}
-			if i.Type != nil {
-				mySQLServersServerKey["kind"] = *i.Kind
-			}
-			if i.ServerKeyProperties != nil {
-				if i.ServerKeyProperties.ServerKeyType != nil {
-					mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
-				}
-				if i.ServerKeyProperties.URI != nil {
-					mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
-				}
-				if i.ServerKeyProperties.CreationDate != nil {
-					mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
-				}
-			}
-
-			mySQLServersServerKeys = append(mySQLServersServerKeys, mySQLServersServerKey)
+			mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKeys(i))
 		}
 	}
 
@@ -435,4 +384,33 @@ func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transf
 	}
 
 	return properties, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of ServerKeys
+func extractMySQLServersServerKeys(i mysql.ServerKey) map[string]interface{} {
+	mySQLServersServerKey := make(map[string]interface{})
+	if i.ID != nil {
+		mySQLServersServerKey["id"] = *i.ID
+	}
+	if i.Name != nil {
+		mySQLServersServerKey["name"] = *i.Name
+	}
+	if i.Type != nil {
+		mySQLServersServerKey["type"] = *i.Type
+	}
+	if i.Type != nil {
+		mySQLServersServerKey["kind"] = *i.Kind
+	}
+	if i.ServerKeyProperties != nil {
+		if i.ServerKeyProperties.ServerKeyType != nil {
+			mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
+		}
+		if i.ServerKeyProperties.URI != nil {
+			mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
+		}
+		if i.ServerKeyProperties.CreationDate != nil {
+			mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
+		}
+	}
+	return mySQLServersServerKey
 }
