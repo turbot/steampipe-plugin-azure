@@ -215,7 +215,7 @@ func listSignalRServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			d.StreamListItem(ctx, service)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -276,7 +276,7 @@ func listSignalRServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
+	// If we return the API response directly, the output does not provide all
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
