@@ -23,7 +23,7 @@ func tableAzureSynapseWorkspace(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listSynapseWorkspace,
+			Hydrate: listSynapseWorkspaces,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -208,7 +208,7 @@ type SynapseWorkspaceEncryption struct {
 
 //// LIST FUNCTION
 
-func listSynapseWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSynapseWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func listSynapseWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	result, err := client.List(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listSynapseWorkspace", "list", err)
+		plugin.Logger(ctx).Error("listSynapseWorkspaces", "list", err)
 		return nil, err
 	}
 
@@ -231,14 +231,14 @@ func listSynapseWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listSynapseWorkspace", "list_paging", err)
+			plugin.Logger(ctx).Error("listSynapseWorkspaces", "list_paging", err)
 			return nil, err
 		}
 		for _, config := range result.Values() {
 			d.StreamListItem(ctx, config)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -299,7 +299,7 @@ func listSynapseWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
+	// If we return the API response directly, the output does not provide all
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
@@ -323,7 +323,7 @@ func listSynapseWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 //// TRANSFORM FUNCTIONS
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+// If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractSynapseWorkspacePrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	workspace := d.HydrateItem.(synapse.Workspace)
 	var properties []map[string]interface{}
@@ -366,7 +366,7 @@ func extractSynapseWorkspacePrivateEndpointConnections(ctx context.Context, d *t
 	return properties, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of Encryption
+// If we return the API response directly, the output will not provide all the properties of Encryption
 func extractSynapseWorkspaceEncryption(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	workspace := d.HydrateItem.(synapse.Workspace)
 	var properties SynapseWorkspaceEncryption
