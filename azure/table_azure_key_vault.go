@@ -137,6 +137,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Description: "A list of 0 to 1024 identities that have access to the key vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
+				Transform:   transform.From(extractKeyVaultAccessPolicies),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -334,30 +335,71 @@ func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform
 	plugin.Logger(ctx).Trace("extractKeyVaultPrivateEndpointConnections")
 	var privateEndpointDetails []PrivateEndpointConnectionInfo
 	var privateEndpoint PrivateEndpointConnectionInfo
-	for _, connection := range *vault.Properties.PrivateEndpointConnections {
-		// Below checks are required for handling invalid memory address or nil pointer dereference error
-		if connection.PrivateEndpointConnectionProperties != nil {
-			if connection.PrivateEndpoint != nil {
-				privateEndpoint.PrivateEndpointId = *connection.PrivateEndpoint.ID
-			}
-			if connection.PrivateLinkServiceConnectionState != nil {
-				if connection.PrivateLinkServiceConnectionState.ActionRequired != nil {
-					privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *connection.PrivateLinkServiceConnectionState.ActionRequired
+	if vault.Properties.PrivateEndpointConnections != nil {
+		for _, connection := range *vault.Properties.PrivateEndpointConnections {
+			// Below checks are required for handling invalid memory address or nil pointer dereference error
+			if connection.PrivateEndpointConnectionProperties != nil {
+				if connection.PrivateEndpoint != nil {
+					privateEndpoint.PrivateEndpointId = *connection.PrivateEndpoint.ID
 				}
-				if connection.PrivateLinkServiceConnectionState.Description != nil {
-					privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description
+				if connection.PrivateLinkServiceConnectionState != nil {
+					if connection.PrivateLinkServiceConnectionState.ActionRequired != nil {
+						privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *connection.PrivateLinkServiceConnectionState.ActionRequired
+					}
+					if connection.PrivateLinkServiceConnectionState.Description != nil {
+						privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description
+					}
+					if connection.PrivateLinkServiceConnectionState.Status != "" {
+						privateEndpoint.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateLinkServiceConnectionState.Status)
+					}
 				}
-				if connection.PrivateLinkServiceConnectionState.Status != "" {
-					privateEndpoint.PrivateLinkServiceConnectionStateStatus = string(connection.PrivateLinkServiceConnectionState.Status)
+				if connection.ProvisioningState != "" {
+					privateEndpoint.ProvisioningState = string(connection.ProvisioningState)
 				}
 			}
-			if connection.ProvisioningState != "" {
-				privateEndpoint.ProvisioningState = string(connection.ProvisioningState)
-			}
+			privateEndpointDetails = append(privateEndpointDetails, privateEndpoint)
 		}
-		privateEndpointDetails = append(privateEndpointDetails, privateEndpoint)
 	}
+	
 	return privateEndpointDetails, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of AccessPolicies
+func extractKeyVaultAccessPolicies(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	vault := d.HydrateItem.(keyvault.Vault)
+	var policies []map[string]interface{}
+
+	if vault.Properties.AccessPolicies != nil {
+		for _, i := range *vault.Properties.AccessPolicies {
+			objectMap := make(map[string]interface{})
+			if i.TenantID != nil {
+				objectMap["tenantId"] = i.TenantID
+			}
+			if i.ObjectID != nil {
+				objectMap["objectId"] = i.ObjectID
+			}
+			if i.ApplicationID != nil {
+				objectMap["applicationId"] = i.ApplicationID
+			}
+			if i.Permissions != nil {
+				if i.Permissions.Keys != nil {
+					objectMap["permissionsKeys"] = i.Permissions.Keys
+				}
+				if i.Permissions.Secrets != nil {
+					objectMap["permissionsSecrets"] = i.Permissions.Secrets
+				}
+				if i.Permissions.Keys != nil {
+					objectMap["permissionsCertificates"] = i.Permissions.Certificates
+				}
+				if i.Permissions.Keys != nil {
+					objectMap["permissionsStorage"] = i.Permissions.Storage
+				}
+			}
+			policies = append(policies, objectMap)
+		}
+	}
+
+	return policies, nil
 }
 
 func getKeyVaultID(item interface{}) string {

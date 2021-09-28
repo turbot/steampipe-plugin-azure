@@ -1,0 +1,10 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "resource_group": "{{ resourceName }}",
+    "sql_server_license_type": "{{ output.sql_license_type.value }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.SqlVirtualMachine/sqlVirtualMachines"
+  }
+]

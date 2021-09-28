@@ -68,9 +68,9 @@ where
 ```sql
 select
   name,
-  policy #> '{permissions, certificates}'  certificates_permissions,
-  policy #> '{permissions, keys}'  keys_permissions,
-  policy #> '{permissions, secrets}'  secrets_permissions
+  policy -> 'permissionsCertificates' as certificates_permissions,
+  policy -> 'permissionsKeys' as keys_permissions,
+  policy -> 'permissionsSecrets' as  secrets_permissions
 from
   azure_key_vault,
   jsonb_array_elements(access_policies) as policy;

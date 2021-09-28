@@ -3,16 +3,14 @@
     "access_policies": [
       {
         "objectId": "{{ output.object_id.value }}",
-        "permissions": {
-          "certificates": [],
-          "keys": [
-            "get"
-          ],
-          "secrets": [
-            "get"
-          ],
-          "storage": []
-        },
+        "permissionsCertificates": [],
+        "permissionsKeys": [
+          "get"
+        ],
+        "permissionsSecrets": [
+          "get"
+        ],
+        "permissionsStorage": [],
         "tenantId": "{{ output.tenant_id.value }}"
       }
     ],
