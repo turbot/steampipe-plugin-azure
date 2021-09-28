@@ -122,7 +122,7 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "methods",
-				Description: "The headers to be allowed via CORS.",
+				Description: "The methods to be allowed via CORS.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.CorsConfiguration.Methods"),
 			},
