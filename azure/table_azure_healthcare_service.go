@@ -254,6 +254,7 @@ func getHealthcareService(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	return nil, nil
 }
 
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getHealthcarePrivateEndpointConnections")
 
