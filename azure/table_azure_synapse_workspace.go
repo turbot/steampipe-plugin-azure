@@ -321,7 +321,7 @@ func listSynapseWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.Query
 	return diagnosticSettings, nil
 }
 
-// //// TRANSFORM FUNCTIONS
+//// TRANSFORM FUNCTIONS
 
 // If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func extractSynapseWorkspacePrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {

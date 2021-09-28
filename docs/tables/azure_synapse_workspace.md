@@ -16,7 +16,7 @@ from
   azure_synapse_workspace;
 ```
 
-### List public network access enabled synapse workspaces
+### List synapse workspaces with public network access enabled
 
 ```sql
 select
