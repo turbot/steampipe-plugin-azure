@@ -330,7 +330,7 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	var mySQLServersServerKeys []map[string]interface{}
 
 	for _, i := range op.Values() {
-		mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKeys(i))
+		mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
 	}
 
 	for op.NotDone() {
@@ -340,7 +340,7 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 			return nil, err
 		}
 		for _, i := range op.Values() {
-			mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKeys(i))
+			mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
 		}
 	}
 
@@ -387,7 +387,7 @@ func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transf
 }
 
 // If we return the API response directly, the output will not provide the properties of ServerKeys
-func extractMySQLServersServerKeys(i mysql.ServerKey) map[string]interface{} {
+func extractMySQLServersServerKey(i mysql.ServerKey) map[string]interface{} {
 	mySQLServersServerKey := make(map[string]interface{})
 	if i.ID != nil {
 		mySQLServersServerKey["id"] = *i.ID
