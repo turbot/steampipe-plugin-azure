@@ -328,7 +328,6 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 	return diagnosticSettings, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listEventHubNamespacePrivateEndpointConnections")
 
@@ -354,29 +353,7 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 	var eventHubNamespacePrivateEndpointConnections []map[string]interface{}
 
 	for _, i := range op.Values() {
-		eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
-		if i.ID != nil {
-			eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
-		}
-		if i.Name != nil {
-			eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
-		}
-		if i.Type != nil {
-			eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
-		}
-		if i.PrivateEndpointConnectionProperties != nil {
-			if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
-				eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
-			}
-			if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
-				eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
-			}
-			if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-				eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
-			}
-		}
-
-		eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, eventHubNamespacePrivateEndpointConnection)
+		eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, extractEventHubNamespacePrivateEndpointConnections(i))
 	}
 
 	for op.NotDone() {
@@ -386,31 +363,37 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 			return nil, err
 		}
 		for _, i := range op.Values() {
-			eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
-			if i.ID != nil {
-				eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
-			}
-			if i.Name != nil {
-				eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
-			}
-			if i.Type != nil {
-				eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
-			}
-			if i.PrivateEndpointConnectionProperties != nil {
-				if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
-					eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
-				}
-				if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
-					eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
-				}
-				if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-					eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
-				}
-			}
 
-			eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, eventHubNamespacePrivateEndpointConnection)
+			eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, extractEventHubNamespacePrivateEndpointConnections(i))
 		}
 	}
 
 	return eventHubNamespacePrivateEndpointConnections, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+
+func extractEventHubNamespacePrivateEndpointConnections(i eventhub.PrivateEndpointConnection) map[string]interface{} {
+	eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
+	if i.ID != nil {
+		eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
+	}
+	if i.Name != nil {
+		eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
+	}
+	if i.Type != nil {
+		eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
+	}
+	if i.PrivateEndpointConnectionProperties != nil {
+		if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+			eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+			eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+			eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+		}
+	}
+	return eventHubNamespacePrivateEndpointConnection
 }
