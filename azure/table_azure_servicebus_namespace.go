@@ -299,7 +299,6 @@ func listServiceBusNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Qu
 	return diagnosticSettings, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listServiceBusNamespacePrivateEndpointConnections")
 
@@ -325,29 +324,7 @@ func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *p
 	var serviceBusNamespacePrivateEndpointConnections []map[string]interface{}
 
 	for _, i := range op.Values() {
-		serviceBusNamespacePrivateEndpointConnection := make(map[string]interface{})
-		if i.ID != nil {
-			serviceBusNamespacePrivateEndpointConnection["id"] = *i.ID
-		}
-		if i.Name != nil {
-			serviceBusNamespacePrivateEndpointConnection["name"] = *i.Name
-		}
-		if i.Type != nil {
-			serviceBusNamespacePrivateEndpointConnection["type"] = *i.Type
-		}
-		if i.PrivateEndpointConnectionProperties != nil {
-			if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
-				serviceBusNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
-			}
-			if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
-				serviceBusNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
-			}
-			if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-				serviceBusNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
-			}
-		}
-
-		serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, serviceBusNamespacePrivateEndpointConnection)
+		serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, extractServiceBusNamespacePrivateEndpointConnection(i))
 	}
 
 	for op.NotDone() {
@@ -357,31 +334,35 @@ func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *p
 			return nil, err
 		}
 		for _, i := range op.Values() {
-			serviceBusNamespacePrivateEndpointConnection := make(map[string]interface{})
-			if i.ID != nil {
-				serviceBusNamespacePrivateEndpointConnection["id"] = *i.ID
-			}
-			if i.Name != nil {
-				serviceBusNamespacePrivateEndpointConnection["name"] = *i.Name
-			}
-			if i.Type != nil {
-				serviceBusNamespacePrivateEndpointConnection["type"] = *i.Type
-			}
-			if i.PrivateEndpointConnectionProperties != nil {
-				if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
-					serviceBusNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
-				}
-				if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
-					serviceBusNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
-				}
-				if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-					serviceBusNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
-				}
-			}
-
-			serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, serviceBusNamespacePrivateEndpointConnection)
+			serviceBusNamespacePrivateEndpointConnections = append(serviceBusNamespacePrivateEndpointConnections, extractServiceBusNamespacePrivateEndpointConnection(i))
 		}
 	}
 
 	return serviceBusNamespacePrivateEndpointConnections, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+func extractServiceBusNamespacePrivateEndpointConnection(i servicebus.PrivateEndpointConnection) map[string]interface{} {
+	serviceBusNamespacePrivateEndpointConnection := make(map[string]interface{})
+	if i.ID != nil {
+		serviceBusNamespacePrivateEndpointConnection["id"] = *i.ID
+	}
+	if i.Name != nil {
+		serviceBusNamespacePrivateEndpointConnection["name"] = *i.Name
+	}
+	if i.Type != nil {
+		serviceBusNamespacePrivateEndpointConnection["type"] = *i.Type
+	}
+	if i.PrivateEndpointConnectionProperties != nil {
+		if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+			serviceBusNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+			serviceBusNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+			serviceBusNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+		}
+	}
+	return serviceBusNamespacePrivateEndpointConnection
 }
