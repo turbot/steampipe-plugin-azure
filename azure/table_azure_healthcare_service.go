@@ -254,7 +254,6 @@ func getHealthcareService(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	return nil, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getHealthcarePrivateEndpointConnections")
 
@@ -287,6 +286,7 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 
 	var privateEndpoints []map[string]interface{}
 	
+	// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 	for _, conn := range *op.Value {
 		privateEndpoint := make(map[string]interface{})
 		if conn.ID != nil {
