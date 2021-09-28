@@ -363,7 +363,6 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 			return nil, err
 		}
 		for _, i := range op.Values() {
-
 			eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, extractEventHubNamespacePrivateEndpointConnections(i))
 		}
 	}
