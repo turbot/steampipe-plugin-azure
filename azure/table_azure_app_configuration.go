@@ -172,7 +172,7 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 			d.StreamListItem(ctx, config)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -233,7 +233,7 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
+	// If we return the API response directly, the output does not provide all
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
@@ -257,7 +257,7 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 // //// TRANSFORM FUNCTION
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+// If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractAppConfigurationPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	server := d.HydrateItem.(appconfiguration.ConfigurationStore)
 	var properties []map[string]interface{}
