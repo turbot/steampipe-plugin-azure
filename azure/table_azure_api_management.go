@@ -387,7 +387,7 @@ func listAPIManagementDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 	}
 
 	// If we return the API response directly, the output does not provide
-	// the contents of DiagnosticSettings
+	// all the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
