@@ -95,19 +95,19 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Name:        "identity_principal_id",
 				Description: "The principal id of the identity.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.PrincipalID"),
+				Transform:   transform.FromField("Identity.PrincipalID").Transform(transform.ToString),
 			},
 			{
 				Name:        "identity_tenant_id",
 				Description: "The client tenant id of the identity.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.TenantID"),
+				Transform:   transform.FromField("Identity.TenantID").Transform(transform.ToString),
 			},
 			{
 				Name:        "identity_type",
 				Description: "The type of identity used for the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.Type"),
+				Transform:   transform.FromField("Identity.Type").Transform(transform.ToString),
 			},
 			{
 				Name:        "management_api_url",
@@ -183,7 +183,7 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration.SubnetResourceID"),
 			},
 			{
-				Name:        "virtual_network_configuration_vnet_id",
+				Name:        "virtual_network_configuration_id",
 				Description: "The virtual network ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration.Vnetid"),
@@ -226,7 +226,7 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "hostname_configurations",
+				Name:        "host_name_configurations",
 				Description: "Custom hostname configuration of the API management service.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ServiceProperties.HostnameConfigurations"),
