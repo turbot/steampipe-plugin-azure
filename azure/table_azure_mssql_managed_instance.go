@@ -433,7 +433,7 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 }
 
 // If we return the API response directly, the output will not provide 
-// the properties of SecurityAlertPolicies
+// all the properties of SecurityAlertPolicies
 func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityAlertPolicy) map[string]interface{} {
 	managedInstanceSecurityAlertPolicy := make(map[string]interface{})
 	if i.ID != nil {
@@ -478,7 +478,7 @@ func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityA
 }
 
 // If we return the API response directly, the output will not provide 
-// the properties of ManagedInstanceVulnerabilityAssessment
+// all the properties of ManagedInstanceVulnerabilityAssessment
 func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVulnerabilityAssessment) map[string]interface{} {
 	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
 	if i.ID != nil {
@@ -506,7 +506,7 @@ func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVul
 }
 
 // If we return the API response directly, the output will not provide 
-// the properties of ManagedInstanceEncryptionProtector
+// all the properties of ManagedInstanceEncryptionProtector
 func extractMSSQLManagedInstanceEncryptionProtector(i sql.ManagedInstanceEncryptionProtector) map[string]interface{} {
 	managedInstanceEncryptionProtector := make(map[string]interface{})
 	if i.ID != nil {

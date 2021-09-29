@@ -47,6 +47,8 @@ where
   public_data_endpoint_enabled;
 ```
 
+### List private endpoint connection details
+
 ```sql
 select
   name,
