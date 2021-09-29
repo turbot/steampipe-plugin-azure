@@ -58,7 +58,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Name:        "cluster_arm_id",
 				Description: "Cluster ARM ID of the namespace.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("EHNamespaceProperties.ClusterArmId"),
+				Transform:   transform.FromField("EHNamespaceProperties.ClusterArmID"),
 			},
 			{
 				Name:        "is_auto_inflate_enabled",
