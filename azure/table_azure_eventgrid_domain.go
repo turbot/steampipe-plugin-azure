@@ -45,17 +45,19 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "provisioning_state",
 				Description: "Provisioning state of the event grid domain resource. Possible values include: 'Creating', 'Updating', 'Deleting', 'Succeeded', 'Canceled', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractEventGridDomainProperties, "ProvisioningState"),
+				Transform:   transform.FromField("DomainProperties.ProvisioningState"),
 			},
 			{
 				Name:        "auto_create_topic_with_first_subscription",
 				Description: "This Boolean is used to specify the creation mechanism for 'all' the event grid domain topics associated with this event grid domain resource.",
 				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DomainProperties.AutoCreateTopicWithFirstSubscription"),
 			},
 			{
 				Name:        "auto_delete_topic_with_last_subscription",
 				Description: "This Boolean is used to specify the deletion mechanism for 'all' the Event Grid Domain Topics associated with this Event Grid Domain resource.",
 				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DomainProperties.AutoDeleteTopicWithLastSubscription"),
 			},
 			{
 				Name:        "created_at",
@@ -84,7 +86,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "endpoint",
 				Description: "Endpoint for the Event Grid Domain Resource which is used for publishing the events.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractEventGridDomainProperties, "Endpoint"),
+				Transform:   transform.FromField("DomainProperties.Endpoint"),
 			},
 			{
 				Name:        "identity_type",
@@ -96,7 +98,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "input_schema",
 				Description: "This determines the format that Event Grid should expect for incoming events published to the Event Grid Domain Resource. Possible values include: 'EventGridSchema', 'CustomEventSchema', 'CloudEventSchemaV10'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractEventGridDomainProperties, "InputSchema"),
+				Transform:   transform.FromField("DomainProperties.InputSchema"),
 			},
 			{
 				Name:        "last_modified_at",
@@ -131,7 +133,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "public_network_access",
 				Description: "This determines if traffic is allowed over public network. By default it is enabled.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractEventGridDomainProperties, "PublicNetworkAccess"),
+				Transform:   transform.FromField("DomainProperties.PublicNetworkAccess"),
 			},
 			{
 				Name:        "sku_name",
@@ -142,8 +144,8 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 			{
 				Name:        "user_assigned_identities",
 				Description: "The list of user identities associated with the resource. The user identity dictionary key references will be ARM resource ids.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Identity.UserAssignedIdentities").Transform(transform.ToString),
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Identity.UserAssignedIdentities"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -156,12 +158,13 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "inbound_ip_rules",
 				Description: "This can be used to restrict traffic from specific IPs instead of all IPs. Note: These are considered only if PublicNetworkAccess is enabled.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("InboundIPRules"),
+				Transform:   transform.FromField("DomainProperties.InboundIPRules"),
 			},
 			{
 				Name:        "input_schema_mapping",
 				Description: "Information about the InputSchemaMapping which specified the info about mapping event payload.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DomainProperties.InputSchemaMapping"),
 			},
 			{
 				Name:        "private_endpoint_connections",
@@ -328,72 +331,51 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 
 // If we return the private endpoint connection directly from api response we will not receive all the properties of private endpoint connections.
 func extractEventgridDomainPrivaterEndPointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getEventgridDomainPrivaterEndPointConnections")
-	privateEndpointConnections := *d.HydrateItem.(eventgrid.Domain).PrivateEndpointConnections
+	plugin.Logger(ctx).Trace("extractEventgridDomainPrivaterEndPointConnections")
+	domain := d.HydrateItem.(eventgrid.Domain)
 	var privateEndpointConnectionsInfo []map[string]interface{}
-	for _, endpoint := range privateEndpointConnections {
-		objectMap := make(map[string]interface{})
+	if domain.PrivateEndpointConnections != nil {
+		privateEndpointConnections := *domain.PrivateEndpointConnections
+		for _, endpoint := range privateEndpointConnections {
+			objectMap := make(map[string]interface{})
+			if endpoint.ID != nil {
+				objectMap["id"] = endpoint.ID
+			}
 
-		if endpoint.ID != nil {
-			objectMap["id"] = endpoint.ID
-		}
+			if endpoint.Name != nil {
+				objectMap["name"] = endpoint.Name
+			}
 
-		if endpoint.Name != nil {
-			objectMap["name"] = endpoint.Name
-		}
+			if endpoint.Type != nil {
+				objectMap["type"] = endpoint.Type
+			}
 
-		if endpoint.Type != nil {
-			objectMap["type"] = endpoint.Type
-		}
-
-		if endpoint.PrivateEndpointConnectionProperties != nil {
-			if endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint != nil {
-				if endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
-					objectMap["endpointId"] = endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+			if endpoint.PrivateEndpointConnectionProperties != nil {
+				if endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint != nil {
+					if endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+						objectMap["endpointId"] = endpoint.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+					}
+				}
+				if endpoint.PrivateEndpointConnectionProperties.GroupIds != nil {
+					objectMap["groupIds"] = endpoint.PrivateEndpointConnectionProperties.GroupIds
+				}
+				if endpoint.PrivateEndpointConnectionProperties.ProvisioningState != "" {
+					objectMap["provisioningState"] = endpoint.PrivateEndpointConnectionProperties.ProvisioningState
+				}
+				if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+					if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status != "" {
+						objectMap["privateLinkServiceConnectionStateStatus"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status
+					}
+					if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description != nil {
+						objectMap["privateLinkServiceConnectionStateDescription"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description
+					}
+					if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+						objectMap["privateLinkServiceConnectionStateActionsRequired"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired
+					}
 				}
 			}
-			if endpoint.PrivateEndpointConnectionProperties.GroupIds != nil {
-				objectMap["groupIds"] = endpoint.PrivateEndpointConnectionProperties.GroupIds
-			}
-			if endpoint.PrivateEndpointConnectionProperties.ProvisioningState != "" {
-				objectMap["provisioningState"] = endpoint.PrivateEndpointConnectionProperties.ProvisioningState
-			}
-			if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
-				if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status != "" {
-					objectMap["privateLinkServiceConnectionStateStatus"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Status
-				}
-				if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description != nil {
-					objectMap["privateLinkServiceConnectionStateDescription"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.Description
-				}
-				if endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-					objectMap["privateLinkServiceConnectionStateActionsRequired"] = endpoint.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState.ActionsRequired
-				}
-			}
+			privateEndpointConnectionsInfo = append(privateEndpointConnectionsInfo, objectMap)
 		}
-		privateEndpointConnectionsInfo = append(privateEndpointConnectionsInfo, objectMap)
 	}
 	return privateEndpointConnectionsInfo, nil
-}
-
-// Some of the properties we are not getting from api response directly, so the below transform function will help us for getting those properties.
-func extractEventGridDomainProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getEventGridDomainProperties")
-	domainInfo := d.HydrateItem.(eventgrid.Domain)
-	param := d.Param.(string)
-	objectMap := make(map[string]interface{})
-
-	if domainInfo.ProvisioningState != "" {
-		objectMap["ProvisioningState"] = domainInfo.ProvisioningState
-	}
-	if domainInfo.PublicNetworkAccess != "" {
-		objectMap["PublicNetworkAccess"] = domainInfo.PublicNetworkAccess
-	}
-	if domainInfo.InputSchema != "" {
-		objectMap["InputSchema"] = domainInfo.InputSchema
-	}
-	if domainInfo.Endpoint != nil {
-		objectMap["Endpoint"] = domainInfo.Endpoint
-	}
-
-	return objectMap[param], nil
 }
