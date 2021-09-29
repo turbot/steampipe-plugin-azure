@@ -38,21 +38,6 @@ where
 select
   name,
   id,
-  state,
-  license_type,
-  minimal_tls_version
-from
-  azure_mssql_managed_instance
-where
-  public_data_endpoint_enabled;
-```
-
-### List private endpoint connection details
-
-```sql
-select
-  name,
-  id,
   policy -> 'creationTime' as policy_creation_time,
   jsonb_pretty(policy -> 'disabledAlerts') as policy_disabled_alerts,
   policy -> 'emailAccountAdmins' as policy_email_account_admins,
