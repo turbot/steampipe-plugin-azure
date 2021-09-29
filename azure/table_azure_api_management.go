@@ -92,6 +92,24 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.GatewayURL"),
 			},
 			{
+				Name:        "identity_principal_id",
+				Description: "The principal id of the identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.PrincipalID"),
+			},
+			{
+				Name:        "identity_tenant_id",
+				Description: "The client tenant id of the identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.TenantID"),
+			},
+			{
+				Name:        "identity_type",
+				Description: "The type of identity used for the resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.Type"),
+			},
+			{
 				Name:        "management_api_url",
 				Description: "Management API endpoint URL of the API management service.",
 				Type:        proto.ColumnType_STRING,
@@ -153,6 +171,24 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.TargetProvisioningState"),
 			},
 			{
+				Name:        "virtual_network_configuration_subnet_name",
+				Description: "The name of the subnet.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration.Subnetname"),
+			},
+			{
+				Name:        "virtual_network_configuration_subnet_resource_id",
+				Description: "The full resource ID of a subnet in a virtual network to deploy the API Management service in.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration.SubnetResourceID"),
+			},
+			{
+				Name:        "virtual_network_configuration_vnet_id",
+				Description: "The virtual network ID.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration.Vnetid"),
+			},
+			{
 				Name:        "virtual_network_type",
 				Description: "The type of VPN in which API management service needs to be configured in. None (Default Value) means the API management service is not part of any Virtual Network, External means the API management deployment is set up inside a Virtual Network having an Internet Facing Endpoint, and Internal means that API management deployment is setup inside a Virtual Network having an Intranet Facing Endpoint only. Possible values include: 'None', 'External', 'Internal'",
 				Type:        proto.ColumnType_STRING,
@@ -196,9 +232,10 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServiceProperties.HostnameConfigurations"),
 			},
 			{
-				Name:        "identity",
-				Description: "Managed service identity of the API management service.",
+				Name:        "identity_user_assigned_identities",
+				Description: "The list of user identities associated with the resource.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Identity.UserAssignedIdentities"),
 			},
 			{
 				Name:        "private_ip_addresses",
@@ -211,12 +248,6 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				Description: "Public static load balanced IP addresses of the API management service in primary region. Available only for 'Basic', 'Standard', 'Premium' and 'Isolated' SKU.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ServiceProperties.PublicIPAddresses"),
-			},
-			{
-				Name:        "virtual_network_configuration",
-				Description: "Virtual network configuration of the API management service.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ServiceProperties.VirtualNetworkConfiguration"),
 			},
 			{
 				Name:        "zones",
