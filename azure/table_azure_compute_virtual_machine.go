@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/guestconfiguration/mgmt/guestconfiguration"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 
@@ -308,6 +309,13 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "guest_configuration_assignment",
+				Description: "Guest configuration assignments for a virtual machine.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getComputeVirtualMachineGuestConfigurationAssignment,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "win_rm",
 				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
@@ -564,6 +572,82 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 		extensions = append(extensions, extensionMap)
 	}
 	return extensions, nil
+}
+
+func getComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getComputeVirtualMachineGuestConfigurationAssignment")
+
+	virtualMachine := h.Item.(compute.VirtualMachine)
+	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := guestconfiguration.NewAssignmentsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name)
+	if err != nil {
+		// API throws 404 error if vm does not have any guest configuration assignments
+		if strings.Contains(err.Error(), "404") {
+			return nil, nil
+		}
+		plugin.Logger(ctx).Error("getComputeVirtualMachineGuestConfigurationAssignment", "get", err)
+		return nil, err
+	}
+
+	var assignments []map[string]interface{}
+
+	// SDK does not support pagination yet
+	for _, configAssignment := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if configAssignment.ID != nil {
+			objectMap["id"] = configAssignment.ID
+		}
+		if configAssignment.Name != nil {
+			objectMap["name"] = configAssignment.Name
+		}
+		if configAssignment.Location != nil {
+			objectMap["location"] = configAssignment.Location
+		}
+		if configAssignment.Type != nil {
+			objectMap["type"] = configAssignment.Type
+		}
+		if configAssignment.Properties != nil {
+			if configAssignment.Properties.TargetResourceID != nil {
+				objectMap["targetResourceID"] = configAssignment.Properties.TargetResourceID
+			}
+			if configAssignment.Properties.TargetResourceID != nil {
+				objectMap["lastComplianceStatusChecked"] = configAssignment.Properties.LastComplianceStatusChecked
+			}
+			if configAssignment.Properties.ComplianceStatus != "" {
+				objectMap["complianceStatus"] = configAssignment.Properties.ComplianceStatus
+			}
+			if configAssignment.Properties.LatestReportID != nil {
+				objectMap["latestReportID"] = configAssignment.Properties.LatestReportID
+			}
+			if configAssignment.Properties.Context != nil {
+				objectMap["context"] = configAssignment.Properties.Context
+			}
+			if configAssignment.Properties.AssignmentHash != nil {
+				objectMap["assignmentHash"] = configAssignment.Properties.AssignmentHash
+			}
+			if configAssignment.Properties.ProvisioningState != "" {
+				objectMap["provisioningState"] = configAssignment.Properties.ProvisioningState
+			}
+			if configAssignment.Properties.GuestConfiguration != nil {
+				objectMap["guestConfiguration"] = configAssignment.Properties.GuestConfiguration
+			}
+			if configAssignment.Properties.LatestAssignmentReport != nil {
+				objectMap["latestAssignmentReport"] = configAssignment.Properties.LatestAssignmentReport
+			}
+		}
+		assignments = append(assignments, objectMap)
+	}
+
+	return assignments, nil
 }
 
 // TRANSFORM FUNCTIONS
