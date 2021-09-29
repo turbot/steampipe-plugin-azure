@@ -370,8 +370,8 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 	return eventHubNamespacePrivateEndpointConnections, nil
 }
 
-// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
-
+// If we return the API response directly, the output will not provide
+// all the properties of PrivateEndpointConnections
 func extractEventHubNamespacePrivateEndpointConnections(i eventhub.PrivateEndpointConnection) map[string]interface{} {
 	eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
 	if i.ID != nil {
