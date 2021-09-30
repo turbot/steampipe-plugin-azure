@@ -23,7 +23,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listIotHubDps,
+			Hydrate: listIotHubDpses,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -165,7 +165,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listIotHubDps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func listIotHubDps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	iotDpsClient.Authorizer = session.Authorizer
 	result, err := iotDpsClient.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listIotHubDps", "ListBySubscription", err)
+		plugin.Logger(ctx).Error("listIotHubDpses", "ListBySubscription", err)
 		return nil, err
 	}
 	for _, provisioningServiceDescription := range result.Values() {
@@ -186,7 +186,7 @@ func listIotHubDps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listIotHubDps", "ListBySubscription_pagination", err)
+			plugin.Logger(ctx).Error("listIotHubDpses", "ListBySubscription_pagination", err)
 			return nil, err
 		}
 		for _, provisioningServiceDescription := range result.Values() {
