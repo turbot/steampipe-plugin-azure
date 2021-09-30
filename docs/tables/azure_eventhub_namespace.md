@@ -58,3 +58,20 @@ from
 where
   not is_auto_inflate_enabled;
 ```
+
+### List private endpoint connection details
+
+```sql
+select
+  name,
+  id,
+  connections ->> 'id' as connection_id,
+  connections ->> 'name' as connection_name,
+  connections ->> 'privateEndpointPropertyID' as property_private_endpoint_id,
+  connections ->> 'provisioningState' as property_provisioning_state,
+  jsonb_pretty(connections -> 'privateLinkServiceConnectionState') as property_private_link_service_connection_state,
+  connections ->> 'type' as connection_type
+from
+  azure_eventhub_namespace,
+  jsonb_array_elements(private_endpoint_connections) as connections;
+```

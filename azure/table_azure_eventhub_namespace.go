@@ -58,7 +58,7 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Name:        "cluster_arm_id",
 				Description: "Cluster ARM ID of the namespace.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("EHNamespaceProperties.ClusterArmId"),
+				Transform:   transform.FromField("EHNamespaceProperties.ClusterArmID"),
 			},
 			{
 				Name:        "is_auto_inflate_enabled",
@@ -144,6 +144,13 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Description: "Describes the network rule set for specified namespace. The EventHub Namespace must be Premium in order to attach a EventHub Namespace Network Rule Set.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getNetworkRuleSet,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "private_endpoint_connections",
+				Description: "The private endpoint connections of the namespace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listEventHubNamespacePrivateEndpointConnections,
 				Transform:   transform.FromValue(),
 			},
 
@@ -319,4 +326,73 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventHubNamespacePrivateEndpointConnections")
+
+	namespace := h.Item.(eventhub.EHNamespace)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	namespaceName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := eventhub.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroup, namespaceName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listEventHubNamespacePrivateEndpointConnections", "list", err)
+		return nil, err
+	}
+
+	var eventHubNamespacePrivateEndpointConnections []map[string]interface{}
+
+	for _, i := range op.Values() {
+		eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, extractEventHubNamespacePrivateEndpointConnections(i))
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listEventHubNamespacePrivateEndpointConnections", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			eventHubNamespacePrivateEndpointConnections = append(eventHubNamespacePrivateEndpointConnections, extractEventHubNamespacePrivateEndpointConnections(i))
+		}
+	}
+
+	return eventHubNamespacePrivateEndpointConnections, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+
+func extractEventHubNamespacePrivateEndpointConnections(i eventhub.PrivateEndpointConnection) map[string]interface{} {
+	eventHubNamespacePrivateEndpointConnection := make(map[string]interface{})
+	if i.ID != nil {
+		eventHubNamespacePrivateEndpointConnection["id"] = *i.ID
+	}
+	if i.Name != nil {
+		eventHubNamespacePrivateEndpointConnection["name"] = *i.Name
+	}
+	if i.Type != nil {
+		eventHubNamespacePrivateEndpointConnection["type"] = *i.Type
+	}
+	if i.PrivateEndpointConnectionProperties != nil {
+		if len(i.PrivateEndpointConnectionProperties.ProvisioningState) > 0 {
+			eventHubNamespacePrivateEndpointConnection["provisioningState"] = i.PrivateEndpointConnectionProperties.ProvisioningState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState != nil {
+			eventHubNamespacePrivateEndpointConnection["privateLinkServiceConnectionState"] = i.PrivateEndpointConnectionProperties.PrivateLinkServiceConnectionState
+		}
+		if i.PrivateEndpointConnectionProperties.PrivateEndpoint != nil && i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID != nil {
+			eventHubNamespacePrivateEndpointConnection["privateEndpointPropertyID"] = i.PrivateEndpointConnectionProperties.PrivateEndpoint.ID
+		}
+	}
+	return eventHubNamespacePrivateEndpointConnection
 }

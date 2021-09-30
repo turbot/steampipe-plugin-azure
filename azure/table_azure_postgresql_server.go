@@ -184,7 +184,7 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "A list of private endpoint connections on a server.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ServerProperties.PrivateEndpointConnections"),
+				Transform:   transform.From(extractPostgreSqlServerPrivateEndpointConnections),
 			},
 			{
 				Name:        "firewall_rules",
@@ -520,4 +520,41 @@ func postgreSqlServerkeyMap(key postgresql.ServerKey) ServerKeyInfo {
 	}
 
 	return serverKey
+}
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+func extractPostgreSqlServerPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	server := d.HydrateItem.(postgresql.Server)
+	var properties []map[string]interface{}
+
+	if server.ServerProperties.PrivateEndpointConnections != nil {
+		for _, i := range *server.ServerProperties.PrivateEndpointConnections {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Properties != nil {
+				if i.Properties.PrivateEndpoint != nil {
+					objectMap["privateEndpointPropertyId"] = i.Properties.PrivateEndpoint.ID
+				}
+				if i.Properties.PrivateLinkServiceConnectionState != nil {
+					if len(i.Properties.PrivateLinkServiceConnectionState.ActionsRequired) > 0 {
+						objectMap["privateLinkServiceConnectionStateActionsRequired"] = i.Properties.PrivateLinkServiceConnectionState.ActionsRequired
+					}
+					if len(i.Properties.PrivateLinkServiceConnectionState.Status) > 0 {
+						objectMap["privateLinkServiceConnectionStateStatus"] = i.Properties.PrivateLinkServiceConnectionState.Status
+					}
+					if i.Properties.PrivateLinkServiceConnectionState.Description != nil {
+						objectMap["privateLinkServiceConnectionStateDescription"] = i.Properties.PrivateLinkServiceConnectionState.Description
+					}
+				}
+				if len(i.Properties.ProvisioningState) > 0 {
+					objectMap["provisioningState"] = i.Properties.ProvisioningState
+				}
+			}
+			properties = append(properties, objectMap)
+		}
+	}
+
+	return properties, nil
 }

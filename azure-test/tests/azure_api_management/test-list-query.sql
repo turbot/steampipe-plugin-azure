@@ -1,3 +1,3 @@
 select name, id
 from azure.azure_api_management
-where name = '{{resourceName}}'
+where id = '{{ output.resource_id.value }}';

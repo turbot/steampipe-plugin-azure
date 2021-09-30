@@ -1,6 +1,6 @@
 [
   {
-    "name": "{{resourceName}}",
+    "name": "{{ resourceName }}",
     "sku_name": "Developer"
   }
 ]

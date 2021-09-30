@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -188,7 +189,14 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "A list of private endpoint connections on a server.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ServerProperties.PrivateEndpointConnections"),
+				Transform:   transform.From(extractMySQLServerPrivateEndpointConnections),
+			},
+			{
+				Name:        "server_keys",
+				Description: "The server keys of the server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServersServerKeys,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -247,6 +255,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 	result, err := client.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServers", "list", err)
 		return nil, err
 	}
 
@@ -283,6 +292,7 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getMySQLServer", "get", err)
 		return nil, err
 	}
 
@@ -293,4 +303,114 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	return nil, nil
+}
+
+func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMySQLServersServerKeys")
+
+	namespace := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	serverName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewServerKeysClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list", err)
+		return nil, err
+	}
+
+	var mySQLServersServerKeys []map[string]interface{}
+
+	for _, i := range op.Values() {
+		mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
+		}
+	}
+
+	return mySQLServersServerKeys, nil
+}
+
+//// TRANSFORM FUNCTION
+
+// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
+func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	server := d.HydrateItem.(mysql.Server)
+	var properties []map[string]interface{}
+
+	if server.ServerProperties.PrivateEndpointConnections != nil {
+		for _, i := range *server.ServerProperties.PrivateEndpointConnections {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Properties != nil {
+				if i.Properties.PrivateEndpoint != nil {
+					objectMap["privateEndpointPropertyId"] = i.Properties.PrivateEndpoint.ID
+				}
+				if i.Properties.PrivateLinkServiceConnectionState != nil {
+					if len(i.Properties.PrivateLinkServiceConnectionState.ActionsRequired) > 0 {
+						objectMap["privateLinkServiceConnectionStateActionsRequired"] = i.Properties.PrivateLinkServiceConnectionState.ActionsRequired
+					}
+					if len(i.Properties.PrivateLinkServiceConnectionState.Status) > 0 {
+						objectMap["privateLinkServiceConnectionStateStatus"] = i.Properties.PrivateLinkServiceConnectionState.Status
+					}
+					if i.Properties.PrivateLinkServiceConnectionState.Description != nil {
+						objectMap["privateLinkServiceConnectionStateDescription"] = i.Properties.PrivateLinkServiceConnectionState.Description
+					}
+				}
+				if len(i.Properties.ProvisioningState) > 0 {
+					objectMap["provisioningState"] = i.Properties.ProvisioningState
+				}
+			}
+			properties = append(properties, objectMap)
+		}
+	}
+
+	return properties, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of ServerKeys
+func extractMySQLServersServerKey(i mysql.ServerKey) map[string]interface{} {
+	mySQLServersServerKey := make(map[string]interface{})
+	if i.ID != nil {
+		mySQLServersServerKey["id"] = *i.ID
+	}
+	if i.Name != nil {
+		mySQLServersServerKey["name"] = *i.Name
+	}
+	if i.Type != nil {
+		mySQLServersServerKey["type"] = *i.Type
+	}
+	if i.Type != nil {
+		mySQLServersServerKey["kind"] = *i.Kind
+	}
+	if i.ServerKeyProperties != nil {
+		if i.ServerKeyProperties.ServerKeyType != nil {
+			mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
+		}
+		if i.ServerKeyProperties.URI != nil {
+			mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
+		}
+		if i.ServerKeyProperties.CreationDate != nil {
+			mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
+		}
+	}
+	return mySQLServersServerKey
 }
