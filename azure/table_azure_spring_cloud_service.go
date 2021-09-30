@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/appplatform/mgmt/2020-07-01/appplatform"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -23,7 +24,7 @@ func tableAzureSpringCloudService(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.SingleColumn("resource_group"),
+			ParentHydrate: listResourceGroups,
 			Hydrate: listSpringCloudServices,
 		},
 		Columns: []*plugin.Column{
@@ -147,22 +148,23 @@ type SpringCloudServiceNetworkProfile struct {
 
 //// LIST FUNCTION
 
-func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	if resourceGroup == "" {
+	// Get the details of the resource group
+	resourceGroup := h.Item.(resources.Group)
+	if *resourceGroup.Name == "" {
 		return nil, nil
 	}
 
 	client := appplatform.NewServicesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx, resourceGroup)
+	result, err := client.List(ctx, *resourceGroup.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listSpringCloudServices", "list", err)
 		return nil, err
@@ -244,7 +246,7 @@ func listSpringCloudServiceDiagnosticSettings(ctx context.Context, d *plugin.Que
 	}
 
 	// If we return the API response directly, the output does not provide
-	// the contents of DiagnosticSettings
+	// all the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
@@ -267,7 +269,8 @@ func listSpringCloudServiceDiagnosticSettings(ctx context.Context, d *plugin.Que
 
 //// TRANSFORM FUNCTION
 
-// If we return the API response directly, the output will not provide the properties of NetworkProfile
+// If we return the API response directly, the output does not provide
+// all the properties of NetworkProfile
 func extractSpringCloudServiceNetworkProfile(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	workspace := d.HydrateItem.(appplatform.ServiceResource)
 	var properties SpringCloudServiceNetworkProfile

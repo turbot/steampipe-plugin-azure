@@ -16,9 +16,7 @@ select
   sku_tier,
   version
 from
-  azure_spring_cloud_service
-where
-  resource_group = 'arnab-test-resource-group';
+  azure_spring_cloud_service;
 ```
 
 ### List network profile details
@@ -34,6 +32,4 @@ select
   network_profile ->> 'ServiceRuntimeNetworkResourceGroup' as network_profile_service_runtime_network_resource_group,
   network_profile ->> 'ServiceRuntimeSubnetID' as network_profile_service_runtime_subnet_id
 from
-  azure_spring_cloud_service
-where
-  resource_group = 'arnab-test-resource-group';
+  azure_spring_cloud_service;
