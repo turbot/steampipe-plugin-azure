@@ -23,7 +23,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listIotHubDpses,
+			Hydrate: listIotHubDps,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -39,13 +39,13 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "state",
-				Description: "The iot hub state.",
+				Description: "Current state of the provisioning service.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.State"),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The iot hub provisioning state.",
+				Description: "The ARM provisioning state of the provisioning service.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
@@ -55,16 +55,16 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "comments",
-				Description: "Iot hub comments.",
+				Name:        "allocation_policy",
+				Description: "Allocation policy to be used by this provisioning service.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.Comments"),
+				Transform:   transform.FromField("Properties.AllocationPolicy"),
 			},
 			{
-				Name:        "enable_file_upload_notifications",
-				Description: "Indicates if file upload notifications are enabled for the iot hub.",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("Properties.EnableFileUploadNotifications"),
+				Name:        "device_provisioning_host_name",
+				Description: "Device endpoint for this provisioning service.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.DeviceProvisioningHostName"),
 			},
 			{
 				Name:        "etag",
@@ -72,107 +72,59 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "features",
-				Description: "The capabilities and features enabled for the iot hub. Possible values include: 'None', 'DeviceManagement'.",
+				Name:        "id_scope",
+				Description: "Unique identifier of this provisioning service..",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.Features"),
+				Transform:   transform.FromField("Properties.IDScope"),
 			},
 			{
-				Name:        "host_name",
-				Description: "The name of the host.",
+				Name:        "service_operations_host_name",
+				Description: "Service endpoint for provisioning service.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.HostName"),
-			},
-			{
-				Name:        "min_tls_version",
-				Description: "Specifies the minimum TLS version to support for this iot hub.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.MinTLSVersion"),
-			},
-			{
-				Name:        "public_network_access",
-				Description: "Indicates whether requests from public network are allowed.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.PublicNetworkAccess").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.ServiceOperationsHostName"),
 			},
 			{
 				Name:        "sku_capacity",
-				Description: "Iot hub SKU capacity.",
+				Description: "Iot dps SKU capacity.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Capacity"),
 			},
 			{
 				Name:        "sku_name",
-				Description: "Iot hub SKU name.",
+				Description: "Iot dps SKU name.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Name").Transform(transform.ToString),
 			},
 			{
 				Name:        "sku_tier",
-				Description: "Iot hub SKU tier.",
+				Description: "Iot dps SKU tier.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
 				Name:        "authorization_policies",
-				Description: "The shared access policies you can use to secure a connection to the iot hub.",
+				Description: "List of authorization keys for a provisioning service.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.AuthorizationPolicies"),
 			},
 			{
-				Name:        "cloud_to_device",
-				Description: "CloudToDevice properties of the iot hub.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.CloudToDevice"),
-			},
-			{
 				Name:        "diagnostic_settings",
-				Description: "A list of active diagnostic settings for the iot hub.",
+				Description: "A list of active diagnostic settings for the iot dps.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listIotHubDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "event_hub_endpoints",
-				Description: "The event hub-compatible endpoint properties.",
+				Name:        "iot_hubs",
+				Description: "List of IoT hubs associated with this provisioning service.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.EventHubEndpoints"),
-			},
-			{
-				Name:        "ip_filter_rules",
-				Description: "The IP filter rules of the iot hub.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.IPFilterRules"),
-			},
-			{
-				Name:        "locations",
-				Description: "Primary and secondary location for iot hub.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.Locations"),
-			},
-			{
-				Name:        "messaging_endpoints",
-				Description: "The messaging endpoint properties for the file upload notification queue.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.MessagingEndpoints"),
+				Transform:   transform.FromField("Properties.IotHubs"),
 			},
 			{
 				Name:        "private_endpoint_connections",
-				Description: "Private endpoint connections created on this iot hub.",
+				Description: "Private endpoint connections created on this iot dps.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
-			},
-			{
-				Name:        "routing",
-				Description: "Routing properties of the iot hub.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.Routing"),
-			},
-			{
-				Name:        "storage_endpoints",
-				Description: "The list of azure storage endpoints where you can upload files.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.StorageEndpoints"),
 			},
 
 			// Steampipe standard columns
@@ -219,7 +171,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listIotHubDps(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -230,6 +182,7 @@ func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	iotDpsClient.Authorizer = session.Authorizer
 	result, err := iotDpsClient.ListBySubscription(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listIotHubDps", "ListBySubscription", err)
 		return nil, err
 	}
 	for _, provisioningServiceDescription := range result.Values() {
@@ -239,6 +192,7 @@ func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("listIotHubDps", "ListBySubscription_pagination", err)
 			return nil, err
 		}
 		for _, provisioningServiceDescription := range result.Values() {
@@ -273,6 +227,7 @@ func getIotHubDps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 	op, err := iotDpsClient.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("getIotHubDps", "Get", err)
 		return nil, err
 	}
 
@@ -295,6 +250,7 @@ func listIotDpsDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *p
 
 	op, err := client.List(ctx, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("listIotDpsDiagnosticSettings", "List", err)
 		return nil, err
 	}
 
