@@ -312,7 +312,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Name:        "guest_configuration_assignments",
 				Description: "Guest configuration assignments for a virtual machine.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listComputeVirtualMachineGuestConfigurationAssignment,
+				Hydrate:     listComputeVirtualMachineGuestConfigurationAssignments,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -574,8 +574,8 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 	return extensions, nil
 }
 
-func listComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listComputeVirtualMachineGuestConfigurationAssignment")
+func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listComputeVirtualMachineGuestConfigurationAssignments")
 
 	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
@@ -595,7 +595,7 @@ func listComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, 
 		if strings.Contains(err.Error(), "404") {
 			return nil, nil
 		}
-		plugin.Logger(ctx).Error("listComputeVirtualMachineGuestConfigurationAssignment", "get", err)
+		plugin.Logger(ctx).Error("listComputeVirtualMachineGuestConfigurationAssignments", "get", err)
 		return nil, err
 	}
 
