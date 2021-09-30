@@ -309,10 +309,10 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
-				Name:        "guest_configuration_assignment",
+				Name:        "guest_configuration_assignments",
 				Description: "Guest configuration assignments for a virtual machine.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getComputeVirtualMachineGuestConfigurationAssignment,
+				Hydrate:     listComputeVirtualMachineGuestConfigurationAssignment,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -574,8 +574,8 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 	return extensions, nil
 }
 
-func getComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getComputeVirtualMachineGuestConfigurationAssignment")
+func listComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listComputeVirtualMachineGuestConfigurationAssignment")
 
 	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
@@ -588,19 +588,20 @@ func getComputeVirtualMachineGuestConfigurationAssignment(ctx context.Context, d
 	client := guestconfiguration.NewAssignmentsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// SDK does not support pagination yet
 	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name)
 	if err != nil {
 		// API throws 404 error if vm does not have any guest configuration assignments
 		if strings.Contains(err.Error(), "404") {
 			return nil, nil
 		}
-		plugin.Logger(ctx).Error("getComputeVirtualMachineGuestConfigurationAssignment", "get", err)
+		plugin.Logger(ctx).Error("listComputeVirtualMachineGuestConfigurationAssignment", "get", err)
 		return nil, err
 	}
 
 	var assignments []map[string]interface{}
 
-	// SDK does not support pagination yet
+	// If we return the API response directly, the output will not provide all the data for Guest Configuration Assignment
 	for _, configAssignment := range *op.Value {
 		objectMap := make(map[string]interface{})
 		if configAssignment.ID != nil {
