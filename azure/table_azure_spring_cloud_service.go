@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/Azure/azure-sdk-for-go/services/appplatform/mgmt/2020-07-01/appplatform"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/appplatform/mgmt/2020-07-01/appplatform"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -25,7 +25,7 @@ func tableAzureSpringCloudService(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
-			Hydrate: listSpringCloudServices,
+			Hydrate:       listSpringCloudServices,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -157,7 +157,7 @@ func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	// Get the details of the resource group
 	resourceGroup := h.Item.(resources.Group)
-	if *resourceGroup.Name == "" {
+	if resourceGroup.Name == nil {
 		return nil, nil
 	}
 
@@ -184,7 +184,7 @@ func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, h *plugin
 			d.StreamListItem(ctx, service)
 		}
 	}
-	
+
 	return nil, err
 }
 
