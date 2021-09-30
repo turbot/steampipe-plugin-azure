@@ -16,7 +16,6 @@ where
   not is_healthy_environment;
 ```
 
-
 ### Virtual network info of each app service environment
 
 ```sql
@@ -30,3 +29,15 @@ from
   azure_app_service_environment;
 ```
 
+### List cluster settings details
+
+```sql
+select
+  name,
+  id,
+  settings ->> 'name' as settings_name,
+  settings ->> 'value' as settings_value
+from
+  azure_app_service_environment,
+  jsonb_array_elements(cluster_settings) as settings;
+```
