@@ -117,6 +117,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_service_fabric_cluster":                                tableAzureServiceFabricCluster(ctx),
 			"azure_servicebus_namespace":                                  tableAzureServiceBusNamespace(ctx),
 			"azure_signalr_service":                                       tableAzureSignalRService(ctx),
+			"azure_spring_cloud_service":                                  tableAzureSpringCloudService(ctx),
 			"azure_sql_database":                                          tableAzureSqlDatabase(ctx),
 			"azure_sql_server":                                            tableAzureSQLServer(ctx),
 			"azure_storage_account":                                       tableAzureStorageAccount(ctx),
