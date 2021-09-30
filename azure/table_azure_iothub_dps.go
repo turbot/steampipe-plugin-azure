@@ -111,7 +111,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the iot dps.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listIotHubDiagnosticSettings,
+				Hydrate:     listIotDpsDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -119,12 +119,6 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Description: "List of IoT hubs associated with this provisioning service.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.IotHubs"),
-			},
-			{
-				Name:        "private_endpoint_connections",
-				Description: "Private endpoint connections created on this iot dps.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
 			},
 
 			// Steampipe standard columns
