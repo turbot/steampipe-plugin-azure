@@ -1,0 +1,9 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "kind": "fhir-R4",
+    "name": "{{ resourceName }}",
+    "region": "eastus",
+    "type": "Microsoft.HealthcareApis/services"
+  }
+]
