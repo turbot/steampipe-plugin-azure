@@ -230,6 +230,7 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("listEventGridTopics", "ListBySubscription_pagination", err)
 			return nil, err
 		}
 
