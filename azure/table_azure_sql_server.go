@@ -472,10 +472,10 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 			objectMap["subregion"] = i.Subregion
 		}
 		if i.ServerKeyName != nil {
-			objectMap["server_key_name"] = i.ServerKeyName
+			objectMap["serverKeyName"] = i.ServerKeyName
 		}
 		if i.ServerKeyType != "" {
-			objectMap["server_key_type"] = i.ServerKeyType
+			objectMap["serverKeyType"] = i.ServerKeyType
 		}
 		if i.URI != nil {
 			objectMap["uri"] = i.URI
