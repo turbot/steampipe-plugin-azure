@@ -259,14 +259,15 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 func getPublicNetworkAccess(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	configurationStore := h.Item.(appconfiguration.ConfigurationStore)
 
-	if len(configurationStore.PublicNetworkAccess) == 0 && configurationStore.PrivateEndpointConnections == nil {
-		plugin.Logger(ctx).Error("getPublicNetworkAccess", "PublicNetworkAccess", len(configurationStore.PublicNetworkAccess))
+	// In case of automatic is selected at the time of store creation, PublicNetworkAccess value will be nil in API response.
+	// With a private endpoint, public network access will be automatically disabled.
+	// If there is no private endpoint present, public network access is automatically enabled.
+	if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) == 0 {
 		return "Enabled", nil
-	} else if len(configurationStore.PublicNetworkAccess) == 0 && configurationStore.PrivateEndpointConnections != nil {
-		plugin.Logger(ctx).Error("getPublicNetworkAccess", "PublicNetworkAccess", len(configurationStore.PublicNetworkAccess))
+	} else if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) != 0 {
 		return "Disabled", nil
 	}
-	plugin.Logger(ctx).Error("getPublicNetworkAccess", "PublicNetworkAccess", len(configurationStore.PublicNetworkAccess))
+
 	return configurationStore.PublicNetworkAccess, nil
 }
 
