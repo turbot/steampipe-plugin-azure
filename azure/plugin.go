@@ -75,6 +75,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_key_vault_managed_hardware_security_module":            tableAzureKeyVaultManagedHardwareSecurityModule(ctx),
 			"azure_key_vault_secret":                                      tableAzureKeyVaultSecret(ctx),
 			"azure_kubernetes_cluster":                                    tableAzureKubernetesCluster(ctx),
+			"azure_kusto_cluster":                                         tableAzureKustoCluster(ctx),
 			"azure_lb":                                                    tableAzureLoadBalancer(ctx),
 			"azure_lb_backend_address_pool":                               tableAzureLoadBalancerBackendAddressPool(ctx),
 			"azure_lb_nat_rule":                                           tableAzureLoadBalancerNatRule(ctx),
