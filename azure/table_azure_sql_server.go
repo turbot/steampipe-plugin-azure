@@ -275,7 +275,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAuditPolicy")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -316,7 +316,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 
 func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerPrivateEndpointConnections")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -358,7 +358,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -399,7 +399,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAzureADAdministrator")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -443,7 +443,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 
 func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerEncryptionProtector")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -503,7 +503,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerVulnerabilityAssessment")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -544,7 +544,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 
 func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerFirewallRules")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -586,7 +586,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 
 func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerVirtualNetworkRules")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
