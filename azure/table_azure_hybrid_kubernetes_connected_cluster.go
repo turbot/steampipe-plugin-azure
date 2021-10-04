@@ -20,11 +20,11 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 		Description: "Azure Hybrid Kubernetes Connected Cluster",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getArcKubernetesCluster,
+			Hydrate:           getHybridKubernetesConnectedCluster,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listArcKubernetesClusters,
+			Hydrate: listHybridKubernetesConnectedClusters,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -160,7 +160,7 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 				Name:        "extensions",
 				Description: "The extensions of the connected cluster.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listArcKubernetesClusterExtensions,
+				Hydrate:     listHybridKubernetesConnectedClusterExtensions,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -215,7 +215,7 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 
 //// LIST FUNCTION
 
-func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listHybridKubernetesConnectedClusters(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -227,7 +227,7 @@ func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plug
 
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listArcKubernetesClusters", "list", err)
+		plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusters", "list", err)
 		return nil, err
 	}
 
@@ -238,7 +238,7 @@ func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plug
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listArcKubernetesClusters", "list_paging", err)
+			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusters", "list_paging", err)
 			return nil, err
 		}
 		for _, cluster := range result.Values() {
@@ -251,8 +251,8 @@ func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plug
 
 //// HYDRATE FUNCTIONS
 
-func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getArcKubernetesCluster")
+func getHybridKubernetesConnectedCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getHybridKubernetesConnectedCluster")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
@@ -273,7 +273,7 @@ func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	cluster, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
-		plugin.Logger(ctx).Error("getArcKubernetesCluster", "get", err)
+		plugin.Logger(ctx).Error("getHybridKubernetesConnectedCluster", "get", err)
 		return nil, err
 	}
 
@@ -286,7 +286,7 @@ func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 	return nil, nil
 }
 
-func listArcKubernetesClusterExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	cluster := h.Item.(hybridkubernetes.ConnectedCluster)
 	resourceGroup := strings.Split(*cluster.ID, "/")[4]
 
@@ -301,7 +301,7 @@ func listArcKubernetesClusterExtensions(ctx context.Context, d *plugin.QueryData
 	extensions := []kubernetesconfiguration.ExtensionInstance{}
 	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)
 	if err != nil {
-		plugin.Logger(ctx).Error("listArcKubernetesClusterExtensions", "list", err)
+		plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list", err)
 		return nil, err
 	}
 
@@ -310,7 +310,7 @@ func listArcKubernetesClusterExtensions(ctx context.Context, d *plugin.QueryData
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listArcKubernetesClusterExtensions", "list_paging", err)
+			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list_paging", err)
 			return nil, err
 		}
 		extensions = append(extensions, result.Values()...)
