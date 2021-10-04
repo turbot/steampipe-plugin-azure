@@ -1,6 +1,6 @@
 # Table: azure_kusto_cluster
 
-Azure Data Explorer aka ADX, is a fast, highly scalable and fully managed data analytics service for log, telemetry and streaming data. ... Previously known as 'codenamed Kusto', this tool uses SQL-like query language, Kusto query language (KQL) for analyzing fast-flowing data from IoT devices, applications, websites, etc.
+An Azure Data Explorer cluster (Previously known as Kusto) is a pair of engine and data management clusters which uses several Azure resources such as Azure Linux VM’s and Storage. The applicable VMs, Azure Storage, Azure Networking and Azure Load balancer costs are billed directly to the customer subscriptions, applications, websites, etc.
 
 ## Examples
 
