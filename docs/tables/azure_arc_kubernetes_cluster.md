@@ -17,7 +17,7 @@ from
   azure_arc_kubernetes_cluster;
 ```
 
-### List failed batch accounts
+### List expired clusters
 
 ```sql
 select
@@ -25,10 +25,10 @@ select
   id,
   type,
   provisioning_state,
-  dedicated_core_quota,
+  connectivity_status,
   region
 from
-  azure_batch_account
+  azure_arc_kubernetes_cluster
 where
-  provisioning_state = 'Failed';
+  connectivity_status = 'Expired';
 ```

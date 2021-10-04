@@ -2,8 +2,11 @@ package azure
 
 import (
 	"context"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
 	arc "github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/kubernetesconfiguration/mgmt/kubernetesconfiguration"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -155,6 +158,13 @@ func tableAzureArcKubernetesCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ConnectedClusterProperties.TotalNodeCount"),
 			},
 			{
+				Name:        "extensions",
+				Description: "The extensions of the connected cluster.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listArcKubernetesClusterExtensions,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "identity",
 				Description: "The identity of the connected cluster.",
 				Type:        proto.ColumnType_JSON,
@@ -275,4 +285,37 @@ func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	return nil, nil
+}
+
+func listArcKubernetesClusterExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	cluster := h.Item.(hybridkubernetes.ConnectedCluster)
+	resourceGroup := strings.Split(*cluster.ID, "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := kubernetesconfiguration.NewExtensionsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+	extensions := []kubernetesconfiguration.ExtensionInstance{}
+	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("listArcKubernetesClusterExtensions", "list", err)
+		return nil, err
+	}
+
+	extensions = append(extensions, result.Values()...)
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listArcKubernetesClusterExtensions", "list_paging", err)
+			return nil, err
+		}
+		extensions = append(extensions, result.Values()...)
+	}
+
+	return extensions, nil
 }
