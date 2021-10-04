@@ -176,6 +176,11 @@ func getKustoCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
+	// Return nil, if no input provide
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
