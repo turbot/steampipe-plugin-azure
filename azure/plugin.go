@@ -33,6 +33,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_app_service_web_app":                                   tableAzureAppServiceWebApp(ctx),
 			"azure_application_gateway":                                   tableAzureApplicationGateway(ctx),
 			"azure_application_security_group":                            tableAzureApplicationSecurityGroup(ctx),
+			"azure_arc_kubernetes_cluster":                                tableAzureArcKubernetesCluster(ctx),
 			"azure_batch_account":                                         tableAzureBatchAccount(ctx),
 			"azure_cognitive_account":                                     tableAzureCognitiveAccount(ctx),
 			"azure_compute_availability_set":                              tableAzureComputeAvailabilitySet(ctx),
@@ -138,7 +139,6 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_tenant":                                                tableAzureTenant(ctx),
 			"azure_virtual_network":                                       tableAzureVirtualNetwork(ctx),
 			"azure_virtual_network_gateway":                               tableAzureVirtualNetworkGateway(ctx),
-			"azure_arc_cluster":                                           tableAzureArcCluster(ctx),
 			// "azure_storage_table":               tableAzureStorageTable(ctx),
 		},
 	}

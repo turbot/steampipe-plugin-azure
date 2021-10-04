@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/azurestackhci/mgmt/azurestackhci"
+	arc "github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -12,17 +12,17 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureArcCluster(_ context.Context) *plugin.Table {
+func tableAzureArcKubernetesCluster(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_arc_cluster",
-		Description: "Azure Arc Cluster",
+		Name:        "azure_arc_kubernetes_cluster",
+		Description: "Azure Arc Kubernetes Cluster",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getArcCluster,
+			Hydrate:           getArcKubernetesCluster,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listArcClusters,
+			Hydrate: listArcKubernetesClusters,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -37,52 +37,33 @@ func tableAzureArcCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromGo(),
 			},
 			{
-				Name:        "status",
-				Description: "Status of the cluster agent.",
+				Name:        "connectivity_status",
+				Description: "Represents the connectivity status of the connected cluster.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.Status"),
+				Transform:   transform.FromField("ConnectedClusterProperties.ConnectivityStatus"),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the cluster.",
+				Description: "The provisioning state of the connected cluster resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.ProvisioningState"),
+				Transform:   transform.FromField("ConnectedClusterProperties.ProvisioningState"),
 			},
 			{
 				Name:        "type",
 				Description: "The type of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.ProvisioningState"),
 			},
 			{
-				Name:        "aad_client_id",
-				Description: "App id of cluster AAD identity.",
+				Name:        "agent_public_key_certificate",
+				Description: "Base64 encoded public certificate used by the agent to do the initial handshake to the backend services in Azure.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.AadClientID"),
+				Transform:   transform.FromField("ConnectedClusterProperties.AgentPublicKeyCertificate"),
 			},
 			{
-				Name:        "aad_tenant_id",
-				Description: "Tenant id of cluster AAD identity.",
+				Name:        "agent_version",
+				Description: "Version of the agent running on the connected cluster resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.AadTenantID"),
-			},
-			{
-				Name:        "billing_model",
-				Description: "Type of billing applied to the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.BillingModel"),
-			},
-			{
-				Name:        "cloud_id",
-				Description: "Immutable resource id.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.CloudID"),
-			},
-			{
-				Name:        "cloud_management_endpoint",
-				Description: "Endpoint configured for management from the Azure portal.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.CloudManagementEndpoint"),
+				Transform:   transform.FromField("ConnectedClusterProperties.AgentVersion"),
 			},
 			{
 				Name:        "created_at",
@@ -103,10 +84,28 @@ func tableAzureArcCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SystemData.CreatedByType"),
 			},
 			{
-				Name:        "last_billing_timestamp",
-				Description: "Most recent billing meter timestamp.",
+				Name:        "distribution",
+				Description: "The Kubernetes distribution running on this connected cluster.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ConnectedClusterProperties.Distribution"),
+			},
+			{
+				Name:        "infrastructure",
+				Description: "The infrastructure on which the Kubernetes cluster represented by this connected cluster is running on.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ConnectedClusterProperties.Infrastructure"),
+			},
+			{
+				Name:        "kubernetes_version",
+				Description: "The Kubernetes version of the connected cluster resource.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ConnectedClusterProperties.KubernetesVersion"),
+			},
+			{
+				Name:        "last_connectivity_time",
+				Description: "Time representing the last instance when heart beat was received from the cluster.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ClusterProperties.LastBillingTimestamp").Transform(convertDateToTime),
+				Transform:   transform.FromField("ConnectedClusterProperties.LastConnectivityTime").Transform(convertDateToTime),
 			},
 			{
 				Name:        "last_modified_at",
@@ -127,33 +126,39 @@ func tableAzureArcCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SystemData.LastModifiedByType"),
 			},
 			{
-				Name:        "last_sync_timestamp",
-				Description: "Most recent cluster sync timestamp.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ClusterProperties.LastSyncTimestamp").Transform(convertDateToTime),
-			},
-			{
 				Name:        "location",
 				Description: "Location of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "registration_timestamp",
-				Description: "First cluster sync timestamp.",
+				Name:        "managed_identity_certificate_expiration_time",
+				Description: "Expiration time of the managed identity certificate.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ClusterProperties.RegistrationTimestamp").Transform(convertDateToTime),
+				Transform:   transform.FromField("ConnectedClusterProperties.ManagedIdentityCertificateExpirationTime").Transform(convertDateToTime),
 			},
 			{
-				Name:        "trial_days_remaining",
-				Description: "Number of days remaining in the trial period.",
-				Type:        proto.ColumnType_DOUBLE,
-				Transform:   transform.FromField("ClusterProperties.TrialDaysRemaining"),
+				Name:        "offering",
+				Description: "Connected cluster offering.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ConnectedClusterProperties.Offering"),
 			},
 			{
-				Name:        "reported_properties",
-				Description: "Properties reported by cluster agent..",
+				Name:        "total_core_count",
+				Description: "Number of CPU cores present in the connected cluster resource.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("ConnectedClusterProperties.TotalCoreCount"),
+			},
+			{
+				Name:        "total_node_count",
+				Description: "Number of nodes present in the connected cluster resource.",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("ConnectedClusterProperties.TotalNodeCount"),
+			},
+			{
+				Name:        "identity",
+				Description: "The identity of the connected cluster.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ClusterProperties.ReportedProperties"),
+				Transform:   transform.FromField("ConnectedClusterProperties.Identity"),
 			},
 
 			// Steampipe standard columns
@@ -201,19 +206,19 @@ func tableAzureArcCluster(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listArcClusters(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := azurestackhci.NewClustersClient(subscriptionID)
+	client := arc.NewConnectedClusterClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listArcClusters", "list", err)
+		plugin.Logger(ctx).Error("listArcKubernetesClusters", "list", err)
 		return nil, err
 	}
 
@@ -224,7 +229,7 @@ func listArcClusters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listArcClusters", "list_paging", err)
+			plugin.Logger(ctx).Error("listArcKubernetesClusters", "list_paging", err)
 			return nil, err
 		}
 		for _, cluster := range result.Values() {
@@ -237,8 +242,8 @@ func listArcClusters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 //// HYDRATE FUNCTIONS
 
-func getArcCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getArcCluster")
+func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getArcKubernetesCluster")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
@@ -254,12 +259,12 @@ func getArcCluster(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := azurestackhci.NewClustersClient(subscriptionID)
+	client := arc.NewConnectedClusterClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	cluster, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
-		plugin.Logger(ctx).Error("getArcCluster", "get", err)
+		plugin.Logger(ctx).Error("getArcKubernetesCluster", "get", err)
 		return nil, err
 	}
 
