@@ -43,6 +43,12 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ClusterProperties.ProvisioningState"),
 			},
 			{
+				Name:        "state",
+				Description: "The state of the resource. Possible values include: 'Creating', 'Deleted', 'Deleting', 'Running', 'Starting', 'Stopped', 'Stopping', 'Unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ClusterProperties.State"),
+			},
+			{
 				Name:        "type",
 				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
@@ -65,27 +71,21 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sku_capacity",
-				Description: "SKU capacity.",
+				Description: "SKU capacity of the resource.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Sku.Capacity"),
 			},
 			{
 				Name:        "sku_name",
-				Description: "SKU name. Possible values include: 'KC8', 'KC16', 'KS8', 'KS16', 'D13V2', 'D14V2', 'L8', 'L16'.",
+				Description: "SKU name of the resource. Possible values include: 'KC8', 'KC16', 'KS8', 'KS16', 'D13V2', 'D14V2', 'L8', 'L16'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
 				Name:        "sku_tier",
-				Description: "SKU tier.",
+				Description: "SKU tier of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier"),
-			},
-			{
-				Name:        "state",
-				Description: "The state of the resource. Possible values include: 'Creating', 'Deleted', 'Deleting', 'Running', 'Starting', 'Stopped', 'Stopping', 'Unavailable'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ClusterProperties.State"),
 			},
 			{
 				Name:        "uri",
