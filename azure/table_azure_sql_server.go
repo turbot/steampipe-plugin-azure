@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
+	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 )
 
 //// TABLE DEFINITION
@@ -70,6 +70,18 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Description: "The administrator login password.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
+			},
+			{
+				Name:        "minimal_tls_version",
+				Description: "Minimal TLS version. Allowed values: '1.0', '1.1', '1.2'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.MinimalTLSVersion"),
+			},
+			{
+				Name:        "public_network_access",
+				Description: "Whether or not public endpoint access is allowed for this server.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ServerProperties.PublicNetworkAccess"),
 			},
 			{
 				Name:        "version",
@@ -207,7 +219,7 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sql.NewServersClient(subscriptionID)
+	client := sqlv3.NewServersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -244,7 +256,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewServersClient(subscriptionID)
+	client := sqlv3.NewServersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -263,7 +275,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAuditPolicy")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -304,7 +316,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 
 func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerPrivateEndpointConnections")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -313,7 +325,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client := sqlv3.NewPrivateEndpointConnectionsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -346,7 +358,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -387,7 +399,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerAzureADAdministrator")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -431,7 +443,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 
 func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerEncryptionProtector")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -491,7 +503,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 
 func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServerVulnerabilityAssessment")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -500,7 +512,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv.NewServerVulnerabilityAssessmentsClient(subscriptionID)
+	client := sqlv3.NewServerVulnerabilityAssessmentsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -532,7 +544,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 
 func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerFirewallRules")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -574,7 +586,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 
 func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerVirtualNetworkRules")
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -629,7 +641,7 @@ func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
 
 // If we return the API response directly, the output will not give
 // all the contents of PrivateEndpointConnection
-func privateEndpointConnectionMap(conn sqlv.PrivateEndpointConnection) PrivateConnectionInfo {
+func privateEndpointConnectionMap(conn sqlv3.PrivateEndpointConnection) PrivateConnectionInfo {
 	var connection PrivateConnectionInfo
 	if conn.ID != nil {
 		connection.PrivateEndpointConnectionId = *conn.ID
@@ -647,18 +659,18 @@ func privateEndpointConnectionMap(conn sqlv.PrivateEndpointConnection) PrivateCo
 			}
 		}
 		if conn.PrivateLinkServiceConnectionState != nil {
-			if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
-				connection.PrivateLinkServiceConnectionStateActionsRequired = *conn.PrivateLinkServiceConnectionState.ActionsRequired
+			if conn.PrivateLinkServiceConnectionState.ActionsRequired != "" {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = string(conn.PrivateLinkServiceConnectionState.ActionsRequired)
 			}
-			if conn.PrivateLinkServiceConnectionState.Status != nil {
-				connection.PrivateLinkServiceConnectionStateStatus = *conn.PrivateLinkServiceConnectionState.Status
+			if conn.PrivateLinkServiceConnectionState.Status != "" {
+				connection.PrivateLinkServiceConnectionStateStatus = string(conn.PrivateLinkServiceConnectionState.Status)
 			}
 			if conn.PrivateLinkServiceConnectionState.Description != nil {
 				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
 			}
 		}
-		if conn.ProvisioningState != nil {
-			connection.ProvisioningState = *conn.ProvisioningState
+		if conn.ProvisioningState != "" {
+			connection.ProvisioningState = string(conn.ProvisioningState)
 		}
 	}
 
