@@ -138,6 +138,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_tenant":                                                tableAzureTenant(ctx),
 			"azure_virtual_network":                                       tableAzureVirtualNetwork(ctx),
 			"azure_virtual_network_gateway":                               tableAzureVirtualNetworkGateway(ctx),
+			"azure_arc_cluster":                                           tableAzureArcCluster(ctx),
 			// "azure_storage_table":               tableAzureStorageTable(ctx),
 		},
 	}
