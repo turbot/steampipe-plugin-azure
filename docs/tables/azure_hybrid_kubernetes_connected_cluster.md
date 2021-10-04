@@ -1,4 +1,4 @@
-# Table: azure_arc_kubernetes_cluster
+# Table: azure_hybrid_kubernetes_connected_cluster
 
 Hybrid Kubernetes Service allows you to manage your on-premise kubernetes clusters from azure by onboarding them to Azure Arc. The Hybrid Kubernetes API allows you to create, list, update and delete your Arc enabled kubernetes clusters.
 
@@ -14,7 +14,7 @@ select
   provisioning_state,
   region
 from
-  azure_arc_kubernetes_cluster;
+  azure_hybrid_kubernetes_connected_cluster;
 ```
 
 ### List expired clusters
@@ -28,7 +28,7 @@ select
   connectivity_status,
   region
 from
-  azure_arc_kubernetes_cluster
+  azure_hybrid_kubernetes_connected_cluster
 where
   connectivity_status = 'Expired';
 ```

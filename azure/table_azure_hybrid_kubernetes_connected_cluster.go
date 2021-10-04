@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
-	arc "github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/kubernetesconfiguration/mgmt/kubernetesconfiguration"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -15,10 +14,10 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureArcKubernetesCluster(_ context.Context) *plugin.Table {
+func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_arc_kubernetes_cluster",
-		Description: "Azure Arc Kubernetes Cluster",
+		Name:        "azure_hybrid_kubernetes_connected_cluster",
+		Description: "Azure Hybrid Kubernetes Connected Cluster",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getArcKubernetesCluster,
@@ -223,7 +222,7 @@ func listArcKubernetesClusters(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := arc.NewConnectedClusterClient(subscriptionID)
+	client := hybridkubernetes.NewConnectedClusterClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
@@ -269,7 +268,7 @@ func getArcKubernetesCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := arc.NewConnectedClusterClient(subscriptionID)
+	client := hybridkubernetes.NewConnectedClusterClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	cluster, err := client.Get(ctx, resourceGroup, name)
