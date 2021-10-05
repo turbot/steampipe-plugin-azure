@@ -72,6 +72,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_frontdoor":                                             tableAzureFrontDoor(ctx),
 			"azure_healthcare_service":                                    tableAzureHealthcareService(ctx),
 			"azure_hpc_cache":                                             tableAzureHPCCache(ctx),
+			"azure_hybrid_kubernetes_connected_cluster":                   tableAzureHybridKubernetesConnectedCluster(ctx),
 			"azure_iothub":                                                tableAzureIotHub(ctx),
 			"azure_iothub_dps":                                            tableAzureIotHubDps(ctx),
 			"azure_key_vault":                                             tableAzureKeyVault(ctx),
