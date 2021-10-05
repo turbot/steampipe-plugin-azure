@@ -337,9 +337,6 @@ func extractComputeMachineExtensions(extension hybridcompute.MachineExtension) m
 	if extension.ProvisioningState != nil {
 		objectMap["provisioningState"] = extension.ProvisioningState
 	}
-	if extension.InstanceView != nil {
-		objectMap["status"] = extension.InstanceView.Status
-	}
 	if extension.MachineExtensionProperties != nil {
 		objectMap["machineExtensionProperties"] = extension.MachineExtensionProperties
 	}
