@@ -109,12 +109,6 @@ func tableAzureHybridComputeMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("MachinePropertiesModel.OsName"),
 			},
 			{
-				Name:        "os_profile_computer_name",
-				Description: "Specifies the operating system settings for the hybrid machine.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.OsProfile.ComputerName"),
-			},
-			{
 				Name:        "os_sku",
 				Description: "Specifies the Operating System product SKU.",
 				Type:        proto.ColumnType_STRING,
@@ -304,6 +298,7 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 	client := hybridcompute.NewMachineExtensionsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 	extensions := []hybridcompute.MachineExtension{}
+
 	result, err := client.List(ctx, resourceGroup, *machine.Name, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("listHybridComputeMachineExtensions", "list", err)
