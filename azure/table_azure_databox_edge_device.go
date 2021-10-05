@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/databoxedge/mgmt/2019-07-01/databoxedge"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -232,6 +231,14 @@ func listDataBoxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 func getDataBoxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getDataBoxEdgeDevice")
 
+	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	// Return nil, if no input provide
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
+
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -241,22 +248,6 @@ func getDataBoxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	deviceClient := databoxedge.NewDevicesClient(subscriptionID)
 	deviceClient.Authorizer = session.Authorizer
-
-	var name, resourceGroup string
-	if h.Item != nil {
-		data := h.Item.(databoxedge.Device)
-		splitID := strings.Split(*data.ID, "/")
-		name = *data.Name
-		resourceGroup = splitID[4]
-	} else {
-		name = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
-	}
-
-	// Return nil, if no input provide
-	if name == "" || resourceGroup == "" {
-		return nil, nil
-	}
 
 	op, err := deviceClient.Get(ctx, resourceGroup, name)
 	if err != nil {
