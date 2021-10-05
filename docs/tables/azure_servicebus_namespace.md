@@ -84,3 +84,16 @@ from
   azure_servicebus_namespace,
   jsonb_array_elements(private_endpoint_connections) as connections;
 ```
+
+### List encryption details
+
+```sql
+select
+  name,
+  id,
+  encryption ->> 'keySource' as key_source,
+  jsonb_pretty(encryption -> 'keyVaultProperties') as key_vault_properties,
+  encryption -> 'requireInfrastructureEncryption' as require_infrastructure_encryption
+from
+  azure_servicebus_namespace;
+```
