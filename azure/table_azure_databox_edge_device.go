@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/databoxedge/mgmt/2019-07-01/databoxedge"
-	"github.com/Azure/azure-sdk-for-go/services/datalake/store/mgmt/2016-11-01/account"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -42,7 +41,7 @@ func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 				Name:        "friendly_name",
 				Description: "The Data Box Edge/Gateway device name.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.FriendlyName"),
+				Transform:   transform.FromField("DeviceProperties.FriendlyName"),
 			},
 			{
 				Name:        "type",
@@ -53,49 +52,49 @@ func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 				Name:        "data_box_edge_device_status",
 				Description: "The status of the Data Box Edge/Gateway device. Possible values include: 'ReadyToSetup', 'Online', 'Offline', 'NeedsAttention', 'Disconnected', 'PartiallyDisconnected', 'Maintenance'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.DataBoxEdgeDeviceStatus"),
+				Transform:   transform.FromField("DeviceProperties.DataBoxEdgeDeviceStatus"),
 			},
 			{
 				Name:        "culture",
 				Description: "The Data Box Edge/Gateway device culture.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.Culture"),
+				Transform:   transform.FromField("DeviceProperties.Culture"),
 			},
 			{
 				Name:        "description",
 				Description: "he Description of the Data Box Edge/Gateway device.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.Description"),
+				Transform:   transform.FromField("DeviceProperties.Description"),
 			},
 			{
 				Name:        "device_model",
 				Description: "The Data Box Edge/Gateway device model.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.DeviceModel"),
+				Transform:   transform.FromField("DeviceProperties.DeviceModel"),
 			},
 			{
 				Name:        "device_type",
 				Description: "The type of the Data Box Edge/Gateway device. Possible values include: 'DataBoxEdgeDevice'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.DeviceType"),
+				Transform:   transform.FromField("DeviceProperties.DeviceType"),
 			},
 			{
 				Name:        "device_hcs_version",
 				Description: "The device software version number of the device (eg: 1.2.18105.6).",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.DeviceHcsVersion"),
+				Transform:   transform.FromField("DeviceProperties.DeviceHcsVersion"),
 			},
 			{
 				Name:        "device_local_capacity",
 				Description: "The Data Box Edge/Gateway device local capacity in MB.",
 				Type:        proto.ColumnType_INT,
-				Transform: transform.FromField("DeviceProperties.DeviceLocalCapacity"),
+				Transform:   transform.FromField("DeviceProperties.DeviceLocalCapacity"),
 			},
 			{
 				Name:        "device_software_version",
 				Description: "The Data Box Edge/Gateway device software version.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.DeviceSoftwareVersion"),
+				Transform:   transform.FromField("DeviceProperties.DeviceSoftwareVersion"),
 			},
 			{
 				Name:        "etag",
@@ -111,43 +110,43 @@ func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 				Name:        "model_description",
 				Description: "The description of the Data Box Edge/Gateway device model.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.ModelDescription"),
+				Transform:   transform.FromField("DeviceProperties.ModelDescription"),
 			},
 			{
 				Name:        "node_count",
 				Description: "The number of nodes in the cluster.",
 				Type:        proto.ColumnType_INT,
-				Transform: transform.FromField("DeviceProperties.NodeCount"),
+				Transform:   transform.FromField("DeviceProperties.NodeCount"),
 			},
 			{
 				Name:        "serial_number",
 				Description: "The Serial Number of Data Box Edge/Gateway device.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.SerialNumber"),
+				Transform:   transform.FromField("DeviceProperties.SerialNumber"),
 			},
 			{
 				Name:        "sku_name",
 				Description: "SKU name of the resource. Possible values include: 'Gateway', 'Edge'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Sku.Name"),
+				Transform:   transform.FromField("Sku.Name"),
 			},
 			{
 				Name:        "sku_tier",
 				Description: "The SKU tier. This is based on the SKU name. Possible values include: 'Standard'.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Sku.Tier"),
+				Transform:   transform.FromField("Sku.Tier"),
 			},
 			{
 				Name:        "time_zone",
 				Description: "The Data Box Edge/Gateway device timezone.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("DeviceProperties.TimeZone"),
-			},		
+				Transform:   transform.FromField("DeviceProperties.TimeZone"),
+			},
 			{
 				Name:        "configured_role_types",
 				Description: "Type of compute roles configured.",
 				Type:        proto.ColumnType_JSON,
-				Transform: transform.FromField("DeviceProperties.ConfiguredRoleTypes"),
+				Transform:   transform.FromField("DeviceProperties.ConfiguredRoleTypes"),
 			},
 
 			// Steampipe standard columns
@@ -210,8 +209,8 @@ func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		plugin.Logger(ctx).Error("listDataboxEdgeDevices", "ListBySubscription", err)
 		return nil, err
 	}
-	for _, account := range result.Values() {
-		d.StreamListItem(ctx, account)
+	for _, device := range result.Values() {
+		d.StreamListItem(ctx, device)
 	}
 
 	for result.NotDone() {
@@ -220,8 +219,8 @@ func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 			plugin.Logger(ctx).Error("listDataboxEdgeDevices", "ListBySubscription_pagination", err)
 			return nil, err
 		}
-		for _, account := range result.Values() {
-			d.StreamListItem(ctx, account)
+		for _, device := range result.Values() {
+			d.StreamListItem(ctx, device)
 		}
 
 	}
@@ -245,7 +244,7 @@ func getDataLboxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	var name, resourceGroup string
 	if h.Item != nil {
-		data := h.Item.(account.DataLakeStoreAccountBasic)
+		data := h.Item.(databoxedge.Device)
 		splitID := strings.Split(*data.ID, "/")
 		name = *data.Name
 		resourceGroup = splitID[4]
