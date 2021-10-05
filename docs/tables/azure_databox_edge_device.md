@@ -17,7 +17,7 @@ from
   azure_databox_edge_device;
 ```
 
-### List databox edge devices which is ready for setup
+### List offline data box edge devices
 
 ```sql
 select
@@ -28,5 +28,5 @@ select
 from
   azure_databox_edge_device
 where
-  data_box_edge_device_status = 'ReadyToSetup';
+  data_box_edge_device_status = 'Offline';
 ```

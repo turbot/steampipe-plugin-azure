@@ -16,14 +16,14 @@ import (
 func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_databox_edge_device",
-		Description: "Azure Databox Edge Device",
+		Description: "Azure Data Box Edge Device",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getDataLboxEdgeDevice,
+			Hydrate:           getDataBoxEdgeDevice,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listDataboxEdgeDevices,
+			Hydrate: listDataBoxEdgeDevices,
 		},
 		Columns: []*plugin.Column{
 			{
@@ -193,8 +193,8 @@ func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listDataboxEdgeDevices")
+func listDataBoxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listDataBoxEdgeDevices")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -206,7 +206,7 @@ func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	result, err := deviceClient.ListBySubscription(ctx, "")
 	if err != nil {
-		plugin.Logger(ctx).Error("listDataboxEdgeDevices", "ListBySubscription", err)
+		plugin.Logger(ctx).Error("listDataBoxEdgeDevices", "ListBySubscription", err)
 		return nil, err
 	}
 	for _, device := range result.Values() {
@@ -216,7 +216,7 @@ func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listDataboxEdgeDevices", "ListBySubscription_pagination", err)
+			plugin.Logger(ctx).Error("listDataBoxEdgeDevices", "ListBySubscription_pagination", err)
 			return nil, err
 		}
 		for _, device := range result.Values() {
@@ -229,8 +229,8 @@ func listDataboxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 //// HYDRATE FUNCTIONS
 
-func getDataLboxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDataLboxEdgeDevice")
+func getDataBoxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getDataBoxEdgeDevice")
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
