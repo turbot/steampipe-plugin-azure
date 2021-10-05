@@ -129,7 +129,7 @@ func tableAzureHybridComputeMachine(_ context.Context) *plugin.Table {
 			{
 				Name:        "vm_uuid",
 				Description: "Specifies the Arc Machine's unique SMBIOS ID.",
-				Type:        proto.ColumnType_INT,
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MachinePropertiesModel.VMUUID"),
 			},
 			{
@@ -297,7 +297,7 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 
 	client := hybridcompute.NewMachineExtensionsClient(subscriptionID)
 	client.Authorizer = session.Authorizer
-	extensions := []hybridcompute.MachineExtension{}
+	var extensions []map[string]interface{}
 
 	result, err := client.List(ctx, resourceGroup, *machine.Name, "")
 	if err != nil {
@@ -305,7 +305,9 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 		return nil, err
 	}
 
-	extensions = append(extensions, result.Values()...)
+	for _, extension := range result.Values() {
+		extensions = append(extensions, extractComputeMachineExtensions(extension))
+	}
 
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
@@ -313,8 +315,33 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 			plugin.Logger(ctx).Error("listHybridComputeMachineExtensions", "list_paging", err)
 			return nil, err
 		}
-		extensions = append(extensions, result.Values()...)
+		for _, extension := range result.Values() {
+			extensions = append(extensions, extractComputeMachineExtensions(extension))
+		}
 	}
 
 	return extensions, nil
+}
+
+func extractComputeMachineExtensions(extension hybridcompute.MachineExtension) map[string]interface{} {
+	objectMap := make(map[string]interface{})
+	if extension.ID != nil {
+		objectMap["id"] = extension.ID
+	}
+	if extension.Name != nil {
+		objectMap["name"] = extension.Name
+	}
+	if extension.Type != nil {
+		objectMap["type"] = extension.Type
+	}
+	if extension.ProvisioningState != nil {
+		objectMap["provisioningState"] = extension.ProvisioningState
+	}
+	if extension.InstanceView != nil {
+		objectMap["status"] = extension.InstanceView.Status
+	}
+	if extension.MachineExtensionProperties != nil {
+		objectMap["machineExtensionProperties"] = extension.MachineExtensionProperties
+	}
+	return objectMap
 }
