@@ -167,7 +167,6 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 				Name:        "identity",
 				Description: "The identity of the connected cluster.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ConnectedClusterProperties.Identity"),
 			},
 
 			// Steampipe standard columns
