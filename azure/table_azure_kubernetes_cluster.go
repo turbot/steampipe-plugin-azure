@@ -133,7 +133,8 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "agent_pool_profiles",
 				Description: "Properties of the agent pool.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ManagedClusterProperties.AgentPoolProfiles"),
+				Hydrate:     extractKubernetesClusterAgentPoolProfile,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "api_server_access_profile",
@@ -311,4 +312,118 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	return nil, nil
+}
+
+func extractKubernetesClusterAgentPoolProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("extractKubernetesClusterAgentPoolProfile")
+	clusterProperties := h.Item.(containerservice.ManagedCluster).ManagedClusterProperties
+
+	profiles := clusterProperties.AgentPoolProfiles
+
+	var agentPoolProfiles []map[string]interface{}
+
+	for _, profile := range *profiles {
+		objectMap := make(map[string]interface{})
+
+		if profile.Name != nil {
+			objectMap["Name"] = profile.Name
+		}
+		if profile.Count != nil {
+			objectMap["Count"] = profile.Count
+		}
+		if profile.VMSize != "" {
+			objectMap["VMSize"] = profile.VMSize
+		}
+		if profile.OsDiskSizeGB != nil {
+			objectMap["OsDiskSizeGB"] = profile.OsDiskSizeGB
+		}
+		if profile.OsDiskType != "" {
+			objectMap["OsDiskType"] = profile.OsDiskType
+		}
+		if profile.KubeletDiskType != "" {
+			objectMap["KubeletDiskType"] = profile.KubeletDiskType
+		}
+		if profile.VnetSubnetID != nil {
+			objectMap["VnetSubnetID"] = profile.VnetSubnetID
+		}
+		if profile.PodSubnetID != nil {
+			objectMap["PodSubnetID"] = profile.PodSubnetID
+		}
+		if profile.MaxPods != nil {
+			objectMap["MaxPods"] = profile.MaxPods
+		}
+		if profile.OsType != "" {
+			objectMap["OsType"] = profile.OsType
+		}
+		if profile.MaxCount != nil {
+			objectMap["MaxCount"] = profile.MaxCount
+		}
+		if profile.MinCount != nil {
+			objectMap["MinCount"] = profile.MinCount
+		}
+		if profile.EnableAutoScaling != nil {
+			objectMap["EnableAutoScaling"] = profile.EnableAutoScaling
+		}
+		if profile.Type != "" {
+			objectMap["Type"] = profile.Type
+		}
+		if profile.Mode != "" {
+			objectMap["Mode"] = profile.Mode
+		}
+		if profile.OrchestratorVersion != nil {
+			objectMap["OrchestratorVersion"] = profile.OrchestratorVersion
+		}
+		if profile.NodeImageVersion != nil {
+			objectMap["NodeImageVersion"] = profile.NodeImageVersion
+		}
+		if profile.UpgradeSettings != nil {
+			objectMap["UpgradeSettings"] = profile.UpgradeSettings
+		}
+		if profile.ProvisioningState != nil {
+			objectMap["ProvisioningState"] = profile.ProvisioningState
+		}
+		if profile.PowerState != nil {
+			objectMap["PowerState"] = profile.PowerState
+		}
+		if profile.EnableNodePublicIP != nil {
+			objectMap["EnableNodePublicIP"] = profile.EnableNodePublicIP
+		}
+		if profile.NodePublicIPPrefixID != nil {
+			objectMap["NodePublicIPPrefixID"] = profile.NodePublicIPPrefixID
+		}
+		if profile.ScaleSetPriority != "" {
+			objectMap["ScaleSetPriority"] = profile.ScaleSetPriority
+		}
+		if profile.ScaleSetEvictionPolicy != "" {
+			objectMap["ScaleSetEvictionPolicy"] = profile.ScaleSetEvictionPolicy
+		}
+		if profile.SpotMaxPrice != nil {
+			objectMap["SpotMaxPrice"] = profile.SpotMaxPrice
+		}
+		if profile.Tags != nil {
+			objectMap["Tags"] = profile.Tags
+		}
+		if profile.NodeLabels != nil {
+			objectMap["NodeLabels"] = profile.NodeLabels
+		}
+		if profile.NodeTaints != nil {
+			objectMap["NodeTaints"] = profile.NodeTaints
+		}
+		if profile.ProximityPlacementGroupID != nil {
+			objectMap["ProximityPlacementGroupID"] = profile.ProximityPlacementGroupID
+		}
+		if profile.KubeletConfig != nil {
+			objectMap["KubeletConfig"] = profile.KubeletConfig
+		}
+		if profile.LinuxOSConfig != nil {
+			objectMap["LinuxOSConfig"] = profile.LinuxOSConfig
+		}
+		if profile.EnableEncryptionAtHost != nil {
+			objectMap["EnableEncryptionAtHost"] = profile.EnableEncryptionAtHost
+		}
+
+		agentPoolProfiles = append(agentPoolProfiles, objectMap)
+	}
+
+	return agentPoolProfiles, nil
 }
