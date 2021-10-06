@@ -321,6 +321,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 			{
+				Name:        "security_profile",
+				Description: "Specifies the security related profile settings for the virtual machine.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
+			},
+			{
 				Name:        "win_rm",
 				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
