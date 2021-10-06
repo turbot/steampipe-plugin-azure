@@ -133,7 +133,7 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "agent_pool_profiles",
 				Description: "Properties of the agent pool.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     extractKubernetesClusterAgentPoolProfile,
+				Hydrate:     extractKubernetesClusterAgentPoolProfiles,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -314,8 +314,8 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	return nil, nil
 }
 
-func extractKubernetesClusterAgentPoolProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("extractKubernetesClusterAgentPoolProfile")
+func extractKubernetesClusterAgentPoolProfiles(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("extractKubernetesClusterAgentPoolProfiles")
 	clusterProperties := h.Item.(containerservice.ManagedCluster).ManagedClusterProperties
 
 	profiles := clusterProperties.AgentPoolProfiles
