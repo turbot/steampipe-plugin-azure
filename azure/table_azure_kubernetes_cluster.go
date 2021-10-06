@@ -314,6 +314,8 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	return nil, nil
 }
 
+	// If we return the API response directly, the output only gives
+	// the contents of AgentPoolProfiles
 func extractKubernetesClusterAgentPoolProfiles(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("extractKubernetesClusterAgentPoolProfiles")
 	clusterProperties := h.Item.(containerservice.ManagedCluster).ManagedClusterProperties
