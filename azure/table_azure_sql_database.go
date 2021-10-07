@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -312,7 +313,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	client := sql.NewDatabasesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	result, err := client.ListByServer(ctx, resourceGroupName, *server.Name, "", "")
