@@ -259,7 +259,7 @@ func listDataLakeAnalyticsAccounts(ctx context.Context, d *plugin.QueryData, _ *
 	}
 	for _, account := range result.Values() {
 		d.StreamListItem(ctx, account)
-		// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.QueryStatus.RowsRemaining(ctx) == 0 {
 			return nil, nil
@@ -273,7 +273,7 @@ func listDataLakeAnalyticsAccounts(ctx context.Context, d *plugin.QueryData, _ *
 		}
 		for _, account := range result.Values() {
 			d.StreamListItem(ctx, account)
-			// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {
 				return nil, nil

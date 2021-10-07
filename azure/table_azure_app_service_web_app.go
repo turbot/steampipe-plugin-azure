@@ -216,7 +216,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		if string(*webApp.Kind) != "functionapp" {
 			d.StreamListItem(ctx, webApp)
 		}
-		// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.QueryStatus.RowsRemaining(ctx) == 0 {
 			return nil, nil
@@ -234,7 +234,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 			if string(*webApp.Kind) != "functionapp" {
 				d.StreamListItem(ctx, webApp)
 			}
-			// This will return zero if context has been cancelled (i.e due to manual cancellation) or
+			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {
 				return nil, nil
