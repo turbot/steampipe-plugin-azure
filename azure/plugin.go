@@ -70,6 +70,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),
 			"azure_firewall":                                              tableAzureFirewall(ctx),
 			"azure_frontdoor":                                             tableAzureFrontDoor(ctx),
+			"azure_hdinsight_cluster":                                     tableAzureHDInsightCluster(ctx),
 			"azure_healthcare_service":                                    tableAzureHealthcareService(ctx),
 			"azure_hpc_cache":                                             tableAzureHPCCache(ctx),
 			"azure_hybrid_compute_machine":                                tableAzureHybridComputeMachine(ctx),
