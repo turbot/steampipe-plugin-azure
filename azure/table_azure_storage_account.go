@@ -340,6 +340,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.SecondaryLocation"),
 			},
 			{
+				Name:        "encryption_scope",
+				Description: "Encryption scope details for the storage account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listAzureStorageAccountEncryptionScope,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "encryption_services",
 				Description: "A list of services which support encryption.",
 				Type:        proto.ColumnType_JSON,
@@ -531,6 +538,45 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 	return op, nil
 }
 
+func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient := storage.NewEncryptionScopesClient(subscriptionID)
+	storageClient.Authorizer = session.Authorizer
+
+	encryptionScope, err := storageClient.List(ctx, *accountData.ResourceGroup, *accountData.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("listAzureStorageAccountEncryptionScope", "List", err)
+		return nil, err
+	}
+
+	var encryptionScopes []map[string]interface{}
+
+	for _, scope := range encryptionScope.Values() {
+		encryptionScopes = append(encryptionScopes, storageAccountEncryptionScopeMap(scope))
+	}
+
+	for encryptionScope.NotDone() {
+		err = encryptionScope.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listAzureStorageAccountEncryptionScope", "List_paging", err)
+			return nil, err
+		}
+		for _, scope := range encryptionScope.Values() {
+			encryptionScopes = append(encryptionScopes, storageAccountEncryptionScopeMap(scope))
+		}
+	}
+
+	return encryptionScopes, nil
+}
+
 func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
@@ -660,4 +706,38 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 		}
 	}
 	return nil, nil
+}
+
+// If we return the API response directly, the output only gives the top level property
+func storageAccountEncryptionScopeMap(scope storage.EncryptionScope) map[string]interface{} {
+	objMap := make(map[string]interface{})
+	if scope.ID != nil {
+		objMap["Id"] = scope.ID
+	}
+	if scope.Name != nil {
+		objMap["Name"] = scope.Name
+	}
+	if scope.Type != nil {
+		objMap["Type"] = scope.Type
+	}
+	if scope.EncryptionScopeProperties != nil {
+		if scope.EncryptionScopeProperties.Source != "" {
+			objMap["Source"] = scope.EncryptionScopeProperties.Source
+		}
+		if scope.EncryptionScopeProperties.State != "" {
+			objMap["State"] = scope.EncryptionScopeProperties.State
+		}
+		if scope.EncryptionScopeProperties.CreationTime != nil {
+			objMap["CreationTime"] = scope.EncryptionScopeProperties.CreationTime
+		}
+		if scope.EncryptionScopeProperties.LastModifiedTime != nil {
+			objMap["LastModifiedTime"] = scope.EncryptionScopeProperties.LastModifiedTime
+		}
+		if scope.EncryptionScopeProperties.KeyVaultProperties != nil {
+			if scope.EncryptionScopeProperties.KeyVaultProperties.KeyURI != nil {
+				objMap["KeyURI"] = scope.EncryptionScopeProperties.KeyVaultProperties.KeyURI
+			}
+		}
+	}
+	return objMap
 }
