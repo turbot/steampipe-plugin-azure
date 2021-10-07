@@ -74,12 +74,6 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.AuthenticationConfiguration.Authority").Transform(transform.ToString),
 			},
 			{
-				Name:        "cosmos_db_configuration",
-				Description: "The settings for the Cosmos DB database backing the service.",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("Properties.CosmosDbConfiguration.OfferThroughput"),
-			},
-			{
 				Name:        "kind",
 				Description: "The kind of the service. Possible values include: 'Fhir', 'FhirStu3', 'FhirR4'.",
 				Type:        proto.ColumnType_STRING,
@@ -106,6 +100,12 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 				Description: "The access policies of the healthcare service.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.AccessPolicies"),
+			},
+			{
+				Name:        "cosmos_db_configuration",
+				Description: "The settings for the Cosmos DB database backing the service.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.CosmosDbConfiguration"),
 			},
 			{
 				Name:        "diagnostic_settings",
