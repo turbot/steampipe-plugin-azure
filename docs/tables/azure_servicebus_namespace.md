@@ -67,3 +67,33 @@ where
     )
   );
 ```
+
+### List private endpoint connection details
+
+```sql
+select
+  name,
+  id,
+  connections ->> 'id' as connection_id,
+  connections ->> 'name' as connection_name,
+  connections ->> 'privateEndpointPropertyID' as property_private_endpoint_id,
+  connections ->> 'provisioningState' as property_provisioning_state,
+  jsonb_pretty(connections -> 'privateLinkServiceConnectionState') as property_private_link_service_connection_state,
+  connections ->> 'type' as connection_type
+from
+  azure_servicebus_namespace,
+  jsonb_array_elements(private_endpoint_connections) as connections;
+```
+
+### List encryption details
+
+```sql
+select
+  name,
+  id,
+  encryption ->> 'keySource' as key_source,
+  jsonb_pretty(encryption -> 'keyVaultProperties') as key_vault_properties,
+  encryption -> 'requireInfrastructureEncryption' as require_infrastructure_encryption
+from
+  azure_servicebus_namespace;
+```

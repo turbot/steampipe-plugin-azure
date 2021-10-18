@@ -122,6 +122,12 @@ func tableAzureAppServiceEnvironment(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AppServiceEnvironment.VnetSubnetName"),
 			},
+			{
+				Name:        "cluster_settings",
+				Description: "Custom settings for changing the behavior of the App Service Environment.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("AppServiceEnvironment.ClusterSettings"),
+			},
 
 			// Standard columns
 			{

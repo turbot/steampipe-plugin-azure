@@ -1,12 +1,12 @@
 [
   {
     "id": "{{ output.resource_id.value }}",
-    "name": "{{resourceName}}",
+    "name": "{{ resourceName }}",
     "publisher_email": "test@turbot.com",
     "publisher_name": "TurbotHQ",
-    "region": "{{ output.location.value }}",
+    "region": "{{ output.region.value }}",
     "sku_capacity": 1,
-    "sku_name": "Developer_1",
+    "sku_name": "Developer",
     "type": "Microsoft.ApiManagement/service"
   }
 ]

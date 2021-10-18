@@ -3,7 +3,7 @@ module github.com/turbot/steampipe-plugin-azure
 go 1.16
 
 require (
-	github.com/Azure/azure-sdk-for-go v55.4.0+incompatible
+	github.com/Azure/azure-sdk-for-go v58.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.12.0
 	github.com/Azure/go-autorest/autorest v0.11.17
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6

@@ -119,3 +119,33 @@ where
   lower(vm_nic ->> 'id') = lower(nsg_int ->> 'id')
   and vm.name = 'warehouse-01';
 ```
+
+### List virtual machines with user assigned identities
+
+```sql
+select
+  name,
+  identity -> 'type' as identity_type,
+  jsonb_pretty(identity -> 'userAssignedIdentities') as identity_user_assignedidentities
+from
+  azure_compute_virtual_machine
+where
+    exists (
+      select
+      from
+        unnest(regexp_split_to_array(identity ->> 'type', ',')) elem
+      where
+        trim(elem) = 'UserAssigned'
+  );
+```
+
+### List security profile details
+
+```sql
+select
+  name,
+  vm_id,
+  security_profile -> 'encryptionAtHost' as encryption_at_host
+from
+  azure_compute_virtual_machine;
+```

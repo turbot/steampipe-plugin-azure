@@ -17,18 +17,20 @@ variable "azure_subscription" {
   description = "Azure subscription used for the test."
 }
 
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.73.0"
+    }
+  }
+}
+
+# Configure the Microsoft Azure Provider
 provider "azurerm" {
   features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
-}
-
-data "azurerm_client_config" "current" {}
-
-data "null_data_source" "resource" {
-  inputs = {
-    scope = "azure:///subscriptions/${data.azurerm_client_config.current.subscription_id}"
-  }
 }
 
 resource "azurerm_resource_group" "named_test_resource" {
@@ -44,9 +46,9 @@ resource "azurerm_mysql_server" "named_test_resource" {
   administrator_login          = "mradministrator"
   administrator_login_password = "H@Sh1CoR3!"
 
-  sku_name   = "B_Gen5_1"
+  sku_name   = "B_Gen5_2"
   storage_mb = 5120
-  version    = "5.6"
+  version    = "5.7"
 
   auto_grow_enabled                 = false
   backup_retention_days             = 7
