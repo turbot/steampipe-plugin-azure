@@ -21,10 +21,12 @@ import (
 
 // Session info
 type Session struct {
-	SubscriptionID string
-	TenantID       string
-	Authorizer     autorest.Authorizer
-	Expires        *time.Time
+	SubscriptionID          string
+	TenantID                string
+	Authorizer              autorest.Authorizer
+	Expires                 *time.Time
+	ResourceManagerEndpoint string
+	StorageEndpointSuffix   string
 }
 
 /* GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
@@ -49,7 +51,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	var subscriptionID, tenantID string
 	settings := auth.EnvironmentSettings{
 		Values:      map[string]string{},
-		Environment: azure.PublicCloud,
+		Environment: azure.PublicCloud, // Setting as default azure environment
 	}
 
 	azureConfig := GetConfig(d.Connection)
@@ -107,9 +109,25 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	if azureConfig.Environment != nil {
+		env, err := azure.EnvironmentFromName(*azureConfig.Environment)
+		if err != nil {
+			logger.Debug("GetNewSession_", "Set Environment Variable Name error in if clause", err)
+			return nil, err
+		}
+		settings.Environment = env
 		settings.Values[auth.EnvironmentName] = *azureConfig.Environment
 	} else {
-		settings.Values[auth.EnvironmentName] = os.Getenv(auth.EnvironmentName)
+		env := azure.PublicCloud
+		envName, ok := os.LookupEnv(auth.EnvironmentName)
+		if ok {
+			env, err = azure.EnvironmentFromName(envName)
+			if err != nil {
+				logger.Debug("GetNewSession_", "Set Environment Variable Name error in else clause", err)
+				return nil, err
+			}
+			settings.Values[auth.EnvironmentName] = envName
+		}
+		settings.Environment = env
 	}
 
 	authMethod, resource, err := getApplicableAuthorizationDetails(ctx, settings, tokenAudience)
@@ -180,10 +198,12 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	sess := &Session{
-		SubscriptionID: subscriptionID,
-		Authorizer:     authorizer,
-		TenantID:       tenantID,
-		Expires:        &expiresOn,
+		SubscriptionID:          subscriptionID,
+		Authorizer:              authorizer,
+		TenantID:                tenantID,
+		Expires:                 &expiresOn,
+		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,
+		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
 	}
 
 	if sess.Expires != nil {
@@ -209,7 +229,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		authMethod = "CLI"
 	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
-                // Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
+		// Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
 		authMethod = "Environment"
 	}
 
