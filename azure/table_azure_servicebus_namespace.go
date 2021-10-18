@@ -178,7 +178,7 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := servicebus.NewNamespacesClient(subscriptionID)
+	client := servicebus.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -224,7 +224,7 @@ func getServiceBusNamespace(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := servicebus.NewNamespacesClient(subscriptionID)
+	client := servicebus.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -244,7 +244,7 @@ func getServiceBusNamespaceNetworkRuleSet(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := servicebus.NewNamespacesClient(subscriptionID)
+	client := servicebus.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	data := h.Item.(servicebus.SBNamespace)
@@ -269,7 +269,7 @@ func listServiceBusNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Qu
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
@@ -312,7 +312,7 @@ func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *p
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := servicebus.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client := servicebus.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroup, namespaceName)

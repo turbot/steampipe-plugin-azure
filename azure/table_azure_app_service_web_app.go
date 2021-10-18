@@ -204,7 +204,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	result, err := webClient.List(ctx)
@@ -254,7 +254,7 @@ func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.Get(ctx, resourceGroup, name)
@@ -282,7 +282,7 @@ func getAppServiceWebAppSiteConfiguration(ctx context.Context, d *plugin.QueryDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
@@ -304,7 +304,7 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
@@ -327,7 +327,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	// Return nil, if no virtual network is configured

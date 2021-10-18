@@ -89,7 +89,7 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewPricingsClient(subscriptionID, "")
+	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	settingClient.Authorizer = session.Authorizer
 
 	pricingList, err := settingClient.List(ctx)
@@ -118,7 +118,7 @@ func getSecurityCenterPricing(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewPricingsClient(subscriptionID, name)
+	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, name)
 	settingClient.Authorizer = session.Authorizer
 
 	setting, err := settingClient.Get(ctx, name)

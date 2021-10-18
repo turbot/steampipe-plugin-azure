@@ -172,7 +172,7 @@ func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotDpsClient := iothub.NewIotDpsResourceClient(subscriptionID)
+	iotDpsClient := iothub.NewIotDpsResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotDpsClient.Authorizer = session.Authorizer
 	result, err := iotDpsClient.ListBySubscription(ctx)
 	if err != nil {
@@ -208,7 +208,7 @@ func getIotHubDps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotDpsClient := iothub.NewIotDpsResourceClient(subscriptionID)
+	iotDpsClient := iothub.NewIotDpsResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotDpsClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -239,7 +239,7 @@ func listIotDpsDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *p
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

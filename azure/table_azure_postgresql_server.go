@@ -276,7 +276,7 @@ func listPostgreSqlServers(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := postgresql.NewServersClient(subscriptionID)
+	client := postgresql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -309,7 +309,7 @@ func getPostgreSqlServer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := postgresql.NewServersClient(subscriptionID)
+	client := postgresql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -337,7 +337,7 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := postgresql.NewFirewallRulesClient(subscriptionID)
+	client := postgresql.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -379,7 +379,7 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := postgresql.NewServerKeysClient(subscriptionID)
+	client := postgresql.NewServerKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroupName, *server.Name)
@@ -421,7 +421,7 @@ func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := postgresql.NewServerAdministratorsClient(subscriptionID)
+	client := postgresql.NewServerAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroupName, *server.Name)
@@ -462,7 +462,7 @@ func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData,
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := postgresql.NewConfigurationsClient(subscriptionID)
+	client := postgresql.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)

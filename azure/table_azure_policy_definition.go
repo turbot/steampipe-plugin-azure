@@ -120,7 +120,7 @@ func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewDefinitionsClient(subscriptionID)
+	PolicyClient := policy.NewDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
 	policyList, err := PolicyClient.List(ctx)

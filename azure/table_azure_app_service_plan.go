@@ -186,7 +186,7 @@ func listAppServicePlans(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppServicePlansClient(subscriptionID)
+	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	result, err := webClient.List(ctx, types.Bool(true))
@@ -231,7 +231,7 @@ func getAppServicePlan(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppServicePlansClient(subscriptionID)
+	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.Get(ctx, resourceGroup, name)

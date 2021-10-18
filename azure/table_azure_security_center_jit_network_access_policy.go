@@ -88,7 +88,7 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := security.NewJitNetworkAccessPoliciesClient(subscriptionID, "")
+	client := security.NewJitNetworkAccessPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	client.Authorizer = session.Authorizer
 
 	policy, err := client.List(ctx)

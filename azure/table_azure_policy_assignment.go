@@ -140,7 +140,7 @@ func listPolicyAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
+	PolicyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
 	policyList, err := PolicyClient.List(ctx, "")
@@ -165,7 +165,7 @@ func getPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewAssignmentsClient(subscriptionID)
+	PolicyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
 	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, name)

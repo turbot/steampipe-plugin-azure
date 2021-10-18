@@ -112,7 +112,7 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	locksClient := locks.NewManagementLocksClient(subscriptionID)
+	locksClient := locks.NewManagementLocksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
 	result, err := locksClient.ListAtSubscriptionLevel(ctx, subscriptionID)
@@ -153,7 +153,7 @@ func getManagementLock(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	locksClient := locks.NewManagementLocksClient(subscriptionID)
+	locksClient := locks.NewManagementLocksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
 	filter := fmt.Sprintf("name eq '%s'", name)

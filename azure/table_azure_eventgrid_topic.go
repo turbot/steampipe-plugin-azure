@@ -214,7 +214,7 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := eventgrid.NewTopicsClient(subscriptionID)
+	client := eventgrid.NewTopicsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx, "", nil)
@@ -261,7 +261,7 @@ func getEventGridTopic(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := eventgrid.NewTopicsClient(subscriptionID)
+	client := eventgrid.NewTopicsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -284,7 +284,7 @@ func listEventGridTopicDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// Pagination is not supported

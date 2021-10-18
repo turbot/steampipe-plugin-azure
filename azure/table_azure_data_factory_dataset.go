@@ -108,7 +108,7 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 	factoryInfo := h.Item.(datafactory.Factory)
 	resourceGroup := strings.Split(*factoryInfo.ID, "/")[4]
 
-	datasetClient := datafactory.NewDatasetsClient(subscriptionID)
+	datasetClient := datafactory.NewDatasetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
 
 	result, err := datasetClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
@@ -143,7 +143,7 @@ func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	datasetClient := datafactory.NewDatasetsClient(subscriptionID)
+	datasetClient := datafactory.NewDatasetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
 
 	datasetName := d.KeyColumnQuals["name"].GetStringValue()

@@ -142,7 +142,7 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*loadBalancer.ID, "/")[4]
 
-	listLoadBalancerProbesClient := network.NewLoadBalancerProbesClient(subscriptionID)
+	listLoadBalancerProbesClient := network.NewLoadBalancerProbesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listLoadBalancerProbesClient.Authorizer = session.Authorizer
 
 	result, err := listLoadBalancerProbesClient.List(ctx, resourceGroup, *loadBalancer.Name)
@@ -186,7 +186,7 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancerProbeClient := network.NewLoadBalancerProbesClient(subscriptionID)
+	LoadBalancerProbeClient := network.NewLoadBalancerProbesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancerProbeClient.Authorizer = session.Authorizer
 
 	op, err := LoadBalancerProbeClient.Get(ctx, resourceGroup, loadBalancerName, probeName)

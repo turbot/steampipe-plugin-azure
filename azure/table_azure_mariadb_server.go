@@ -214,7 +214,7 @@ func listMariaDBServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := mariadb.NewServersClient(subscriptionID)
+	client := mariadb.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -247,7 +247,7 @@ func getMariaDBServer(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := mariadb.NewServersClient(subscriptionID)
+	client := mariadb.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

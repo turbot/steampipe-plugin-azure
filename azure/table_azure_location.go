@@ -79,7 +79,7 @@ func listLocations(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	subscriptionsClient := sub.NewSubscriptionsClient()
+	subscriptionsClient := sub.NewSubscriptionsClientWithBaseURI(session.ResourceManagerEndpoint)
 	subscriptionsClient.Authorizer = session.Authorizer
 
 	result, err := subscriptionsClient.ListLocations(ctx, subscriptionID)

@@ -89,7 +89,7 @@ func listTenants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		return nil, err
 	}
 
-	client := subscriptions.NewTenantsClient()
+	client := subscriptions.NewTenantsClientWithBaseURI(session.ResourceManagerEndpoint)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx)
@@ -110,6 +110,6 @@ func getNameOrID(ctx context.Context, d *transform.TransformData) (interface{}, 
 	data := d.HydrateItem.(subscriptions.TenantIDDescription)
 	if data.DisplayName != nil {
 		return data.DisplayName, nil
-	} 
+	}
 	return data.TenantID, nil
 }

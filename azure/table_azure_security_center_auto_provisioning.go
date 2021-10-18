@@ -81,7 +81,7 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 	}
 
 	subscriptionID := session.SubscriptionID
-	autoProvisioningClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	autoProvisioningClient.Authorizer = session.Authorizer
 
 	autoProvisioningList, err := autoProvisioningClient.List(ctx)
@@ -105,7 +105,7 @@ func getSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData,
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	autoProvisioningClient := security.NewAutoProvisioningSettingsClient(subscriptionID, "")
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	autoProvisioningClient.Authorizer = session.Authorizer
 
 	autoProvisioning, err := autoProvisioningClient.Get(ctx, name)

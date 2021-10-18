@@ -99,7 +99,7 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClient(subscriptionID, "")
+	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	contactClient.Authorizer = session.Authorizer
 
 	contactList, err := contactClient.List(ctx)
@@ -123,7 +123,7 @@ func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClient(subscriptionID, "")
+	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	contactClient.Authorizer = session.Authorizer
 
 	contact, err := contactClient.Get(ctx, name)

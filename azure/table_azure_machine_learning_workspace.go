@@ -202,7 +202,7 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 	}
 	subscriptionID := session.SubscriptionID
 
-	worspaceClient := machinelearningservices.NewWorkspacesClient(subscriptionID)
+	worspaceClient := machinelearningservices.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	worspaceClient.Authorizer = session.Authorizer
 
 	result, err := worspaceClient.ListBySubscription(ctx, "")
@@ -240,7 +240,7 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	workspaceClient := machinelearningservices.NewWorkspacesClient(subscriptionID)
+	workspaceClient := machinelearningservices.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workspaceClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -271,7 +271,7 @@ func listMachineLearningWorkspaceDiagnosticSettings(ctx context.Context, d *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

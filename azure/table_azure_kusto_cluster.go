@@ -211,7 +211,7 @@ func listKustoClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	kustoClient := kusto.NewClustersClient(subscriptionID)
+	kustoClient := kusto.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	kustoClient.Authorizer = session.Authorizer
 
 	//Pagination does not support for kusto cluster list call till date
@@ -247,7 +247,7 @@ func getKustoCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	kustoClient := kusto.NewClustersClient(subscriptionID)
+	kustoClient := kusto.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	kustoClient.Authorizer = session.Authorizer
 
 	op, err := kustoClient.Get(ctx, resourceGroup, name)

@@ -175,7 +175,7 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 	subscriptionID := session.SubscriptionID
 	resourceGroupID := strings.Split(*networkWatcherDetails.ID, "/")[4]
 
-	client := network.NewFlowLogsClient(subscriptionID)
+	client := network.NewFlowLogsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx, resourceGroupID, *networkWatcherDetails.Name)
@@ -215,7 +215,7 @@ func getNetworkWatcherFlowLog(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := network.NewFlowLogsClient(subscriptionID)
+	client := network.NewFlowLogsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, networkWatcherName, name)

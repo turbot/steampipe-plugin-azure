@@ -250,7 +250,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := mysql.NewServersClient(subscriptionID)
+	client := mysql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -287,7 +287,7 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := mysql.NewServersClient(subscriptionID)
+	client := mysql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -318,7 +318,7 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := mysql.NewServerKeysClient(subscriptionID)
+	client := mysql.NewServerKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroup, serverName)

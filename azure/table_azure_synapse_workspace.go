@@ -223,7 +223,7 @@ func listSynapseWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := synapse.NewWorkspacesClient(subscriptionID)
+	client := synapse.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -269,7 +269,7 @@ func getSynapseWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := synapse.NewWorkspacesClient(subscriptionID)
+	client := synapse.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	config, err := client.Get(ctx, resourceGroup, name)
@@ -299,7 +299,7 @@ func listWorkspaceManagedSQLServerVulnerabilityAssessments(ctx context.Context, 
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := synapse.NewWorkspaceManagedSQLServerVulnerabilityAssessmentsClient(subscriptionID)
+	client := synapse.NewWorkspaceManagedSQLServerVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	serverVulnerabilityAssessments := []synapse.ServerVulnerabilityAssessment{}
 
@@ -334,7 +334,7 @@ func listSynapseWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

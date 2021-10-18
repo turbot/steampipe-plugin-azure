@@ -162,7 +162,7 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 	}
 	subscriptionID := session.SubscriptionID
 
-	hsmClient := keyvault.NewManagedHsmsClient(subscriptionID)
+	hsmClient := keyvault.NewManagedHsmsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	hsmClient.Authorizer = session.Authorizer
 	maxResults := int32(100)
 
@@ -205,7 +205,7 @@ func getKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.Que
 		return nil, nil
 	}
 
-	client := keyvault.NewManagedHsmsClient(subscriptionID)
+	client := keyvault.NewManagedHsmsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -233,7 +233,7 @@ func listKeyVaultHsmDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, *id)

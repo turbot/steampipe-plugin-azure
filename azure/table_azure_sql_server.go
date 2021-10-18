@@ -219,7 +219,7 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sqlv3.NewServersClient(subscriptionID)
+	client := sqlv3.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -256,7 +256,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlv3.NewServersClient(subscriptionID)
+	client := sqlv3.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -284,7 +284,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerBlobAuditingPoliciesClient(subscriptionID)
+	client := sql.NewServerBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -325,7 +325,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv3.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client := sqlv3.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -367,7 +367,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerSecurityAlertPoliciesClient(subscriptionID)
+	client := sql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -408,7 +408,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerAzureADAdministratorsClient(subscriptionID)
+	client := sql.NewServerAzureADAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -452,7 +452,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewEncryptionProtectorsClient(subscriptionID)
+	client := sql.NewEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -512,7 +512,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv3.NewServerVulnerabilityAssessmentsClient(subscriptionID)
+	client := sqlv3.NewServerVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -553,7 +553,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewFirewallRulesClient(subscriptionID)
+	client := sql.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -595,7 +595,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewVirtualNetworkRulesClient(subscriptionID)
+	client := sql.NewVirtualNetworkRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// If we return the API response directly, the output only gives

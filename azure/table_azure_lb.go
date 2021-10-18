@@ -184,7 +184,7 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancersClient := network.NewLoadBalancersClient(subscriptionID)
+	LoadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancersClient.Authorizer = session.Authorizer
 
 	result, err := LoadBalancersClient.ListAll(ctx)
@@ -205,7 +205,7 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 			d.StreamListItem(ctx, loadBalancer)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -228,7 +228,7 @@ func getLoadBalancer(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancersClient := network.NewLoadBalancersClient(subscriptionID)
+	LoadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancersClient.Authorizer = session.Authorizer
 
 	op, err := LoadBalancersClient.Get(ctx, resourceGroup, name, "")
@@ -256,7 +256,7 @@ func listLoadBalancerDiagnosticSettings(ctx context.Context, d *plugin.QueryData
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

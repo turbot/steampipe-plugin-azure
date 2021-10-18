@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/azure-sdk-for-go/services/storagecache/mgmt/2021-05-01/storagecache"
+	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -186,7 +186,7 @@ func listHPCCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := storagecache.NewCachesClient(subscriptionID)
+	client := storagecache.NewCachesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -232,7 +232,7 @@ func getHPCCache(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := storagecache.NewCachesClient(subscriptionID)
+	client := storagecache.NewCachesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

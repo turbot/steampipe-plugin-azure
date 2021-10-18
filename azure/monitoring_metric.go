@@ -126,7 +126,7 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 	}
 	subscriptionID := session.SubscriptionID
 
-	monitoringClient := insights.NewMetricsClient(subscriptionID)
+	monitoringClient := insights.NewMetricsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	monitoringClient.Authorizer = session.Authorizer
 
 	// Define param values

@@ -304,7 +304,7 @@ func listApplicationGateways(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := network.NewApplicationGatewaysClient(subscriptionID)
+	client := network.NewApplicationGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListAll(ctx)
@@ -327,7 +327,7 @@ func listApplicationGateways(ctx context.Context, d *plugin.QueryData, _ *plugin
 			d.StreamListItem(ctx, gateway)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -350,7 +350,7 @@ func getApplicationGateway(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := network.NewApplicationGatewaysClient(subscriptionID)
+	client := network.NewApplicationGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	gateway, err := client.Get(ctx, resourceGroup, name)
@@ -379,7 +379,7 @@ func listApplicationGatewayDiagnosticSettings(ctx context.Context, d *plugin.Que
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
@@ -438,7 +438,7 @@ func extractGatewayIPConfigurations(ctx context.Context, d *transform.TransformD
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -469,7 +469,7 @@ func extractGatewayAuthenticationCertificates(ctx context.Context, d *transform.
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -500,7 +500,7 @@ func extractGatewayTrustedRootCertificates(ctx context.Context, d *transform.Tra
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -531,7 +531,7 @@ func extractGatewayTrustedClientCertificates(ctx context.Context, d *transform.T
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -562,7 +562,7 @@ func extractGatewaySslCertificates(ctx context.Context, d *transform.TransformDa
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -593,7 +593,7 @@ func extractGatewayFrontendIPConfigurations(ctx context.Context, d *transform.Tr
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -624,7 +624,7 @@ func extractGatewayFrontendPorts(ctx context.Context, d *transform.TransformData
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -655,7 +655,7 @@ func extractGatewayProbes(ctx context.Context, d *transform.TransformData) (inte
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -686,7 +686,7 @@ func extractGatewayBackendAddressPools(ctx context.Context, d *transform.Transfo
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -717,7 +717,7 @@ func extractGatewayBackendHTTPSettingsCollection(ctx context.Context, d *transfo
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -748,7 +748,7 @@ func extractGatewayHTTPListeners(ctx context.Context, d *transform.TransformData
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -779,7 +779,7 @@ func extractGatewaySslProfiles(ctx context.Context, d *transform.TransformData) 
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -810,7 +810,7 @@ func extractGatewayURLPathMaps(ctx context.Context, d *transform.TransformData) 
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -841,7 +841,7 @@ func extractGatewayRequestRoutingRules(ctx context.Context, d *transform.Transfo
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -869,7 +869,7 @@ func extractGatewayRewriteRuleSets(ctx context.Context, d *transform.TransformDa
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -897,7 +897,7 @@ func extractGatewayPrivateLinkConfigurations(ctx context.Context, d *transform.T
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }
 
@@ -925,6 +925,6 @@ func extractGatewayPrivateEndpointConnections(ctx context.Context, d *transform.
 			properties = append(properties, objectMap)
 		}
 	}
-	
+
 	return properties, nil
 }

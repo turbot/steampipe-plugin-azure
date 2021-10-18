@@ -215,7 +215,7 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 	data := h.Item.(resources.Group)
 	resourceGroupName := *data.Name
@@ -262,7 +262,7 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, nil
 	}
 
-	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	op, err := networkClient.Get(ctx, resourceGroup, name)
@@ -287,7 +287,7 @@ func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData
 	name := *virtualNetworkGateway.Name
 	resourceGroup := strings.Split(*virtualNetworkGateway.ID, "/")[4]
 
-	networkClient := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	var gatewayConnections []network.VirtualNetworkGatewayConnectionListEntity

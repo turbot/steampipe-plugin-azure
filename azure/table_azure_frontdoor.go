@@ -179,7 +179,7 @@ func listFrontDoors(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := frontdoor.NewFrontDoorsClient(subscriptionID)
+	client := frontdoor.NewFrontDoorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -202,7 +202,7 @@ func listFrontDoors(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 			d.StreamListItem(ctx, door)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -225,7 +225,7 @@ func getFrontDoor(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := frontdoor.NewFrontDoorsClient(subscriptionID)
+	client := frontdoor.NewFrontDoorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	door, err := client.Get(ctx, resourceGroup, name)
@@ -254,7 +254,7 @@ func listFrontDoorDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

@@ -226,7 +226,7 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotHubClient := devices.NewIotHubResourceClient(subscriptionID)
+	iotHubClient := devices.NewIotHubResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
 	result, err := iotHubClient.ListBySubscription(ctx)
 	if err != nil {
@@ -260,7 +260,7 @@ func getIotHub(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	}
 	subscriptionID := session.SubscriptionID
 
-	iotHubClient := devices.NewIotHubResourceClient(subscriptionID)
+	iotHubClient := devices.NewIotHubResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -290,7 +290,7 @@ func listIotHubDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *p
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

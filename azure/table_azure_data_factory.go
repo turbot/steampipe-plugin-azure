@@ -159,7 +159,7 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	factoryClient := datafactory.NewFactoriesClient(subscriptionID)
+	factoryClient := datafactory.NewFactoriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
 	result, err := factoryClient.List(ctx)
@@ -195,7 +195,7 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 	subscriptionID := session.SubscriptionID
 
-	factoryClient := datafactory.NewFactoriesClient(subscriptionID)
+	factoryClient := datafactory.NewFactoriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -228,7 +228,7 @@ func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Qu
 	}
 	subscriptionID := session.SubscriptionID
 
-	connClient := datafactory.NewPrivateEndPointConnectionsClient(subscriptionID)
+	connClient := datafactory.NewPrivateEndPointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	connClient.Authorizer = session.Authorizer
 
 	op, err := connClient.ListByFactory(ctx, resourceGroup, *factoryName)
