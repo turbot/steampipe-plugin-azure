@@ -96,7 +96,7 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	subscriptionID := session.SubscriptionID
 
-	resourcesClient := resources.NewGroupsClient(subscriptionID)
+	resourcesClient := resources.NewGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
 	result, err := resourcesClient.List(ctx, "", nil)
 	if err != nil {
@@ -131,7 +131,7 @@ func getResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	subscriptionID := session.SubscriptionID
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
-	resourceGroupClient := resources.NewGroupsClient(subscriptionID)
+	resourceGroupClient := resources.NewGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceGroupClient.Authorizer = session.Authorizer
 
 	op, err := resourceGroupClient.Get(ctx, name)

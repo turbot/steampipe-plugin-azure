@@ -425,15 +425,18 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 
 func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	logger := plugin.Logger(ctx)
 	if err != nil {
+		logger.Error("listStorageAccounts", "get session error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	result, err := storageClient.List(ctx)
 	if err != nil {
+		logger.Error("listStorageAccounts", "api error", err)
 		return nil, err
 	}
 
@@ -470,7 +473,7 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	op, err := storageClient.GetProperties(ctx, resourceGroup, name, storage.AccountExpand("blobRestoreStatus"))
@@ -490,7 +493,7 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewManagementPoliciesClient(subscriptionID)
+	storageClient := storage.NewManagementPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	op, err := storageClient.Get(ctx, *accountData.ResourceGroup, *accountData.Name)
@@ -528,7 +531,7 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewBlobServicesClient(subscriptionID)
+	storageClient := storage.NewBlobServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	op, err := storageClient.GetServiceProperties(ctx, *accountData.ResourceGroup, *accountData.Name)
@@ -548,7 +551,7 @@ func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewEncryptionScopesClient(subscriptionID)
+	storageClient := storage.NewEncryptionScopesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	encryptionScope, err := storageClient.List(ctx, *accountData.ResourceGroup, *accountData.Name)
@@ -587,7 +590,7 @@ func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.Que
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
@@ -611,6 +614,7 @@ func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.Que
 
 		client := accounts.New()
 		client.Client.Authorizer = storageAuth
+		client.BaseURI = session.StorageEndpointSuffix
 
 		resp, err := client.GetServiceProperties(ctx, *accountData.Name)
 		if err != nil {
@@ -639,7 +643,7 @@ func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewFileServicesClient(subscriptionID)
+	storageClient := storage.NewFileServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	op, err := storageClient.GetServiceProperties(ctx, *accountData.ResourceGroup, *accountData.Name)
@@ -666,7 +670,7 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 		}
 		subscriptionID := session.SubscriptionID
 
-		storageClient := storage.NewAccountsClient(subscriptionID)
+		storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 		storageClient.Authorizer = session.Authorizer
 
 		accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
@@ -690,6 +694,7 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 
 			queuesClient := queues.New()
 			queuesClient.Client.Authorizer = storageAuth
+			queuesClient.BaseURI = session.StorageEndpointSuffix
 
 			// using 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues" to logging details
 			// https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage#QueueServicePropertiesProperties
