@@ -3,6 +3,9 @@ connection "azure" {
 
   # "Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
   # environment = "AZUREPUBLICCLOUD"
+  # If using azure cli for authentication also make sure to set the default environment
+  # az cloud set --name AzureUSGovernment
+  # you can check for available azure clouds by running "az cloud list | jq -r '.[] | .name'"
 
   # You can connect to Azure using one of options below:
 
