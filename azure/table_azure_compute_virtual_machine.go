@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/guestconfiguration/mgmt/guestconfiguration"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/guestconfiguration/mgmt/2020-06-25/guestconfiguration"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 
 	"github.com/turbot/go-kit/types"
@@ -319,6 +319,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Name:        "identity",
 				Description: "The identity of the virtual machine, if configured.",
 				Type:        proto.ColumnType_JSON,
+			},
+			{
+				Name:        "security_profile",
+				Description: "Specifies the security related profile settings for the virtual machine.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
 			},
 			{
 				Name:        "win_rm",

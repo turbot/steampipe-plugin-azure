@@ -1,3 +1,58 @@
+## v0.19.0 [2021-10-07]
+  
+_What's new?_
+
+- New tables added
+  - [azure_app_configuration](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_app_configuration) ([#344](https://github.com/turbot/steampipe-plugin-azure/pull/344))
+  - [azure_application_gateway](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_application_gateway) ([#316](https://github.com/turbot/steampipe-plugin-azure/pull/316))
+  - [azure_cognitive_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cognitive_account) ([#301](https://github.com/turbot/steampipe-plugin-azure/pull/301))
+  - [azure_compute_disk_access](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_disk_access) ([#288](https://github.com/turbot/steampipe-plugin-azure/pull/288))
+  - [azure_databox_edge_device](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_databox_edge_device) ([#377](https://github.com/turbot/steampipe-plugin-azure/pull/377))
+  - [azure_eventgrid_domain](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_eventgrid_domain) ([#314](https://github.com/turbot/steampipe-plugin-azure/pull/314))
+  - [azure_eventgrid_topic](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_eventgrid_topic) ([#352](https://github.com/turbot/steampipe-plugin-azure/pull/352))
+  - [azure_frontdoor](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_frontdoor) ([#362](https://github.com/turbot/steampipe-plugin-azure/pull/362))
+  - [azure_hdinsight_cluster](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_hdinsight_cluster) ([#395](https://github.com/turbot/steampipe-plugin-azure/pull/395))
+  - [azure_healthcare_service](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_healthcare_service) ([#345](https://github.com/turbot/steampipe-plugin-azure/pull/345))
+  - [azure_hpc_cache](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_hpc_cache) ([#374](https://github.com/turbot/steampipe-plugin-azure/pull/374))
+  - [azure_hybrid_compute_machine](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_hybrid_compute_machine) ([#378](https://github.com/turbot/steampipe-plugin-azure/pull/378))
+  - [azure_hybrid_kubernetes_connected_cluster](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_hybrid_kubernetes_connected_cluster) ([#376](https://github.com/turbot/steampipe-plugin-azure/pull/376))
+  - [azure_iothub_dps](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_iothub_dps) ([#363](https://github.com/turbot/steampipe-plugin-azure/pull/363))
+  - [azure_kusto_cluster](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_kusto_cluster) ([#369](https://github.com/turbot/steampipe-plugin-azure/pull/369))
+  - [azure_machine_learning_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_machine_learning_workspace) ([#315](https://github.com/turbot/steampipe-plugin-azure/pull/315))
+  - [azure_mssql_virtual_machine](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mssql_virtual_machine) ([#313](https://github.com/turbot/steampipe-plugin-azure/pull/313))
+  - [azure_service_fabric_cluster](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_service_fabric_cluster) ([#310](https://github.com/turbot/steampipe-plugin-azure/pull/310))
+  - [azure_signalr_service](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_signalr_service) ([#328](https://github.com/turbot/steampipe-plugin-azure/pull/328))
+  - [azure_spring_cloud_service](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_spring_cloud_service) ([#347](https://github.com/turbot/steampipe-plugin-azure/pull/347))
+  - [azure_storage_sync](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_storage_sync) ([#326](https://github.com/turbot/steampipe-plugin-azure/pull/326))
+  - [azure_synapse_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_synapse_workspace) ([#346](https://github.com/turbot/steampipe-plugin-azure/pull/346))
+
+_Enhancements_
+
+- Added `encryption_scope` column to `azure_storage_account` table ([#392](https://github.com/turbot/steampipe-plugin-azure/pull/392))
+- Added `security_profile` column to `azure_compute_virtual_machine` table ([#387](https://github.com/turbot/steampipe-plugin-azure/pull/387))
+- Added `public_network_access` and `minimal_tls_version` column to `azure_sql_server` table ([#371](https://github.com/turbot/steampipe-plugin-azure/pull/371))
+- Added `guest_configuration_assignments` column to `azure_compute_virtual_machine` table ([#353](https://github.com/turbot/steampipe-plugin-azure/pull/353)) ([#380](https://github.com/turbot/steampipe-plugin-azure/pull/380))
+- Added `cluster_settings` column to `azure_app_service_environment` table ([#360](https://github.com/turbot/steampipe-plugin-azure/pull/360))
+- Added `developer_portal_url`, `disable_gateway`, `enable_client_certificate`, `api_version_constraint`, `certificates`, `custom_properties`, `identity_user_assigned_identities`, `virtual_network_type`, `restore`, `scm_url`, `zones` and `diagnostic_settings` columns to `azure_api_management` table ([#336](https://github.com/turbot/steampipe-plugin-azure/pull/336))
+- Added `security_alert_policies` column to `azure_mssql_managed_instance` table ([#333](https://github.com/turbot/steampipe-plugin-azure/pull/333))
+- Added `private_endpoint_connections` column to `azure_eventhub_namespace` table ([#331](https://github.com/turbot/steampipe-plugin-azure/pull/331))
+- Added `private_endpoint_connections` column to `azure_servicebus_namespace` table ([#334](https://github.com/turbot/steampipe-plugin-azure/pull/334))
+- Added `server_keys` column to `azure_mysql_server` table ([#337](https://github.com/turbot/steampipe-plugin-azure/pull/337))
+- Added `identity` column to `azure_compute_virtual_machine` table ([#341](https://github.com/turbot/steampipe-plugin-azure/pull/341))
+- Added `server_keys` column to `azure_postgresql_server` table ([#299](https://github.com/turbot/steampipe-plugin-azure/pull/299))
+- Added `private_endpoint_connections` column to `azure_key_vault` table ([#306](https://github.com/turbot/steampipe-plugin-azure/pull/306)) ([#342](https://github.com/turbot/steampipe-plugin-azure/pull/342))
+- Added `private_endpoint_connections` column to `azure_sql_server` table ([#300](https://github.com/turbot/steampipe-plugin-azure/pull/300))
+- Added `private_endpoint_connections` column to `azure_data_factory` table ([#298](https://github.com/turbot/steampipe-plugin-azure/pull/298))
+
+_Bug fixes_
+
+- Querying column `encryption` in table `azure_servicebus_namespace` now render all available properties ([#366](https://github.com/turbot/steampipe-plugin-azure/pull/366))
+- Querying column `cluster_arm_id` in table `azure_eventhub_namespace` no longer return `nil` if available ([#351](https://github.com/turbot/steampipe-plugin-azure/pull/351))
+- Querying column `private_endpoint_connections` in table `azure_mysql_server` now render all available properties ([#338](https://github.com/turbot/steampipe-plugin-azure/pull/338))
+- Querying column `private_endpoint_connections` in table `azure_postgresql_server` now render all available properties ([#339](https://github.com/turbot/steampipe-plugin-azure/pull/339))
+- Querying column `encryption_protector` in table `azure_sql_server` now render all available properties ([#361](https://github.com/turbot/steampipe-plugin-azure/pull/361))
+
+
 ## v0.18.0 [2021-08-25]
 
 _What's new?_

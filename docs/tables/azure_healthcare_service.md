@@ -62,3 +62,15 @@ from
   azure_healthcare_service,
   jsonb_array_elements(diagnostic_settings) as d;
 ```
+
+### List Cosmos DB configuration settings
+
+```sql
+select
+  name,
+  id,
+  cosmos_db_configuration ->> 'keyVaultKeyUri' as key_vault_key_uri,
+  cosmos_db_configuration -> 'offerThroughput' as offer_throughput
+from
+  azure_healthcare_service;
+```

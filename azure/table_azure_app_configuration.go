@@ -64,7 +64,8 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 				Name:        "public_network_access",
 				Description: "Control permission for data plane traffic coming from public networks while private endpoint is enabled. Possible values include: 'Enabled', 'Disabled'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ConfigurationStoreProperties.PublicNetworkAccess"),
+				Hydrate:     getPublicNetworkAccess,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "sku_name",
@@ -255,7 +256,22 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 	return diagnosticSettings, nil
 }
 
-// //// TRANSFORM FUNCTION
+func getPublicNetworkAccess(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	configurationStore := h.Item.(appconfiguration.ConfigurationStore)
+
+	// In case of automatic is selected at the time of store creation, PublicNetworkAccess value will be nil in API response.
+	// With a private endpoint, public network access will be automatically disabled.
+	// If there is no private endpoint present, public network access is automatically enabled.
+	if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) == 0 {
+		return "Enabled", nil
+	} else if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) != 0 {
+		return "Disabled", nil
+	}
+
+	return configurationStore.PublicNetworkAccess, nil
+}
+
+//// TRANSFORM FUNCTION
 
 // If we return the API response directly, the output will not provide all the properties of PrivateEndpointConnections
 func extractAppConfigurationPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {

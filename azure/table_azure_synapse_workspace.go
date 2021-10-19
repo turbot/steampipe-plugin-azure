@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/synapse/mgmt/2021-03-01/synapse"
@@ -145,6 +146,13 @@ func tableAzureSynapseWorkspace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("WorkspaceProperties.VirtualNetworkProfile"),
 			},
 			{
+				Name:        "workspace_managed_sql_server_vulnerability_assessments",
+				Description: "The vulnerability assessments details of the workspace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listWorkspaceManagedSQLServerVulnerabilityAssessments,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "workspace_repository_configuration",
 				Description: "Git integration settings of the workspace.",
 				Type:        proto.ColumnType_JSON,
@@ -277,6 +285,42 @@ func getSynapseWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 
 	return nil, nil
+}
+
+func listWorkspaceManagedSQLServerVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listWorkspaceManagedSQLServerVulnerabilityAssessments")
+
+	workspace := h.Item.(synapse.Workspace)
+	resourceGroup := strings.Split(*workspace.ID, "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := synapse.NewWorkspaceManagedSQLServerVulnerabilityAssessmentsClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+	serverVulnerabilityAssessments := []synapse.ServerVulnerabilityAssessment{}
+
+	result, err := client.List(ctx, resourceGroup, *workspace.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("listWorkspaceManagedSQLServerVulnerabilityAssessments", "get", err)
+		return nil, err
+	}
+
+	serverVulnerabilityAssessments = append(serverVulnerabilityAssessments, result.Values()...)
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listWorkspaceManagedSQLServerVulnerabilityAssessments", "list_paging", err)
+			return nil, err
+		}
+		serverVulnerabilityAssessments = append(serverVulnerabilityAssessments, result.Values()...)
+	}
+
+	return serverVulnerabilityAssessments, nil
 }
 
 func listSynapseWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "{{ output.resource_id_upper.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.region.value }}",
+    "resource_group": "{{ resourceName }}",
+    "sku_name": "{{ output.sku_name.value }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.StorageCache/caches"
+  }
+]
