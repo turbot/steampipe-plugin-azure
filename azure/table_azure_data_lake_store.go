@@ -228,7 +228,7 @@ func listDataLakeStores(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountClient := account.NewAccountsClient(subscriptionID)
+	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
 	result, err := accountClient.List(ctx, "", nil, nil, "", "", nil)
@@ -264,7 +264,7 @@ func getDataLakeStore(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountClient := account.NewAccountsClient(subscriptionID)
+	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
 	var name, resourceGroup string
@@ -302,7 +302,7 @@ func listDataLakeStoreDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

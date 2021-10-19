@@ -233,7 +233,7 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := containerregistry.NewRegistriesClient(subscriptionID)
+	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -278,7 +278,7 @@ func getContainerRegistry(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := containerregistry.NewRegistriesClient(subscriptionID)
+	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -298,7 +298,7 @@ func listContainerRegistryLoginCredentials(ctx context.Context, d *plugin.QueryD
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := containerregistry.NewRegistriesClient(subscriptionID)
+	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	data := h.Item.(containerregistry.Registry)
@@ -324,7 +324,7 @@ func listContainerRegistryUsages(ctx context.Context, d *plugin.QueryData, h *pl
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := containerregistry.NewRegistriesClient(subscriptionID)
+	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	data := h.Item.(containerregistry.Registry)

@@ -160,7 +160,7 @@ func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	documentDBClient := documentdb.NewSQLResourcesClient(subscriptionID)
+	documentDBClient := documentdb.NewSQLResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	result, err := documentDBClient.ListSQLDatabases(ctx, *account.ResourceGroup, *account.Name)
@@ -191,7 +191,7 @@ func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
 
-	databaseAccountClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
+	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
 
 	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
@@ -201,7 +201,7 @@ func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	location := op.Location
 
-	documentDBClient := documentdb.NewSQLResourcesClient(subscriptionID)
+	documentDBClient := documentdb.NewSQLResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	result, err := documentDBClient.GetSQLDatabase(ctx, resourceGroup, accountName, name)

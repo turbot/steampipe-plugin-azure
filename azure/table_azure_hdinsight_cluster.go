@@ -243,7 +243,7 @@ func listHDInsightClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hdinsight.NewClustersClient(subscriptionID)
+	client := hdinsight.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -266,7 +266,7 @@ func listHDInsightClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 			d.StreamListItem(ctx, cluster)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -289,7 +289,7 @@ func getHDInsightCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hdinsight.NewClustersClient(subscriptionID)
+	client := hdinsight.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -318,7 +318,7 @@ func listHDInsightClusterDiagnosticSettings(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

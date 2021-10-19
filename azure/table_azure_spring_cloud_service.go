@@ -161,7 +161,7 @@ func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, h *plugin
 		return nil, nil
 	}
 
-	client := appplatform.NewServicesClient(subscriptionID)
+	client := appplatform.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx, *resourceGroup.Name)
@@ -207,7 +207,7 @@ func getSpringCloudService(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := appplatform.NewServicesClient(subscriptionID)
+	client := appplatform.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	service, err := client.Get(ctx, resourceGroup, name)
@@ -236,7 +236,7 @@ func listSpringCloudServiceDiagnosticSettings(ctx context.Context, d *plugin.Que
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

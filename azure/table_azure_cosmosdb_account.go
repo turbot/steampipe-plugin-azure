@@ -269,7 +269,7 @@ func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	documentDBClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
+	documentDBClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	result, err := documentDBClient.List(ctx)
@@ -298,7 +298,7 @@ func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	documentDBClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
+	documentDBClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	op, err := documentDBClient.Get(ctx, resourceGroup, name)

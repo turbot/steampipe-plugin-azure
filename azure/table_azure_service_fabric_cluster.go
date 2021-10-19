@@ -238,7 +238,7 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	clusterClient := servicefabric.NewClustersClient(subscriptionID)
+	clusterClient := servicefabric.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	clusterClient.Authorizer = session.Authorizer
 
 	result, err := clusterClient.List(ctx)
@@ -251,7 +251,7 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 	for _, cluster := range *result.Value {
 		d.StreamListItem(ctx, cluster)
 	}
-	
+
 	return nil, err
 }
 
@@ -274,7 +274,7 @@ func getServiceFabricCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	clusterClient := servicefabric.NewClustersClient(subscriptionID)
+	clusterClient := servicefabric.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	clusterClient.Authorizer = session.Authorizer
 
 	cluster, err := clusterClient.Get(ctx, resourceGroup, name)

@@ -147,7 +147,7 @@ func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 	tenantID := session.TenantID
 
-	graphClient := graphrbac.NewServicePrincipalsClient(tenantID)
+	graphClient := graphrbac.NewServicePrincipalsClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	result, err := graphClient.List(ctx, "")
@@ -184,7 +184,7 @@ func getAdServicePrincipal(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	tenantID := session.TenantID
 	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
 
-	graphClient := graphrbac.NewServicePrincipalsClient(tenantID)
+	graphClient := graphrbac.NewServicePrincipalsClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	op, err := graphClient.Get(ctx, objectID)

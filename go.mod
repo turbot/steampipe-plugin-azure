@@ -1,6 +1,6 @@
 module github.com/turbot/steampipe-plugin-azure
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Azure/azure-sdk-for-go v58.0.0+incompatible

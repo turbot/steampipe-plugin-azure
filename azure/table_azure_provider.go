@@ -79,7 +79,7 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	resourcesClient := resources.NewProvidersClient(subscriptionID)
+	resourcesClient := resources.NewProvidersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
 	result, err := resourcesClient.List(ctx, nil, "")
 	if err != nil {
@@ -115,7 +115,7 @@ func getProvider(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	subscriptionID := session.SubscriptionID
 	namespace := d.KeyColumnQuals["namespace"].GetStringValue()
 
-	resourcesClient := resources.NewProvidersClient(subscriptionID)
+	resourcesClient := resources.NewProvidersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
 
 	op, err := resourcesClient.Get(ctx, namespace, "")

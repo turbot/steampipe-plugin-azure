@@ -100,7 +100,7 @@ func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	}
 	tenantID := session.TenantID
 
-	graphClient := graphrbac.NewGroupsClient(tenantID)
+	graphClient := graphrbac.NewGroupsClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	result, err := graphClient.List(ctx, "")
@@ -137,7 +137,7 @@ func getAdGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	tenantID := session.TenantID
 	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
 
-	graphClient := graphrbac.NewGroupsClient(tenantID)
+	graphClient := graphrbac.NewGroupsClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	op, err := graphClient.Get(ctx, objectID)

@@ -250,7 +250,7 @@ func listDataLakeAnalyticsAccounts(ctx context.Context, d *plugin.QueryData, _ *
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountClient := account.NewAccountsClient(subscriptionID)
+	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
 	result, err := accountClient.List(context.Background(), "", nil, nil, "", "", nil)
@@ -286,7 +286,7 @@ func getDataLakeAnalyticsAccount(ctx context.Context, d *plugin.QueryData, h *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountClient := account.NewAccountsClient(subscriptionID)
+	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
 	var name, resourceGroup string
@@ -324,7 +324,7 @@ func listDataLakeAnalyticsAccountDiagnosticSettings(ctx context.Context, d *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

@@ -144,7 +144,7 @@ func listAzureStorageSyncs(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := storagesync.NewServicesClient(subscriptionID)
+	client := storagesync.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
@@ -157,7 +157,7 @@ func listAzureStorageSyncs(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	for _, storage := range *result.Value {
 		d.StreamListItem(ctx, storage)
 	}
-	
+
 	return nil, err
 }
 
@@ -180,7 +180,7 @@ func getAzureStorageSync(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := storagesync.NewServicesClient(subscriptionID)
+	client := storagesync.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

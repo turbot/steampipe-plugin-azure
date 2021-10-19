@@ -119,7 +119,7 @@ func listRouteTables(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	routeTableClient := network.NewRouteTablesClient(subscriptionID)
+	routeTableClient := network.NewRouteTablesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	routeTableClient.Authorizer = session.Authorizer
 
 	result, err := routeTableClient.ListAll(ctx)
@@ -158,7 +158,7 @@ func getRouteTable(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	routeTableClient := network.NewRouteTablesClient(subscriptionID)
+	routeTableClient := network.NewRouteTablesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	routeTableClient.Authorizer = session.Authorizer
 
 	op, err := routeTableClient.Get(ctx, resourceGroup, name, "")

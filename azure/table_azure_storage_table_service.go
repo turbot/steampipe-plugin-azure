@@ -111,7 +111,7 @@ func listStorageTableServices(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewTableServicesClient(subscriptionID)
+	storageClient := storage.NewTableServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
@@ -140,7 +140,7 @@ func getStorageTableService(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
@@ -151,7 +151,7 @@ func getStorageTableService(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	location := storageDetails.Location
 
-	tableClient := storage.NewTableServicesClient(subscriptionID)
+	tableClient := storage.NewTableServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	tableClient.Authorizer = session.Authorizer
 
 	op, err := tableClient.GetServiceProperties(ctx, resourceGroup, accountName)

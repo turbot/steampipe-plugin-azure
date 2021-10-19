@@ -127,7 +127,7 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewDiskAccessesClient(subscriptionID)
+	client := compute.NewDiskAccessesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.List(ctx)
 	if err != nil {
@@ -171,7 +171,7 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewDiskAccessesClient(subscriptionID)
+	client := compute.NewDiskAccessesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	diskAccess, err := client.Get(ctx, resourceGroup, name)

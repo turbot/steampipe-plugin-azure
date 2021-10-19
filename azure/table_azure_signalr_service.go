@@ -192,7 +192,7 @@ func listSignalRServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := signalr.NewClient(subscriptionID)
+	client := signalr.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
@@ -238,7 +238,7 @@ func getSignalRService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := signalr.NewClient(subscriptionID)
+	client := signalr.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -267,7 +267,7 @@ func listSignalRServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

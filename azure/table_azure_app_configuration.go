@@ -150,7 +150,7 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := appconfiguration.NewConfigurationStoresClient(subscriptionID)
+	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx, "")
@@ -196,7 +196,7 @@ func getAppConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := appconfiguration.NewConfigurationStoresClient(subscriptionID)
+	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	config, err := client.Get(ctx, resourceGroup, name)
@@ -225,7 +225,7 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

@@ -137,7 +137,7 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	networkClient := network.NewVirtualNetworksClient(subscriptionID)
+	networkClient := network.NewVirtualNetworksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	result, err := networkClient.ListAll(ctx)
@@ -177,7 +177,7 @@ func getVirtualNetwork(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewVirtualNetworksClient(subscriptionID)
+	networkClient := network.NewVirtualNetworksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")

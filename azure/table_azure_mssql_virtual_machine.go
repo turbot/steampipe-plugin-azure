@@ -124,7 +124,6 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.WsfcDomainCredentials"),
 			},
-			
 
 			// Steampipe standard columns
 			{
@@ -177,7 +176,7 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlvirtualmachine.NewSQLVirtualMachinesClient(subscriptionID)
+	client := sqlvirtualmachine.NewSQLVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -185,7 +184,7 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 		plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list", err)
 		return nil, err
 	}
-	
+
 	for _, virtualMachine := range result.Values() {
 		d.StreamListItem(ctx, virtualMachine)
 	}
@@ -223,7 +222,7 @@ func getMSSQLVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlvirtualmachine.NewSQLVirtualMachinesClient(subscriptionID)
+	client := sqlvirtualmachine.NewSQLVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name, "")

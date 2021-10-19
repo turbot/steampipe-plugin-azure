@@ -128,7 +128,7 @@ func listLogAlerts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	logAlertClient := insights.NewActivityLogAlertsClient(subscriptionID)
+	logAlertClient := insights.NewActivityLogAlertsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logAlertClient.Authorizer = session.Authorizer
 
 	result, err := logAlertClient.ListBySubscriptionID(ctx)
@@ -157,7 +157,7 @@ func getLogAlert(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	logAlertClient := insights.NewActivityLogAlertsClient(subscriptionID)
+	logAlertClient := insights.NewActivityLogAlertsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logAlertClient.Authorizer = session.Authorizer
 
 	op, err := logAlertClient.Get(ctx, resourceGroup, name)

@@ -192,7 +192,7 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewAzureFirewallsClient(subscriptionID)
+	networkClient := network.NewAzureFirewallsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
@@ -230,7 +230,7 @@ func getFirewall(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewAzureFirewallsClient(subscriptionID)
+	networkClient := network.NewAzureFirewallsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	op, err := networkClient.Get(ctx, resourceGroup, name)

@@ -153,7 +153,7 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	locksClient := skus.NewResourceSkusClient(subscriptionID)
+	locksClient := skus.NewResourceSkusClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
 	result, err := locksClient.List(ctx)

@@ -197,7 +197,7 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewPublicIPAddressesClient(subscriptionID)
+	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
@@ -234,7 +234,7 @@ func getPublicIP(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewPublicIPAddressesClient(subscriptionID)
+	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")

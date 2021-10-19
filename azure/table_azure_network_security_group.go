@@ -148,7 +148,7 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	NetworkSecurityGroupClient := network.NewSecurityGroupsClient(subscriptionID)
+	NetworkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	NetworkSecurityGroupClient.Authorizer = session.Authorizer
 	result, err := NetworkSecurityGroupClient.ListAll(ctx)
 	if err != nil {
@@ -186,7 +186,7 @@ func getNetworkSecurityGroup(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	NetworkSecurityGroupClient := network.NewSecurityGroupsClient(subscriptionID)
+	NetworkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	NetworkSecurityGroupClient.Authorizer = session.Authorizer
 
 	op, err := NetworkSecurityGroupClient.Get(ctx, resourceGroup, name, "")
@@ -214,7 +214,7 @@ func listNetworkSecurityGroupDiagnosticSettings(ctx context.Context, d *plugin.Q
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

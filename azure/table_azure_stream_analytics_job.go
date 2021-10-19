@@ -215,7 +215,7 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	streamingJobsClient := streamanalytics.NewStreamingJobsClient(subscriptionID)
+	streamingJobsClient := streamanalytics.NewStreamingJobsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	streamingJobsClient.Authorizer = session.Authorizer
 
 	result, err := streamingJobsClient.List(context.Background(), "")
@@ -251,7 +251,7 @@ func getStreamAnalyticsJob(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	streamingJobsClient := streamanalytics.NewStreamingJobsClient(subscriptionID)
+	streamingJobsClient := streamanalytics.NewStreamingJobsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	streamingJobsClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -281,7 +281,7 @@ func listStreamAnalyticsJobDiagnosticSettings(ctx context.Context, d *plugin.Que
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
