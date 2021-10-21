@@ -91,13 +91,34 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 	client := security.NewJitNetworkAccessPoliciesClient(subscriptionID, "")
 	client.Authorizer = session.Authorizer
 
-	policy, err := client.List(ctx)
+	result, err := client.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, contact := range policy.Values() {
-		d.StreamListItem(ctx, contact)
+	for _, jitNetworkAccessPolicy := range result.Values() {
+		d.StreamListItem(ctx, jitNetworkAccessPolicy)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return err, nil
+		}
+		for _, jitNetworkAccessPolicy := range result.Values() {
+			d.StreamListItem(ctx, jitNetworkAccessPolicy)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+	}
+
 	return nil, nil
 }

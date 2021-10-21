@@ -92,14 +92,20 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 	settingClient := security.NewPricingsClient(subscriptionID, "")
 	settingClient.Authorizer = session.Authorizer
 
-	pricingList, err := settingClient.List(ctx)
+	result, err := settingClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, pricing := range *pricingList.Value {
+	for _, pricing := range *result.Value {
 		d.StreamListItem(ctx, pricing)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
+
 	return nil, nil
 }
 

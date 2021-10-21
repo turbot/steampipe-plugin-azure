@@ -123,13 +123,34 @@ func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	PolicyClient := policy.NewDefinitionsClient(subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
-	policyList, err := PolicyClient.List(ctx)
+	result, err := PolicyClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, policy := range policyList.Values() {
+	for _, policy := range result.Values() {
 		d.StreamListItem(ctx, policy)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, policy := range result.Values() {
+			d.StreamListItem(ctx, policy)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
 	}
 
 	return nil, nil

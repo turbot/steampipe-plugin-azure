@@ -138,6 +138,11 @@ func listLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	for _, logProfile := range *result.Value {
 		d.StreamListItem(ctx, logProfile)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	return nil, err

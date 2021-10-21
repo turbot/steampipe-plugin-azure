@@ -169,6 +169,11 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	for _, rule := range result.Values() {
 		d.StreamListItem(ctx, LoadBalancerNatRulesInfo{rule, *loadBalancer.Name})
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -178,6 +183,11 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 		}
 		for _, rule := range result.Values() {
 			d.StreamListItem(ctx, LoadBalancerNatRulesInfo{rule, *loadBalancer.Name})
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
@@ -207,7 +217,7 @@ func getLoadBalancerNatRule(ctx context.Context, d *plugin.QueryData, h *plugin.
 	natClient := network.NewInboundNatRulesClient(subscriptionID)
 	natClient.Authorizer = session.Authorizer
 
-	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName,"")
+	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName, "")
 	if err != nil {
 		return nil, err
 	}

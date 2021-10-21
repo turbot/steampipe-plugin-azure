@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -23,6 +24,12 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleAssignments,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "principal_id",
+					Require: plugin.Optional,
+				},
+			},
 		},
 		Columns: []*plugin.Column{
 			{
@@ -81,7 +88,8 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
+				Hydrate:     plugin.HydrateFunc(getSubscriptionID).WithCache(),
+				Transform:   transform.FromValue(),
 			},
 		},
 	}
@@ -98,12 +106,23 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
-	result, err := authorizationClient.List(ctx, "")
+
+	var filter string
+	if d.KeyColumnQuals["principal_id"] != nil {
+		filter = fmt.Sprintf("principalId eq '%s'", d.KeyColumnQuals["principal_id"].GetStringValue())
+	}
+
+	result, err := authorizationClient.List(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 	for _, roleAssignment := range result.Values() {
 		d.StreamListItem(ctx, roleAssignment)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -113,6 +132,11 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		}
 		for _, roleAssignment := range result.Values() {
 			d.StreamListItem(ctx, roleAssignment)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
