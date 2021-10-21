@@ -177,7 +177,12 @@ func listStorageBlobServices(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	for _, blobService := range *result.Value {
-		d.StreamLeafListItem(ctx, &blobServiceInfo{blobService, account.Name, account.ResourceGroup, account.Account.Location})
+		d.StreamListItem(ctx, &blobServiceInfo{blobService, account.Name, account.ResourceGroup, account.Account.Location})
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	return nil, err

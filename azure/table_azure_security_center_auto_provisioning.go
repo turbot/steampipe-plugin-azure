@@ -84,14 +84,35 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
 	autoProvisioningClient.Authorizer = session.Authorizer
 
-	autoProvisioningList, err := autoProvisioningClient.List(ctx)
+	result, err := autoProvisioningClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}
 
-	for _, autoProvisioning := range autoProvisioningList.Values() {
+	for _, autoProvisioning := range result.Values() {
 		d.StreamListItem(ctx, autoProvisioning)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return err, nil
+		}
+		for _, contact := range result.Values() {
+			d.StreamListItem(ctx, contact)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+	}
+
 	return nil, nil
 }
 
