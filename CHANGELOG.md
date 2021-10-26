@@ -3,16 +3,19 @@
 _Enhancements_
 
 - Updated: Add context cancellation handling to all the tables ([#343](https://github.com/turbot/steampipe-plugin-azure/pull/343))
-- Updated: Add support for Azure US Government cloud across all the tables
 - Recompiled plugin with [steampipe-plugin-sdk v1.7.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v170--2021-10-18) ([#400](https://github.com/turbot/steampipe-plugin-azure/pull/400))
 - The configuration section in the docs/index.md file now includes additional information on different methods of setting up credentials in the `azure.spc` file
 
+_Bug fixes_
+
+- Fixed: Authentication now works properly for non-public cloud environments
+
 _Deprecated_
 
-- The following tables have been deprecated since they have a wider scope in the [azuread plugin](https://hub.steampipe.io/plugins/turbot/azuread/tables). We will continue to support them for now but they will be removed from this plugin in the future
-  - [azure_ad_group](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_group)
-  - [azure_ad_service_principal](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_service_principal)
-  - [azure_ad_user](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_user)
+- The following tables have been deprecated since they are now maintained in the [azuread plugin](https://hub.steampipe.io/plugins/turbot/azuread/tables). These tables will be removed in the next major version. We recommend updating any scripts or workflows that use these tables to use the equivalent tables in the Azure AD plugin instead
+  - [azure_ad_group](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_group) (replaced by [azuread_group](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_group))
+  - [azure_ad_service_principal](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_service_principal) (replaced by [azuread_service_principal](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_service_principal))
+  - [azure_ad_user](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_user) (replaced by [azuread_user](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_user))
 
 ## v0.19.0 [2021-10-07]
   
