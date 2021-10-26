@@ -56,12 +56,12 @@ steampipe plugin install azure
 
 ### Credentials
 
-| Item        | Description                                                                                                                                                                                                                   |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Credentials | Use the `az login` command to setup your [Azure Default Connection](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli)                                                                                        |
-| Permissions | Grant the `Global Reader` permission to your user.                                                                                                                                                                            |
-| Radius      | Each connection represents a single Azure Subscription.                                                                                                                                                                       |
-| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azuread.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables) e.g. `AZURE_SUBSCRIPTION_ID`. |
+| Item        | Description                                                                                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Credentials | Use the `az login` command to setup your [Azure Default Connection](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).                                                                                         |
+| Permissions | Grant the `Global Reader` permission to your user.                                                                                                                                                                              |
+| Radius      | Each connection represents a single Azure Subscription.                                                                                                                                                                         |
+| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azuread.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`. |
 
 ### Configuration
 
@@ -71,11 +71,10 @@ Installing the latest azure plugin will create a config file (~/.steampipe/confi
 connection "azure" {
   plugin = "azure"
 
-  # "Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
+  # The Azure cloud environment to use, defaults to AZUREPUBLICCLOUD
+  # Valid environments are AZUREPUBLICCLOUD, AZURECHINACLOUD, AZUREGERMANCLOUD, AZUREUSGOVERNMENTCLOUD
+  # If using Azure CLI for authentication, make sure to also set the default environment: https://docs.microsoft.com/en-us/cli/azure/manage-clouds-azure-cli
   # environment = "AZUREPUBLICCLOUD"
-  # If using azure cli for authentication also make sure to set the default environment
-  # az cloud set --name AzureUSGovernment
-  # you can check for available azure clouds by running "az cloud list | jq -r '.[] | .name'"
 
   # You can connect to Azure using one of options below:
 
@@ -207,9 +206,9 @@ connection "azure_msi" {
 
 ### Azure CLI
 
-If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the `az` CLI. You can run `az login` to set up these credentials.
+If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the Azure CLI. You can run `az login` to set up these credentials.
 
-- `subscription_id`: Specifies the subscription to connect to; Otherwise uses the subscription_id set for azure CLI(`az account show`)
+- `subscription_id`: Specifies the subscription to connect to. If not set, use the subscription ID set in the Azure CLI (`az account show`)
 
 ```hcl
 connection "azure" {

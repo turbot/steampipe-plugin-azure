@@ -51,7 +51,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	var subscriptionID, tenantID string
 	settings := auth.EnvironmentSettings{
 		Values:      map[string]string{},
-		Environment: azure.PublicCloud, // Setting as default azure environment
+		Environment: azure.PublicCloud, // Set public cloud as default
 	}
 
 	azureConfig := GetConfig(d.Connection)
@@ -111,7 +111,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	if azureConfig.Environment != nil {
 		env, err := azure.EnvironmentFromName(*azureConfig.Environment)
 		if err != nil {
-			logger.Debug("GetNewSession_", "Set Environment Variable Name error in if clause", err)
+			logger.Debug("GetNewSession_", "Error getting environment from name with config environment", err)
 			return nil, err
 		}
 		settings.Environment = env
@@ -122,7 +122,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		if ok {
 			env, err = azure.EnvironmentFromName(envName)
 			if err != nil {
-				logger.Debug("GetNewSession_", "Set Environment Variable Name error in else clause", err)
+				logger.Debug("GetNewSession_", "Error getting environment from name with no config environment", err)
 				return nil, err
 			}
 			settings.Values[auth.EnvironmentName] = envName
@@ -149,16 +149,17 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 
-	// In this case need to get the details of SUBSCRIPTION_ID
-	// And TENANT_ID if tokenAudience is GRAPH
+	// In this case need get the details of SUBSCRIPTION_ID and TENANT_ID if
+	// tokenAudience is GRAPH
 	case "CLI":
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
-			// In case the password got changed, and the session token stored in the system, or the CLI is outdated
+			// Check if the password was changed and the session token is stored in
+			// the system, or if the CLI is outdated
 			if strings.Contains(err.Error(), "invalid_grant") {
-				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+				return nil, fmt.Errorf("ValidationError: The credential data used by the CLI has expired because you might have changed or reset the password. Please clear your browser's cookies and run 'az login'.")
 			}
 			return nil, err
 		}
@@ -168,7 +169,6 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 
-		// var adalToken adal.Token
 		adalToken, err := token.ToADALToken()
 		expiresOn = adalToken.Expires()
 
@@ -176,7 +176,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
 			if strings.Contains(err.Error(), "invalid_grant") {
-				return nil, fmt.Errorf("ValidationError: The credential data used by CLI has been expired because you might have changed or reset the password. Please clear browser's cookies and run 'az login'")
+				return nil, fmt.Errorf("ValidationError: The credential data used by the CLI has expired because you might have changed or reset the password. Please clear your browser's cookies and run 'az login'.")
 			}
 			return nil, err
 		}
