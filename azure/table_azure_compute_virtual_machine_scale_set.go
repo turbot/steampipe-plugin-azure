@@ -195,7 +195,7 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-			
+
 			// Azure standard columns
 			{
 				Name:        "region",
@@ -229,7 +229,7 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
+	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListAll(context.Background())
@@ -269,7 +269,7 @@ func getAzureComputeVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryD
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
+	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(context.Background(), resourceGroup, name)
@@ -295,7 +295,7 @@ func getAzureComputeVirtualMachineScalesetExtensions(ctx context.Context, d *plu
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineScaleSetExtensionsClient(subscriptionID)
+	client := compute.NewVirtualMachineScaleSetExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(context.Background(), resourceGroupName, *virtualMachineScaleSet.Name)

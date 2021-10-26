@@ -89,7 +89,7 @@ func listTenants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		return nil, err
 	}
 
-	client := subscriptions.NewTenantsClient()
+	client := subscriptions.NewTenantsClientWithBaseURI(session.ResourceManagerEndpoint)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx)

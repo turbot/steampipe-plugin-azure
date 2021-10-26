@@ -171,7 +171,7 @@ func listSearchServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	subscriptionID := session.SubscriptionID
 
-	searchClient := search.NewServicesClient(subscriptionID)
+	searchClient := search.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	searchClient.Authorizer = session.Authorizer
 
 	result, err := searchClient.ListBySubscription(ctx, nil)
@@ -223,7 +223,7 @@ func getSearchService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	searchClient := search.NewServicesClient(subscriptionID)
+	searchClient := search.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	searchClient.Authorizer = session.Authorizer
 
 	op, err := searchClient.Get(ctx, resourceGroup, name, nil)
@@ -249,7 +249,7 @@ func listSearchServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, *id)

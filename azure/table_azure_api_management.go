@@ -306,7 +306,7 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 	subscriptionID := session.SubscriptionID
 
-	apiManagementClient := apimanagement.NewServiceClient(subscriptionID)
+	apiManagementClient := apimanagement.NewServiceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
 
 	result, err := apiManagementClient.List(ctx)
@@ -364,7 +364,7 @@ func getAPIManagement(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	apiManagementClient := apimanagement.NewServiceClient(subscriptionID)
+	apiManagementClient := apimanagement.NewServiceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
 
 	op, err := apiManagementClient.Get(ctx, resourceGroup, name)
@@ -387,7 +387,7 @@ func listAPIManagementDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

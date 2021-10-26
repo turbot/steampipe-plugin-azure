@@ -101,7 +101,7 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	authorizationClient := authorization.NewRoleDefinitionsClient(subscriptionID)
+	authorizationClient := authorization.NewRoleDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 	result, err := authorizationClient.List(ctx, "/subscriptions/"+subscriptionID, "")
 	if err != nil {
@@ -147,7 +147,7 @@ func getIamRoleDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	subscriptionID := session.SubscriptionID
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
-	authorizationClient := authorization.NewRoleDefinitionsClient(subscriptionID)
+	authorizationClient := authorization.NewRoleDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 
 	op, err := authorizationClient.Get(ctx, "/subscriptions/"+subscriptionID, name)

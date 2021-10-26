@@ -221,7 +221,7 @@ func listHybridKubernetesConnectedClusters(ctx context.Context, d *plugin.QueryD
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hybridkubernetes.NewConnectedClusterClient(subscriptionID)
+	client := hybridkubernetes.NewConnectedClusterClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
@@ -267,7 +267,7 @@ func getHybridKubernetesConnectedCluster(ctx context.Context, d *plugin.QueryDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hybridkubernetes.NewConnectedClusterClient(subscriptionID)
+	client := hybridkubernetes.NewConnectedClusterClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	cluster, err := client.Get(ctx, resourceGroup, name)
@@ -295,7 +295,7 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := kubernetesconfiguration.NewExtensionsClient(subscriptionID)
+	client := kubernetesconfiguration.NewExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	extensions := []kubernetesconfiguration.ExtensionInstance{}
 	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)

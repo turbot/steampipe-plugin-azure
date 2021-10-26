@@ -185,7 +185,7 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	result, err := webClient.List(ctx)
@@ -246,7 +246,7 @@ func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.Get(ctx, resourceGroup, name)
@@ -274,7 +274,7 @@ func getAppServiceFunctionAppSiteConfiguration(ctx context.Context, d *plugin.Qu
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
@@ -296,7 +296,7 @@ func getAppServiceFunctionAppSiteAuthSetting(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppsClient(subscriptionID)
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)

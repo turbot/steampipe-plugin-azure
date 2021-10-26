@@ -352,7 +352,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	// Get storage account location
-	accountClient := storage.NewAccountsClient(subscriptionID)
+	accountClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
 	op, err := accountClient.GetProperties(ctx, resourceGroup, accountName, "")
@@ -365,7 +365,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	region := *op.Location
 
 	// List storage account keys
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 	keys, err := storageClient.ListKeys(ctx, resourceGroup, accountName, "")
 	if err != nil {
@@ -378,7 +378,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	// List all containers
-	containerClient := storage.NewBlobContainersClient(subscriptionID)
+	containerClient := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	containerClient.Authorizer = session.Authorizer
 	var containers []storage.ListContainerItem
 
@@ -402,7 +402,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// Iterating all the available containers
 	for _, item := range containers {
 		wg.Add(1)
-		go getRowDataForBlobAsync(ctx, item, accountName, credential, &wg, blobCh, errorCh)
+		go getRowDataForBlobAsync(ctx, item, accountName, session.StorageEndpointSuffix, credential, &wg, blobCh, errorCh)
 	}
 
 	// wait for all containers to be processed
@@ -431,10 +431,10 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	return nil, err
 }
 
-func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem, accountName string, credential *azblob.SharedKeyCredential, wg *sync.WaitGroup, subnetCh chan []blobInfo, errorCh chan error) {
+func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem, accountName string, storageEndpointSuffix string, credential *azblob.SharedKeyCredential, wg *sync.WaitGroup, subnetCh chan []blobInfo, errorCh chan error) {
 	defer wg.Done()
 
-	rowData, err := getRowDataForBlob(ctx, item, accountName, credential)
+	rowData, err := getRowDataForBlob(ctx, item, accountName, storageEndpointSuffix, credential)
 	if err != nil {
 		errorCh <- err
 	} else if rowData != nil {
@@ -443,8 +443,8 @@ func getRowDataForBlobAsync(ctx context.Context, item storage.ListContainerItem,
 }
 
 // List all the available blobs
-func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, accountName string, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
-	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", accountName))
+func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, accountName string, storageEndpointSuffix string, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
+	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.%s", accountName, storageEndpointSuffix))
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	// Create Service URL

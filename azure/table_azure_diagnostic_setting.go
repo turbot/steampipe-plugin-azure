@@ -132,7 +132,7 @@ func listDiagnosticSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	diagnosticSettingClient := insights.NewDiagnosticSettingsClient(subscriptionID)
+	diagnosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	diagnosticSettingClient.Authorizer = session.Authorizer
 
 	resourceURI := "/subscriptions/" + subscriptionID
@@ -166,7 +166,7 @@ func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	diagnosticSettingClient := insights.NewDiagnosticSettingsClient(subscriptionID)
+	diagnosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	diagnosticSettingClient.Authorizer = session.Authorizer
 
 	resourceURI := "/subscriptions/" + subscriptionID

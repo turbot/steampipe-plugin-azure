@@ -191,7 +191,7 @@ func listHealthcareServices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	healthcareClient := healthcareapis.NewServicesClient(subscriptionID)
+	healthcareClient := healthcareapis.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	healthcareClient.Authorizer = session.Authorizer
 	result, err := healthcareClient.List(ctx)
 	if err != nil {
@@ -236,7 +236,7 @@ func getHealthcareService(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	serviceClient := healthcareapis.NewServicesClient(subscriptionID)
+	serviceClient := healthcareapis.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	serviceClient.Authorizer = session.Authorizer
 
 	op, err := serviceClient.Get(ctx, resourceGroup, name)
@@ -273,7 +273,7 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	serviceClient := healthcareapis.NewPrivateEndpointConnectionsClient(subscriptionID)
+	serviceClient := healthcareapis.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	serviceClient.Authorizer = session.Authorizer
 
 	// SDK does not support pagination yet
@@ -285,7 +285,7 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	}
 
 	var privateEndpoints []map[string]interface{}
-	
+
 	// If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
 	for _, conn := range *op.Value {
 		privateEndpoint := make(map[string]interface{})
@@ -343,7 +343,7 @@ func getHealthcareServiceDignosticSettings(ctx context.Context, d *plugin.QueryD
 	}
 	subscriptionID := session.SubscriptionID
 
-	dignosticSettingClient := insights.NewDiagnosticSettingsClient(subscriptionID)
+	dignosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dignosticSettingClient.Authorizer = session.Authorizer
 
 	op, err := dignosticSettingClient.List(ctx, *resourceId)

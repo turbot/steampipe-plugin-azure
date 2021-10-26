@@ -185,7 +185,7 @@ func listLogicAppWorkflows(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	workflowClient := logic.NewWorkflowsClient(subscriptionID)
+	workflowClient := logic.NewWorkflowsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workflowClient.Authorizer = session.Authorizer
 	result, err := workflowClient.ListBySubscription(ctx, nil, "")
 	if err != nil {
@@ -229,7 +229,7 @@ func getLogicAppWorkflow(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	workflowClient := logic.NewWorkflowsClient(subscriptionID)
+	workflowClient := logic.NewWorkflowsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workflowClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -259,7 +259,7 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

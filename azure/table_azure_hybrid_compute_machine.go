@@ -221,7 +221,7 @@ func listHybridComputeMachines(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hybridcompute.NewMachinesClient(subscriptionID)
+	client := hybridcompute.NewMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx)
@@ -267,7 +267,7 @@ func getHybridComputeMachine(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hybridcompute.NewMachinesClient(subscriptionID)
+	client := hybridcompute.NewMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	machine, err := client.Get(ctx, resourceGroup, name, "")
@@ -295,7 +295,7 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := hybridcompute.NewMachineExtensionsClient(subscriptionID)
+	client := hybridcompute.NewMachineExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	var extensions []map[string]interface{}
 

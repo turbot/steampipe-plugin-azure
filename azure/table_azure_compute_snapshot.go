@@ -258,7 +258,7 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewSnapshotsClient(subscriptionID)
+	client := compute.NewSnapshotsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.List(ctx)
 	if err != nil {
@@ -306,7 +306,7 @@ func getAzureComputeSnapshot(ctx context.Context, d *plugin.QueryData, h *plugin
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewSnapshotsClient(subscriptionID)
+	client := compute.NewSnapshotsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

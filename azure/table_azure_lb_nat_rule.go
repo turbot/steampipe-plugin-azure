@@ -160,7 +160,7 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*loadBalancer.ID, "/")[4]
 
-	natClient := network.NewInboundNatRulesClient(subscriptionID)
+	natClient := network.NewInboundNatRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	natClient.Authorizer = session.Authorizer
 
 	result, err := natClient.List(ctx, resourceGroup, *loadBalancer.Name)
@@ -214,7 +214,7 @@ func getLoadBalancerNatRule(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	natClient := network.NewInboundNatRulesClient(subscriptionID)
+	natClient := network.NewInboundNatRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	natClient.Authorizer = session.Authorizer
 
 	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName, "")

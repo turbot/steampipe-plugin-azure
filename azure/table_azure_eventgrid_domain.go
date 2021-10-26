@@ -227,7 +227,7 @@ func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := eventgrid.NewDomainsClient(subscriptionID)
+	client := eventgrid.NewDomainsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.ListBySubscription(ctx, "", nil)
@@ -273,7 +273,7 @@ func getEventGridDomain(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := eventgrid.NewDomainsClient(subscriptionID)
+	client := eventgrid.NewDomainsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -296,7 +296,7 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

@@ -147,7 +147,7 @@ func listRecoveryServicesVaults(ctx context.Context, d *plugin.QueryData, _ *plu
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	recoveryServicesVaultClient := recoveryservices.NewVaultsClient(subscriptionID)
+	recoveryServicesVaultClient := recoveryservices.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	recoveryServicesVaultClient.Authorizer = session.Authorizer
 	result, err := recoveryServicesVaultClient.ListBySubscriptionID(ctx)
 	if err != nil {
@@ -191,7 +191,7 @@ func getRecoveryServicesVault(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	recoveryServicesVaultClient := recoveryservices.NewVaultsClient(subscriptionID)
+	recoveryServicesVaultClient := recoveryservices.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	recoveryServicesVaultClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -221,7 +221,7 @@ func listRecoveryServicesVaultDiagnosticSettings(ctx context.Context, d *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

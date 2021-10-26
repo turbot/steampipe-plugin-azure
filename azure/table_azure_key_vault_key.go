@@ -188,7 +188,7 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*vault.ID, "/")[4]
 
-	client := keyvault.NewKeysClient(subscriptionID)
+	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.List(ctx, resourceGroup, *vault.Name)
 	if err != nil {
@@ -247,7 +247,7 @@ func getKeyVaultKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := keyvault.NewKeysClient(subscriptionID)
+	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, vaultName, name)

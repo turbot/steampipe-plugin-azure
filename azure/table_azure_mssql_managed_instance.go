@@ -244,7 +244,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sql.NewManagedInstancesClient(subscriptionID)
+	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx, "")
@@ -298,7 +298,7 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstancesClient(subscriptionID)
+	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name, "")
@@ -329,7 +329,7 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstanceEncryptionProtectorsClient(subscriptionID)
+	client := sql.NewManagedInstanceEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
@@ -371,7 +371,7 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstanceVulnerabilityAssessmentsClient(subscriptionID)
+	client := sql.NewManagedInstanceVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
@@ -413,7 +413,7 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedServerSecurityAlertPoliciesClient(subscriptionID)
+	client := sql.NewManagedServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
@@ -442,7 +442,7 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 	return managedInstanceSecurityAlertPolicies, nil
 }
 
-// If we return the API response directly, the output will not provide 
+// If we return the API response directly, the output will not provide
 // all the properties of SecurityAlertPolicies
 func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityAlertPolicy) map[string]interface{} {
 	managedInstanceSecurityAlertPolicy := make(map[string]interface{})
@@ -487,7 +487,7 @@ func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityA
 	return managedInstanceSecurityAlertPolicy
 }
 
-// If we return the API response directly, the output will not provide 
+// If we return the API response directly, the output will not provide
 // all the properties of ManagedInstanceVulnerabilityAssessment
 func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVulnerabilityAssessment) map[string]interface{} {
 	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
@@ -515,7 +515,7 @@ func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVul
 	return managedInstanceVulnerabilityAssessment
 }
 
-// If we return the API response directly, the output will not provide 
+// If we return the API response directly, the output will not provide
 // all the properties of ManagedInstanceEncryptionProtector
 func extractMSSQLManagedInstanceEncryptionProtector(i sql.ManagedInstanceEncryptionProtector) map[string]interface{} {
 	managedInstanceEncryptionProtector := make(map[string]interface{})

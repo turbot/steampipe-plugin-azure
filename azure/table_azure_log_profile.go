@@ -128,7 +128,7 @@ func listLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	logProfileClient := insights.NewLogProfilesClient(subscriptionID)
+	logProfileClient := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logProfileClient.Authorizer = session.Authorizer
 
 	result, err := logProfileClient.List(ctx)
@@ -161,7 +161,7 @@ func getLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	logProfileClient := insights.NewLogProfilesClient(subscriptionID)
+	logProfileClient := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logProfileClient.Authorizer = session.Authorizer
 
 	op, err := logProfileClient.Get(ctx, name)

@@ -265,7 +265,7 @@ func getTurbotData(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := keyvault.NewVaultsClient(subscriptionID)
+	client := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	maxResults := int32(100)
 

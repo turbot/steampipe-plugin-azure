@@ -153,7 +153,7 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sql.NewElasticPoolsClient(subscriptionID)
+	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	server := h.Item.(sql.Server)
@@ -196,7 +196,7 @@ func getMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewElasticPoolsClient(subscriptionID)
+	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, serverName, name)

@@ -102,7 +102,7 @@ func listNetworkWatchers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkWatcherClient := network.NewWatchersClient(subscriptionID)
+	networkWatcherClient := network.NewWatchersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkWatcherClient.Authorizer = session.Authorizer
 
 	result, err := networkWatcherClient.ListAll(ctx)
@@ -136,7 +136,7 @@ func getNetworkWatcher(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkWatcherClient := network.NewWatchersClient(subscriptionID)
+	networkWatcherClient := network.NewWatchersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkWatcherClient.Authorizer = session.Authorizer
 
 	op, err := networkWatcherClient.Get(ctx, resourceGroup, name)

@@ -181,7 +181,7 @@ func listLoadBalancerRules(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*loadBalancer.ID, "/")[4]
 
-	listLoadBalancerRulesClient := network.NewLoadBalancerLoadBalancingRulesClient(subscriptionID)
+	listLoadBalancerRulesClient := network.NewLoadBalancerLoadBalancingRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listLoadBalancerRulesClient.Authorizer = session.Authorizer
 
 	result, err := listLoadBalancerRulesClient.List(ctx, resourceGroup, *loadBalancer.Name)
@@ -235,7 +235,7 @@ func getLoadBalancerRule(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancerRuleClient := network.NewLoadBalancerLoadBalancingRulesClient(subscriptionID)
+	LoadBalancerRuleClient := network.NewLoadBalancerLoadBalancingRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancerRuleClient.Authorizer = session.Authorizer
 
 	op, err := LoadBalancerRuleClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerRuleName)

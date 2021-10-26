@@ -178,7 +178,7 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppServiceEnvironmentsClient(subscriptionID)
+	webClient := web.NewAppServiceEnvironmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	result, err := webClient.List(ctx)
@@ -234,7 +234,7 @@ func getAppServiceEnvironment(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	webClient := web.NewAppServiceEnvironmentsClient(subscriptionID)
+	webClient := web.NewAppServiceEnvironmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.Get(ctx, resourceGroup, name)

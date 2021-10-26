@@ -269,7 +269,7 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountsClient := cognitiveservices.NewAccountsClient(subscriptionID)
+	accountsClient := cognitiveservices.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountsClient.Authorizer = session.Authorizer
 
 	result, err := accountsClient.List(ctx)
@@ -292,7 +292,7 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 			d.StreamListItem(ctx, account)
 		}
 	}
-	
+
 	return nil, err
 }
 
@@ -315,7 +315,7 @@ func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountsClient := cognitiveservices.NewAccountsClient(subscriptionID)
+	accountsClient := cognitiveservices.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountsClient.Authorizer = session.Authorizer
 
 	account, err := accountsClient.Get(ctx, resourceGroup, accountName)
@@ -346,7 +346,7 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
@@ -402,6 +402,6 @@ func extractAccountPrivateEndpointConnections(ctx context.Context, d *transform.
 			privateEndpointConnectionInfo = append(privateEndpointConnectionInfo, properties)
 		}
 	}
-	
+
 	return privateEndpointConnectionInfo, nil
 }

@@ -157,7 +157,7 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 	factoryInfo := h.Item.(datafactory.Factory)
 	resourceGroup := strings.Split(*factoryInfo.ID, "/")[4]
 
-	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
+	pipelineClient := datafactory.NewPipelinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
 
 	result, err := pipelineClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
@@ -202,7 +202,7 @@ func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	pipelineClient := datafactory.NewPipelinesClient(subscriptionID)
+	pipelineClient := datafactory.NewPipelinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
 
 	pipelineName := d.KeyColumnQuals["name"].GetStringValue()

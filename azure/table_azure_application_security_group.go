@@ -108,7 +108,7 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 	}
 	subscriptionID := session.SubscriptionID
 
-	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClient(subscriptionID)
+	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationSecurityGroupClient.Authorizer = session.Authorizer
 
 	result, err := applicationSecurityGroupClient.ListAll(ctx)
@@ -157,7 +157,7 @@ func getApplicationSecurityGroup(ctx context.Context, d *plugin.QueryData, h *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClient(subscriptionID)
+	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationSecurityGroupClient.Authorizer = session.Authorizer
 
 	op, err := applicationSecurityGroupClient.Get(ctx, resourceGroup, name)

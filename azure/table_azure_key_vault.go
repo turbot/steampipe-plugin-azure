@@ -220,7 +220,7 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 	subscriptionID := session.SubscriptionID
 
-	keyVaultClient := keyvault.NewVaultsClient(subscriptionID)
+	keyVaultClient := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	keyVaultClient.Authorizer = session.Authorizer
 	maxResults := int32(100)
 
@@ -280,7 +280,7 @@ func getKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
 	}
 
-	client := keyvault.NewVaultsClient(subscriptionID)
+	client := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -308,7 +308,7 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
@@ -370,7 +370,7 @@ func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform
 			privateEndpointDetails = append(privateEndpointDetails, privateEndpoint)
 		}
 	}
-	
+
 	return privateEndpointDetails, nil
 }
 

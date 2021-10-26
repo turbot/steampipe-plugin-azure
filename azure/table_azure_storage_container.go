@@ -191,7 +191,7 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := storage.NewBlobContainersClient(subscriptionID)
+	client := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
@@ -241,7 +241,7 @@ func getStorageContainer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
 
-	client := storage.NewBlobContainersClient(subscriptionID)
+	client := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, accountName, name)

@@ -104,7 +104,7 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
+	authorizationClient := authorization.NewRoleAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 
 	var filter string
@@ -155,7 +155,7 @@ func getIamRoleAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	subscriptionID := session.SubscriptionID
 	roleAssignmentID := d.KeyColumnQuals["id"].GetStringValue()
 
-	authorizationClient := authorization.NewRoleAssignmentsClient(subscriptionID)
+	authorizationClient := authorization.NewRoleAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
 
 	op, err := authorizationClient.GetByID(ctx, roleAssignmentID)

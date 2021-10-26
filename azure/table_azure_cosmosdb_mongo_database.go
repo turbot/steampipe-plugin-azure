@@ -148,7 +148,7 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	documentDBClient := documentdb.NewMongoDBResourcesClient(subscriptionID)
+	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	result, err := documentDBClient.ListMongoDBDatabases(ctx, *account.ResourceGroup, *account.Name)
@@ -191,7 +191,7 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	databaseAccountClient := documentdb.NewDatabaseAccountsClient(subscriptionID)
+	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
 
 	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
@@ -201,7 +201,7 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	location := op.Location
 
-	documentDBClient := documentdb.NewMongoDBResourcesClient(subscriptionID)
+	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
 	result, err := documentDBClient.GetMongoDBDatabase(ctx, resourceGroup, accountName, name)

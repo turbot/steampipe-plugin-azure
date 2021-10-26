@@ -91,7 +91,7 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		return nil, err
 	}
 
-	client := subscriptions.NewClient()
+	client := subscriptions.NewClientWithBaseURI(session.ResourceManagerEndpoint)
 	client.Authorizer = session.Authorizer
 	subscriptionID := session.SubscriptionID
 

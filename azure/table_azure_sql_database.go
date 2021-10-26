@@ -310,7 +310,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewDatabasesClient(subscriptionID)
+	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	server := h.Item.(sqlv3.Server)
@@ -356,7 +356,7 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewDatabasesClient(subscriptionID)
+	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, "")
@@ -385,7 +385,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewTransparentDataEncryptionsClient(subscriptionID)
+	client := sql.NewTransparentDataEncryptionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName)
@@ -414,7 +414,7 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewLongTermRetentionPoliciesClient(subscriptionID)
+	client := sqlV5.NewLongTermRetentionPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
@@ -445,7 +445,7 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentsClient(subscriptionID)
+	client := sqlV5.NewDatabaseVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
@@ -528,7 +528,7 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClient(subscriptionID)
+	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)

@@ -139,7 +139,7 @@ func listAzureComputeDiskEncryptionSets(ctx context.Context, d *plugin.QueryData
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewDiskEncryptionSetsClient(subscriptionID)
+	client := compute.NewDiskEncryptionSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.List(ctx)
 	if err != nil {
@@ -187,7 +187,7 @@ func getAzureComputeDiskEncryptionSet(ctx context.Context, d *plugin.QueryData, 
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewDiskEncryptionSetsClient(subscriptionID)
+	client := compute.NewDiskEncryptionSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

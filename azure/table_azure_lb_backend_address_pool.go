@@ -142,7 +142,7 @@ func listBackendAddressPools(ctx context.Context, d *plugin.QueryData, h *plugin
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*loadBalancer.ID, "/")[4]
 
-	listBackendAddressPoolsClient := network.NewLoadBalancerBackendAddressPoolsClient(subscriptionID)
+	listBackendAddressPoolsClient := network.NewLoadBalancerBackendAddressPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listBackendAddressPoolsClient.Authorizer = session.Authorizer
 
 	result, err := listBackendAddressPoolsClient.List(ctx, resourceGroup, *loadBalancer.Name)
@@ -196,7 +196,7 @@ func getBackendAddressPool(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	BackendAddressPoolClient := network.NewLoadBalancerBackendAddressPoolsClient(subscriptionID)
+	BackendAddressPoolClient := network.NewLoadBalancerBackendAddressPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	BackendAddressPoolClient.Authorizer = session.Authorizer
 
 	op, err := BackendAddressPoolClient.Get(ctx, resourceGroup, loadBalancerName, backendAddressPoolName)

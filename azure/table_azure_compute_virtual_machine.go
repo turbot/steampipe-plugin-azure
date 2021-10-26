@@ -390,7 +390,7 @@ func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachinesClient(subscriptionID)
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.ListAll(ctx, "")
 	if err != nil {
@@ -438,7 +438,7 @@ func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachinesClient(subscriptionID)
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name, "")
@@ -466,7 +466,7 @@ func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryD
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachinesClient(subscriptionID)
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
@@ -489,7 +489,7 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	networkClient := network.NewInterfacesClient(subscriptionID)
+	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	for _, nicRef := range *vm.NetworkProfile.NetworkInterfaces {
@@ -545,7 +545,7 @@ func getNicPublicIP(ctx context.Context, session *Session, id string) (network.P
 	name := pathParts[len(pathParts)-1]
 
 	subscriptionID := session.SubscriptionID
-	networkClient := network.NewPublicIPAddressesClient(subscriptionID)
+	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	return networkClient.Get(ctx, resourceGroup, name, "")
@@ -562,7 +562,7 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineExtensionsClient(subscriptionID)
+	client := compute.NewVirtualMachineExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name, "")
@@ -606,7 +606,7 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := guestconfiguration.NewAssignmentsClient(subscriptionID)
+	client := guestconfiguration.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// SDK does not support pagination yet

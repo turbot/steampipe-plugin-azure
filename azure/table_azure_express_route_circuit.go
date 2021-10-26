@@ -182,7 +182,7 @@ func listExpressRouteCircuits(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
+	expressRouteCircuitClient := network.NewExpressRouteCircuitsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
 
 	result, err := expressRouteCircuitClient.ListAll(ctx)
@@ -236,7 +236,7 @@ func getExpressRouteCircuit(ctx context.Context, d *plugin.QueryData, h *plugin.
 		return nil, nil
 	}
 
-	expressRouteCircuitClient := network.NewExpressRouteCircuitsClient(subscriptionID)
+	expressRouteCircuitClient := network.NewExpressRouteCircuitsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	expressRouteCircuitClient.Authorizer = session.Authorizer
 
 	op, err := expressRouteCircuitClient.Get(ctx, resourceGroup, name)

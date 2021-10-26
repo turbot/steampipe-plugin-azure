@@ -192,7 +192,7 @@ func listNetworkInterfaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewInterfacesClient(subscriptionID)
+	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	result, err := networkClient.ListAll(ctx)
@@ -241,7 +241,7 @@ func getNetworkInterface(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	subscriptionID := session.SubscriptionID
 
-	networkClient := network.NewInterfacesClient(subscriptionID)
+	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")

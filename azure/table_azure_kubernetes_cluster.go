@@ -257,7 +257,7 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := containerservice.NewManagedClustersClient(subscriptionID)
+	client := containerservice.NewManagedClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -303,7 +303,7 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := containerservice.NewManagedClustersClient(subscriptionID)
+	client := containerservice.NewManagedClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	resourceName := d.KeyColumnQuals["name"].GetStringValue()

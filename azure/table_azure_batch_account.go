@@ -190,7 +190,7 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	batchAccountClient := batch.NewAccountClient(subscriptionID)
+	batchAccountClient := batch.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	batchAccountClient.Authorizer = session.Authorizer
 
 	result, err := batchAccountClient.List(context.Background())
@@ -236,7 +236,7 @@ func getBatchAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	batchAccountClient := batch.NewAccountClient(subscriptionID)
+	batchAccountClient := batch.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	batchAccountClient.Authorizer = session.Authorizer
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -266,7 +266,7 @@ func listBatchAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryData
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)

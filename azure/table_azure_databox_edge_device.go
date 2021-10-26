@@ -200,7 +200,7 @@ func listDataBoxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	deviceClient := databoxedge.NewDevicesClient(subscriptionID)
+	deviceClient := databoxedge.NewDevicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	deviceClient.Authorizer = session.Authorizer
 
 	result, err := deviceClient.ListBySubscription(ctx, "")
@@ -246,7 +246,7 @@ func getDataBoxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 	subscriptionID := session.SubscriptionID
 
-	deviceClient := databoxedge.NewDevicesClient(subscriptionID)
+	deviceClient := databoxedge.NewDevicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	deviceClient.Authorizer = session.Authorizer
 
 	op, err := deviceClient.Get(ctx, resourceGroup, name)

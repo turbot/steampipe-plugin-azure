@@ -168,7 +168,7 @@ func listStorageBlobServices(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewBlobServicesClient(subscriptionID)
+	storageClient := storage.NewBlobServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
@@ -208,7 +208,7 @@ func getStorageBlobService(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewAccountsClient(subscriptionID)
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
 	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
@@ -219,7 +219,7 @@ func getStorageBlobService(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	location := storageDetails.Location
 
-	blobClient := storage.NewBlobServicesClient(subscriptionID)
+	blobClient := storage.NewBlobServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	blobClient.Authorizer = session.Authorizer
 
 	op, err := blobClient.GetServiceProperties(ctx, resourceGroup, accountName)

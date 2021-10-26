@@ -139,7 +139,7 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := compute.NewAvailabilitySetsClient(subscriptionID)
+	client := compute.NewAvailabilitySetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	result, err := client.ListBySubscription(ctx, "")
 	if err != nil {
@@ -187,7 +187,7 @@ func getAzureComputeAvailabilitySet(ctx context.Context, d *plugin.QueryData, h 
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewAvailabilitySetsClient(subscriptionID)
+	client := compute.NewAvailabilitySetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)

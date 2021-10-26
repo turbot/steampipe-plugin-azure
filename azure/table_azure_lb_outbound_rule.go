@@ -147,7 +147,7 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*loadBalancer.ID, "/")[4]
 
-	listLoadBalancerOutboundClient := network.NewLoadBalancerOutboundRulesClient(subscriptionID)
+	listLoadBalancerOutboundClient := network.NewLoadBalancerOutboundRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listLoadBalancerOutboundClient.Authorizer = session.Authorizer
 
 	result, err := listLoadBalancerOutboundClient.List(ctx, resourceGroup, *loadBalancer.Name)
@@ -201,7 +201,7 @@ func getLoadBalancerOutboundRule(ctx context.Context, d *plugin.QueryData, h *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancerOutboundRuleClient := network.NewLoadBalancerOutboundRulesClient(subscriptionID)
+	LoadBalancerOutboundRuleClient := network.NewLoadBalancerOutboundRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancerOutboundRuleClient.Authorizer = session.Authorizer
 
 	op, err := LoadBalancerOutboundRuleClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName)

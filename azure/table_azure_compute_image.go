@@ -177,7 +177,7 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	computeClient := compute.NewImagesClient(subscriptionID)
+	computeClient := compute.NewImagesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	computeClient.Authorizer = session.Authorizer
 
 	result, err := computeClient.List(ctx)
@@ -227,7 +227,7 @@ func getComputeImage(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	computeClient := compute.NewImagesClient(subscriptionID)
+	computeClient := compute.NewImagesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	computeClient.Authorizer = session.Authorizer
 
 	op, err := computeClient.Get(ctx, resourceGroup, name, "")

@@ -112,7 +112,7 @@ func listKeyVaultDeletedVaults(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	keyVaultClient := keyvault.NewVaultsClient(subscriptionID)
+	keyVaultClient := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	keyVaultClient.Authorizer = session.Authorizer
 
 	result, err := keyVaultClient.ListDeleted(ctx)
@@ -167,7 +167,7 @@ func getKeyVaultDeletedVault(ctx context.Context, d *plugin.QueryData, h *plugin
 		return nil, nil
 	}
 
-	client := keyvault.NewVaultsClient(subscriptionID)
+	client := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.GetDeleted(ctx, name, region)

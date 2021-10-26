@@ -208,7 +208,7 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := eventhub.NewNamespacesClient(subscriptionID)
+	client := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)
@@ -254,7 +254,7 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := eventhub.NewNamespacesClient(subscriptionID)
+	client := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.Get(ctx, resourceGroup, name)
@@ -274,7 +274,7 @@ func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	networkClient := eventhub.NewNamespacesClient(subscriptionID)
+	networkClient := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
 	namespace := h.Item.(eventhub.EHNamespace)
@@ -299,7 +299,7 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := insights.NewDiagnosticSettingsClient(subscriptionID)
+	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, id)
@@ -342,7 +342,7 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := eventhub.NewPrivateEndpointConnectionsClient(subscriptionID)
+	client := eventhub.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.List(ctx, resourceGroup, namespaceName)

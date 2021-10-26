@@ -98,7 +98,7 @@ func listResourceLinks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	resourceLinkClient := links.NewResourceLinksClient(subscriptionID)
+	resourceLinkClient := links.NewResourceLinksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceLinkClient.Authorizer = session.Authorizer
 
 	result, err := resourceLinkClient.ListAtSubscription(ctx, "")
@@ -147,7 +147,7 @@ func getResourceLink(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 		return nil, nil
 	}
 
-	resourceLinkClient := links.NewResourceLinksClient(subscriptionID)
+	resourceLinkClient := links.NewResourceLinksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceLinkClient.Authorizer = session.Authorizer
 
 	op, err := resourceLinkClient.Get(ctx, linkID)
