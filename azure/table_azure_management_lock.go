@@ -123,6 +123,11 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for _, managementLock := range result.Values() {
 		resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
 		d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -134,6 +139,11 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		for _, managementLock := range result.Values() {
 			resourceGroup := &strings.Split(string(*managementLock.ID), "/")[4]
 			d.StreamListItem(ctx, managementLockInfo{managementLock, managementLock.Name, resourceGroup})
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 

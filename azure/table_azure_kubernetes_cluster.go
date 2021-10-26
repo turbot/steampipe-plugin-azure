@@ -266,6 +266,11 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 	for _, cluster := range result.Values() {
 		d.StreamListItem(ctx, cluster)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	for result.NotDone() {
@@ -276,6 +281,11 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 		for _, cluster := range result.Values() {
 			d.StreamListItem(ctx, cluster)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
