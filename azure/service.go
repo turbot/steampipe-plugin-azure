@@ -149,8 +149,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 
-	// In this case need get the details of SUBSCRIPTION_ID and TENANT_ID if
-	// tokenAudience is GRAPH
+        // Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
@@ -175,6 +174,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
+			// Check if the password was changed and the session token is stored in
+			// the system, or if the CLI is outdated
 			if strings.Contains(err.Error(), "invalid_grant") {
 				return nil, fmt.Errorf("ValidationError: The credential data used by the CLI has expired because you might have changed or reset the password. Please clear your browser's cookies and run 'az login'.")
 			}
