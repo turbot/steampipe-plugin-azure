@@ -75,7 +75,7 @@ resource "azurerm_monitor_log_profile" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_monitor_log_profile.named_test_resource.id}"
+  value = replace("azure://${azurerm_monitor_log_profile.named_test_resource.id}", "Microsoft.Insights/logProfiles", "microsoft.insights/logprofiles")
 }
 
 output "resource_aka_lower" {
@@ -87,7 +87,7 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = azurerm_monitor_log_profile.named_test_resource.id
+  value = replace("${azurerm_monitor_log_profile.named_test_resource.id}", "Microsoft.Insights/logProfiles", "microsoft.insights/logprofiles")
 }
 
 output "subscription_id" {

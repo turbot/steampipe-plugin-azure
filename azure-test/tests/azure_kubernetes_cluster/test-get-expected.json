@@ -18,6 +18,9 @@
       },
       "omsagent": {
         "enabled": false
+      },
+      "openServiceMesh": {
+        "enabled": false
       }
     },
     "akas": [

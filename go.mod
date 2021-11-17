@@ -1,6 +1,6 @@
 module github.com/turbot/steampipe-plugin-azure
 
-go 1.16
+go 1.17
 
 require (
 	github.com/Azure/azure-sdk-for-go v58.0.0+incompatible
@@ -12,5 +12,5 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v0.3.0
-	github.com/turbot/steampipe-plugin-sdk v1.8.0
+	github.com/turbot/steampipe-plugin-sdk v1.8.1-beta.0
 )

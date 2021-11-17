@@ -5,8 +5,9 @@
     "name": "{{ resourceName }}",
     "network_rule_set": {
       "properties": {
-        "defaultAction": "Deny",
+        "defaultAction": "Allow",
         "ipRules": [],
+        "publicNetworkAccess": "Enabled",
         "virtualNetworkRules": []
       }
     },
