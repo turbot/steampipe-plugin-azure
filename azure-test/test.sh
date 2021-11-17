@@ -30,25 +30,25 @@ run_test () {
  date >> passed_tests.txt
 
 
-# run_test azure_ad_group						
-# run_test azure_express_route_circuit				
-# run_test azure_resource_group
-# run_test azure_ad_service_principal				
-# run_test azure_firewall						
-# run_test azure_role_assignment
-# run_test azure_ad_user						
-# run_test azure_iothub						
-# run_test azure_role_definition
+run_test azure_ad_group						
+run_test azure_express_route_circuit				
+run_test azure_resource_group
+run_test azure_ad_service_principal				
+run_test azure_firewall						
+run_test azure_role_assignment
+run_test azure_ad_user						
+run_test azure_iothub						
+run_test azure_role_definition
 # It is taking too much time(5-6 hrs)
 #run_test azure_api_management	
 # For cost saving				
 #run_test azure_key_vault						
-# run_test azure_route_table
-# run_test azure_app_service_environment				
+run_test azure_route_table
+run_test azure_app_service_environment				
 # For cost saving
 #run_test azure_key_vault_key					
-# run_test azure_security_center_auto_provisioning
-# run_test azure_app_service_function_app			
+run_test azure_security_center_auto_provisioning
+run_test azure_app_service_function_app			
 # For cost saving	
 #run_test azure_key_vault_managed_hardware_security_module	
 run_test azure_security_center_contact
