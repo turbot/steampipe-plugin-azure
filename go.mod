@@ -12,5 +12,5 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v0.3.0
-	github.com/turbot/steampipe-plugin-sdk v1.7.0
+	github.com/turbot/steampipe-plugin-sdk v1.8.2
 )
