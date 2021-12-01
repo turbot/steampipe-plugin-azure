@@ -27,6 +27,7 @@ type Session struct {
 	Expires                 *time.Time
 	ResourceManagerEndpoint string
 	StorageEndpointSuffix   string
+	GraphEndpoint           string
 }
 
 /* GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
@@ -205,6 +206,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		Expires:                 &expiresOn,
 		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,
 		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
+		GraphEndpoint:           settings.Environment.GraphEndpoint,
 	}
 
 	if sess.Expires != nil {

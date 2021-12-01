@@ -132,7 +132,7 @@ func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	}
 	tenantID := session.TenantID
 
-	graphClient := graphrbac.NewUsersClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
+	graphClient := graphrbac.NewUsersClientWithBaseURI(session.GraphEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	result, err := graphClient.List(ctx, "", "")
@@ -168,7 +168,7 @@ func getAdUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	tenantID := session.TenantID
 	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
 
-	graphClient := graphrbac.NewUsersClientWithBaseURI(session.ResourceManagerEndpoint, tenantID)
+	graphClient := graphrbac.NewUsersClientWithBaseURI(session.GraphEndpoint, tenantID)
 	graphClient.Authorizer = session.Authorizer
 
 	op, err := graphClient.Get(ctx, objectID)
