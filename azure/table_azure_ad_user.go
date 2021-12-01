@@ -15,7 +15,7 @@ import (
 func tableAzureAdUser(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_ad_user",
-		Description: "Azure AD User",
+		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_user table in the azuread plugin instead.",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("object_id"),
 			Hydrate:           getAdUser,

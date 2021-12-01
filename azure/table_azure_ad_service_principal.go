@@ -15,7 +15,7 @@ import (
 func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_ad_service_principal",
-		Description: "Azure AD Service Principal",
+		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_service_principal table in the azuread plugin instead.",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.SingleColumn("object_id"),
 			Hydrate:           getAdServicePrincipal,
