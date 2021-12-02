@@ -1,3 +1,13 @@
+## v0.21.1 [2021-12-02]
+
+_Enhancements_
+
+- Updated the descriptions for azure_ad_group, azure_ad_service_principal and azure_ad_user tables to reflect the deprecation status ([#414](https://github.com/turbot/steampipe-plugin-azure/pull/414))
+
+_Bug fixes_
+
+- Fixed azure_ad_group, azure_ad_service_principal and azure_ad_user tables to use `GraphEndpoint` instead of `ResourceManagerEndpoint` to make the API calls ([#413](https://github.com/turbot/steampipe-plugin-azure/pull/413))
+
 ## v0.21.0 [2021-11-23]
 
 _Enhancements_
