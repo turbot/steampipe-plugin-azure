@@ -23,11 +23,11 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Description: "Azure Compute Virtual Machine",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAzureComputeVirtualMachine,
+			Hydrate:           getComputeVirtualMachine,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureComputeVirtualMachines,
+			Hydrate: listComputeVirtualMachines,
 		},
 		HydrateDependencies: []plugin.HydrateDependencies{
 			{
@@ -204,6 +204,18 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Vhd.URI").Transform(transform.ToString),
 			},
 			{
+				Name:        "os_name",
+				Description: "The Operating System running on the virtual machine.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getComputeVirtualMachineInstanceView,
+			},
+			{
+				Name:        "os_version",
+				Description: "The version of Operating System running on the virtual machine.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getComputeVirtualMachineInstanceView,
+			},
+			{
 				Name:        "os_type",
 				Description: "Specifies the type of the OS that is included in the disk if creating a VM from user-image or a specialized VHD.",
 				Type:        proto.ColumnType_STRING,
@@ -327,6 +339,13 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
 			},
 			{
+				Name:        "instance_view",
+				Description: "The instance view of a virtual machine.",
+				Hydrate:     getComputeVirtualMachineInstanceView,
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "win_rm",
 				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
@@ -382,7 +401,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION ////
 
-func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -427,7 +446,7 @@ func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _
 
 //// HYDRATE FUNCTION ////
 
-func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachine")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -453,6 +472,44 @@ func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *
 	}
 
 	return nil, nil
+}
+
+func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getComputeVirtualMachineInstanceView")
+
+	vm := h.Item.(compute.VirtualMachine)
+	resourceGroup := strings.Split(*vm.ID, "/")[4]
+
+	_, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("getComputeVirtualMachineInstanceView", "connection", err)
+		return nil, err
+	}
+
+	// Empty Check
+	if vm.Name == nil || resourceGroup == "" {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("getComputeVirtualMachineInstanceView", "session", err)
+		return nil, err
+	}
+
+	// plugin.Logger(ctx).Trace("Virtual Machine Name", vm.Name)
+	// plugin.Logger(ctx).Trace("Resource Group name", resourceGroup)
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.InstanceView(ctx, resourceGroup, *vm.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("getComputeVirtualMachineInstanceView", "Error", err)
+		return nil, err
+	}
+
+	return op, nil
 }
 
 func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
