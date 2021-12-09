@@ -327,6 +327,13 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
 			},
 			{
+				Name:        "scale_set",
+				Description: "Specifies information about the virtual machine scale set that the virtual machine should be assigned to.",
+				Type:        proto.ColumnType_JSON,
+				// Hydrate:     getAzureComputeVirtualMachine,
+				Transform:   transform.FromField("VirtualMachineProperties.VirtualMachineScaleSet"),
+			},
+			{
 				Name:        "win_rm",
 				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
