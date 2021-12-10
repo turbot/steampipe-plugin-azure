@@ -480,25 +480,12 @@ func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryDa
 	vm := h.Item.(compute.VirtualMachine)
 	resourceGroup := strings.Split(*vm.ID, "/")[4]
 
-	_, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		plugin.Logger(ctx).Error("getComputeVirtualMachineInstanceView", "connection", err)
-		return nil, err
-	}
-
-	// Empty Check
-	if vm.Name == nil || resourceGroup == "" {
-		return nil, nil
-	}
-
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		plugin.Logger(ctx).Error("getComputeVirtualMachineInstanceView", "session", err)
 		return nil, err
 	}
 
-	// plugin.Logger(ctx).Trace("Virtual Machine Name", vm.Name)
-	// plugin.Logger(ctx).Trace("Resource Group name", resourceGroup)
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
