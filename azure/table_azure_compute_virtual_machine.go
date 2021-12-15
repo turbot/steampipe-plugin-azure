@@ -23,11 +23,11 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Description: "Azure Compute Virtual Machine",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAzureComputeVirtualMachine,
+			Hydrate:           getComputeVirtualMachine,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureComputeVirtualMachines,
+			Hydrate: listComputeVirtualMachines,
 		},
 		HydrateDependencies: []plugin.HydrateDependencies{
 			{
@@ -45,7 +45,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Name:        "power_state",
 				Description: "Specifies the power state of the vm.",
 				Type:        proto.ColumnType_STRING,
-				Hydrate:     getAzureComputeVirtualMachineStatuses,
+				Hydrate:     getComputeVirtualMachineInstanceView,
 				Transform:   transform.FromField("Statuses").Transform(getPowerState),
 			},
 			{
@@ -204,6 +204,18 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.StorageProfile.OsDisk.Vhd.URI").Transform(transform.ToString),
 			},
 			{
+				Name:        "os_name",
+				Description: "The Operating System running on the virtual machine.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getComputeVirtualMachineInstanceView,
+			},
+			{
+				Name:        "os_version",
+				Description: "The version of Operating System running on the virtual machine.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getComputeVirtualMachineInstanceView,
+			},
+			{
 				Name:        "os_type",
 				Description: "Specifies the type of the OS that is included in the disk if creating a VM from user-image or a specialized VHD.",
 				Type:        proto.ColumnType_STRING,
@@ -299,7 +311,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Name:        "statuses",
 				Description: "Specifies the resource status information.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getAzureComputeVirtualMachineStatuses,
+				Hydrate:     getComputeVirtualMachineInstanceView,
 			},
 			{
 				Name:        "extensions",
@@ -382,7 +394,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION ////
 
-func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -427,7 +439,7 @@ func listAzureComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _
 
 //// HYDRATE FUNCTION ////
 
-func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachine")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
@@ -455,8 +467,8 @@ func getAzureComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *
 	return nil, nil
 }
 
-func getAzureComputeVirtualMachineStatuses(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineStatuses")
+func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getComputeVirtualMachineInstanceView")
 
 	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
