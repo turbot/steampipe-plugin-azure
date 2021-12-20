@@ -1,3 +1,9 @@
+## v0.22.0 [2021-12-15]
+
+_Enhancements_
+
+- Added `os_name` and `os_version` columns to the `azure_compute_virtual_machine` table ([#420](https://github.com/turbot/steampipe-plugin-azure/pull/420))
+
 ## v0.21.1 [2021-12-02]
 
 _Enhancements_
