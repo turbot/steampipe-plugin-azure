@@ -124,7 +124,7 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Subnet.SubnetPropertiesFormat.ServiceEndpointPolicies"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -142,6 +142,15 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
+			},
+
+			// Azure standard columns
+			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "subscription_id",

@@ -73,7 +73,14 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
+			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
+			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,

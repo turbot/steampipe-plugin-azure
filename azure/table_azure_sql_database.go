@@ -279,6 +279,15 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
+			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
+			},
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,

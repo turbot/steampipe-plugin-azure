@@ -148,7 +148,7 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -165,6 +165,15 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
+			},
+
+			// Azure standard columns
+			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "region",

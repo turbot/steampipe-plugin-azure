@@ -191,6 +191,13 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 
 			// Azure standard columns
 			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,

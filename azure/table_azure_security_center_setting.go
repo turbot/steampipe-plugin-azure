@@ -68,6 +68,13 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
+				Name:        "environment_name",
+				Description: ColumnDescriptionEnvironmentName,
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "subscription_id",
 				Description: ColumnDescriptionSubscription,
 				Type:        proto.ColumnType_STRING,

@@ -53,7 +53,7 @@ func tableAzureLocation(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,

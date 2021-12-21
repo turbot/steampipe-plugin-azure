@@ -64,7 +64,7 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 				Description: "The list of domains for the tenant.",
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,

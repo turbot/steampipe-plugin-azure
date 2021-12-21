@@ -119,7 +119,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Sku.Restrictions"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
