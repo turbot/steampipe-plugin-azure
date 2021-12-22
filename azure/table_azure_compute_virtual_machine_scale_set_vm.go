@@ -90,7 +90,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 			},
 			{
 				Name:        "sku_capacity",
-				Description: "Specifies the tier of virtual machines in a scale set virtual machine.",
+				Description: "Specifies the capacity of virtual machines in a scale set virtual machine.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("Sku.Capacity"),
 			},
