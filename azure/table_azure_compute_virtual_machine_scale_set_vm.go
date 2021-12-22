@@ -251,9 +251,6 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	}
 
 	scaleSet := h.Item.(compute.VirtualMachineScaleSet)
-	if scaleSet.Name == nil {
-		return nil, nil
-	}
 	resourceGrooupName := strings.ToLower(strings.Split(*scaleSet.ID, "/")[4])
 
 	subscriptionID := session.SubscriptionID
