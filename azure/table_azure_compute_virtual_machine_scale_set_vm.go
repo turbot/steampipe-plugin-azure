@@ -102,7 +102,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 			},
 			{
 				Name:        "vm_id",
-				Description: "zure VM unique ID.",
+				Description: "Azure VM unique ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("VirtualMachineScaleSetVMProperties.VMID"),
 			},
@@ -194,7 +194,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 				Type:        proto.ColumnType_JSON,
 			},
 
-			// Azure standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -251,13 +251,13 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	}
 
 	scaleSet := h.Item.(compute.VirtualMachineScaleSet)
-	resourceGrooupName := strings.ToLower(strings.Split(*scaleSet.ID, "/")[4])
+	resourceGroupName := strings.ToLower(strings.Split(*scaleSet.ID, "/")[4])
 
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(context.Background(), resourceGrooupName, *scaleSet.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName, *scaleSet.Name, "", "", "")
 	if err != nil {
 		plugin.Logger(ctx).Error("Error", "listAzureComputeVirtualMachineScaleSetVms", err)
 		return nil, err
