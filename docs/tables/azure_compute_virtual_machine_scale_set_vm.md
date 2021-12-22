@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_scale_set_vm
 
-You can scale the number of VMs in the scale set manually, or define rules to autoscale based on resource usage like CPU, memory demand, or network traffic. An Azure load balancer then distributes traffic to the VM instances in the scale set.
+You can scale the number of virtual machines in the scale set manually, or define rules to autoscale based on resource usage like CPU, memory demand, or network traffic. An Azure load balancer then distributes traffic to the virtual machine instances in the scale set.
 
 ## Examples
 
@@ -19,7 +19,7 @@ from
   azure_compute_virtual_machine_scale_set_vm;
 ```
 
-### List Standard tier scale set vms
+### List Standard tier scale set virtual machine
 
 ```sql
 select
@@ -49,7 +49,7 @@ where
   scale_set_name = 'my_vm_scale';
 ```
 
-### View Network Security Group Rules for a VM
+### View Network Security Group Rules for a virtual machine
 
 ```sql
 select
