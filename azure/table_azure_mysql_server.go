@@ -192,6 +192,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.From(extractMySQLServerPrivateEndpointConnections),
 			},
 			{
+				Name:        "server_configurations",
+				Description: "The server configurations details.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServersConfigurations,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "server_keys",
 				Description: "The server keys of the server.",
 				Type:        proto.ColumnType_JSON,
@@ -352,6 +359,37 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	return mySQLServersServerKeys, nil
 }
 
+func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMySQLServersConfigurations")
+
+	server := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*server.ID), "/")[4]
+	serverName := *server.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServersConfigurations", "list", err)
+		return nil, err
+	}
+
+	var mySQLServersConfigurations []map[string]interface{}
+
+	for _, i := range *op.Value {
+		mySQLServersConfigurations = append(mySQLServersConfigurations, extractMySQLServersconfiguration(i))
+	}
+
+	return mySQLServersConfigurations, nil
+}
+
 //// TRANSFORM FUNCTION
 
 // If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
@@ -418,4 +456,24 @@ func extractMySQLServersServerKey(i mysql.ServerKey) map[string]interface{} {
 		}
 	}
 	return mySQLServersServerKey
+}
+
+// If we return the API response directly, the output will not provide the properties of Configurations
+func extractMySQLServersconfiguration(i mysql.Configuration) map[string]interface{} {
+	mySQLServersconfiguration := make(map[string]interface{})
+
+	if i.ID != nil {
+		mySQLServersconfiguration["id"] = *i.ID
+	}
+	if i.Name != nil {
+		mySQLServersconfiguration["name"] = *i.Name
+	}
+	if i.Type != nil {
+		mySQLServersconfiguration["type"] = *i.Type
+	}
+	if i.ConfigurationProperties != nil {
+		mySQLServersconfiguration["configurationProperties"] = *i.ConfigurationProperties
+	}
+
+	return mySQLServersconfiguration
 }

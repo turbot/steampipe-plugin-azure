@@ -118,3 +118,64 @@ from
   azure_mysql_server,
   jsonb_array_elements(server_keys) as keys;
 ```
+
+### List server configurations details
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations;
+```
+
+### List server with audit log enabled
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+   and configurations ->> 'name' = 'audit_log_enabled';
+```
+
+### List server with slow query log enabled
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+   and configurations ->> 'name' = 'slow_query_log';
+```
+
+### List server with log output set to file
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
+   and configurations ->> 'name' = 'log_output';
+```
