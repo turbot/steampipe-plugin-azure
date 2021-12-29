@@ -119,7 +119,7 @@ from
   jsonb_array_elements(server_keys) as keys;
 ```
 
-### List server configurations details
+### List server configuration details
 
 ```sql
 select
