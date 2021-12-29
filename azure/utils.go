@@ -12,15 +12,6 @@ import (
 
 //// TRANSFORM FUNCTIONS
 
-func idToSubscriptionID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	id := types.SafeString(d.Value)
-	if len(id) == 0 {
-		return nil, nil
-	}
-	subscriptionid := strings.Split(id, "/")[2]
-	return subscriptionid, nil
-}
-
 func idToAkas(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	id := types.SafeString(d.Value)
 	akas := []string{"azure://" + id, "azure://" + strings.ToLower(id)}

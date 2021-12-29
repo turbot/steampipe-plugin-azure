@@ -26,7 +26,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listDiagnosticSettings,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -108,25 +108,12 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.From(diagnosticSettingResourceGroup),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(diagnosticSettingSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

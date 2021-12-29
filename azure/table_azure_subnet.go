@@ -33,7 +33,7 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 			ParentHydrate: listVirtualNetworks,
 			Hydrate:       listSubnets,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -143,22 +143,7 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
-
-			// Azure standard columns
-			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Subnet.ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

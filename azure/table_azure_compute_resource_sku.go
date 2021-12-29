@@ -21,7 +21,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 			Hydrate: listResourceSkus,
 		},
 
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The name of SKU",
@@ -132,7 +132,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(skuDataToAkas),
 			},
-		},
+		}),
 	}
 }
 

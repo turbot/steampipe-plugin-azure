@@ -26,7 +26,7 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 			Hydrate:       listDataFactoryDatasets,
 			ParentHydrate: listDataFactories,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The resource name.",
@@ -75,25 +75,12 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

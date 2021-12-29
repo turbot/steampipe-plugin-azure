@@ -28,7 +28,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 			Hydrate:       listStorageContainers,
 		},
 
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the container.",
@@ -164,25 +164,12 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

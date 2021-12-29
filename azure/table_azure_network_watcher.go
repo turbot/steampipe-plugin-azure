@@ -24,7 +24,7 @@ func tableAzureNetworkWatcher(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkWatchers,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the network watcher",
@@ -74,13 +74,6 @@ func tableAzureNetworkWatcher(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
@@ -92,13 +85,7 @@ func tableAzureNetworkWatcher(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

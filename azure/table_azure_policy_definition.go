@@ -25,7 +25,7 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listPolicyDefintions,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "id",
 				Type:        proto.ColumnType_STRING,
@@ -99,22 +99,7 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getPolicyDefinitionTurbotData,
 			},
-
-			// Azure standard columns
-			{
-				Name:        "environment_name",
-				Description: ColumnDescriptionEnvironmentName,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     getPolicyDefinitionTurbotData,
-			},
-		},
+		}),
 	}
 }
 
