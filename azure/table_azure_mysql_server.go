@@ -193,7 +193,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "server_configurations",
-				Description: "The server configurations details.",
+				Description: "The server configurations(parameters) details of the server.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listMySQLServersConfigurations,
 				Transform:   transform.FromValue(),

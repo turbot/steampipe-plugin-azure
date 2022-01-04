@@ -126,56 +126,55 @@ select
   name as server_name,
   id as server_id,
   configurations ->> 'name' as configuration_name,
-  configurations -> 'ConfigurationProperties' ->> 'value' as value
+  configurations -> 'configurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations;
 ```
 
-### List server with audit log enabled
+### Current state of audit_log_enabled parameter for the servers
 
 ```sql
 select
   name as server_name,
   id as server_id,
   configurations ->> 'name' as configuration_name,
-  configurations -> 'ConfigurationProperties' ->> 'value' as value
+  configurations -> 'configurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
-   and configurations ->> 'name' = 'audit_log_enabled';
+   configurations ->> 'name' = 'audit_log_enabled';
 ```
 
-### List server with slow query log enabled
+### List servers with slow_query_log parameter enabled
 
 ```sql
 select
   name as server_name,
   id as server_id,
   configurations ->> 'name' as configuration_name,
-  configurations -> 'ConfigurationProperties' ->> 'value' as value
+  configurations -> 'configurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+   configurations ->'configurationProperties' ->> 'value' = 'ON'
    and configurations ->> 'name' = 'slow_query_log';
 ```
 
-### List server with log output set to file
+### List servers with log_output parameter set to file
 
 ```sql
 select
   name as server_name,
   id as server_id,
   configurations ->> 'name' as configuration_name,
-  configurations -> 'ConfigurationProperties' ->> 'value' as value
+  configurations -> 'configurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
+   configurations ->'configurationProperties' ->> 'value' = 'FILE'
    and configurations ->> 'name' = 'log_output';
 ```
