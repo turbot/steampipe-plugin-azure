@@ -121,6 +121,8 @@ from
 
 ### List server configuration details
 
+**Note:** `Server configurations` is the same as `Server parameters` as shown in Azure MySQL server console
+
 ```sql
 select
   name as server_name,
