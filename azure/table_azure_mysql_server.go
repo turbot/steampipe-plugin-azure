@@ -463,16 +463,16 @@ func extractMySQLServersconfiguration(i mysql.Configuration) map[string]interfac
 	mySQLServersconfiguration := make(map[string]interface{})
 
 	if i.ID != nil {
-		mySQLServersconfiguration["id"] = *i.ID
+		mySQLServersconfiguration["ID"] = *i.ID
 	}
 	if i.Name != nil {
-		mySQLServersconfiguration["name"] = *i.Name
+		mySQLServersconfiguration["Name"] = *i.Name
 	}
 	if i.Type != nil {
-		mySQLServersconfiguration["type"] = *i.Type
+		mySQLServersconfiguration["Type"] = *i.Type
 	}
 	if i.ConfigurationProperties != nil {
-		mySQLServersconfiguration["configurationProperties"] = *i.ConfigurationProperties
+		mySQLServersconfiguration["ConfigurationProperties"] = *i.ConfigurationProperties
 	}
 
 	return mySQLServersconfiguration

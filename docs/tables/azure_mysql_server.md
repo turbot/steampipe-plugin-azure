@@ -127,8 +127,8 @@ from
 select
   name as server_name,
   id as server_id,
-  configurations ->> 'name' as configuration_name,
-  configurations -> 'configurationProperties' ->> 'value' as value
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations;
@@ -140,13 +140,13 @@ from
 select
   name as server_name,
   id as server_id,
-  configurations ->> 'name' as configuration_name,
-  configurations -> 'configurationProperties' ->> 'value' as value
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->> 'name' = 'audit_log_enabled';
+   configurations ->> 'Name' = 'audit_log_enabled';
 ```
 
 ### List servers with slow_query_log parameter enabled
@@ -155,14 +155,14 @@ where
 select
   name as server_name,
   id as server_id,
-  configurations ->> 'name' as configuration_name,
-  configurations -> 'configurationProperties' ->> 'value' as value
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->'configurationProperties' ->> 'value' = 'ON'
-   and configurations ->> 'name' = 'slow_query_log';
+   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+   and configurations ->> 'Name' = 'slow_query_log';
 ```
 
 ### List servers with log_output parameter set to file
@@ -171,12 +171,12 @@ where
 select
   name as server_name,
   id as server_id,
-  configurations ->> 'name' as configuration_name,
-  configurations -> 'configurationProperties' ->> 'value' as value
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
 where 
-   configurations ->'configurationProperties' ->> 'value' = 'FILE'
-   and configurations ->> 'name' = 'log_output';
+   configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
+   and configurations ->> 'Name' = 'log_output';
 ```
