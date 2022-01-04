@@ -757,16 +757,16 @@ func listStorageAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})
 		if i.ID != nil {
-			objectMap["id"] = i.ID
+			objectMap["ID"] = i.ID
 		}
 		if i.Name != nil {
-			objectMap["name"] = i.Name
+			objectMap["Name"] = i.Name
 		}
 		if i.Type != nil {
-			objectMap["type"] = i.Type
+			objectMap["Type"] = i.Type
 		}
 		if i.DiagnosticSettings != nil {
-			objectMap["properties"] = i.DiagnosticSettings
+			objectMap["DiagnosticSettings"] = i.DiagnosticSettings
 		}
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
