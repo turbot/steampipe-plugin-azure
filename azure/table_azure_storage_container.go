@@ -133,7 +133,8 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 				Name:        "immutability_policy",
 				Description: "The ImmutabilityPolicy property of the container.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ContainerProperties.ImmutabilityPolicy"),
+				Hydrate:     getImmutabilityPolicy,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "legal_hold",
@@ -250,6 +251,49 @@ func getStorageContainer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 
 	return op, nil
+}
+
+func getImmutabilityPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getImmutabilityPolicy")
+	container := h.Item.(storage.ListContainerItem)
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	resourceGroup := strings.Split(*container.ID, "/")[4]
+	accountName := strings.Split(*container.ID, "/")[8]
+
+	client := storage.NewBlobContainersClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.GetImmutabilityPolicy(ctx, resourceGroup, accountName, *container.Name, "")
+	if err != nil {
+		return nil, err
+	}
+
+	// If we return the API response directly, the output only gives top level
+	// contents of ImmutabilityPolicy
+	ImmutabilityPolicy := make(map[string]interface{})
+	if op.ID != nil {
+		ImmutabilityPolicy["ID"] = op.ID
+	}
+	if op.Name != nil {
+		ImmutabilityPolicy["Name"] = op.Name
+	}
+	if op.Type != nil {
+		ImmutabilityPolicy["Type"] = op.Type
+	}
+	if op.ImmutabilityPolicyProperty != nil {
+		ImmutabilityPolicy["AllowProtectedAppendWrites"] = op.ImmutabilityPolicyProperty.AllowProtectedAppendWrites
+		ImmutabilityPolicy["ImmutabilityPeriodSinceCreationInDays"] = op.ImmutabilityPolicyProperty.ImmutabilityPeriodSinceCreationInDays
+		ImmutabilityPolicy["State"] = op.ImmutabilityPolicyProperty.State
+	}
+
+	return ImmutabilityPolicy, nil
 }
 
 //// TRANSFORM FUNCTIONS

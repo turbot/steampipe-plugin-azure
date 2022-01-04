@@ -91,3 +91,14 @@ from
 where
   remaining_retention_days = 7;
 ```
+
+### List containers ImmutabilityPolicy details
+
+```sql
+select
+  name,
+  account_name,
+  jsonb_pretty(immutability_policy) as immutability_policy
+from
+  azure_storage_container;
+```
