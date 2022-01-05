@@ -535,6 +535,11 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
+	// Blob is not supported for the account if storage type is FileStorage
+	if accountData.Account.Kind == "FileStorage" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -592,6 +597,11 @@ func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.Query
 
 func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
+
+	// Blob is not supported for the account if storage type is FileStorage
+	if accountData.Account.Kind == "FileStorage" {
+		return nil, nil
+	}
 
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

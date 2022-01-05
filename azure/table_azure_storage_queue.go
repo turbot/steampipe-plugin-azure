@@ -105,6 +105,11 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
+	// Queue is not supported for the account if storage type is FileStorage
+	if account.Account.Kind == "FileStorage" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err

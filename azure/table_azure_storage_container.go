@@ -185,6 +185,11 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
+	// Blob is not supported for the account if storage type is FileStorage
+	if account.Account.Kind == "FileStorage" {
+		return nil, nil
+	}
+
 	// Create session
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
