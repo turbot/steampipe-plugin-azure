@@ -10,7 +10,7 @@ _Enhancements_
 - Added column `environment_name` across all the tables ([#424](https://github.com/turbot/steampipe-plugin-azure/pull/424))
 - Added column `diagnostic_settings` to `azure_storage_account` table ([#432](https://github.com/turbot/steampipe-plugin-azure/pull/432))
 - Added column `server_configurations` to `azure_mysql_server` table ([#429](https://github.com/turbot/steampipe-plugin-azure/pull/429))
-- `azure_storage_account`, `azure_storage_blob_service`, `azure_storage_container`, `azure_storage_queue`, `azure_storage_table` and `azure_storage_table_service` tables have been updated to return an empty row when the API call returns `FeatureNotSupportedForAccount` error code ([#418](https://github.com/turbot/steampipe-plugin-azure/pull/418))
+- `azure_storage_account`, `azure_storage_blob_service`, `azure_storage_container`, `azure_storage_queue`, `azure_storage_table` and `azure_storage_table_service` tables have been updated to return an empty row instead of `FeatureNotSupportedForAccount` error when the storage type is `FileStorage` ([#418](https://github.com/turbot/steampipe-plugin-azure/pull/418))
 - Recompiled plugin with [steampipe-plugin-sdk v1.8.3](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v183--2021-12-23) ([#431](https://github.com/turbot/steampipe-plugin-azure/pull/431))
 
 _Bug fixes_
