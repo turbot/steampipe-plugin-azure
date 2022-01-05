@@ -118,3 +118,65 @@ from
   azure_mysql_server,
   jsonb_array_elements(server_keys) as keys;
 ```
+
+### List server configuration details
+
+**Note:** `Server configurations` is the same as `Server parameters` as shown in Azure MySQL server console
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations;
+```
+
+### Current state of audit_log_enabled parameter for the servers
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->> 'Name' = 'audit_log_enabled';
+```
+
+### List servers with slow_query_log parameter enabled
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+   and configurations ->> 'Name' = 'slow_query_log';
+```
+
+### List servers with log_output parameter set to file
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  configurations ->> 'Name' as configuration_name,
+  configurations -> 'ConfigurationProperties' ->> 'value' as value
+from
+  azure_mysql_server,
+  jsonb_array_elements(server_configurations) as configurations
+where 
+   configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
+   and configurations ->> 'Name' = 'log_output';
+```
