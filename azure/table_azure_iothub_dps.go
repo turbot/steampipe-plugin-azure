@@ -25,7 +25,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listIotHubDpses,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The resource name.",
@@ -140,7 +140,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
-			// Azure standard column
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -153,13 +153,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

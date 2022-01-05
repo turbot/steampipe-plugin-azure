@@ -23,7 +23,7 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeAvailabilitySets,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the availability set",
@@ -89,7 +89,7 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("AvailabilitySetProperties.VirtualMachines"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -107,6 +107,8 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -119,13 +121,7 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 
@@ -26,7 +25,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listDiagnosticSettings,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -113,13 +112,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.From(diagnosticSettingResourceGroup),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(diagnosticSettingSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 
@@ -179,12 +172,6 @@ func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 }
 
 //// TRANSFORM FUNCTION
-
-func diagnosticSettingSubscriptionID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	id := types.SafeString(d.Value)
-	subscriptionid := strings.Split(id, "/")[1]
-	return subscriptionid, nil
-}
 
 func diagnosticSettingResourceGroup(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	item := d.HydrateItem.(insights.DiagnosticSettingsResource)

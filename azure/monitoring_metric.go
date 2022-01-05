@@ -79,6 +79,13 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 			Type:        proto.ColumnType_STRING,
 		},
 		{
+			Name:        "environment_name",
+			Description: ColumnDescriptionEnvironmentName,
+			Type:        proto.ColumnType_STRING,
+			Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
+			Transform:   transform.FromValue(),
+		},
+		{
 			Name:        "resource_group",
 			Description: ColumnDescriptionResourceGroup,
 			Type:        proto.ColumnType_STRING,
@@ -88,7 +95,8 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 			Name:        "subscription_id",
 			Description: ColumnDescriptionSubscription,
 			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("DimensionValue").Transform(idToSubscriptionID),
+			Hydrate:     plugin.HydrateFunc(getSubscriptionID).WithCache(),
+			Transform:   transform.FromValue(),
 		},
 	}
 }

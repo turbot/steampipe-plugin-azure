@@ -24,7 +24,7 @@ func tableAzureRouteTable(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listRouteTables,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -71,7 +71,7 @@ func tableAzureRouteTable(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("RouteTablePropertiesFormat.Subnets"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -89,6 +89,8 @@ func tableAzureRouteTable(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -101,13 +103,7 @@ func tableAzureRouteTable(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID).Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

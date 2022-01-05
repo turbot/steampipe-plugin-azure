@@ -18,7 +18,7 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listTenants,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -64,7 +64,7 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 				Description: "The list of domains for the tenant.",
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -77,7 +77,7 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-		},
+		}),
 	}
 }
 

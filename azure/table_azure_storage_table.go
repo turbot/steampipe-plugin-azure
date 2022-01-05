@@ -33,7 +33,7 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageTables,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -58,7 +58,7 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Table.Type"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -71,6 +71,8 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Table.ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -83,13 +85,7 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Table.ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

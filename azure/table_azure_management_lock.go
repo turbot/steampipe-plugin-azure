@@ -33,7 +33,7 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 			Hydrate: listManagementLocks,
 		},
 
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -87,19 +87,15 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ManagementLockObject.ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "resource_group",
 				Type:        proto.ColumnType_STRING,
 				Description: ColumnDescriptionResourceGroup,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagementLockObject.ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

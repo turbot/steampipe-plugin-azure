@@ -26,7 +26,7 @@ func tableAzureLoadBalancerOutboundRule(_ context.Context) *plugin.Table {
 			Hydrate:       listLoadBalancerOutboundRules,
 			ParentHydrate: listLoadBalancers,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The name of the resource that is unique within the set of outbound rules used by the load balancer. This name can be used to access the resource.",
@@ -118,13 +118,7 @@ func tableAzureLoadBalancerOutboundRule(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

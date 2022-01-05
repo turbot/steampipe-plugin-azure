@@ -21,13 +21,14 @@ import (
 
 // Session info
 type Session struct {
-	SubscriptionID          string
-	TenantID                string
 	Authorizer              autorest.Authorizer
+	EnvironmentName         string
 	Expires                 *time.Time
+	GraphEndpoint           string
 	ResourceManagerEndpoint string
 	StorageEndpointSuffix   string
-	GraphEndpoint           string
+	SubscriptionID          string
+	TenantID                string
 }
 
 /* GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
@@ -150,7 +151,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 
-        // Get the subscription ID and tenant ID for "GRAPH" token audience
+		// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
@@ -200,13 +201,14 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	sess := &Session{
-		SubscriptionID:          subscriptionID,
 		Authorizer:              authorizer,
-		TenantID:                tenantID,
+		EnvironmentName:         settings.Environment.Name,
 		Expires:                 &expiresOn,
+		GraphEndpoint:           settings.Environment.GraphEndpoint,
 		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,
 		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
-		GraphEndpoint:           settings.Environment.GraphEndpoint,
+		SubscriptionID:          subscriptionID,
+		TenantID:                tenantID,
 	}
 
 	if sess.Expires != nil {
@@ -334,23 +336,4 @@ func getSubscriptionFromCLI(resource string) (*subscription, error) {
 // from now, false otherwise.
 func WillExpireIn(t time.Time, d time.Duration) bool {
 	return !t.After(time.Now().Add(d))
-}
-
-func getSubscriptionID(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSubscriptionID")
-	cacheKey := "getSubscriptionID"
-
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(string), nil
-	}
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-
-	// cache tenant id for the session
-	d.ConnectionManager.Cache.Set(cacheKey, session.SubscriptionID)
-
-	return session.SubscriptionID, nil
 }

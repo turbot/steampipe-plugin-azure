@@ -27,7 +27,7 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 			Hydrate:       listKeyVaultSecrets,
 			ParentHydrate: listKeyVaults,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the secret.",
@@ -145,13 +145,7 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getTurbotData,
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     getTurbotData,
-			},
-		},
+		}),
 	}
 }
 

@@ -31,7 +31,7 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -84,14 +84,7 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getSubscriptionID).WithCache(),
-				Transform:   transform.FromValue(),
-			},
-		},
+		}),
 	}
 }
 

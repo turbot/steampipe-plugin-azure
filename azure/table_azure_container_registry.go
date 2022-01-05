@@ -24,7 +24,7 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listContainerRegistries,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The name of the resource.",
@@ -212,13 +212,7 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

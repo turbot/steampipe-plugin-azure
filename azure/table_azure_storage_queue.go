@@ -33,7 +33,7 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageQueues,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -64,7 +64,7 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Queue.ListQueueProperties.Metadata"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -77,6 +77,8 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Queue.ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -89,13 +91,7 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Queue.ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Queue.ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

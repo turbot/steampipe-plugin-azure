@@ -26,7 +26,7 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaultManagedHardwareSecurityModules,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -143,13 +143,7 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

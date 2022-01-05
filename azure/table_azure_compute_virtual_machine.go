@@ -35,7 +35,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Depends: []plugin.HydrateFunc{getVMNics},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the virtual machine.",
@@ -370,6 +370,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 
 			// Standard azure columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -382,13 +383,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

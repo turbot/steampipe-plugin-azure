@@ -19,7 +19,7 @@ func tableAzureSecurityCenterJITNetworkAccessPolicy(_ context.Context) *plugin.T
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterJITNetworkAccessPolicies,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The resource name.",
@@ -67,15 +67,7 @@ func tableAzureSecurityCenterJITNetworkAccessPolicy(_ context.Context) *plugin.T
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-
-			// Azure standard columns
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

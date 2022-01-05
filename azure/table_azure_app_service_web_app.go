@@ -31,7 +31,7 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The friendly name that identifies the app service web app.",
@@ -185,13 +185,7 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.ResourceGroup").Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 

@@ -36,7 +36,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name"}),
 			Hydrate:    listStorageBlobs,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			// Basic info
 			{
 				Name:        "name",
@@ -298,7 +298,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Blob.Metadata"),
 			},
 
-			// Standard steampipe columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -312,7 +312,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Transform:   transform.From(blobDataToAka),
 			},
 
-			// Standard azure columns
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -325,13 +325,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SubscriptionID"),
-			},
-		},
+		}),
 	}
 }
 

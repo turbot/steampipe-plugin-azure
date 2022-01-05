@@ -19,7 +19,7 @@ func tableAzureLocation(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listLocations,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "The location name",
@@ -46,14 +46,8 @@ func tableAzureLocation(_ context.Context) *plugin.Table {
 				Description: "The longitude of the location",
 				Type:        proto.ColumnType_JSON,
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -66,7 +60,7 @@ func tableAzureLocation(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-		},
+		}),
 	}
 }
 

@@ -34,7 +34,7 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 			ParentHydrate: listCosmosDBAccounts,
 			Hydrate:       listCosmosDBMongoDatabases,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
@@ -95,7 +95,7 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Options.Throughput"),
 			},
 
-			// Standard columns
+			// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -114,6 +114,8 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("MongoDatabase.ID").Transform(idToAkas),
 			},
+
+			// Azure standard columns
 			{
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
@@ -126,13 +128,7 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("MongoDatabase.ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 
