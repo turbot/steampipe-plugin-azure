@@ -25,7 +25,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,
 			Hydrate:       listAzureComputeVirtualMachineScaleSetVms,
 		},
-		Columns: []*plugin.Column{
+		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Description: "Name of the scale set VM.",
@@ -226,13 +226,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
-			{
-				Name:        "subscription_id",
-				Description: ColumnDescriptionSubscription,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(idToSubscriptionID),
-			},
-		},
+		}),
 	}
 }
 
