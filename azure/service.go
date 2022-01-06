@@ -151,7 +151,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 
-		// Get the subscription ID and tenant ID for "GRAPH" token audience
+	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {

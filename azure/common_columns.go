@@ -14,8 +14,8 @@ func commonColumns() []*plugin.Column {
 		{
 			Name:        "cloud_environment",
 			Type:        proto.ColumnType_STRING,
-			Hydrate:     getEnvironmentName,
-			Description: ColumnDescriptionEnvironmentName,
+			Hydrate:     getCloudEnvironment,
+			Description: ColumnDescriptionCloudEnvironment,
 			Transform:   transform.FromValue(),
 		},
 		{
@@ -52,9 +52,9 @@ func getSubscriptionID(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	return session.SubscriptionID, nil
 }
 
-func getEnvironmentName(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getEnvironmentName")
-	cacheKey := "getEnvironmentName"
+func getCloudEnvironment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getCloudEnvironment")
+	cacheKey := "getCloudEnvironment"
 
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.(string), nil
