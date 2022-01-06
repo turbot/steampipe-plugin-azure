@@ -1,3 +1,9 @@
+## v0.23.1 [2022-01-07]
+
+_Bug fixes_
+
+- Renamed column `environment_name` to `cloud_environment` across all the tables to remain consistent with Azure documentation ([#438](https://github.com/turbot/steampipe-plugin-azure/pull/438))
+
 ## v0.23.0 [2022-01-05]
 
 _What's new?_
