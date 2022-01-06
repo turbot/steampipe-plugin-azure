@@ -82,7 +82,7 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "environment_name",
+				Name:        "cloud_environment",
 				Description: ColumnDescriptionEnvironmentName,
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),

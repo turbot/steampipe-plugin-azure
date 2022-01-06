@@ -22,7 +22,7 @@ import (
 // Session info
 type Session struct {
 	Authorizer              autorest.Authorizer
-	EnvironmentName         string
+	CloudEnvironment        string
 	Expires                 *time.Time
 	GraphEndpoint           string
 	ResourceManagerEndpoint string
@@ -202,7 +202,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	sess := &Session{
 		Authorizer:              authorizer,
-		EnvironmentName:         settings.Environment.Name,
+		CloudEnvironment:        settings.Environment.Name,
 		Expires:                 &expiresOn,
 		GraphEndpoint:           settings.Environment.GraphEndpoint,
 		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,

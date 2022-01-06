@@ -12,7 +12,7 @@ import (
 func commonColumns() []*plugin.Column {
 	return []*plugin.Column{
 		{
-			Name:        "environment_name",
+			Name:        "cloud_environment",
 			Type:        proto.ColumnType_STRING,
 			Hydrate:     getEnvironmentName,
 			Description: ColumnDescriptionEnvironmentName,
@@ -66,7 +66,7 @@ func getEnvironmentName(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 
 	// cache environment name for the session
-	d.ConnectionManager.Cache.Set(cacheKey, session.EnvironmentName)
+	d.ConnectionManager.Cache.Set(cacheKey, session.CloudEnvironment)
 
-	return session.EnvironmentName, nil
+	return session.CloudEnvironment, nil
 }

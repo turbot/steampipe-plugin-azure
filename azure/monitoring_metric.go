@@ -79,7 +79,7 @@ func commonMonitoringMetricColumns() []*plugin.Column {
 			Type:        proto.ColumnType_STRING,
 		},
 		{
-			Name:        "environment_name",
+			Name:        "cloud_environment",
 			Description: ColumnDescriptionEnvironmentName,
 			Type:        proto.ColumnType_STRING,
 			Hydrate:     plugin.HydrateFunc(getEnvironmentName).WithCache(),
