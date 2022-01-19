@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
@@ -40,6 +41,7 @@ type Session struct {
 */
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
+
 	cacheKey := "GetNewSession"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		session = cachedData.(*Session)
@@ -49,6 +51,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return cachedData.(*Session), nil
 		}
 	}
+
+	logger.Debug("Auth session not found in cache, creating new session")
 
 	var subscriptionID, tenantID string
 	settings := auth.EnvironmentSettings{
@@ -113,7 +117,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	if azureConfig.Environment != nil {
 		env, err := azure.EnvironmentFromName(*azureConfig.Environment)
 		if err != nil {
-			logger.Debug("GetNewSession_", "Error getting environment from name with config environment", err)
+			logger.Error("GetNewSession", "Error getting environment from name with config environment", err)
 			return nil, err
 		}
 		settings.Environment = env
@@ -124,7 +128,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		if ok {
 			env, err = azure.EnvironmentFromName(envName)
 			if err != nil {
-				logger.Debug("GetNewSession_", "Error getting environment from name with no config environment", err)
+				logger.Error("GetNewSession", "Error getting environment from name with no config environment", err)
 				return nil, err
 			}
 			settings.Values[auth.EnvironmentName] = envName
@@ -134,28 +138,30 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	authMethod, resource, err := getApplicableAuthorizationDetails(ctx, settings, tokenAudience)
 	if err != nil {
-		logger.Debug("GetNewSession__", "getApplicableAuthorizationDetails error", err)
+		logger.Error("GetNewSession", "getApplicableAuthorizationDetails error", err)
 		return nil, err
 	}
 	settings.Values[auth.Resource] = resource
 
 	var authorizer autorest.Authorizer
-	var expiresOn time.Time
+	var expiresOn *time.Time
 
 	// so if it was not in cache - create session
 	switch authMethod {
 	case "Environment":
+		logger.Trace("Creating new session authorizer from environment")
 		authorizer, err = settings.GetAuthorizer()
 		if err != nil {
-			logger.Debug("GetNewSession__", "NewAuthorizerFromEnvironmentWithResource error", err)
+			logger.Error("GetNewSession", "NewAuthorizerFromEnvironmentWithResource error", err)
 			return nil, err
 		}
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
+		logger.Trace("Creating new session authorizer from Azure CLI")
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		if err != nil {
-			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+			logger.Error("GetNewSession", "NewAuthorizerFromCLIWithResource error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -165,16 +171,17 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
+		logger.Trace("Getting token for authorizer from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
 			return nil, err
 		}
 
 		adalToken, err := token.ToADALToken()
-		expiresOn = adalToken.Expires()
+		expiresOn = types.Time(adalToken.Expires())
 
 		if err != nil {
-			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+			logger.Error("GetNewSession", "Get token from Azure CLI error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -186,24 +193,29 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	}
 
-	if authMethod == "CLI" {
+	// Get the subscription ID and tenant ID from CLI if not set in connection
+	// config or environment variables
+	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] == "") {
+		logger.Trace("Getting subscription ID and/or tenant ID from from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
-			logger.Debug("GetNewSession__", "getSubscriptionFromCLI error", err)
+			logger.Error("GetNewSession", "getSubscriptionFromCLI error", err)
 			return nil, err
 		}
 		tenantID = subscription.TenantID
 
-		// If "AZURE_SUBSCRIPTION_ID" is set then it will take precedence over the subscription set in the CLI
+		// Subscription ID set in config file or environment variable takes
+		// precedence over the subscription ID set in the CLI
 		if subscriptionID == "" {
 			subscriptionID = subscription.SubscriptionID
+			logger.Trace("Setting subscription ID from Azure CLI", "subscription_id", subscriptionID)
 		}
 	}
 
 	sess := &Session{
 		Authorizer:              authorizer,
 		CloudEnvironment:        settings.Environment.Name,
-		Expires:                 &expiresOn,
+		Expires:                 expiresOn,
 		GraphEndpoint:           settings.Environment.GraphEndpoint,
 		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,
 		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
@@ -211,12 +223,16 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		TenantID:                tenantID,
 	}
 
-	if sess.Expires != nil {
-		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
+	var expireMins time.Duration
+	if expiresOn != nil {
+		expireMins = time.Until(*sess.Expires)
 	} else {
 		// Cache for 55 minutes to avoid expiry issue
-		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Minute*55)
+		expireMins = time.Minute * 55
 	}
+
+	logger.Debug("Session saved in cache", "expiration_time", expireMins)
+	d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, expireMins)
 
 	return sess, err
 }
@@ -238,7 +254,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 		authMethod = "Environment"
 	}
 
-	logger.Trace("getApplicableAuthorizationDetails_", "Auth Method: ", authMethod)
+	logger.Debug("getApplicableAuthorizationDetails", "auth_method", authMethod)
 
 	var environment azure.Environment
 	// Get the environment endpoint to be used for authorization
@@ -247,13 +263,13 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	} else {
 		environment, err = azure.EnvironmentFromName(environmentName)
 		if err != nil {
-			logger.Error("Unable to get azure environment", "ERROR", err)
+			logger.Error("getApplicableAuthorizationDetails", "get_environment_name_error", err)
 			return
 		}
 		settings.Environment = environment
 	}
 
-	logger.Trace("getApplicableAuthorizationDetails_", "tokenAudience: ", tokenAudience)
+	logger.Debug("getApplicableAuthorizationDetails", "token_audience", tokenAudience)
 
 	switch tokenAudience {
 	case "GRAPH":
@@ -266,7 +282,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 		resource = settings.Environment.ResourceManagerEndpoint
 	}
 
-	logger.Trace("getApplicableAuthorizationDetails_", "resource: ", resource)
+	logger.Debug("getApplicableAuthorizationDetails", "resource", resource)
 
 	return
 }

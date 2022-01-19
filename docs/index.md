@@ -61,7 +61,7 @@ steampipe plugin install azure
 | Credentials | Use the `az login` command to setup your [Azure Default Connection](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).                                                                                         |
 | Permissions | Grant the `Global Reader` permission to your user.                                                                                                                                                                              |
 | Radius      | Each connection represents a single Azure Subscription.                                                                                                                                                                         |
-| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azuread.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`. |
+| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azure.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`. |
 
 ### Configuration
 
@@ -197,7 +197,7 @@ Steampipe works with managed identities (formerly known as Managed Service Ident
 
 ```hcl
 connection "azure_msi" {
-  plugin          = "azuread"
+  plugin          = "azure"
   tenant_id       = "00000000-0000-0000-0000-000000000000"
   client_id       = "00000000-0000-0000-0000-000000000000"
   subscription_id = "00000000-0000-0000-0000-000000000000"
