@@ -1,3 +1,9 @@
+## v0.23.2 [2022-01-19]
+
+_Bug fixes_
+
+- Fixed: Authentication session credentials are now cached correctly ([#442](https://github.com/turbot/steampipe-plugin-azure/pull/442))
+
 ## v0.23.1 [2022-01-07]
 
 _Bug fixes_
