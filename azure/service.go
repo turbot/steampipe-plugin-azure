@@ -50,6 +50,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return cachedData.(*Session), nil
 		}
 	}
+	logger.Info("Auth session not found in cache")
 
 	var subscriptionID, tenantID string
 	settings := auth.EnvironmentSettings{
@@ -154,7 +155,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
-		logger.Debug("Get session authorizer from Azure CLI")
+		logger.Info("GetNewSession__", "Get session authorizer from Azure CLI")
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
 		// authorizer
 		if err != nil {
@@ -168,7 +169,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
-		logger.Debug("GetNewSession__", "Get token from Azure CLI")
+		logger.Info("GetNewSession__", "Get token from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
 			return nil, err
@@ -178,7 +179,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		expiresOn = types.Time(adalToken.Expires())
 
 		if err != nil {
-			logger.Debug("GetNewSession__", "GetTokenFromCLI error", err)
+			logger.Error("GetNewSession__", "Get token from Azure CLI error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -191,8 +192,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	// Get the subscription id and tenant id from CLI if not set in connection config or environment variables
-	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] != "") {
-		logger.Debug("Get Tenant and Subscription details from Azure CLI")
+	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] == "") {
+		logger.Info("Get Tenant and Subscription ids from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "getSubscriptionFromCLI error", err)
