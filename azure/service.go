@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
@@ -140,7 +141,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	settings.Values[auth.Resource] = resource
 
 	var authorizer autorest.Authorizer
-	var expiresOn time.Time
+	var expiresOn *time.Time
 
 	// so if it was not in cache - create session
 	switch authMethod {
@@ -153,7 +154,9 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
+		logger.Debug("Get session authorizer from Azure CLI")
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
+		// authorizer
 		if err != nil {
 			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
@@ -165,16 +168,17 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 	default:
+		logger.Debug("GetNewSession__", "Get token from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
 			return nil, err
 		}
 
 		adalToken, err := token.ToADALToken()
-		expiresOn = adalToken.Expires()
+		expiresOn = types.Time(adalToken.Expires())
 
 		if err != nil {
-			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+			logger.Debug("GetNewSession__", "GetTokenFromCLI error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -187,6 +191,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	if authMethod == "CLI" {
+		logger.Debug("Get Tenant and Subscription details from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
 			logger.Debug("GetNewSession__", "getSubscriptionFromCLI error", err)
@@ -203,7 +208,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	sess := &Session{
 		Authorizer:              authorizer,
 		CloudEnvironment:        settings.Environment.Name,
-		Expires:                 &expiresOn,
+		Expires:                 expiresOn,
 		GraphEndpoint:           settings.Environment.GraphEndpoint,
 		ResourceManagerEndpoint: settings.Environment.ResourceManagerEndpoint,
 		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
@@ -211,10 +216,12 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		TenantID:                tenantID,
 	}
 
-	if sess.Expires != nil {
+	if expiresOn != nil {
 		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
+		logger.Info("Session saved in cache with expiry in", "minutes", (time.Until(*sess.Expires)).Minutes())
 	} else {
 		// Cache for 55 minutes to avoid expiry issue
+		logger.Info("Session saved in cache with expiry in 55 minutes")
 		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Minute*55)
 	}
 
