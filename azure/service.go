@@ -190,7 +190,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	}
 
-	if authMethod == "CLI" {
+	// Get the subscription id and tenant id from CLI if not set in connection config or environment variables
+	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] != "") {
 		logger.Debug("Get Tenant and Subscription details from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
