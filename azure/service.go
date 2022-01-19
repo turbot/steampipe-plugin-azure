@@ -50,7 +50,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return cachedData.(*Session), nil
 		}
 	}
-	logger.Info("Auth session not found in cache")
+	logger.Debug("Auth session not found in cache")
 
 	var subscriptionID, tenantID string
 	settings := auth.EnvironmentSettings{
@@ -155,11 +155,10 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
-		logger.Info("GetNewSession__", "Get session authorizer from Azure CLI")
+		logger.Debug("GetNewSession__", "Get session authorizer from Azure CLI")
 		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
-		// authorizer
 		if err != nil {
-			logger.Debug("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
+			logger.Warn("GetNewSession__", "NewAuthorizerFromCLIWithResource error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -179,7 +178,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		expiresOn = types.Time(adalToken.Expires())
 
 		if err != nil {
-			logger.Error("GetNewSession__", "Get token from Azure CLI error", err)
+			logger.Warn("GetNewSession__", "Get token from Azure CLI error", err)
 
 			// Check if the password was changed and the session token is stored in
 			// the system, or if the CLI is outdated
@@ -220,10 +219,10 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	if expiresOn != nil {
 		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Until(*sess.Expires))
-		logger.Info("Session saved in cache with expiry in", "minutes", (time.Until(*sess.Expires)).Minutes())
+		logger.Debug("Session saved in cache with expiry in", "minutes", (time.Until(*sess.Expires)).Minutes())
 	} else {
 		// Cache for 55 minutes to avoid expiry issue
-		logger.Info("Session saved in cache with expiry in 55 minutes")
+		logger.Debug("Session saved in cache with expiry in 55 minutes")
 		d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, time.Minute*55)
 	}
 
