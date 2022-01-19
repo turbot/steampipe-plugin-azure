@@ -193,7 +193,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	}
 
-	// Get the subscription id and tenant id from CLI if not set in connection config or environment variables
+	// Get the subscription ID and tenant ID from CLI if not set in connection
+	// config or environment variables
 	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] == "") {
 		logger.Trace("Getting subscription ID and/or tenant ID from from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
@@ -203,7 +204,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		}
 		tenantID = subscription.TenantID
 
-		// Subscription ID is set in config file or env variable takes precedence over the subscription set in the CLI
+		// Subscription ID set in config file or environment variable takes
+		// precedence over the subscription ID set in the CLI
 		if subscriptionID == "" {
 			subscriptionID = subscription.SubscriptionID
 			logger.Trace("Setting subscription ID from Azure CLI", "subscription_id", subscriptionID)
