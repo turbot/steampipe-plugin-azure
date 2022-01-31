@@ -1,6 +1,0 @@
-[
-  {
-    "display_name": "{{resourceName}}",
-    "object_id": "{{ output.object_id.value }}"
-  }
-]
