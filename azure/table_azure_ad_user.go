@@ -107,6 +107,6 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	err := errors.New("Table deprecated and remove, please use table azuread_user instead.")
+	err := errors.New("Table has been deprecated and removed, please use table azuread_user instead.")
 	return nil, err
 }

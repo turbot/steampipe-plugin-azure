@@ -122,6 +122,6 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	err := errors.New("Table deprecated and remove, please use table azuread_service_principal instead.")
+	err := errors.New("Table has been deprecated and removed, please use table azuread_service_principal instead.")
 	return nil, err
 }

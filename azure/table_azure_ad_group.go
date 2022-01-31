@@ -75,6 +75,6 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAdGroups(_ context.Context, _ *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	err := errors.New("Table deprecated and remove, please use table azuread_group instead.")
+	err := errors.New("Table has been deprecated and removed, please use table azuread_group instead.")
 	return nil, err
 }
