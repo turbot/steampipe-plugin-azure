@@ -1,3 +1,14 @@
+## v0.24.0 [2022-02-09]
+
+_What's new?_
+
+- In [v0.20.0](https://github.com/turbot/steampipe-plugin-azure/blob/main/CHANGELOG.md#v0200-2021-10-26), we deprecated the following tables, which were replaced by tables in the `azuread` plugin:
+  - azure_ad_group (replaced by azuread_group)
+  - azure_ad_service_principal (replaced by azuread_service_principal)
+  - azure_ad_user (replaced by azuread_user)
+
+  As part of our deprecation process, we have now updated the above tables to not return any results, but   instead an error with the message to use the new tables instead. ([#443](https://github.com/turbot/steampipe-plugin-azure/pull/443))
+
 ## v0.23.2 [2022-01-19]
 
 _Bug fixes_
