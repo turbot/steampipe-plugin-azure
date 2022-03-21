@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53c0616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -37,11 +37,13 @@ resource "azurerm_resource_group" "named_test_resource" {
 }
 
 resource "azurerm_key_vault" "named_test_resource" {
-  name                = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
+  name                       = var.resource_name
+  location                   = azurerm_resource_group.named_test_resource.location
+  resource_group_name        = azurerm_resource_group.named_test_resource.name
+  sku_name                   = "standard"
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  soft_delete_enabled        = true
+  soft_delete_retention_days = 7
   tags = {
     name = var.resource_name
   }
