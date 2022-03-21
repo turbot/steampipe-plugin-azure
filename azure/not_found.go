@@ -3,7 +3,7 @@ package azure
 import (
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v2/plugin"
 )
 
 // function which returns an ErrorPredicate for Azure API calls
