@@ -7,7 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v2/plugin/transform"
 )
 
 //// TRANSFORM FUNCTIONS
