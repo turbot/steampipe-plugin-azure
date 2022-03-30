@@ -176,7 +176,7 @@ func listKeyVaultSecrets(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		  if there is at least a single key vault on which user does not have access to perform list secret operation.
 		*/
 
-		if strings.Contains(err.Error(), "Invalid audience. Expected https://vault.azure.net") {
+		if strings.Contains(err.Error(), "Forbidden") {
 			return nil, nil
 		}
 		return nil, err
