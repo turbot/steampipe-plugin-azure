@@ -170,10 +170,10 @@ func listKeyVaultSecrets(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	if err != nil {
 		/*
 		* To make the above API call user must have list secrets permission.
-		* If an user does not have this permission to perform list operation for secrets then the api returns forbiden error.
-		* The permission should be grant in the key valult access policy.
-		* If the forbidden error is not being handled here then it will make the table fail,
-		  if there is at least a single key vault on which user does not have access to perform list secret operation.
+		* If the user does not have this permission then the API returns an unauthorized error.
+		* The permission should be granted in the key valult access policy.
+		* If the unauthorized error is not handled, then it will cause the table to fail
+		  if there is at least a single key vault on which the user does not have access to perform list secret operation.
 		*/
 
 		if strings.Contains(err.Error(), "Forbidden") {
