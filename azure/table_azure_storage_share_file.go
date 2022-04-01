@@ -20,7 +20,7 @@ func tableAzureStorageShareFile(_ context.Context) *plugin.Table {
 		Description: "Azure Storage Share File",
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "storage_account_name"}),
-			Hydrate:           StorageAccountsFileShare,
+			Hydrate:           getStorageAccountsFileShare,
 			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
@@ -238,13 +238,13 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 
 //// HYDRATE FUNCTIONS
 
-func StorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("StorageAccountsFileShare")
+func getStorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getStorageAccountsFileShare")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	logger := plugin.Logger(ctx)
 	if err != nil {
-		logger.Error("listStorageAccountsFileShare", "get session error", err)
+		logger.Error("getStorageAccountsFileShare", "get session error", err)
 		return nil, err
 	}
 
