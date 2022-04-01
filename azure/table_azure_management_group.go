@@ -114,7 +114,7 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		return nil, err
 	}
 
-  mgClient := managementgroups.NewClient()
+        mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
 
 	result, err := mgClient.List(ctx, "", "")
@@ -144,7 +144,7 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getManagementGroup")
 
-  var name string
+        var name string
 	if h.Item != nil {
 		name = *h.Item.(managementgroups.Info).Name
 	} else {
@@ -161,7 +161,7 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		return nil, err
 	}
 
-  mgClient := managementgroups.NewClient()
+        mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
 
 	op, err := mgClient.Get(ctx, name,"children",nil,"","")
