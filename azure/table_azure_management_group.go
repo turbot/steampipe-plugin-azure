@@ -119,6 +119,7 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	result, err := mgClient.List(ctx, "", "")
 	if err != nil {
+		plugin.Logger(ctx).Error("listManagementGroups", "list", err)
 		return nil, err
 	}
 	for _, mg := range result.Values() {
@@ -165,6 +166,7 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	op, err := mgClient.Get(ctx, name,"children",nil,"","")
 	if err != nil {
+		plugin.Logger(ctx).Error("getManagementGroup", "get", err)
 		return nil, err
 	}
 
