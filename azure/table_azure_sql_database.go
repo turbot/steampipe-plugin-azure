@@ -198,13 +198,13 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 			{
 				Name:        "create_mode",
 				Description: "Specifies the mode of database creation.",
-				Type:        proto.ColumnType_JSON,
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseProperties.CreateMode"),
 			},
 			{
 				Name:        "read_scale",
 				Description: "ReadScale indicates whether read-only connections are allowed to this database or not if the database is a geo-secondary.",
-				Type:        proto.ColumnType_JSON,
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseProperties.ReadScale"),
 			},
 			{
