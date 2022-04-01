@@ -23,20 +23,20 @@ from
 
 ```sql
 select
-	name,
+  name,
   updated_by,
-	jsonb_pretty(children) as children
+  jsonb_pretty(children) as children
 from
-	azure_management_group;
+  azure_management_group;
 ```
 
 ### Get parent detail for a specific management group
 
 ```sql
 select
-	name,
+  name,
   updated_by,
-	jsonb_pretty(parent) as parent
+  jsonb_pretty(parent) as parent
 from
-	azure_management_group;
+  azure_management_group;
 ```
