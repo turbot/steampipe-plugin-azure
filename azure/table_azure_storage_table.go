@@ -114,8 +114,8 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	if err != nil {
 		/*
 		* For storage accoung type 'Page Blob' we are getting the kind value as 'StorageV2' .
-		* storage accoung type 'Page Blob' does not support stoarege table so we are getting 'FeatureNotSupportedForAccount' error
-		* With same kind we my have different types of storage account so we need to handle this particular error
+		* Storage account type 'Page Blob' does not support table so we are getting 'FeatureNotSupportedForAccount'/'OperationNotAllowedOnKind' error.
+		* With same kind of we my have different types of storage account so we need to handle this particular error.
 		 */
 		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") || strings.Contains(err.Error(), "OperationNotAllowedOnKind") {
 			return nil, nil
