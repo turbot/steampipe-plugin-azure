@@ -1,4 +1,4 @@
-# Table: azure_storage_blob
+# Table: azure_storage_share_file
 
 Azure Files is Microsoft's easy-to-use cloud file system. Azure file shares can be mounted in Windows, Linux, and macOS.
 
