@@ -18,22 +18,6 @@ from
   azure_storage_share_file;
 ```
 
-### List file shares for storage accounts
-
-```sql
-select
-  name,
-  storage_account_name,
-  type,
-  access_tier,
-  share_quota,
-  enabled_protocols
-from
-  azure_storage_share_file
-where
-  type = 'Microsoft.Storage/storageAccounts/fileServices/shares';
-```
-
 ### List file shares with default access tier
 
 ```sql
