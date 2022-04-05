@@ -96,7 +96,7 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
-	// Table is not supported for the account if storage type is FileStorage and BlockBlobStorage
+	// Table is not supported for the account if storage type is FileStorage or BlockBlobStorage
 	if account.Account.Kind == "FileStorage" || account.Account.Kind == "BlockBlobStorage" {
 		return nil, nil
 	}
