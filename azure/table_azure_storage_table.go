@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/turbot/steampipe-plugin-sdk/v2/grpc/proto"
@@ -95,8 +96,8 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
-	// Table is not supported for the account if storage type is FileStorage
-	if account.Account.Kind == "FileStorage" {
+	// Table is not supported for the account if storage type is FileStorage or BlockBlobStorage
+	if account.Account.Kind == "FileStorage" || account.Account.Kind == "BlockBlobStorage" {
 		return nil, nil
 	}
 
@@ -111,6 +112,14 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
+		/*
+		* For storage account type 'Page Blob' we are getting the kind value as 'StorageV2'.
+		* Storage account type 'Page Blob' does not support table, so we are getting 'FeatureNotSupportedForAccount'/'OperationNotAllowedOnKind' error.
+		* With same kind(StorageV2) of storage account, we my have different type(File Share) of storage account so we need to handle this particular error.
+		 */
+		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") || strings.Contains(err.Error(), "OperationNotAllowedOnKind") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
