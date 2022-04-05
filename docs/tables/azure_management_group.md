@@ -19,7 +19,7 @@ from
   azure_management_group;
 ```
 
-### List children for a specific management group
+### List children for management groups
 
 ```sql
 select
@@ -30,7 +30,7 @@ from
   azure_management_group;
 ```
 
-### Get parent detail for a specific management group
+### List parent detail for management groups
 
 ```sql
 select
