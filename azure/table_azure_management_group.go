@@ -17,8 +17,8 @@ func tableAzureManagementGroup(_ context.Context) *plugin.Table {
 		Name:        "azure_management_group",
 		Description: "Azure Management Group.",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getManagementGroup,
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getManagementGroup,
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementGroups,
@@ -44,13 +44,13 @@ func tableAzureManagementGroup(_ context.Context) *plugin.Table {
 				Name:        "display_name",
 				Description: "The friendly name of the management group.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("InfoProperties.DisplayName","Properties.DisplayName"),
+				Transform:   transform.FromField("InfoProperties.DisplayName", "Properties.DisplayName"),
 			},
 			{
 				Name:        "tenant_id",
 				Description: "The AAD Tenant ID associated with the management group.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("InfoProperties.TenantID","Properties.TenantID"),
+				Transform:   transform.FromField("InfoProperties.TenantID", "Properties.TenantID"),
 			},
 			{
 				Name:        "updated_by",
@@ -113,7 +113,7 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		return nil, err
 	}
 
-        mgClient := managementgroups.NewClient()
+	mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
 
 	result, err := mgClient.List(ctx, "", "")
@@ -143,7 +143,7 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getManagementGroup")
 
-        var name string
+	var name string
 	if h.Item != nil {
 		name = *h.Item.(managementgroups.Info).Name
 	} else {
@@ -151,8 +151,8 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 
 	// check if name is empty
-	if name == ""{
-		return nil,nil
+	if name == "" {
+		return nil, nil
 	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -160,10 +160,10 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		return nil, err
 	}
 
-        mgClient := managementgroups.NewClient()
+	mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
 
-	op, err := mgClient.Get(ctx, name,"children",nil,"","")
+	op, err := mgClient.Get(ctx, name, "children", nil, "", "")
 	if err != nil {
 		plugin.Logger(ctx).Error("getManagementGroup", "get", err)
 		return nil, err
@@ -171,4 +171,3 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	return op, nil
 }
-

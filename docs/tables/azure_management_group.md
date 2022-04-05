@@ -2,7 +2,7 @@
 
 Management groups provide a governance scope above subscriptions. You organize subscriptions into management groups in the governance conditions you apply cascade by inheritance to all associated subscriptions. Management groups give you enterprise-grade management at a scale no matter what type of subscriptions you might have. However, all subscriptions within a single management group must trust the same Azure Active Directory (Azure AD) tenant.
 
-Note: To query this table, you need to have read access to the specific management group.
+Note: To query this table, you need to have at least read access to the specific management group.
 
 ## Examples
 
@@ -30,7 +30,7 @@ from
   azure_management_group;
 ```
 
-### List parent detail for management groups
+### List parent details for management groups
 
 ```sql
 select
