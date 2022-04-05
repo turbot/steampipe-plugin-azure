@@ -23,7 +23,6 @@ func tableAzureManagementGroup(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listManagementGroups,
 		},
-
 		Columns: []*plugin.Column{
 			{
 				Name:        "id",
