@@ -170,6 +170,7 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 				Name:        "network_access_policy",
 				Description: "Policy for accessing the disk via network",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiskProperties.NetworkAccessPolicy"),
 			},
 			{
 				Name:        "creation_data_option",
