@@ -33,7 +33,6 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate:     listStorageAccounts,
 			Hydrate:           listStorageQueues,
-			ShouldIgnoreError: isNotFoundError([]string{"FeatureNotSupportedForAccount"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -103,7 +102,7 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
 
-	// Queue is not supported for the account if storage type is FileStorage
+	// Queue is not supported for the account if storage type is FileStorage or BlockBlobStorage
 	if account.Account.Kind == "FileStorage" || account.Account.Kind == "BlockBlobStorage" {
 		return nil, nil
 	}
