@@ -1,3 +1,20 @@
+## v0.25.0 [2022-04-05]
+
+_What's new?_
+
+- New tables added
+  - [azure_management_group](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_management_group) ([#460](https://github.com/turbot/steampipe-plugin-azure/pull/460))
+  - [azure_storage_share_file](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_storage_share_file) ([#464](https://github.com/turbot/steampipe-plugin-azure/pull/464))
+
+_Enhancements_
+
+- Fixed the `network_access_policy` column of `azure_compute_disk` table to correctly return the network access policy instead of null ([#447](https://github.com/turbot/steampipe-plugin-azure/pull/447))
+- Updated the data type of `create_mode` and `read_scale` columns to `string` in `azure_sql_database` table ([#459](https://github.com/turbot/steampipe-plugin-azure/pull/459))
+
+_Bug fixes_
+
+- `azure_storage_table` and `azure_storage_queue` tables have been updated to handle the `FeatureNotSupportedForAccount` error when the storage type is `BlockBlobStorage` ([#467](https://github.com/turbot/steampipe-plugin-azure/pull/467)) ([#465](https://github.com/turbot/steampipe-plugin-azure/pull/465))
+
 ## v0.24.0 [2022-03-23]
 
 _Enhancements_
