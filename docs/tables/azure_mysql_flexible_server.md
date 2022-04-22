@@ -31,7 +31,7 @@ where
   public_network_access = 'Disabled';
 ```
 
-### List servers with 'storage_auto_grow' disabled
+### List servers with storage auto grow disabled
 
 ```sql
 select
@@ -44,7 +44,7 @@ where
   storage_auto_grow = 'Disabled';
 ```
 
-### List servers with 'backup_retention_days' greater than 90 days
+### List servers with backup retention days greater than 90 days
 
 ```sql
 select
