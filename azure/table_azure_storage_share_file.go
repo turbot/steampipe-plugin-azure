@@ -173,6 +173,11 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 		logger.Error("listStorageAccountsFileShare", "get session error", err)
 		return nil, err
 	}
+
+	if storageAccount.Account.Kind == "BlockBlobStorage" {
+		return nil, nil
+	}
+
 	subscriptionID := session.SubscriptionID
 	fileShareCLient := storage.NewFileSharesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	fileShareCLient.Authorizer = session.Authorizer
@@ -189,6 +194,12 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 	result, err := fileShareCLient.List(ctx, *storageAccount.ResourceGroup, *storageAccount.Name, maxResult, "", "")
 	if err != nil {
 		logger.Error("listStorageAccountsFileShare", "api error", err)
+		
+		// This api throws FeatureNotSupportedForAccount or OperationNotAllowedOnKind error if the storage account kind is not File Share
+		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") || strings.Contains(err.Error(), "OperationNotAllowedOnKind") {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
