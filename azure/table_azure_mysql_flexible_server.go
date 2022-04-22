@@ -20,7 +20,7 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:           getMySQLFlexibleServer,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMySQLFlexibleServers,
@@ -59,12 +59,6 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 				Description: "The administrator's login name of a server.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
-			},
-			{
-				Name:        "administrator_login_password",
-				Description: "The password of the administrator login.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "availability_zone",
