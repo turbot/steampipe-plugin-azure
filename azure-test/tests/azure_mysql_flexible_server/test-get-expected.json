@@ -1,0 +1,10 @@
+[
+	{
+		"administrator_login": "mradministrator",
+		"fully_qualified_domain_name": "{{ output.server_fqdn.value }}",
+		"name": "{{ resourceName }}",
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"version": "5.7"
+	}
+]
