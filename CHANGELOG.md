@@ -1,3 +1,19 @@
+## v0.26.0 [2022-04-27]
+
+_What's new?_
+
+- New tables added
+  - [azure_mysql_flexible_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_mysql_flexible_server) ([#476](https://github.com/turbot/steampipe-plugin-azure/pull/476))
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.1.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v310--2022-03-30) and Go version `1.18`. ([#471](https://github.com/turbot/steampipe-plugin-azure/pull/471))
+- Added support for native Linux ARM and Mac M1 builds. ([#479](https://github.com/turbot/steampipe-plugin-azure/pull/479))
+
+_Bug fixes_
+
+- `azure_storage_share_file` table has been updated to handle `FeatureNotSupportedForAccount` error when the storage type is `BlockBlobStorage` ([#478](https://github.com/turbot/steampipe-plugin-azure/pull/478))
+
 ## v0.25.0 [2022-04-05]
 
 _What's new?_
