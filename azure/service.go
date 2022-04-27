@@ -42,11 +42,11 @@ type Session struct {
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
 
-	cacheKey := "GetNewSession"
+	cacheKey := "GetNewSession" + tokenAudience
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		session = cachedData.(*Session)
 		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
-			d.ConnectionManager.Cache.Delete("GetNewSession")
+			d.ConnectionManager.Cache.Delete(cacheKey)
 		} else {
 			return cachedData.(*Session), nil
 		}

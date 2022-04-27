@@ -11,28 +11,25 @@ builds:
     goos:
       - linux
       - darwin
-      #- windows #- not yet.....
+
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: darwin # docs suggest that darwin arm64 should compile, but doesnt...
-        goarch: arm64
 
-    id: "steampipe-azure"
-    binary: '{{ .ProjectName }}.plugin'
+    id: "steampipe"
+    binary: "{{ .ProjectName }}.plugin"
 
 archives:
   - format: gz
-    name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     files:
       - none*
 checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
