@@ -49,7 +49,7 @@ func tableAzureSecurityCenterAutomation(_ context.Context) *plugin.Table {
 			{
 				Name:        "is_enabled",
 				Description: "Indicates whether the security automation is enabled.",
-				Type:        proto.ColumnType_STRING,
+				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("AutomationProperties.IsEnabled"),
 			},
 			{
