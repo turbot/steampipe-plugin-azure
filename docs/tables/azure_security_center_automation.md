@@ -30,7 +30,7 @@ where
   is_enabled;
 ```
 
-### List event source details for continoourly export microsoft defender for cloud data
+### List event source details for continuously export microsoft defender for cloud data
 
 ```sql
 select
