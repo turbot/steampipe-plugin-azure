@@ -46,7 +46,7 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Name:        "assessment_name",
 				Description: "Assessment name.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(getAssessmentName),
+				Transform:   transform.From(extractAssessmentName),
 			},
 			{
 				Name:        "category",
@@ -88,37 +88,37 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Name:        "addressed_resource_type",
 				Description: "Details of the sub-assessment.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(getAssessedResourceType),
+				Transform:   transform.From(extractAssessedResourceType),
 			},
 			{
 				Name:        "container_registry_vulnerability_properties",
 				Description: "ContainerRegistryVulnerabilityProperties details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(getContainerRegistryVulnerabilityProperties),
+				Transform:   transform.From(extractContainerRegistryVulnerabilityProperties),
 			},
 			{
 				Name:        "resource_details",
 				Description: "Details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(getResourceDetails),
+				Transform:   transform.From(extractResourceDetails),
 			},
 			{
 				Name:        "status",
 				Description: "The status of the sub-assessment.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(getSubAssessmentStatus),
+				Transform:   transform.From(extractSubAssessmentStatus),
 			},
 			{
 				Name:        "server_vulnerability_properties",
 				Description: "ServerVulnerabilityProperties details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(getServerVulnerabilityProperties),
+				Transform:   transform.From(extractServerVulnerabilityProperties),
 			},
 			{
 				Name:        "sql_server_vulnerability_properties",
 				Description: "SQLServerVulnerabilityProperties details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.From(getSQLServerVulnerabilityProperties),
+				Transform:   transform.From(extractSQLServerVulnerabilityProperties),
 			},
 
 			// Steampipe standard columns
@@ -133,6 +133,14 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
+			},
+
+			// Azure standard columns
+			{
+				Name:        "resource_group",
+				Description: ColumnDescriptionResourceGroup,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
 			},
 		}),
 	}
@@ -213,13 +221,13 @@ func getSecurityCenterSubAssessment(ctx context.Context, d *plugin.QueryData, h 
 
 //// TRANSFORM FUNCTIONS
 
-func getAssessmentName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractAssessmentName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	assessmentName := strings.Split(string(*subAssessment.ID), "/")[6]
 	return assessmentName, nil
 }
 
-func getSQLServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractSQLServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	additionalData := subAssessment.AdditionalData
 	if additionalData == nil {
@@ -248,7 +256,7 @@ func getSQLServerVulnerabilityProperties(ctx context.Context, d *transform.Trans
 	return nil, nil
 }
 
-func getContainerRegistryVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractContainerRegistryVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	additionalData := subAssessment.AdditionalData
 	if additionalData == nil {
@@ -262,19 +270,19 @@ func getContainerRegistryVulnerabilityProperties(ctx context.Context, d *transfo
 			objectMap["Type"] = *containerRegistryVulnerabilityProperties.Type
 		}
 		if containerRegistryVulnerabilityProperties.Cvss != nil {
-			objectMap["Cvss"] = getCVSS(containerRegistryVulnerabilityProperties.Cvss)
+			objectMap["Cvss"] = extractCVSS(containerRegistryVulnerabilityProperties.Cvss)
 		}
 		if containerRegistryVulnerabilityProperties.Patchable != nil {
 			objectMap["Patchable"] = *containerRegistryVulnerabilityProperties.Patchable
 		}
 		if containerRegistryVulnerabilityProperties.Cve != nil {
-			objectMap["Cve"] = getCVE(containerRegistryVulnerabilityProperties.Cve)
+			objectMap["Cve"] = extractCVE(containerRegistryVulnerabilityProperties.Cve)
 		}
 		if containerRegistryVulnerabilityProperties.PublishedTime != nil {
 			objectMap["PublishedTime"] = *containerRegistryVulnerabilityProperties.PublishedTime
 		}
 		if containerRegistryVulnerabilityProperties.VendorReferences != nil {
-			objectMap["VendorReferences"] = getVendorReferences(containerRegistryVulnerabilityProperties.VendorReferences)
+			objectMap["VendorReferences"] = extractVendorReferences(containerRegistryVulnerabilityProperties.VendorReferences)
 		}
 		if containerRegistryVulnerabilityProperties.RepositoryName != nil {
 			objectMap["RepositoryName"] = *containerRegistryVulnerabilityProperties.RepositoryName
@@ -294,7 +302,7 @@ func getContainerRegistryVulnerabilityProperties(ctx context.Context, d *transfo
 	return nil, nil
 }
 
-func getServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	additionalData := subAssessment.AdditionalData
 	if additionalData == nil {
@@ -308,19 +316,19 @@ func getServerVulnerabilityProperties(ctx context.Context, d *transform.Transfor
 			objectMap["Type"] = *serverVulnerabilityProperties.Type
 		}
 		if serverVulnerabilityProperties.Cvss != nil {
-			objectMap["Cvss"] = getCVSS(serverVulnerabilityProperties.Cvss)
+			objectMap["Cvss"] = extractCVSS(serverVulnerabilityProperties.Cvss)
 		}
 		if serverVulnerabilityProperties.Patchable != nil {
 			objectMap["Patchable"] = serverVulnerabilityProperties.Patchable
 		}
 		if serverVulnerabilityProperties.Cve != nil {
-			objectMap["Cve"] = getCVE(serverVulnerabilityProperties.Cve)
+			objectMap["Cve"] = extractCVE(serverVulnerabilityProperties.Cve)
 		}
 		if serverVulnerabilityProperties.PublishedTime != nil {
 			objectMap["PublishedTime"] = serverVulnerabilityProperties.PublishedTime
 		}
 		if serverVulnerabilityProperties.VendorReferences != nil {
-			objectMap["VendorReferences"] = getVendorReferences(serverVulnerabilityProperties.VendorReferences)
+			objectMap["VendorReferences"] = extractVendorReferences(serverVulnerabilityProperties.VendorReferences)
 		}
 		if serverVulnerabilityProperties.Threat != nil {
 			objectMap["Threat"] = serverVulnerabilityProperties.Threat
@@ -338,7 +346,7 @@ func getServerVulnerabilityProperties(ctx context.Context, d *transform.Transfor
 	return nil, nil
 }
 
-func getAssessedResourceType(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractAssessedResourceType(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	additional := subAssessment.AdditionalData
 	if additional == nil {
@@ -351,7 +359,7 @@ func getAssessedResourceType(ctx context.Context, d *transform.TransformData) (i
 	return additionalData.AssessedResourceType, nil
 }
 
-func getCVE(cve *[]security.CVE) []map[string]interface{} {
+func extractCVE(cve *[]security.CVE) []map[string]interface{} {
 	var cveop []map[string]interface{}
 	for _, i := range *cve {
 		objectMap := make(map[string]interface{})
@@ -366,7 +374,7 @@ func getCVE(cve *[]security.CVE) []map[string]interface{} {
 	return cveop
 }
 
-func getVendorReferences(vendorReferences *[]security.VendorReference) []map[string]interface{} {
+func extractVendorReferences(vendorReferences *[]security.VendorReference) []map[string]interface{} {
 	var vendorReferencesop []map[string]interface{}
 	for _, i := range *vendorReferences {
 		objectMap := make(map[string]interface{})
@@ -381,7 +389,7 @@ func getVendorReferences(vendorReferences *[]security.VendorReference) []map[str
 	return vendorReferencesop
 }
 
-func getCVSS(CVSS map[string]*security.CVSS) map[string]interface{} {
+func extractCVSS(CVSS map[string]*security.CVSS) map[string]interface{} {
 	objectMap := make(map[string]interface{})
 	for key, value := range CVSS {
 		if value != nil && value.Base != nil {
@@ -391,7 +399,7 @@ func getCVSS(CVSS map[string]*security.CVSS) map[string]interface{} {
 	return objectMap
 }
 
-func getResourceDetails(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractResourceDetails(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	resourceDetails := subAssessment.SubAssessmentProperties.ResourceDetails
 	if resourceDetails == nil {
@@ -399,24 +407,24 @@ func getResourceDetails(ctx context.Context, d *transform.TransformData) (interf
 	}
 	azureResourceDetails, flag := resourceDetails.AsAzureResourceDetails()
 	if flag {
-		return getAzureResourceDetails(azureResourceDetails), nil
+		return extractAzureResourceDetails(azureResourceDetails), nil
 	}
 	onPremiseResourceDetails, flag := resourceDetails.AsOnPremiseResourceDetails()
 	if flag {
-		return getOnPremiseResourceDetails(onPremiseResourceDetails), nil
+		return extractOnPremiseResourceDetails(onPremiseResourceDetails), nil
 	}
 	onPremiseSQLResourceDetails, flag := resourceDetails.AsOnPremiseSQLResourceDetails()
 	if flag {
-		return getOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails), nil
+		return extractOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails), nil
 	}
 	resourceDetail, flag := resourceDetails.AsResourceDetails()
 	if flag {
-		return getResourceDetail(resourceDetail), nil
+		return extractResourceDetail(resourceDetail), nil
 	}
 	return nil, nil
 }
 
-func getAzureResourceDetails(azureResourceDetails *security.AzureResourceDetails) interface{} {
+func extractAzureResourceDetails(azureResourceDetails *security.AzureResourceDetails) interface{} {
 	objectMap := make(map[string]interface{})
 	if azureResourceDetails.ID != nil {
 		objectMap["ID"] = *azureResourceDetails.ID
@@ -431,7 +439,7 @@ func getAzureResourceDetails(azureResourceDetails *security.AzureResourceDetails
 	return string(jsonStr)
 }
 
-func getOnPremiseResourceDetails(onPremiseResourceDetails *security.OnPremiseResourceDetails) interface{} {
+func extractOnPremiseResourceDetails(onPremiseResourceDetails *security.OnPremiseResourceDetails) interface{} {
 	objectMap := make(map[string]interface{})
 	if onPremiseResourceDetails != nil {
 		objectMap["MachineName"] = *onPremiseResourceDetails.MachineName
@@ -455,7 +463,7 @@ func getOnPremiseResourceDetails(onPremiseResourceDetails *security.OnPremiseRes
 	return string(jsonStr)
 }
 
-func getOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails *security.OnPremiseSQLResourceDetails) interface{} {
+func extractOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails *security.OnPremiseSQLResourceDetails) interface{} {
 	objectMap := make(map[string]interface{})
 	if onPremiseSQLResourceDetails != nil {
 		objectMap["MachineName"] = *onPremiseSQLResourceDetails.MachineName
@@ -485,7 +493,7 @@ func getOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails *security.OnPrem
 	return string(jsonStr)
 }
 
-func getResourceDetail(resourceDetail *security.ResourceDetails) interface{} {
+func extractResourceDetail(resourceDetail *security.ResourceDetails) interface{} {
 	objectMap := make(map[string]interface{})
 	if resourceDetail.Source != "" {
 		objectMap["Source"] = resourceDetail.Source
@@ -497,7 +505,7 @@ func getResourceDetail(resourceDetail *security.ResourceDetails) interface{} {
 	return string(jsonStr)
 }
 
-func getSubAssessmentStatus(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractSubAssessmentStatus(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	subAssessmentStatus := subAssessment.Status
 	objectMap := make(map[string]interface{})
