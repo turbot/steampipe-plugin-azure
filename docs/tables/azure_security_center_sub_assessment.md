@@ -28,5 +28,18 @@ select
 from
   azure_security_center_sub_assessment
 where
-  lower(status) like '%unhealthy%';
+  status ->> 'Code' = 'Unhealthy';
+```
+
+### List all container registry vulnerabilities with corresponding remedies
+
+```sql
+select
+  container_registry_vulnerability_properties,
+  remediation,
+  resource_details
+from
+  azure_security_center_sub_assessment
+where
+  container_registry_vulnerability_properties ->> 'AssessedResourceType' =  'ContainerRegistryVulnerability';
 ```
