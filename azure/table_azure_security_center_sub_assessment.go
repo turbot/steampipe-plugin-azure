@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
@@ -78,28 +79,46 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SubAssessmentProperties.Remediation"),
 			},
 			{
-				Name:        "status",
-				Description: "The status of the sub-assessment.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SubAssessmentProperties.Status"),
-			},
-			{
 				Name:        "time_generated",
 				Description: "The date and time the sub-assessment was generated.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SubAssessmentProperties.TimeGenerated"),
 			},
 			{
-				Name:        "additional_data",
+				Name:        "addressed_resource_type",
 				Description: "Details of the sub-assessment.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.From(getAssessedResourceType),
+			},
+			{
+				Name:        "container_registry_vulnerability_properties",
+				Description: "ContainerRegistryVulnerabilityProperties details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("SubAssessmentProperties.AdditionalData"),
+				Transform:   transform.From(getContainerRegistryVulnerabilityProperties),
 			},
 			{
 				Name:        "resource_details",
 				Description: "Details of the resource that was assessed.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("SubAssessmentProperties.ResourceDetails"),
+				Transform:   transform.From(getResourceDetails),
+			},
+			{
+				Name:        "status",
+				Description: "The status of the sub-assessment.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(getSubAssessmentStatus),
+			},
+			{
+				Name:        "server_vulnerability_properties",
+				Description: "ServerVulnerabilityProperties details of the resource that was assessed.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(getServerVulnerabilityProperties),
+			},
+			{
+				Name:        "sql_server_vulnerability_properties",
+				Description: "SQLServerVulnerabilityProperties details of the resource that was assessed.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(getSQLServerVulnerabilityProperties),
 			},
 
 			// Steampipe standard columns
@@ -123,7 +142,7 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 
 func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	logger := plugin.Logger(ctx)
-	logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments")
+	logger.Info("azure_security_center_sub_assessment.listSecurityCenterSubAssessments")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "connection_error", err)
@@ -198,4 +217,305 @@ func getAssessmentName(ctx context.Context, d *transform.TransformData) (interfa
 	subAssessment := d.HydrateItem.(security.SubAssessment)
 	assessmentName := strings.Split(string(*subAssessment.ID), "/")[6]
 	return assessmentName, nil
+}
+
+func getSQLServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	additionalData := subAssessment.AdditionalData
+	if additionalData == nil {
+		return nil, nil
+	}
+	SQLServerVulnerabilityProperties, flag := additionalData.AsSQLServerVulnerabilityProperties()
+
+	objectMap := make(map[string]interface{})
+	if flag {
+		if SQLServerVulnerabilityProperties.Type != nil {
+			objectMap["Type"] = SQLServerVulnerabilityProperties.Type
+		}
+		if SQLServerVulnerabilityProperties.Query != nil {
+			objectMap["Query"] = SQLServerVulnerabilityProperties.Query
+		}
+		if SQLServerVulnerabilityProperties.AssessedResourceType != "" {
+			objectMap["AssessedResourceType"] = SQLServerVulnerabilityProperties.AssessedResourceType
+		}
+		jsonStr, err := json.Marshal(objectMap)
+		if err != nil {
+			return nil, nil
+		}
+		return string(jsonStr), nil
+	}
+
+	return nil, nil
+}
+
+func getContainerRegistryVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	additionalData := subAssessment.AdditionalData
+	if additionalData == nil {
+		return nil, nil
+	}
+	containerRegistryVulnerabilityProperties, flag := additionalData.AsContainerRegistryVulnerabilityProperties()
+
+	objectMap := make(map[string]interface{})
+	if flag {
+		if containerRegistryVulnerabilityProperties.Type != nil {
+			objectMap["Type"] = *containerRegistryVulnerabilityProperties.Type
+		}
+		if containerRegistryVulnerabilityProperties.Cvss != nil {
+			objectMap["Cvss"] = getCVSS(containerRegistryVulnerabilityProperties.Cvss)
+		}
+		if containerRegistryVulnerabilityProperties.Patchable != nil {
+			objectMap["Patchable"] = *containerRegistryVulnerabilityProperties.Patchable
+		}
+		if containerRegistryVulnerabilityProperties.Cve != nil {
+			objectMap["Cve"] = getCVE(containerRegistryVulnerabilityProperties.Cve)
+		}
+		if containerRegistryVulnerabilityProperties.PublishedTime != nil {
+			objectMap["PublishedTime"] = *containerRegistryVulnerabilityProperties.PublishedTime
+		}
+		if containerRegistryVulnerabilityProperties.VendorReferences != nil {
+			objectMap["VendorReferences"] = getVendorReferences(containerRegistryVulnerabilityProperties.VendorReferences)
+		}
+		if containerRegistryVulnerabilityProperties.RepositoryName != nil {
+			objectMap["RepositoryName"] = *containerRegistryVulnerabilityProperties.RepositoryName
+		}
+		if containerRegistryVulnerabilityProperties.ImageDigest != nil {
+			objectMap["ImageDigest"] = *containerRegistryVulnerabilityProperties.ImageDigest
+		}
+		if containerRegistryVulnerabilityProperties.AssessedResourceType != "" {
+			objectMap["AssessedResourceType"] = containerRegistryVulnerabilityProperties.AssessedResourceType
+		}
+		jsonStr, err := json.Marshal(objectMap)
+		if err != nil {
+			return nil, nil
+		}
+		return string(jsonStr), nil
+	}
+	return nil, nil
+}
+
+func getServerVulnerabilityProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	additionalData := subAssessment.AdditionalData
+	if additionalData == nil {
+		return nil, nil
+	}
+	serverVulnerabilityProperties, flag := additionalData.AsServerVulnerabilityProperties()
+
+	objectMap := make(map[string]interface{})
+	if flag {
+		if serverVulnerabilityProperties.Type != nil {
+			objectMap["Type"] = *serverVulnerabilityProperties.Type
+		}
+		if serverVulnerabilityProperties.Cvss != nil {
+			objectMap["Cvss"] = getCVSS(serverVulnerabilityProperties.Cvss)
+		}
+		if serverVulnerabilityProperties.Patchable != nil {
+			objectMap["Patchable"] = serverVulnerabilityProperties.Patchable
+		}
+		if serverVulnerabilityProperties.Cve != nil {
+			objectMap["Cve"] = getCVE(serverVulnerabilityProperties.Cve)
+		}
+		if serverVulnerabilityProperties.PublishedTime != nil {
+			objectMap["PublishedTime"] = serverVulnerabilityProperties.PublishedTime
+		}
+		if serverVulnerabilityProperties.VendorReferences != nil {
+			objectMap["VendorReferences"] = getVendorReferences(serverVulnerabilityProperties.VendorReferences)
+		}
+		if serverVulnerabilityProperties.Threat != nil {
+			objectMap["Threat"] = serverVulnerabilityProperties.Threat
+		}
+		if serverVulnerabilityProperties.AssessedResourceType != "" {
+			objectMap["AssessedResourceType"] = serverVulnerabilityProperties.AssessedResourceType
+		}
+		jsonStr, err := json.Marshal(objectMap)
+		if err != nil {
+			return nil, nil
+		}
+		return string(jsonStr), nil
+	}
+
+	return nil, nil
+}
+
+func getAssessedResourceType(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	additional := subAssessment.AdditionalData
+	if additional == nil {
+		return nil, nil
+	}
+	additionalData, _ := additional.AsAdditionalData()
+	if additionalData == nil {
+		return nil, nil
+	}
+	return additionalData.AssessedResourceType, nil
+}
+
+func getCVE(cve *[]security.CVE) []map[string]interface{} {
+	var cveop []map[string]interface{}
+	for _, i := range *cve {
+		objectMap := make(map[string]interface{})
+		if i.Title != nil {
+			objectMap["Title"] = *i.Title
+		}
+		if i.Link != nil {
+			objectMap["Link"] = *i.Link
+		}
+		cveop = append(cveop, objectMap)
+	}
+	return cveop
+}
+
+func getVendorReferences(vendorReferences *[]security.VendorReference) []map[string]interface{} {
+	var vendorReferencesop []map[string]interface{}
+	for _, i := range *vendorReferences {
+		objectMap := make(map[string]interface{})
+		if i.Title != nil {
+			objectMap["Title"] = *i.Title
+		}
+		if i.Link != nil {
+			objectMap["Link"] = *i.Link
+		}
+		vendorReferencesop = append(vendorReferencesop, objectMap)
+	}
+	return vendorReferencesop
+}
+
+func getCVSS(CVSS map[string]*security.CVSS) map[string]interface{} {
+	objectMap := make(map[string]interface{})
+	for key, value := range CVSS {
+		if value != nil && value.Base != nil {
+			objectMap[key] = *value.Base
+		}
+	}
+	return objectMap
+}
+
+func getResourceDetails(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	resourceDetails := subAssessment.SubAssessmentProperties.ResourceDetails
+	if resourceDetails == nil {
+		return nil, nil
+	}
+	azureResourceDetails, flag := resourceDetails.AsAzureResourceDetails()
+	if flag {
+		return getAzureResourceDetails(azureResourceDetails), nil
+	}
+	onPremiseResourceDetails, flag := resourceDetails.AsOnPremiseResourceDetails()
+	if flag {
+		return getOnPremiseResourceDetails(onPremiseResourceDetails), nil
+	}
+	onPremiseSQLResourceDetails, flag := resourceDetails.AsOnPremiseSQLResourceDetails()
+	if flag {
+		return getOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails), nil
+	}
+	resourceDetail, flag := resourceDetails.AsResourceDetails()
+	if flag {
+		return getResourceDetail(resourceDetail), nil
+	}
+	return nil, nil
+}
+
+func getAzureResourceDetails(azureResourceDetails *security.AzureResourceDetails) interface{} {
+	objectMap := make(map[string]interface{})
+	if azureResourceDetails.ID != nil {
+		objectMap["ID"] = *azureResourceDetails.ID
+	}
+	if azureResourceDetails.Source != "" {
+		objectMap["Source"] = azureResourceDetails.Source
+	}
+	jsonStr, err := json.Marshal(objectMap)
+	if err != nil {
+		return nil
+	}
+	return string(jsonStr)
+}
+
+func getOnPremiseResourceDetails(onPremiseResourceDetails *security.OnPremiseResourceDetails) interface{} {
+	objectMap := make(map[string]interface{})
+	if onPremiseResourceDetails != nil {
+		objectMap["MachineName"] = *onPremiseResourceDetails.MachineName
+	}
+	if onPremiseResourceDetails.Source != "" {
+		objectMap["Source"] = onPremiseResourceDetails.Source
+	}
+	if onPremiseResourceDetails.SourceComputerID != nil {
+		objectMap["SourceComputerID"] = *onPremiseResourceDetails.SourceComputerID
+	}
+	if onPremiseResourceDetails.WorkspaceID != nil {
+		objectMap["WorkspaceID"] = *onPremiseResourceDetails.WorkspaceID
+	}
+	if onPremiseResourceDetails.Vmuuid != nil {
+		objectMap["Vmuuid"] = *onPremiseResourceDetails.Vmuuid
+	}
+	jsonStr, err := json.Marshal(objectMap)
+	if err != nil {
+		return nil
+	}
+	return string(jsonStr)
+}
+
+func getOnPremiseSQLResourceDetails(onPremiseSQLResourceDetails *security.OnPremiseSQLResourceDetails) interface{} {
+	objectMap := make(map[string]interface{})
+	if onPremiseSQLResourceDetails != nil {
+		objectMap["MachineName"] = *onPremiseSQLResourceDetails.MachineName
+	}
+	if onPremiseSQLResourceDetails.Source != "" {
+		objectMap["Source"] = onPremiseSQLResourceDetails.Source
+	}
+	if onPremiseSQLResourceDetails.SourceComputerID != nil {
+		objectMap["SourceComputerID"] = *onPremiseSQLResourceDetails.SourceComputerID
+	}
+	if onPremiseSQLResourceDetails.WorkspaceID != nil {
+		objectMap["WorkspaceID"] = *onPremiseSQLResourceDetails.WorkspaceID
+	}
+	if onPremiseSQLResourceDetails.Vmuuid != nil {
+		objectMap["Vmuuid"] = *onPremiseSQLResourceDetails.Vmuuid
+	}
+	if onPremiseSQLResourceDetails.ServerName != nil {
+		objectMap["ServerName"] = *onPremiseSQLResourceDetails.ServerName
+	}
+	if onPremiseSQLResourceDetails.DatabaseName != nil {
+		objectMap["DatabaseName"] = *onPremiseSQLResourceDetails.DatabaseName
+	}
+	jsonStr, err := json.Marshal(objectMap)
+	if err != nil {
+		return nil
+	}
+	return string(jsonStr)
+}
+
+func getResourceDetail(resourceDetail *security.ResourceDetails) interface{} {
+	objectMap := make(map[string]interface{})
+	if resourceDetail.Source != "" {
+		objectMap["Source"] = resourceDetail.Source
+	}
+	jsonStr, err := json.Marshal(objectMap)
+	if err != nil {
+		return nil
+	}
+	return string(jsonStr)
+}
+
+func getSubAssessmentStatus(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	subAssessment := d.HydrateItem.(security.SubAssessment)
+	subAssessmentStatus := subAssessment.Status
+	objectMap := make(map[string]interface{})
+	if subAssessmentStatus.Cause != nil {
+		objectMap["Cause"] = *subAssessmentStatus.Cause
+	}
+	if subAssessmentStatus.Code != "" {
+		objectMap["Code"] = subAssessmentStatus.Code
+	}
+	if subAssessmentStatus.Description != nil {
+		objectMap["Description"] = *subAssessmentStatus.Description
+	}
+	if subAssessmentStatus.Severity != "" {
+		objectMap["Severity"] = subAssessmentStatus.Severity
+	}
+	jsonStr, err := json.Marshal(objectMap)
+	if err != nil {
+		return nil, err
+	}
+	return string(jsonStr), nil
 }
