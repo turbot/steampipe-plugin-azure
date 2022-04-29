@@ -20,10 +20,6 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_security_center_sub_assessment",
 		Description: "Azure Security Center Sub Assessment",
-		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name", "assessment_name"}),
-			Hydrate:    getSecurityCenterSubAssessment,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterSubAssessments,
 		},
@@ -194,31 +190,6 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 		}
 	}
 	return nil, nil
-}
-
-//// HYDRATE FUNCTIONS
-
-func getSecurityCenterSubAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	logger := plugin.Logger(ctx)
-	logger.Error("azure_security_center_sub_assessment.getSecurityCenterSubAssessment")
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		logger.Error("azure_security_center_sub_assessment.getSecurityCenterSubAssessment", "connection_error", err)
-		return nil, err
-	}
-
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	assessmentName := d.KeyColumnQuals["assessment_name"].GetStringValue()
-	subscriptionID := session.SubscriptionID
-	subAssessmentClient := security.NewSubAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
-	subAssessmentClient.Authorizer = session.Authorizer
-
-	subAssessment, err := subAssessmentClient.Get(ctx, "subscriptions/"+subscriptionID, assessmentName, name)
-	if err != nil {
-		logger.Error("azure_security_center_sub_assessment.getSecurityCenterSubAssessment", "query_error", err)
-		return err, nil
-	}
-	return subAssessment, nil
 }
 
 //// TRANSFORM FUNCTIONS
