@@ -3,9 +3,11 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v2/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v2/plugin/transform"
 
@@ -140,7 +142,7 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
+				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromSubAssessmentID),
 			},
 		}),
 	}
@@ -223,7 +225,10 @@ func getSecurityCenterSubAssessment(ctx context.Context, d *plugin.QueryData, h 
 
 func extractAssessmentName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	subAssessment := d.HydrateItem.(security.SubAssessment)
-	assessmentName := strings.Split(string(*subAssessment.ID), "/")[6]
+
+	r := regexp.MustCompile(`\bassessments\b`)
+	splitStr := r.Split(*subAssessment.ID, len(*subAssessment.ID))[1]
+	assessmentName := strings.Split(splitStr, "/")[1]
 	return assessmentName, nil
 }
 
@@ -526,4 +531,17 @@ func extractSubAssessmentStatus(ctx context.Context, d *transform.TransformData)
 		return nil, err
 	}
 	return string(jsonStr), nil
+}
+
+func extractResourceGroupFromSubAssessmentID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	id := types.SafeString(d.Value)
+
+	// Common resource properties
+	if !strings.Contains(id, "resourceGroups") {
+		return nil, nil
+	}
+	splitID := strings.Split(id, "/")
+	resourceGroup := splitID[4]
+	resourceGroup = strings.ToLower(resourceGroup)
+	return resourceGroup, nil
 }
