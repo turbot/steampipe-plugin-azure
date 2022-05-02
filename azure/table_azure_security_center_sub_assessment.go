@@ -42,7 +42,7 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "assessment_name",
-				Description: "Assessment name.",
+				Description: "The assessment name.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.From(extractAssessmentName),
 			},
@@ -83,7 +83,7 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SubAssessmentProperties.TimeGenerated"),
 			},
 			{
-				Name:        "addressed_resource_type",
+				Name:        "assessed_resource_type",
 				Description: "Details of the sub-assessment.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.From(extractAssessedResourceType),

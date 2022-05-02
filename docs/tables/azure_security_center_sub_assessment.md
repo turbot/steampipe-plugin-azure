@@ -1,6 +1,6 @@
 # Table: azure_security_center_sub_assessment
 
-Azure security center sub assessment details for the subscription.
+Azure security center sub-assessments helps identifying conditions to evaluate if there is a need to fix security vulnerabilities found in images before pushing anything further in the process on all your scanned resources inside a subscription scope
 
 ## Examples
 
