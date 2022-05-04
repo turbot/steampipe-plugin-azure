@@ -114,7 +114,7 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "ip_configurations",
-				Description: "IP Configuration details in a network interface.",
+				Description: "IP Configuration details in a subnet.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSubnetIpConfigurations,
 				Transform:   transform.FromValue(),
@@ -234,7 +234,7 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 
 // List or Get call of subnet doesn't return more info baout ip configuration except the ip configuration id.
 func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSubnet")
+	plugin.Logger(ctx).Trace("getSubnetIpConfigurations")
 	subnet := h.Item.(subnetInfo).Subnet
 
 	configurations := []network.IPConfiguration{}
