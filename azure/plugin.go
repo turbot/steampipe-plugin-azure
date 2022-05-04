@@ -125,6 +125,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_security_center_contact":                               tableAzureSecurityCenterContact(ctx),
 			"azure_security_center_jit_network_access_policy":             tableAzureSecurityCenterJITNetworkAccessPolicy(ctx),
 			"azure_security_center_setting":                               tableAzureSecurityCenterSetting(ctx),
+			"azure_security_center_sub_assessment":                        tableAzureSecurityCenterSubAssessment(ctx),
 			"azure_security_center_subscription_pricing":                  tableAzureSecurityCenterPricing(ctx),
 			"azure_service_fabric_cluster":                                tableAzureServiceFabricCluster(ctx),
 			"azure_servicebus_namespace":                                  tableAzureServiceBusNamespace(ctx),
