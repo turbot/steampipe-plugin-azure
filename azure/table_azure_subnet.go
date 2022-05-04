@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"strings"
+	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
@@ -110,6 +111,13 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 				Description: "A list of references to the delegations on the subnet.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Subnet.SubnetPropertiesFormat.Delegations"),
+			},
+			{
+				Name:        "ip_configurations",
+				Description: "IP Configuration details in a subnet.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSubnetIpConfigurations,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "service_endpoints",
@@ -222,4 +230,87 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	}
 
 	return nil, nil
+}
+
+// List or Get call of subnet doesn't return more info about ip configuration except the ip configuration id.
+func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getSubnetIpConfigurations")
+	subnet := h.Item.(subnetInfo).Subnet
+
+	configurations := []network.IPConfiguration{}
+
+	if subnet.SubnetPropertiesFormat != nil {
+		if subnet.SubnetPropertiesFormat.IPConfigurations != nil {
+			configurations = *subnet.SubnetPropertiesFormat.IPConfigurations
+		}
+	}
+	if len(configurations) <= 0 {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+
+	subscriptionID := session.SubscriptionID
+	subnetClient := network.NewInterfaceIPConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	subnetClient.Authorizer = session.Authorizer
+
+	var wg sync.WaitGroup
+	ipCh := make(chan *network.InterfaceIPConfiguration, len(configurations))
+	errorCh := make(chan error, len(configurations))
+
+	for i := 0; i < len(configurations); i++ {
+		wg.Add(1)
+		go getIpConfigurationAsync(ctx, &configurations[i], subnetClient, &wg, ipCh, errorCh)
+	}
+
+	// wait for all ip configurations to be processed
+	wg.Wait()
+	// NOTE: close channel before ranging over results
+	close(ipCh)
+	close(errorCh)
+
+	for err := range errorCh {
+		// return the first error
+		return nil, err
+	}
+
+	var ipConfigurations []*network.InterfaceIPConfiguration
+
+	for ipConfig := range ipCh {
+		ipConfigurations = append(ipConfigurations, ipConfig)
+	}
+
+	return ipConfigurations, nil
+}
+
+func getIpConfigurationAsync(ctx context.Context, ipConfig *network.IPConfiguration, client network.InterfaceIPConfigurationsClient, wg *sync.WaitGroup, ipCh chan *network.InterfaceIPConfiguration, errorCh chan error) {
+	defer wg.Done()
+
+	rowData, err := getIpConfiguration(ctx, ipConfig, client)
+	if err != nil {
+		errorCh <- err
+	} else if rowData.ID != nil {
+		ipCh <- rowData
+	}
+}
+
+func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, client network.InterfaceIPConfigurationsClient) (*network.InterfaceIPConfiguration, error) {
+	if ipConfig == nil {
+		return nil, nil
+	}
+
+	configurationId := *ipConfig.ID
+	resourceGroup := strings.Split(configurationId, "/")[4]
+	networkInterface := strings.Split(configurationId, "/")[8]
+	configName := strings.Split(configurationId, "/")[len(strings.Split(configurationId, "/"))-1]
+
+	configuration, err := client.Get(ctx, resourceGroup, networkInterface, configName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &configuration, nil
 }
