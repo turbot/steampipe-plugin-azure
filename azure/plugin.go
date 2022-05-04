@@ -121,6 +121,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_role_definition":                                       tableAzureIamRoleDefinition(ctx),
 			"azure_route_table":                                           tableAzureRouteTable(ctx),
 			"azure_search_service":                                        tableAzureSearchService(ctx),
+			"azure_security_center_automation":                            tableAzureSecurityCenterAutomation(ctx),
 			"azure_security_center_auto_provisioning":                     tableAzureSecurityCenterAutoProvisioning(ctx),
 			"azure_security_center_contact":                               tableAzureSecurityCenterContact(ctx),
 			"azure_security_center_jit_network_access_policy":             tableAzureSecurityCenterJITNetworkAccessPolicy(ctx),
