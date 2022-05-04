@@ -232,7 +232,7 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	return nil, nil
 }
 
-// List or Get call of subnet doesn't return more info baout ip configuration except the ip configuration id.
+// List or Get call of subnet doesn't return more info about ip configuration except the ip configuration id.
 func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSubnetIpConfigurations")
 	subnet := h.Item.(subnetInfo).Subnet
