@@ -1,3 +1,15 @@
+## v0.27.0 [2022-05-05]
+
+_What's new?_
+
+- New tables added
+  - [azure_security_center_automation](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_automation) ([#481](https://github.com/turbot/steampipe-plugin-azure/pull/481))
+  - [azure_security_center_sub_assessment](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_sub_assessment) ([#482](https://github.com/turbot/steampipe-plugin-azure/pull/482))
+
+_Enhancements_
+
+- Added `ip_configurations` column to `azure_subnet` table ([#483](https://github.com/turbot/steampipe-plugin-azure/pull/483))
+
 ## v0.26.0 [2022-04-27]
 
 _What's new?_
