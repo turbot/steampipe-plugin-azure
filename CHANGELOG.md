@@ -8,7 +8,7 @@ _What's new?_
 
 _Enhancements_
 
-- Added `ip_configurations` column to `azure_subnet` table ([#483](https://github.com/turbot/steampipe-plugin-azure/pull/483))
+- Added `ip_configurations` column to `azure_subnet` table. ([#483](https://github.com/turbot/steampipe-plugin-azure/pull/483))
 
 ## v0.26.0 [2022-04-27]
 
