@@ -285,7 +285,7 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 //// TRANSFORM FUNCTION
 
-// Access Control configuration for Any IP is comming as "{}" instead of nill if wea re not providing any IP in configuration
+// Access Control configuration for any IP is coming as "{}" instead of nil if we are not providing any IP in configuration
 func getAccessControl(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	data := d.HydrateItem.(logic.Workflow)
 	if data.WorkflowProperties != nil {
