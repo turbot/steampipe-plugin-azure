@@ -1,3 +1,9 @@
+## v0.27.1 [2022-05-23]
+
+_Bug fixes_
+
+- Fixed the Slack community links in README and docs/index.md files. ([#489](https://github.com/turbot/steampipe-plugin-azure/pull/489))
+
 ## v0.27.0 [2022-05-05]
 
 _What's new?_
