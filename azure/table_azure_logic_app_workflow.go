@@ -292,7 +292,7 @@ func extractAccessControl(ctx context.Context, d *transform.TransformData) (inte
 		if data.WorkflowProperties.AccessControl == nil {
 			return nil, nil
 		} else {
-			// Due to the inconsistency in the API behaviour we need this check.
+			// Due to inconsistency in the API behaviour we need this check.
 			if data.WorkflowProperties.AccessControl.Actions != nil || data.WorkflowProperties.AccessControl.Contents != nil || data.WorkflowProperties.AccessControl.Triggers != nil || data.WorkflowProperties.AccessControl.WorkflowManagement != nil {
 				return data.WorkflowProperties.AccessControl, nil
 			} else {
