@@ -8,7 +8,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
 	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 )
 
@@ -288,7 +287,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewServerBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -371,7 +370,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -412,7 +411,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerAzureADAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewServerAzureADAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -426,7 +425,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	// If we return the API response directly, the output only gives
 	// the contents of ServerAdministratorProperties
 	var serverAdministrators []map[string]interface{}
-	for _, i := range *op.Value {
+	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
 		if i.ID != nil {
 			objectMap["id"] = i.ID
@@ -437,8 +436,8 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 		if i.Type != nil {
 			objectMap["type"] = i.Type
 		}
-		if i.ServerAdministratorProperties != nil {
-			objectMap["properties"] = i.ServerAdministratorProperties
+		if i.AdministratorProperties != nil {
+			objectMap["properties"] = i.AdministratorProperties
 		}
 		serverAdministrators = append(serverAdministrators, objectMap)
 	}
@@ -456,7 +455,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -557,7 +556,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
@@ -599,7 +598,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewVirtualNetworkRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client := sqlv3.NewVirtualNetworkRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// If we return the API response directly, the output only gives
@@ -626,7 +625,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	return NetworkRules, nil
 }
 
-func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
+func networkRuleMap(rule sqlv3.VirtualNetworkRule) map[string]interface{} {
 	objectMap := make(map[string]interface{})
 	if rule.ID != nil {
 		objectMap["id"] = rule.ID
