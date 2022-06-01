@@ -88,7 +88,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 				Name:        "access_control",
 				Description: "The access control configuration.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkflowProperties.AccessControl"),
+				Transform:   transform.From(extractAccessControl),
 			},
 			{
 				Name:        "definition",
@@ -281,4 +281,24 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+//// TRANSFORM FUNCTION
+
+// Access Control configuration for any IP is coming as "{}" instead of nil if we are not providing any IP in configuration
+func extractAccessControl(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(logic.Workflow)
+	if data.WorkflowProperties != nil {
+		if data.WorkflowProperties.AccessControl == nil {
+			return nil, nil
+		} else {
+			// Due to inconsistency in the API behaviour we need this check.
+			if data.WorkflowProperties.AccessControl.Actions != nil || data.WorkflowProperties.AccessControl.Contents != nil || data.WorkflowProperties.AccessControl.Triggers != nil || data.WorkflowProperties.AccessControl.WorkflowManagement != nil {
+				return data.WorkflowProperties.AccessControl, nil
+			} else {
+				return nil, nil
+			}
+		}
+	}
+	return data.AccessControl, nil
 }
