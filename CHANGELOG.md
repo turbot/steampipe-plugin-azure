@@ -1,3 +1,9 @@
+## v0.27.2 [2022-06-01]
+
+_Bug fixes_
+
+- Fixed the `access_control` column in `azure_logic_app_workflow` table to consistently return `null` instead of intermittently returning `{}` when no data is available. ([#486](https://github.com/turbot/steampipe-plugin-azure/pull/486))
+
 ## v0.27.1 [2022-05-23]
 
 _Bug fixes_
