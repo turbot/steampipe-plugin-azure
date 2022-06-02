@@ -5,10 +5,8 @@
 				"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/encryptionProtector/current",
 				"kind": "servicemanaged",
 				"name": "current",
-				"properties": {
-					"serverKeyName": "ServiceManaged",
-					"serverKeyType": "ServiceManaged"
-				},
+				"serverKeyName": "ServiceManaged",
+				"serverKeyType": "ServiceManaged",
 				"type": "Microsoft.Sql/servers/encryptionProtector"
 			}
 		],
