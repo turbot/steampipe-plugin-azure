@@ -17,9 +17,11 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 		Name:        "azure_virtual_network",
 		Description: "Azure Virtual Network",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getVirtualNetwork,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getVirtualNetwork,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listVirtualNetworks,

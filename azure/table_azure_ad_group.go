@@ -17,9 +17,11 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 		Name:        "azure_ad_group",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_group table in the azuread plugin instead.",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("object_id"),
-			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
-			Hydrate:           getAdGroup,
+			KeyColumns: plugin.SingleColumn("object_id"),
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
+			},
+			Hydrate: getAdGroup,
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdGroups,

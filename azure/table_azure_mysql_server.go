@@ -18,9 +18,11 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 		Name:        "azure_mysql_server",
 		Description: "Azure MySQL Server",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMySQLServer,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getMySQLServer,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMySQLServers,

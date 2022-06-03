@@ -17,9 +17,11 @@ func tableAzureKeyVaultDeletedVault(_ context.Context) *plugin.Table {
 		Name:        "azure_key_vault_deleted_vault",
 		Description: "Azure Key Vault Deleted Vault",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "region"}),
-			Hydrate:           getKeyVaultDeletedVault,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "region"}),
+			Hydrate:    getKeyVaultDeletedVault,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaultDeletedVaults,

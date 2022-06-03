@@ -19,9 +19,11 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 		Name:        "azure_sql_server",
 		Description: "Azure SQL Server",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getSQLServer,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getSQLServer,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSQLServer,

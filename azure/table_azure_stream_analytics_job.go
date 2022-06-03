@@ -18,9 +18,11 @@ func tableAzureStreamAnalyticsJob(_ context.Context) *plugin.Table {
 		Name:        "azure_stream_analytics_job",
 		Description: "Azure Stream Analytics Job",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getStreamAnalyticsJob,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getStreamAnalyticsJob,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listStreamAnalyticsJobs,

@@ -16,9 +16,11 @@ func tableAzureRedisCache(_ context.Context) *plugin.Table {
 		Name:        "azure_redis_cache",
 		Description: "Azure Redis Cache",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getRedisCache,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "400"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getRedisCache,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "400"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listRedisCaches,

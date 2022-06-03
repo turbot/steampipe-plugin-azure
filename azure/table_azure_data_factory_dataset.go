@@ -18,9 +18,11 @@ func tableAzureDataFactoryDataset(_ context.Context) *plugin.Table {
 		Name:        "azure_data_factory_dataset",
 		Description: "Azure Data Factory Dataset",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "factory_name"}),
-			Hydrate:           getDataFactoryDataset,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "factory_name"}),
+			Hydrate:    getDataFactoryDataset,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listDataFactoryDatasets,

@@ -19,9 +19,11 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_container",
 		Description: "Azure Storage Container",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "account_name"}),
-			Hydrate:           getStorageContainer,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "ContainerNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "account_name"}),
+			Hydrate:    getStorageContainer,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "ContainerNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,

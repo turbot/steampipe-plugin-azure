@@ -25,9 +25,11 @@ func tableAzureStorageTableService(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_table_service",
 		Description: "Azure Storage Table Service",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "resource_group"}),
-			Hydrate:           getStorageTableService,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "resource_group"}),
+			Hydrate:    getStorageTableService,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,

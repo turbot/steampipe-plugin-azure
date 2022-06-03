@@ -18,9 +18,11 @@ func tableAzureLoadBalancerBackendAddressPool(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_backend_address_pool",
 		Description: "Azure Load Balancer Backend Address Pool",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
-			Hydrate:           getBackendAddressPool,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			Hydrate:    getBackendAddressPool,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listBackendAddressPools,

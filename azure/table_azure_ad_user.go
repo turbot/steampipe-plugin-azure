@@ -17,9 +17,11 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 		Name:        "azure_ad_user",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_user table in the azuread plugin instead.",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("object_id"),
-			Hydrate:           getAdUser,
-			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
+			KeyColumns: plugin.SingleColumn("object_id"),
+			Hydrate:    getAdUser,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdUsers,

@@ -18,9 +18,11 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 		Name:        "azure_machine_learning_workspace",
 		Description: "Azure Machine Learning Workspace",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMachineLearningWorkspace,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getMachineLearningWorkspace,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMachineLearningWorkspaces,

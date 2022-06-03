@@ -17,9 +17,11 @@ func tableAzureEventGridTopic(_ context.Context) *plugin.Table {
 		Name:        "azure_eventgrid_topic",
 		Description: "Azure Event Grid Topic",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getEventGridTopic,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getEventGridTopic,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventGridTopics,

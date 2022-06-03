@@ -18,9 +18,11 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 		Name:        "azure_mssql_elasticpool",
 		Description: "Azure Microsoft SQL Elastic Pool",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
-			Hydrate:           getMSSQLElasticPool,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
+			Hydrate:    getMSSQLElasticPool,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,

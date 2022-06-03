@@ -22,9 +22,11 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Name:        "azure_compute_virtual_machine",
 		Description: "Azure Compute Virtual Machine",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getComputeVirtualMachine,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getComputeVirtualMachine,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listComputeVirtualMachines,

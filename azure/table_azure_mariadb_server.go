@@ -16,9 +16,11 @@ func tableAzureMariaDBServer(_ context.Context) *plugin.Table {
 		Name:        "azure_mariadb_server",
 		Description: "Azure MariaDB Server",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMariaDBServer,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getMariaDBServer,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMariaDBServers,

@@ -19,9 +19,11 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 		Name:        "azure_hybrid_kubernetes_connected_cluster",
 		Description: "Azure Hybrid Kubernetes Connected Cluster",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getHybridKubernetesConnectedCluster,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getHybridKubernetesConnectedCluster,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHybridKubernetesConnectedClusters,

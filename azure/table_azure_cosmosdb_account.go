@@ -24,9 +24,11 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 		Name:        "azure_cosmosdb_account",
 		Description: "Azure Cosmos DB Account",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getCosmosDBAccount,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getCosmosDBAccount,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listCosmosDBAccounts,
