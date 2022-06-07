@@ -7,7 +7,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
 )
 
-// isNotFoundError:: function which returns an ErrorPredicate for AWS API calls
+// isNotFoundError:: function which returns an ErrorPredicate for Azure API calls
 func isNotFoundError(notFoundErrors []string) plugin.ErrorPredicateWithContext {
 	return func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, err error) bool {
 		azureConfig := GetConfig(d.Connection)
@@ -17,16 +17,10 @@ func isNotFoundError(notFoundErrors []string) plugin.ErrorPredicateWithContext {
 		// also check for errors in the "ignore_error_codes" config argument
 		allErrors := append(notFoundErrors, azureConfig.IgnoreErrorCodes...)
 		// Added to support regex in not found errors
-		plugin.Logger(ctx).Error("Error Code =====>>", err.Error())
-		plugin.Logger(ctx).Error("All errors =====>>", strings.Join(allErrors, ","))
 		for _, pattern := range allErrors {
 			if strings.Contains(err.Error(), pattern) {
 				return true
 			}
-			// if ok, _ := path.Match(pattern, err.Error()); ok {
-			// 	plugin.Logger(ctx).Error("Path Match =====>>", ok)
-			// 	return true
-			// }
 		}
 		return false
 	}
@@ -45,9 +39,6 @@ func shouldIgnoreErrorPluginDefault() plugin.ErrorPredicateWithContext {
 			if strings.Contains(err.Error(), pattern) {
 				return true
 			}
-			// if ok, _ := path.Match(pattern, err.Error()); ok {
-			// 	return true
-			// }
 		}
 		return false
 	}
