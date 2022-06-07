@@ -27,7 +27,7 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
 		},
-		HydrateDependencies: []plugin.HydrateDependencies{
+		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getAppServiceWebAppVnetConnection,
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
@@ -326,6 +326,12 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 
 	data := h.Item.(web.Site)
 	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
+
+	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
+	// was ignored through ignore_error_codes config arg
+	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

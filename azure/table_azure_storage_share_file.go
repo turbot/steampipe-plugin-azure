@@ -265,7 +265,7 @@ func getStorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *pl
 	storageAccountName := d.KeyColumnQualString("storage_account_name")
 	name := d.KeyColumnQualString("name")
 
-	if strings.Trim(name, " ") != "" || strings.Trim(resourceGroup, " ") != "" || strings.Trim(storageAccountName, " ") != "" {
+	if strings.Trim(name, " ") == "" || strings.Trim(resourceGroup, " ") == "" || strings.Trim(storageAccountName, " ") == "" {
 		return nil, nil
 	}
 

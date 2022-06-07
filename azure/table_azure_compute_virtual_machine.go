@@ -31,7 +31,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listComputeVirtualMachines,
 		},
-		HydrateDependencies: []plugin.HydrateDependencies{
+		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getNicPublicIPs,
 				Depends: []plugin.HydrateFunc{getVMNics},
@@ -522,6 +522,12 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Trace("getNicPublicIPs")
 
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
+
+	// Interface IP Configuration will be nil if getVMNics returned an error but
+	// was ignored through ignore_error_codes config arg
+	if h.HydrateResults["getVMNics"] == nil {
+		return nil, nil
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {

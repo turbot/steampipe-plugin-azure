@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/services/mysql/mgmt/2021-05-01/mysqlflexibleservers"
 )
 
@@ -25,6 +26,7 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
+			ParentHydrate: listResourceGroups,
 			Hydrate: listMySQLFlexibleServers,
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -238,7 +240,7 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -248,7 +250,9 @@ func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, _ *plugi
 	client := mysqlflexibleservers.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx)
+	resourceGroupName := h.Item.(resources.Group).Name
+
+	result, err := client.ListByResourceGroup(ctx, *resourceGroupName)
 	if err != nil {
 		plugin.Logger(ctx).Error("listMySQLFlexibleServers", "list", err)
 		return nil, err
