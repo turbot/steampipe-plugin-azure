@@ -325,13 +325,13 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
-	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
-
+	
 	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
 	// was ignored through ignore_error_codes config arg
 	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {
 		return nil, nil
 	}
+	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
