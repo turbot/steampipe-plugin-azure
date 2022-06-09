@@ -26,9 +26,11 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_queue",
 		Description: "Azure Storage Queue",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
-			Hydrate:           getStorageQueue,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
+			Hydrate:    getStorageQueue,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,

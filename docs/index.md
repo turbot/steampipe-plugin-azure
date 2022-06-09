@@ -105,6 +105,10 @@ connection "azure" {
   # client_id       = "00000000-0000-0000-0000-000000000000"
 
   # If no credentials are specified, the plugin will use Azure CLI authentication
+
+  # List of additional azure error codes to ignore for all queries.
+  # By default, common not found error codes are ignored and will still be ignored even if this argument is not set.
+  #ignore_error_codes = ["NoAuthenticationInformation", "InvalidAuthenticationInfo", "AccountIsDisabled", "UnauthorizedOperation", "UnrecognizedClientException", "AuthorizationError", "AuthenticationFailed", "InsufficientAccountPermissions"]
 }
 ```
 

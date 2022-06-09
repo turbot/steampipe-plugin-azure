@@ -18,9 +18,11 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_probe",
 		Description: "Azure Load Balancer Probe",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
-			Hydrate:           getLoadBalancerProbe,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			Hydrate:    getLoadBalancerProbe,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerProbes,

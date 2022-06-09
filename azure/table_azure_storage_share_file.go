@@ -19,9 +19,11 @@ func tableAzureStorageShareFile(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_share_file",
 		Description: "Azure Storage Share File",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "storage_account_name"}),
-			Hydrate:           getStorageAccountsFileShare,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "storage_account_name"}),
+			Hydrate:    getStorageAccountsFileShare,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
@@ -194,7 +196,7 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 	result, err := fileShareCLient.List(ctx, *storageAccount.ResourceGroup, *storageAccount.Name, maxResult, "", "")
 	if err != nil {
 		logger.Error("listStorageAccountsFileShare", "api error", err)
-		
+
 		// This api throws FeatureNotSupportedForAccount or OperationNotAllowedOnKind error if the storage account kind is not File Share
 		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") || strings.Contains(err.Error(), "OperationNotAllowedOnKind") {
 			return nil, nil
@@ -263,7 +265,7 @@ func getStorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *pl
 	storageAccountName := d.KeyColumnQualString("storage_account_name")
 	name := d.KeyColumnQualString("name")
 
-	if strings.Trim(name, " ") != "" || strings.Trim(resourceGroup, " ") != "" || strings.Trim(storageAccountName, " ") != "" {
+	if strings.Trim(name, " ") == "" || strings.Trim(resourceGroup, " ") == "" || strings.Trim(storageAccountName, " ") == "" {
 		return nil, nil
 	}
 

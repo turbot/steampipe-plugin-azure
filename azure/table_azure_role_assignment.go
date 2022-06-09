@@ -18,9 +18,11 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		Name:        "azure_role_assignment",
 		Description: "Azure Role Assignment",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("id"),
-			Hydrate:           getIamRoleAssignment,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound"}),
+			KeyColumns: plugin.SingleColumn("id"),
+			Hydrate:    getIamRoleAssignment,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleAssignments,

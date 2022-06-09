@@ -18,9 +18,11 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 		Name:        "azure_virtual_network_gateway",
 		Description: "Azure Virtual Network Gateway",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getVirtualNetworkGateway,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getVirtualNetworkGateway,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,

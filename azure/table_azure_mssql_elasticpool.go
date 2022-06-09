@@ -9,6 +9,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
+	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 )
 
 //// TABLE DEFINITION
@@ -18,9 +19,11 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 		Name:        "azure_mssql_elasticpool",
 		Description: "Azure Microsoft SQL Elastic Pool",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
-			Hydrate:           getMSSQLElasticPool,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
+			Hydrate:    getMSSQLElasticPool,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
@@ -150,7 +153,7 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	server := h.Item.(sql.Server)
+	server := h.Item.(sqlv3.Server)
 	serverName := *server.Name
 	resourceGroup := strings.Split(*server.ID, "/")[4]
 

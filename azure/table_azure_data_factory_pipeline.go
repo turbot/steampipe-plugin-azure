@@ -18,9 +18,11 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 		Name:        "azure_data_factory_pipeline",
 		Description: "Azure Data Factory Pipeline",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group", "factory_name"}),
-			Hydrate:           getDataFactoryPipeline,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "factory_name"}),
+			Hydrate:    getDataFactoryPipeline,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listDataFactoryPipelines,

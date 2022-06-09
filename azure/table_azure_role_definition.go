@@ -17,9 +17,11 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 		Name:        "azure_role_definition",
 		Description: "Azure Role Definition",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getIamRoleDefinition,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getIamRoleDefinition,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleDefinitions,

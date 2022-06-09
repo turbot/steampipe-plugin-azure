@@ -18,9 +18,11 @@ func tableAzureLoadBalancerRule(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_rule",
 		Description: "Azure Load Balancer Rule",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
-			Hydrate:           getLoadBalancerRule,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			Hydrate:    getLoadBalancerRule,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerRules,

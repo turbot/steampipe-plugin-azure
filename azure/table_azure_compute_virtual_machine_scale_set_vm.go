@@ -17,9 +17,11 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 		Name:        "azure_compute_virtual_machine_scale_set_vm",
 		Description: "Azure Compute Virtual Machine Scale Set VM",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"scale_set_name", "resource_group", "instance_id"}),
-			Hydrate:           getAzureComputeVirtualMachineScaleSetVm,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"scale_set_name", "resource_group", "instance_id"}),
+			Hydrate:    getAzureComputeVirtualMachineScaleSetVm,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,

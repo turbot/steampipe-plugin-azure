@@ -19,9 +19,11 @@ func tableAzureDataLakeAnalyticsAccount(_ context.Context) *plugin.Table {
 		Name:        "azure_data_lake_analytics_account",
 		Description: "Azure Data Lake Analytics account",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getDataLakeAnalyticsAccount,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getDataLakeAnalyticsAccount,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataLakeAnalyticsAccounts,

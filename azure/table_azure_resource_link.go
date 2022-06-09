@@ -16,9 +16,11 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 		Name:        "azure_resource_link",
 		Description: "Azure Resource Link",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("id"),
-			Hydrate:           getResourceLink,
-			ShouldIgnoreError: isNotFoundError([]string{"MissingSubscription", "404"}),
+			KeyColumns: plugin.SingleColumn("id"),
+			Hydrate:    getResourceLink,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"MissingSubscription", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResourceLinks,

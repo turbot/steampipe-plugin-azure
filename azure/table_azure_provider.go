@@ -17,9 +17,11 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 		Name:        "azure_provider",
 		Description: "Azure Provider",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("namespace"),
-			Hydrate:           getProvider,
-			ShouldIgnoreError: isNotFoundError([]string{"InvalidResourceNamespace"}),
+			KeyColumns: plugin.SingleColumn("namespace"),
+			Hydrate:    getProvider,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"InvalidResourceNamespace"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listProviders,

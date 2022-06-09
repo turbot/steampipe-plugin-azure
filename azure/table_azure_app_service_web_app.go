@@ -18,14 +18,16 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		Name:        "azure_app_service_web_app",
 		Description: "Azure App Service Web App",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAppServiceWebApp,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getAppServiceWebApp,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
 		},
-		HydrateDependencies: []plugin.HydrateDependencies{
+		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getAppServiceWebAppVnetConnection,
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
@@ -323,6 +325,12 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
+	
+	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
+	// was ignored through ignore_error_codes config arg
+	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {
+		return nil, nil
+	}
 	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

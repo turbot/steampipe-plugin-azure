@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
@@ -17,12 +18,15 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 		Name:        "azure_public_ip",
 		Description: "Azure Public IP",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getPublicIP,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getPublicIP,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listPublicIPs,
+			ParentHydrate: listResourceGroups,
+			Hydrate:       listPublicIPs,
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -186,19 +190,23 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 
 //// FETCH FUNCTIONS ////
 
-func listPublicIPs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
+	resourceGroup := h.Item.(resources.Group).Name
 
 	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
-	result, err := networkClient.ListAll(ctx)
+
+	// ListAll API doesn't return any value so changed to List API
+	result, err := networkClient.List(ctx, *resourceGroup)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, publicIP := range result.Values() {
 		d.StreamListItem(ctx, publicIP)
 		// Check if context has been cancelled or if the limit has been hit (if specified)

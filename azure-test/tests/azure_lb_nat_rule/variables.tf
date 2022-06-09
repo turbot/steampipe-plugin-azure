@@ -67,7 +67,6 @@ resource "azurerm_lb_nat_rule" "named_test_resource" {
 }
 
 output "resource_aka" {
-  depends_on = [azurerm_lb_rule.named_test_resource]
   value      = "azure://${azurerm_lb_nat_rule.named_test_resource.id}"
 }
 

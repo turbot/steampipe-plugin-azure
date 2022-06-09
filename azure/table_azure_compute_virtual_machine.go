@@ -22,14 +22,16 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Name:        "azure_compute_virtual_machine",
 		Description: "Azure Compute Virtual Machine",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getComputeVirtualMachine,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getComputeVirtualMachine,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listComputeVirtualMachines,
 		},
-		HydrateDependencies: []plugin.HydrateDependencies{
+		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getNicPublicIPs,
 				Depends: []plugin.HydrateFunc{getVMNics},
@@ -519,6 +521,12 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger := plugin.Logger(ctx)
 	logger.Trace("getNicPublicIPs")
 
+	// Interface IP Configuration will be nil if getVMNics returned an error but
+	// was ignored through ignore_error_codes config arg
+	if h.HydrateResults["getVMNics"] == nil {
+		return nil, nil
+	}
+	
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

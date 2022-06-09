@@ -17,9 +17,11 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 		Name:        "azure_log_profile",
 		Description: "Azure Log Profile",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getLogProfile,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getLogProfile,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogProfiles,

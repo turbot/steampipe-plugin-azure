@@ -23,9 +23,11 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 		Name:        "azure_network_watcher_flow_log",
 		Description: "Azure Network Watcher FlowLog",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"network_watcher_name", "name", "resource_group"}),
-			Hydrate:           getNetworkWatcherFlowLog,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"network_watcher_name", "name", "resource_group"}),
+			Hydrate:    getNetworkWatcherFlowLog,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listNetworkWatcherFlowLogs,

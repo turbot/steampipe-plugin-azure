@@ -17,9 +17,11 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 		Name:        "azure_ad_service_principal",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_service_principal table in the azuread plugin instead.",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("object_id"),
-			Hydrate:           getAdServicePrincipal,
-			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
+			KeyColumns: plugin.SingleColumn("object_id"),
+			Hydrate:    getAdServicePrincipal,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdServicePrincipals,

@@ -26,9 +26,11 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 		Name:        "azure_subnet",
 		Description: "Azure Subnet",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "virtual_network_name", "resource_group"}),
-			Hydrate:           getSubnet,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "NotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "virtual_network_name", "resource_group"}),
+			Hydrate:    getSubnet,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "NotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listVirtualNetworks,
