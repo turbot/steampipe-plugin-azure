@@ -6,7 +6,7 @@ _What's new?_
 
 _Bug fixes_
 
-- Fixed `azure_mssql_elasticpool`, `azure_mysql_flexible_server`, `azure_policy_assignment`, `azure_public_ip` and `azure_storage_share_file` tables to correctly return results instead of `null`. ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
+- Fixed `azure_mssql_elasticpool`, `azure_mysql_flexible_server`, `azure_policy_assignment`, `azure_public_ip` and `azure_storage_share_file` tables to correctly return data instead of an empty row. ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
 
 ## v0.27.2 [2022-06-01]
 
