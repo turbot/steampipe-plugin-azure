@@ -1,3 +1,13 @@
+## v0.28.0 [2022-06-09]
+
+_What's new?_
+
+- Added `ignore_error_codes` config arg to provide users the ability to set a list of additional Azure error codes to ignore while running queries. For instance, to ignore some common access denied errors, which is helpful when running with limited permissions, set the argument `ignore_error_codes = ["UnauthorizedOperation", "InsufficientAccountPermissions"]`. For more information, please see [Azure plugin configuration](https://hub.steampipe.io/plugins/turbot/azure#configuration). ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
+
+_Bug fixes_
+
+- Fixed `azure_mssql_elasticpool`, `azure_mysql_flexible_server`, `azure_policy_assignment`, `azure_public_ip` and `azure_storage_share_file` tables to correctly return results instead of `null`. ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
+
 ## v0.27.2 [2022-06-01]
 
 _Bug fixes_
