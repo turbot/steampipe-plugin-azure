@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azcertificates"
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
 	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
@@ -140,6 +142,13 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getKeyVault,
 				Transform:   transform.From(extractKeyVaultAccessPolicies),
+			},
+			{
+				Name:        "certificates",
+				Description: "A list of certificates for the vault.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listKeyVaultCertificates,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -332,6 +341,35 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+func listKeyVaultCertificates(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listKeyVaultCertificates")
+
+	// Create session
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	data := h.Item.(keyvault.Resource)
+	vaultUrl := "https://" + *data.Name + ".vault.azure.net"
+
+	client := azcertificates.NewClient(vaultUrl, cred, nil)
+
+	certificates := []*azcertificates.CertificateItem{}
+
+	result := client.NewListCertificatesPager(nil)
+	for result.More() {
+		page, err := result.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listKeyVaultCertificates", "err", err)
+			return nil, err
+		}
+		certificates = append(certificates, page.Value...)
+	}
+
+	return certificates, nil
 }
 
 //// TRANSFORM FUNCTIONS
