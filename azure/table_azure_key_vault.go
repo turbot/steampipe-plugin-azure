@@ -145,7 +145,7 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "certificates",
-				Description: "A list of certificates for the vault.",
+				Description: "A list of certificates for the      vault.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listKeyVaultCertificates,
 				Transform:   transform.FromValue(),
