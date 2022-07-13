@@ -18,7 +18,7 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version = "=2.43.0"
+  # version = "=2.43.0"
   features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
