@@ -5,10 +5,8 @@
 				"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/encryptionProtector/current",
 				"kind": "servicemanaged",
 				"name": "current",
-				"properties": {
-					"serverKeyName": "ServiceManaged",
-					"serverKeyType": "ServiceManaged"
-				},
+				"serverKeyName": "ServiceManaged",
+        		"serverKeyType": "ServiceManaged",
 				"type": "Microsoft.Sql/servers/encryptionProtector"
 			}
 		],
@@ -29,17 +27,13 @@
 				"id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Sql/servers/{{ resourceName }}/auditingSettings/Default",
 				"name": "Default",
 				"properties": {
-					"auditActionsAndGroups": [
-						"SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
-						"FAILED_DATABASE_AUTHENTICATION_GROUP",
-						"BATCH_COMPLETED_GROUP"
-					],
-					"isAzureMonitorTargetEnabled": true,
-					"isStorageSecondaryKeyInUse": true,
-					"retentionDays": 6,
-					"state": "Enabled",
+					"auditActionsAndGroups": [],
+					"isAzureMonitorTargetEnabled": false,
+					"isStorageSecondaryKeyInUse": false,
+					"retentionDays": 0,
+					"state": "Disabled",
 					"storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000",
-					"storageEndpoint": "https://{{ resourceName }}.blob.core.windows.net/"
+					"storageEndpoint": ""
 				},
 				"type": "Microsoft.Sql/servers/auditingSettings"
 			}

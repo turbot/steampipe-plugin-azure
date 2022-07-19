@@ -1,6 +1,6 @@
 [
   {
-    "name": "{{ output.current_tenant_display_name.value }}",
-    "title": "{{ output.current_tenant_display_name.value }}"
+    "name": "turbot",
+    "title": "turbot"
   }
 ]

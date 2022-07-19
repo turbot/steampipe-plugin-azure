@@ -19,10 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version = "=2.43.0"
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -70,7 +69,7 @@ resource "azurerm_security_center_automation" "named_test_resource" {
   resource_group_name = azurerm_resource_group.named_test_resource.name
 
   action {
-    type              = "EventHub"
+    type              = "eventhub"
     resource_id       = azurerm_eventhub.named_test_resource.id
     connection_string = azurerm_eventhub_authorization_rule.named_test_resource.primary_connection_string
   }
@@ -91,7 +90,7 @@ resource "azurerm_security_center_automation" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_security_center_automation.named_test_resource.id}"
+  value = replace("azure://${azurerm_security_center_automation.named_test_resource.id}", "resourceGroups", "resourcegroups")
 }
 
 output "resource_aka_lower" {
