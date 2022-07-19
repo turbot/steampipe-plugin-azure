@@ -19,10 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version = "=2.50.0"
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -53,13 +52,6 @@ resource "azurerm_sql_server" "named_test_resource" {
   version                      = "12.0"
   administrator_login          = "mradministrator"
   administrator_login_password = "thisIsDog11"
-
-  extended_auditing_policy {
-    storage_endpoint                        = azurerm_storage_account.named_test_resource.primary_blob_endpoint
-    storage_account_access_key              = azurerm_storage_account.named_test_resource.primary_access_key
-    storage_account_access_key_is_secondary = true
-    retention_in_days                       = 6
-  }
 
   tags = {
     name = var.resource_name
