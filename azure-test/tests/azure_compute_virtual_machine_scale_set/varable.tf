@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure subscription used for the test."
 }
 
@@ -48,7 +48,7 @@ resource "azurerm_subnet" "named_test_resource" {
   name                 = var.resource_name
   resource_group_name  = azurerm_resource_group.named_test_resource.name
   virtual_network_name = azurerm_virtual_network.named_test_resource.name
-  address_prefix     = "10.0.2.0/24"
+  address_prefix       = "10.0.2.0/24"
 }
 
 resource "azurerm_public_ip" "named_test_resource" {
@@ -96,7 +96,7 @@ resource "azurerm_virtual_machine_scale_set" "named_test_resource" {
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
 
-  upgrade_policy_mode  = "Manual"
+  upgrade_policy_mode = "Manual"
 
   sku {
     name     = "Standard_F2"

@@ -12,14 +12,14 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure environment used for the test."
 }
 
 provider "azuread" {
   # Cannot be passed as a variable
-  version         = "=1.2.2"
-  environment     = var.azure_environment
+  version     = "=1.2.2"
+  environment = var.azure_environment
 }
 
 data "azuread_client_config" "current" {}

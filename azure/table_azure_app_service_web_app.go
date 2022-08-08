@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -325,7 +325,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
-	
+
 	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
 	// was ignored through ignore_error_codes config arg
 	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {

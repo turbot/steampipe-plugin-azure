@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 // isNotFoundError:: function which returns an ErrorPredicate for Azure API calls

@@ -10,9 +10,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
 
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION ////
@@ -526,7 +526,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	if h.HydrateResults["getVMNics"] == nil {
 		return nil, nil
 	}
-	
+
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

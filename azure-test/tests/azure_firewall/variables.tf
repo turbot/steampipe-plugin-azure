@@ -13,13 +13,13 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure subscription used for the test."
 }
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=2.43.0"
+  version = "=2.43.0"
   features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
@@ -64,7 +64,7 @@ resource "azurerm_firewall" "named_test_resource" {
   name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
-  sku_tier = "Standard"
+  sku_tier            = "Standard"
 
   ip_configuration {
     name                 = var.resource_name
