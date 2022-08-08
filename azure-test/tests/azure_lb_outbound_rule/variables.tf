@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure environment used for the test."
 }
 
@@ -39,10 +39,10 @@ resource "azurerm_public_ip" "named_test_resource" {
 }
 
 resource "azurerm_lb" "named_test_resource" {
-  name                   = var.resource_name
-  location               = azurerm_resource_group.named_test_resource.location
-  resource_group_name    = azurerm_resource_group.named_test_resource.name
-  sku                    = "Standard"
+  name                = var.resource_name
+  location            = azurerm_resource_group.named_test_resource.location
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  sku                 = "Standard"
 
   frontend_ip_configuration {
     name                 = var.resource_name
@@ -51,8 +51,8 @@ resource "azurerm_lb" "named_test_resource" {
 }
 
 resource "azurerm_lb_backend_address_pool" "named_test_resource" {
-  loadbalancer_id     = azurerm_lb.named_test_resource.id
-  name                = var.resource_name
+  loadbalancer_id = azurerm_lb.named_test_resource.id
+  name            = var.resource_name
 }
 
 resource "azurerm_lb_outbound_rule" "named_test_resource" {

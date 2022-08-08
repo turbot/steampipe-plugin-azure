@@ -4,7 +4,7 @@
     "active_key_url": "{{ output.key_id.value }}",
     "encryption_type": "EncryptionAtRestWithCustomerKey",
     "id": "{{ output.resource_id.value }}",
-    "identity_tenant_id": "cdffd708-7da0-4cea-abeb-0a4c334d7f64",
+    "identity_tenant_id": "d46d7416-f95f-4771-bbb5-529d4c76659c",
     "identity_type": "SystemAssigned",
     "name": "{{ resourceName }}",
     "region": "eastus",
