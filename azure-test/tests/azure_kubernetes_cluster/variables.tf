@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -59,7 +59,7 @@ resource "azurerm_kubernetes_cluster" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value = "azure://${azurerm_kubernetes_cluster.named_test_resource.id}"
+  value = replace("azure://${azurerm_kubernetes_cluster.named_test_resource.id}", "resourceGroups", "resourcegroups")
 }
 
 output "resource_aka_lower" {

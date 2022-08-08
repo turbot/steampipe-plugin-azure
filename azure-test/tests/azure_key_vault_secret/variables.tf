@@ -18,9 +18,9 @@ variable "azure_subscription" {
 }
 
 provider "azurerm" {
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -49,12 +49,13 @@ resource "azurerm_key_vault" "named_test_resource" {
     object_id = data.azurerm_client_config.current.object_id
 
     secret_permissions = [
-      "set",
-      "get",
-      "list",
-      "delete",
-      "purge",
-      "recover"
+      "Delete",
+      "Get",
+      "List",
+      "Purge",
+      "Recover",
+      "Restore",
+      "Set"
     ]
   }
 }

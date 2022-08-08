@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -51,7 +51,7 @@ resource "azurerm_role_definition" "named_test_resource" {
 
 resource "azurerm_role_assignment" "named_test_resource" {
   scope              = data.azurerm_subscription.primary.id
-  role_definition_id = azurerm_role_definition.named_test_resource.id
+  role_definition_id = azurerm_role_definition.named_test_resource.role_definition_resource_id
   principal_id       = data.azurerm_client_config.current.object_id
 }
 
@@ -76,7 +76,7 @@ output "subscription_id" {
 }
 
 output "role_definition_id" {
-  value = azurerm_role_definition.named_test_resource.id
+  value = azurerm_role_definition.named_test_resource.role_definition_resource_id
 }
 
 output "principal_id" {

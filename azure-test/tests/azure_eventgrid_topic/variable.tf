@@ -17,9 +17,9 @@ variable "azure_subscription" {
 }
 
 provider "azurerm" {
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}

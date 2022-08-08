@@ -27,9 +27,9 @@ terraform {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 resource "azurerm_resource_group" "named_test_resource" {
@@ -43,7 +43,7 @@ resource "azurerm_service_fabric_cluster" "named_test_resource" {
   location             = azurerm_resource_group.named_test_resource.location
   reliability_level    = "Bronze"
   upgrade_mode         = "Manual"
-  cluster_code_version = "7.2.413.9590"
+  cluster_code_version = "8.1.316.9590"
   vm_image             = "Windows"
   management_endpoint  = "https://example:80"
 

@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -46,7 +46,7 @@ resource "azurerm_route_table" "named_test_resource" {
   route {
     name           = var.resource_name
     address_prefix = "10.1.0.0/16"
-    next_hop_type  = "vnetlocal"
+    next_hop_type  = "VnetLocal"
   }
 
   tags = {

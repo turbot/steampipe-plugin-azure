@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -48,15 +48,13 @@ resource "azurerm_data_factory" "named_test_resource" {
 
 resource "azurerm_data_factory_linked_service_mysql" "named_test_resource" {
   name                = var.resource_name
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  data_factory_name   = azurerm_data_factory.named_test_resource.name
+  data_factory_id = azurerm_data_factory.named_test_resource.id
   connection_string   = "Server=test;Port=3306;Database=test;User=test;SSLMode=1;UseSystemTrustStore=0;Password=test"
 }
 
 resource "azurerm_data_factory_dataset_mysql" "named_test_resource" {
   name                = var.resource_name
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  data_factory_name   = azurerm_data_factory.named_test_resource.name
+  data_factory_id = azurerm_data_factory.named_test_resource.id
   linked_service_name = azurerm_data_factory_linked_service_mysql.named_test_resource.name
 }
 

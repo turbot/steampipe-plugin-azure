@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -48,7 +48,7 @@ resource "azurerm_subnet" "named_test_resource" {
   name                 = var.resource_name
   resource_group_name  = azurerm_resource_group.named_test_resource.name
   virtual_network_name = azurerm_virtual_network.named_test_resource.name
-  address_prefix       = "10.0.2.0/24"
+  address_prefixes      = ["10.0.2.0/24"]
 }
 
 resource "azurerm_network_interface" "named_test_resource" {

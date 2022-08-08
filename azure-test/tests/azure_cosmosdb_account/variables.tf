@@ -19,9 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -52,8 +52,7 @@ resource "azurerm_cosmosdb_account" "named_test_resource" {
   }
 
   geo_location {
-    prefix            = "turbot-cosmos-db"
-    location          = azurerm_resource_group.named_test_resource.location
+    location = azurerm_resource_group.named_test_resource.location
     failover_priority = 0
   }
 
