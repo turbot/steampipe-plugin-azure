@@ -10,7 +10,7 @@ A virtual network is a network where all devices, servers, virtual machines, and
 select
 	name,
 	enable_ddos_protection,
-	location,
+	region,
 	resource_group
 from
 	azure_virtual_network
@@ -36,7 +36,7 @@ from
 select
 	name,
 	cidr_block,
-	location,
+	region,
 	resource_group
 from
 	azure_virtual_network
