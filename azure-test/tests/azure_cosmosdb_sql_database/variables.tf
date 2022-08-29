@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -38,22 +38,22 @@ resource "azurerm_resource_group" "named_test_resource" {
 }
 
 resource "azurerm_cosmosdb_account" "named_test_resource" {
-  name = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  offer_type = "Standard"
-  kind = "GlobalDocumentDB"
+  name                      = var.resource_name
+  location                  = azurerm_resource_group.named_test_resource.location
+  resource_group_name       = azurerm_resource_group.named_test_resource.name
+  offer_type                = "Standard"
+  kind                      = "GlobalDocumentDB"
   enable_automatic_failover = true
 
   consistency_policy {
-    consistency_level = "BoundedStaleness"
+    consistency_level       = "BoundedStaleness"
     max_interval_in_seconds = 600
-    max_staleness_prefix = 200000
+    max_staleness_prefix    = 200000
   }
 
   geo_location {
-    prefix = "turbot-cosmos-db"
-    location = azurerm_resource_group.named_test_resource.location
+    prefix            = "turbot-cosmos-db"
+    location          = azurerm_resource_group.named_test_resource.location
     failover_priority = 0
   }
 }
@@ -68,7 +68,7 @@ resource "null_resource" "delay" {
 }
 
 resource "azurerm_cosmosdb_sql_database" "named_test_resource" {
-  depends_on = [null_resource.delay]
+  depends_on          = [null_resource.delay]
   name                = var.resource_name
   resource_group_name = azurerm_resource_group.named_test_resource.name
   account_name        = azurerm_cosmosdb_account.named_test_resource.name
