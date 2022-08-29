@@ -18,7 +18,7 @@ variable "azure_subscription" {
 
 variable "azure_tenant" {
   type        = string
-  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure environment used for the test."
 }
 
