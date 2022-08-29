@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure subscription used for the test."
 }
 
@@ -48,7 +48,7 @@ resource "azurerm_subnet" "named_test_resource" {
   name                 = var.resource_name
   resource_group_name  = azurerm_resource_group.named_test_resource.name
   virtual_network_name = azurerm_virtual_network.named_test_resource.name
-  address_prefixes       = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.1.0/24"]
 
   delegation {
     name = "delegation"

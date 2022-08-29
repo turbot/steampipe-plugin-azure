@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure subscription used for the test."
 }
 
@@ -44,7 +44,7 @@ resource "azurerm_data_factory" "named_test_resource" {
 }
 
 resource "azurerm_data_factory_pipeline" "named_test_resource" {
-  name                = var.resource_name
+  name            = var.resource_name
   data_factory_id = azurerm_data_factory.named_test_resource.id
   variables = {
     "bob" = "item1"

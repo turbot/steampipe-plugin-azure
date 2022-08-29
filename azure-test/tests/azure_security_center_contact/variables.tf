@@ -13,6 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
+  default     = "cdffd708-7da0-4cea-abeb-0a4c334d7f64"
   description = "Azure subscription used for the test."
 }
 
