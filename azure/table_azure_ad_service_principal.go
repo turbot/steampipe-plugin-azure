@@ -2,8 +2,8 @@ package azure
 
 import (
 	"context"
+	"errors"
 
-	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 
@@ -16,13 +16,6 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_ad_service_principal",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_service_principal table in the azuread plugin instead.",
-		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("object_id"),
-			Hydrate:    getAdServicePrincipal,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
-			},
-		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdServicePrincipals,
 		},
@@ -128,13 +121,11 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(getAdServicePrincipalTurbotData, "TurbotTitle"),
 			},
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromP(getAdServicePrincipalTurbotData, "TurbotAkas"),
 			},
 		},
 	}
@@ -143,77 +134,6 @@ func tableAzureAdServicePrincipal(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listAdServicePrincipals(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-
-	graphClient := graphrbac.NewServicePrincipalsClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	result, err := graphClient.List(ctx, "")
-	if err != nil {
-		return nil, err
-	}
-	for _, servicePrincipal := range result.Values() {
-		d.StreamListItem(ctx, servicePrincipal)
-	}
-
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, servicePrincipal := range result.Values() {
-			d.StreamListItem(ctx, servicePrincipal)
-		}
-	}
-
+	err := errors.New("The azure_ad_service_principal table has been deprecated and removed, please use azuread_service_principal table instead.")
 	return nil, err
-}
-
-//// HYDRATE FUNCTIONS
-
-func getAdServicePrincipal(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAdServicePrincipal")
-
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
-
-	graphClient := graphrbac.NewServicePrincipalsClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	op, err := graphClient.Get(ctx, objectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return op, nil
-}
-
-//// TRANSFORM FUNCTIONS
-
-func getAdServicePrincipalTurbotData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(graphrbac.ServicePrincipal)
-	param := d.Param.(string)
-
-	// Get resource title
-	title := data.ObjectID
-	if data.DisplayName != nil {
-		title = data.DisplayName
-	}
-
-	// Get resource tags
-	akas := []string{"azure:///serviceprincipal/" + *data.ObjectID}
-
-	if param == "TurbotTitle" {
-		return title, nil
-	}
-	return akas, nil
 }

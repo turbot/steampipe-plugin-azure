@@ -1,5 +1,7 @@
 # Table: azure_ad_user
 
+**Deprecated. Use [azuread_user](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_user) instead.**
+
 Azure Active Directory (Azure AD) is Microsoft's cloud-based identity and access management service, which helps employees sign in and access resources.
 
 ## Examples
