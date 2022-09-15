@@ -1,3 +1,17 @@
+## v0.32.0 [2022-09-15]
+
+_Enhancements_
+
+- Added column `diagnostic_logs_configuration` to `azure_app_service_web_app` table. ([#517](https://github.com/turbot/steampipe-plugin-azure/pull/517))
+
+_Bug fixes_
+
+- Fixed `location` -> `region` column names in `azure_virtual_network` table doc examples. ([#511](https://github.com/turbot/steampipe-plugin-azure/pull/511))
+
+_Deprecated_
+
+- Updated `azure_ad_group`, `azure_ad_service_principal`, and `azure_ad_user` tables (deprecated in v0.20.0) to no longer return results and instead return an error and suggest the respective replacement table. These tables will be removed entirely from this plugin in a future version.
+
 ## v0.31.0 [2022-07-22]
 
 _Dependencies_
