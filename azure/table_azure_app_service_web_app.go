@@ -142,6 +142,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "diagnostic_logs_configuration",
+				Description: "Describes the logging configuration of an app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getWebAppDiagnosticLogsConfiguration,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "site_config",
 				Description: "A map of all configuration for the app.",
 				Type:        proto.ColumnType_JSON,
@@ -325,7 +332,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
-	
+
 	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
 	// was ignored through ignore_error_codes config arg
 	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {
@@ -369,6 +376,28 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	}
 
 	return nil, nil
+}
+
+func getWebAppDiagnosticLogsConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getWebAppDiagnosticLogsConfiguration", "service_creation_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetDiagnosticLogsConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getWebAppDiagnosticLogsConfiguration", "api_error", err)
+		return nil, err
+	}
+
+	return op, nil
 }
 
 //// TRANSFORM FUNCTION

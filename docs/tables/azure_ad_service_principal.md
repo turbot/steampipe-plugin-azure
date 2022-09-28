@@ -1,5 +1,7 @@
 # Table: azure_ad_service_principal
 
+**Deprecated. Use [azuread_service_principal](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_service_principal) instead.**
+
 An Azure service principal is an identity created for use with applications, hosted services, and automated tools to access Azure resources.
 
 ## Examples
