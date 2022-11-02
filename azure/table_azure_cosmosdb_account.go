@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2020-04-01-preview/documentdb"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 type databaseAccountInfo = struct {
@@ -24,9 +24,11 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 		Name:        "azure_cosmosdb_account",
 		Description: "Azure Cosmos DB Account",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getCosmosDBAccount,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getCosmosDBAccount,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listCosmosDBAccounts,

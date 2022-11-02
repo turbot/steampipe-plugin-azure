@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 type queueInfo = struct {
@@ -26,9 +26,11 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_queue",
 		Description: "Azure Storage Queue",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
-			Hydrate:           getStorageQueue,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
+			Hydrate:    getStorageQueue,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,

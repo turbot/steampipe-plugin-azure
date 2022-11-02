@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/storagecache/mgmt/2021-05-01/storagecache"
 	"github.com/Azure/go-autorest/autorest/date"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -18,9 +18,11 @@ func tableAzureHPCCache(_ context.Context) *plugin.Table {
 		Name:        "azure_hpc_cache",
 		Description: "Azure HPC Cache",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getHPCCache,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getHPCCache,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHPCCaches,

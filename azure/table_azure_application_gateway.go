@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -18,9 +18,11 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 		Name:        "azure_application_gateway",
 		Description: "Azure Application Gateway",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getApplicationGateway,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getApplicationGateway,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listApplicationGateways,

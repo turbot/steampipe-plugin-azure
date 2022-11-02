@@ -3,9 +3,9 @@ package azure
 import (
 	"context"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sqlvirtualmachine/mgmt/2017-03-01-preview/sqlvirtualmachine"
 )
@@ -17,9 +17,11 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 		Name:        "azure_mssql_virtual_machine",
 		Description: "Azure MS SQL Virtual Machine",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMSSQLVirtualMachine,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getMSSQLVirtualMachine,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMSSQLVirtualMachines,

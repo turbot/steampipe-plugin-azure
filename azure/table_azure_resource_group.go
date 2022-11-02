@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -17,9 +17,11 @@ func tableAzureResourceGroup(ctx context.Context) *plugin.Table {
 		Name:        "azure_resource_group",
 		Description: "Azure Resource Group",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getResourceGroup,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getResourceGroup,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResourceGroups,

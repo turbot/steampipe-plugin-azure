@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -18,9 +18,11 @@ func tableAzureLoadBalancerOutboundRule(_ context.Context) *plugin.Table {
 		Name:        "azure_lb_outbound_rule",
 		Description: "Azure Load Balancer Outbound Rule",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
-			Hydrate:           getLoadBalancerOutboundRule,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
+			Hydrate:    getLoadBalancerOutboundRule,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerOutboundRules,

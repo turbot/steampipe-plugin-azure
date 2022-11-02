@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-09-01/locks"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 type managementLockInfo = struct {
@@ -25,9 +25,11 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 		Name:        "azure_management_lock",
 		Description: "Azure Management Lock",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getManagementLock,
-			ShouldIgnoreError: isNotFoundError([]string{"LockNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getManagementLock,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"LockNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementLocks,

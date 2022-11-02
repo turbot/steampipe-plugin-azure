@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -17,9 +17,11 @@ func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
 		Name:        "azure_role_definition",
 		Description: "Azure Role Definition",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getIamRoleDefinition,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound"}),
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getIamRoleDefinition,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleDefinitions,

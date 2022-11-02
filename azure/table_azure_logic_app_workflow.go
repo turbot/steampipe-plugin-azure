@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/logic/mgmt/2019-05-01/logic"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -18,9 +18,11 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 		Name:        "azure_logic_app_workflow",
 		Description: "Azure Logic App Workflow",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getLogicAppWorkflow,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getLogicAppWorkflow,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogicAppWorkflows,
@@ -88,7 +90,7 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 				Name:        "access_control",
 				Description: "The access control configuration.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkflowProperties.AccessControl"),
+				Transform:   transform.From(extractAccessControl),
 			},
 			{
 				Name:        "definition",
@@ -281,4 +283,24 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
+}
+
+//// TRANSFORM FUNCTION
+
+// Access Control configuration for any IP is coming as "{}" instead of nil if we are not providing any IP in configuration
+func extractAccessControl(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(logic.Workflow)
+	if data.WorkflowProperties != nil {
+		if data.WorkflowProperties.AccessControl == nil {
+			return nil, nil
+		} else {
+			// Due to inconsistency in the API behaviour we need this check.
+			if data.WorkflowProperties.AccessControl.Actions != nil || data.WorkflowProperties.AccessControl.Contents != nil || data.WorkflowProperties.AccessControl.Triggers != nil || data.WorkflowProperties.AccessControl.WorkflowManagement != nil {
+				return data.WorkflowProperties.AccessControl, nil
+			} else {
+				return nil, nil
+			}
+		}
+	}
+	return data.AccessControl, nil
 }

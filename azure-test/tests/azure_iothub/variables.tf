@@ -18,9 +18,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -81,7 +81,6 @@ resource "azurerm_iothub" "named_test_resource" {
   sku {
     name     = "S1"
     capacity = "1"
-    tier     = "Basic"
   }
 
   endpoint {

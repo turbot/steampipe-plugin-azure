@@ -19,10 +19,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version = "=2.43.0"
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -85,15 +84,15 @@ PARAMETERS
 }
 
 output "resource_aka" {
-  value = "azure:///subscriptions/${var.azure_subscription}/providers/Microsoft.Authorization/policyAssignments/SecurityCenterBuiltIn"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Authorization/policyAssignments/SecurityCenterBuiltIn"
 }
 
 output "resource_aka_lower" {
-  value = "azure:///subscriptions/${var.azure_subscription}/providers/microsoft.authorization/policyassignments/securitycenterbuiltin"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourcegroups/${var.resource_name}/providers/microsoft.authorization/policyassignments/securitycenterbuiltin"
 }
 
 output "resource_id" {
-  value = "/subscriptions/${var.azure_subscription}/providers/Microsoft.Authorization/policyAssignments/SecurityCenterBuiltIn"
+  value = "/subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Authorization/policyAssignments/SecurityCenterBuiltIn"
 }
 
 output "resource_name" {

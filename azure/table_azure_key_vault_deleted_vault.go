@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -17,9 +17,11 @@ func tableAzureKeyVaultDeletedVault(_ context.Context) *plugin.Table {
 		Name:        "azure_key_vault_deleted_vault",
 		Description: "Azure Key Vault Deleted Vault",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "region"}),
-			Hydrate:           getKeyVaultDeletedVault,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "region"}),
+			Hydrate:    getKeyVaultDeletedVault,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaultDeletedVaults,

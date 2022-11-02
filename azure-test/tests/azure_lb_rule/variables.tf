@@ -18,9 +18,9 @@ variable "azure_subscription" {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  version         = "=1.36.0"
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azuread_client_config" "current" {}
@@ -49,7 +49,6 @@ resource "azurerm_lb" "named_test_resource" {
 }
 
 resource "azurerm_lb_rule" "named_test_resource" {
-  resource_group_name            = azurerm_resource_group.named_test_resource.name
   loadbalancer_id                = azurerm_lb.named_test_resource.id
   name                           = var.resource_name
   protocol                       = "Tcp"

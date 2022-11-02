@@ -1,4 +1,6 @@
-# Table:  azure_ad_group
+# Table: azure_ad_group
+
+**Deprecated. Use [azuread_group](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_group) instead.**
 
 Azure Active Directory groups is used to manage access to your cloud-based apps, on-premises apps, and your resources.
 

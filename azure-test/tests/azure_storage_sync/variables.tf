@@ -27,9 +27,9 @@ terraform {
 
 provider "azurerm" {
   # Cannot be passed as a variable
-  features {}
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
+  features {}
 }
 
 data "azuread_client_config" "current" {}

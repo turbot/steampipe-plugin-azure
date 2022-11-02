@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -18,14 +18,16 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		Name:        "azure_app_service_web_app",
 		Description: "Azure App Service Web App",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getAppServiceWebApp,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getAppServiceWebApp,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
 		},
-		HydrateDependencies: []plugin.HydrateDependencies{
+		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getAppServiceWebAppVnetConnection,
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
@@ -137,6 +139,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Description: "Describes the configuration of an app.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAppServiceWebAppSiteConfiguration,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "diagnostic_logs_configuration",
+				Description: "Describes the logging configuration of an app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getWebAppDiagnosticLogsConfiguration,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -323,6 +332,12 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
+
+	// Web App Site Configuration will be nil if getAppServiceWebAppSiteConfiguration returned an error but
+	// was ignored through ignore_error_codes config arg
+	if h.HydrateResults["getAppServiceWebAppSiteConfiguration"] == nil {
+		return nil, nil
+	}
 	vnet := h.HydrateResults["getAppServiceWebAppSiteConfiguration"].(web.SiteConfigResource)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -361,6 +376,28 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 	}
 
 	return nil, nil
+}
+
+func getWebAppDiagnosticLogsConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getWebAppDiagnosticLogsConfiguration", "service_creation_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetDiagnosticLogsConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getWebAppDiagnosticLogsConfiguration", "api_error", err)
+		return nil, err
+	}
+
+	return op, nil
 }
 
 //// TRANSFORM FUNCTION

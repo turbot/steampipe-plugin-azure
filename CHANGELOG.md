@@ -1,3 +1,58 @@
+## v0.33.0 [2022-09-29]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.7](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v417-2022-09-08) which includes several caching and memory management improvements. ([#514](https://github.com/turbot/steampipe-plugin-azure/pull/514))
+- Recompiled plugin with Go version `1.19`. ([#514](https://github.com/turbot/steampipe-plugin-azure/pull/514))
+
+## v0.32.0 [2022-09-15]
+
+_Enhancements_
+
+- Added column `diagnostic_logs_configuration` to `azure_app_service_web_app` table. ([#517](https://github.com/turbot/steampipe-plugin-azure/pull/517))
+
+_Bug fixes_
+
+- Fixed `location` -> `region` column names in `azure_virtual_network` table doc examples. ([#511](https://github.com/turbot/steampipe-plugin-azure/pull/511))
+
+_Deprecated_
+
+- Updated `azure_ad_group`, `azure_ad_service_principal`, and `azure_ad_user` tables (deprecated in v0.20.0) to no longer return results and instead return an error and suggest the respective replacement table. These tables will be removed entirely from this plugin in a future version.
+
+## v0.31.0 [2022-07-22]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.3.2](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v332--2022-07-11) which includes several caching fixes. ([#508](https://github.com/turbot/steampipe-plugin-azure/pull/508))
+
+## v0.30.0 [2022-07-01]
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.3.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v331--2022-06-30). ([#500](https://github.com/turbot/steampipe-plugin-azure/pull/500))
+
+## v0.29.0 [2022-06-27]
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.3.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v330--2022-6-22). ([#498](https://github.com/turbot/steampipe-plugin-azure/pull/498))
+
+## v0.28.0 [2022-06-09]
+
+_What's new?_
+
+- Added `ignore_error_codes` config arg to provide users the ability to set a list of additional Azure error codes to ignore while running queries. For instance, to ignore some common access denied errors, which is helpful when running with limited permissions, set the argument `ignore_error_codes = ["UnauthorizedOperation", "InsufficientAccountPermissions"]`. For more information, please see [Azure plugin configuration](https://hub.steampipe.io/plugins/turbot/azure#configuration). ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
+
+_Bug fixes_
+
+- Fixed `azure_mssql_elasticpool`, `azure_mysql_flexible_server`, `azure_policy_assignment`, `azure_public_ip` and `azure_storage_share_file` tables to correctly return data instead of an empty row. ([#495](https://github.com/turbot/steampipe-plugin-azure/pull/495))
+
+## v0.27.2 [2022-06-01]
+
+_Bug fixes_
+
+- Fixed the `access_control` column in `azure_logic_app_workflow` table to consistently return `null` instead of intermittently returning `{}` when no data is available. ([#486](https://github.com/turbot/steampipe-plugin-azure/pull/486))
+
 ## v0.27.1 [2022-05-23]
 
 _Bug fixes_

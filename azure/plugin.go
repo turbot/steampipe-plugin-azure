@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 const pluginName = "steampipe-plugin-azure"
@@ -15,7 +15,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		Name:             pluginName,
 		DefaultTransform: transform.FromCamel(),
 		DefaultGetConfig: &plugin.GetConfig{
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceGroupNotFound"}),
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound"}),
+			},
+		},
+		// Default ignore config for the plugin
+		DefaultIgnoreConfig: &plugin.IgnoreConfig{
+			ShouldIgnoreErrorFunc: shouldIgnoreErrorPluginDefault(),
 		},
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,

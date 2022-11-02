@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -17,7 +17,7 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 		Name:        "azure_policy_assignment",
 		Description: "Azure Policy Assignment",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("name"),
+			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getPolicyAssignment,
 		},
 		List: &plugin.ListConfig{
@@ -175,13 +175,13 @@ func getPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	if err != nil {
 		return nil, err
 	}
-	name := d.KeyColumnQuals["name"].GetStringValue()
+	id := d.KeyColumnQuals["id"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
 	PolicyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	PolicyClient.Authorizer = session.Authorizer
 
-	policy, err := PolicyClient.Get(ctx, "/subscriptions/"+subscriptionID, name)
+	policy, err := PolicyClient.GetByID(ctx, id)
 	if err != nil {
 		return err, nil
 	}

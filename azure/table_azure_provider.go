@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -17,9 +17,11 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 		Name:        "azure_provider",
 		Description: "Azure Provider",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("namespace"),
-			Hydrate:           getProvider,
-			ShouldIgnoreError: isNotFoundError([]string{"InvalidResourceNamespace"}),
+			KeyColumns: plugin.SingleColumn("namespace"),
+			Hydrate:    getProvider,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"InvalidResourceNamespace"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listProviders,

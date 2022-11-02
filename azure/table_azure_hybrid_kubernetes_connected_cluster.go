@@ -6,10 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/kubernetesconfiguration/mgmt/kubernetesconfiguration"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -19,9 +19,11 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 		Name:        "azure_hybrid_kubernetes_connected_cluster",
 		Description: "Azure Hybrid Kubernetes Connected Cluster",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getHybridKubernetesConnectedCluster,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getHybridKubernetesConnectedCluster,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHybridKubernetesConnectedClusters,

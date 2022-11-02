@@ -2,12 +2,12 @@ package azure
 
 import (
 	"context"
+	"errors"
 
-	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -16,11 +16,6 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_ad_group",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_group table in the azuread plugin instead.",
-		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("object_id"),
-			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
-			Hydrate:           getAdGroup,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdGroups,
 		},
@@ -79,13 +74,11 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(getAdGroupTurbotData, "TurbotTitle"),
 			},
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromP(getAdGroupTurbotData, "TurbotAkas"),
 			},
 		},
 	}
@@ -94,77 +87,6 @@ func tableAzureAdGroup(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAdGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-
-	graphClient := graphrbac.NewGroupsClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	result, err := graphClient.List(ctx, "")
-	if err != nil {
-		return nil, err
-	}
-	for _, group := range result.Values() {
-		d.StreamListItem(ctx, group)
-	}
-
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, group := range result.Values() {
-			d.StreamListItem(ctx, group)
-		}
-	}
-
+	err := errors.New("The azure_ad_group table has been deprecated and removed, please use azuread_group table instead.")
 	return nil, err
-}
-
-//// HYDRATE FUNCTIONS
-
-func getAdGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAdGroup")
-
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
-
-	graphClient := graphrbac.NewGroupsClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	op, err := graphClient.Get(ctx, objectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return op, nil
-}
-
-//// TRANSFORM FUNCTIONS
-
-func getAdGroupTurbotData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(graphrbac.ADGroup)
-	param := d.Param.(string)
-
-	// Get resource title
-	title := data.ObjectID
-	if data.DisplayName != nil {
-		title = data.DisplayName
-	}
-
-	// Get resource tags
-	akas := []string{"azure:///group/" + *data.ObjectID}
-
-	if param == "TurbotTitle" {
-		return title, nil
-	}
-	return akas, nil
 }

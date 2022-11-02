@@ -6,10 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
 	secret "github.com/Azure/azure-sdk-for-go/services/keyvault/v7.1/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -19,9 +19,11 @@ func tableAzureKeyVaultSecret(_ context.Context) *plugin.Table {
 		Name:        "azure_key_vault_secret",
 		Description: "Azure Key Vault Secret",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"vault_name", "name"}),
-			Hydrate:           getKeyVaultSecret,
-			ShouldIgnoreError: isNotFoundError([]string{"ResourceNotFound", "404", "SecretDisabled"}),
+			KeyColumns: plugin.AllColumns([]string{"vault_name", "name"}),
+			Hydrate:    getKeyVaultSecret,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404", "SecretDisabled"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate:       listKeyVaultSecrets,

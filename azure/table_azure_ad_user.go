@@ -2,12 +2,12 @@ package azure
 
 import (
 	"context"
+	"errors"
 
-	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 )
 
 //// TABLE DEFINITION
@@ -16,11 +16,6 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_ad_user",
 		Description: "[DEPRECATED] This table has been deprecated and will be removed in a future release. Please use the azuread_user table in the azuread plugin instead.",
-		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("object_id"),
-			Hydrate:           getAdUser,
-			ShouldIgnoreError: isNotFoundError([]string{"Request_ResourceNotFound", "Request_BadRequest"}),
-		},
 		List: &plugin.ListConfig{
 			Hydrate: listAdUsers,
 		},
@@ -111,13 +106,11 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(getAdUserTurbotData, "TurbotTitle"),
 			},
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromP(getAdUserTurbotData, "TurbotAkas"),
 			},
 		},
 	}
@@ -126,76 +119,6 @@ func tableAzureAdUser(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAdUsers(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-
-	graphClient := graphrbac.NewUsersClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	result, err := graphClient.List(ctx, "", "")
-	if err != nil {
-		return nil, err
-	}
-	for _, user := range result.Values() {
-		d.StreamListItem(ctx, user)
-	}
-
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, user := range result.Values() {
-			d.StreamListItem(ctx, user)
-		}
-	}
-
+	err := errors.New("The azure_ad_user table has been deprecated and removed, please use azuread_user table instead.")
 	return nil, err
-}
-
-//// HYDRATE FUNCTIONS
-
-func getAdUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAdUser")
-
-	session, err := GetNewSession(ctx, d, "GRAPH")
-	if err != nil {
-		return nil, err
-	}
-	tenantID := session.TenantID
-	objectID := d.KeyColumnQuals["object_id"].GetStringValue()
-
-	graphClient := graphrbac.NewUsersClientWithBaseURI(session.GraphEndpoint, tenantID)
-	graphClient.Authorizer = session.Authorizer
-
-	op, err := graphClient.Get(ctx, objectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return op, nil
-}
-
-//// TRANSFORM FUNCTIONS
-
-func getAdUserTurbotData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(graphrbac.User)
-	param := d.Param.(string)
-
-	// Get resource title
-	title := data.ObjectID
-	if data.DisplayName != nil {
-		title = data.DisplayName
-	}
-
-	// Get resource tags
-	akas := []string{"azure:///user/" + *data.ObjectID}
-
-	if param == "TurbotTitle" {
-		return title, nil
-	}
-	return akas, nil
 }
