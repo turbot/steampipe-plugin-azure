@@ -1,7 +1,6 @@
 package azure
 
 import (
-<<<<<<< HEAD
 	"math"
 	"math/rand"
 	"time"
@@ -20,25 +19,9 @@ type azureConfig struct {
 	Username              *string `cty:"username"`
 	Password              *string `cty:"password"`
 	Environment           *string `cty:"environment"`
+	IgnoreErrorCodes    []string `cty:"ignore_error_codes"`
 	MaxErrorRetryAttempts *int    `cty:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int    `cty:"min_error_retry_delay"`
-=======
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/schema"
-)
-
-type azureConfig struct {
-	TenantID            *string  `cty:"tenant_id"`
-	SubscriptionID      *string  `cty:"subscription_id"`
-	ClientID            *string  `cty:"client_id"`
-	ClientSecret        *string  `cty:"client_secret"`
-	CertificatePath     *string  `cty:"certificate_path"`
-	CertificatePassword *string  `cty:"certificate_password"`
-	Username            *string  `cty:"username"`
-	Password            *string  `cty:"password"`
-	Environment         *string  `cty:"environment"`
-	IgnoreErrorCodes    []string `cty:"ignore_error_codes"`
->>>>>>> 7a2a941e410c5bff5fd49f76e2fa40bd4576f4e0
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
@@ -69,17 +52,15 @@ var ConfigSchema = map[string]*schema.Attribute{
 	"environment": {
 		Type: schema.TypeString,
 	},
-<<<<<<< HEAD
+	"ignore_error_codes": {
+		Type: schema.TypeList,
+		Elem: &schema.Attribute{Type: schema.TypeString},
+	},
 	"max_error_retry_attempts": {
 		Type: schema.TypeInt,
 	},
 	"min_error_retry_delay": {
 		Type: schema.TypeInt,
-=======
-	"ignore_error_codes": {
-		Type: schema.TypeList,
-		Elem: &schema.Attribute{Type: schema.TypeString},
->>>>>>> 7a2a941e410c5bff5fd49f76e2fa40bd4576f4e0
 	},
 }
 
