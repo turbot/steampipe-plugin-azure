@@ -300,9 +300,14 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		return nil, err
 	}
 
+	retryCount := 1
+	retryRule := getRetryRules(d.Connection, retryCount)
+
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDisksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+	client.RetryAttempts = *retryRule.MaxErrorRetryAttempts
+	client.RetryDuration = retryRule.MinErrorRetryDelay
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
