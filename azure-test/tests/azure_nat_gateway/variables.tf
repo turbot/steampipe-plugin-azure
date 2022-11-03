@@ -37,23 +37,6 @@ resource "azurerm_resource_group" "named_test_resource" {
   location = "East US"
 }
 
-# resource "azurerm_public_ip" "named_test_resource" {
-#   name                = var.resource_name
-#   location            = azurerm_resource_group.named_test_resource.location
-#   resource_group_name = azurerm_resource_group.named_test_resource.name
-#   allocation_method   = "Static"
-#   sku                 = "Standard"
-#   zones               = ["1"]
-# }
-
-# resource "azurerm_public_ip_prefix" "named_test_resource" {
-#   name                = var.resource_name
-#   location            = azurerm_resource_group.named_test_resource.location
-#   resource_group_name = azurerm_resource_group.named_test_resource.name
-#   prefix_length       = 30
-#   zones               = ["1"]
-# }
-
 resource "azurerm_nat_gateway" "named_test_resource" {
   name                    = var.resource_name
   location                = azurerm_resource_group.named_test_resource.location

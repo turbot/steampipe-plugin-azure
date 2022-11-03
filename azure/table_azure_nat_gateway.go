@@ -15,7 +15,7 @@ import (
 func tableAzureNatGateway(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_nat_gateway",
-		Description: "Azure NAT Gateways",
+		Description: "Azure NAT Gateway",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNatGateway,
@@ -40,7 +40,7 @@ func tableAzureNatGateway(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated",
+				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -137,6 +137,7 @@ func tableAzureNatGateway(_ context.Context) *plugin.Table {
 func listNatGateways(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_nat_gateway.listNatGateways", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -146,6 +147,7 @@ func listNatGateways(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_nat_gateway.listNatGateways", "api_error", err)
 		return nil, err
 	}
 
@@ -179,13 +181,12 @@ func listNatGateways(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 //// HYDRATE FUNCTIONS ////
 
 func getNatGateway(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getNatGateway")
-
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_nat_gateway.getNatGateway", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -195,6 +196,7 @@ func getNatGateway(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_nat_gateway.getNatGateway", "api_error", err)
 		return nil, err
 	}
 
