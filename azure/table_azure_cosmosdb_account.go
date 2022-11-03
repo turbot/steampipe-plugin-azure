@@ -213,7 +213,6 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Description: "A list of Virtual Network ACL rules configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform: transform.From(extractCosmosDBVirtualNetworkRule),
-				// Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.VirtualNetworkRules"),
 			},
 			{
 				Name:        "write_locations",
