@@ -1,6 +1,6 @@
 # Table: azure_nat_gateway
 
-A network interface enables an Azure Virtual Machine to communicate with internet, Azure, and on-premises resources.
+NAT gateway provides outbound internet connectivity for one or more subnets of a virtual network. Once NAT gateway is associated to a subnet, NAT provides source network address translation (SNAT) for that subnet. NAT gateway specifies which static IP addresses virtual machines use when creating outbound flows.
 
 ## Examples
 
