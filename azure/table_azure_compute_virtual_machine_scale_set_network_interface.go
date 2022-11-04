@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
@@ -26,6 +27,12 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Name:        "name",
 				Description: "Name of the scale set network interface.",
 				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "scale_set_name",
+				Description: "Name of the scale set.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ID").Transform(extractScaleSetFromID),
 			},
 			{
 				Name:        "id",
@@ -49,7 +56,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Name:        "mac_address",
 				Description: "The MAC address of the network interface.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("Interface.MacAddress"),
+				Transform:   transform.FromField("Interface.MacAddress"),
 			},
 			{
 				Name:        "enable_accelerated_networking",
@@ -121,7 +128,6 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				// Transform: transform.FromField("Interface.VirtualMachine"),
 				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "VirtualMachine"),
 			},
-
 
 			// Steampipe standard columns
 			{
@@ -253,3 +259,12 @@ func extractScaleSetNetworkInterfaccePrpperties(ctx context.Context, d *transfor
 	return nil, nil
 }
 
+func extractScaleSetFromID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	id := types.SafeString(d.Value)
+
+	// Common resource properties
+	splitID := strings.Split(id, "/")
+	scaleSetName := splitID[8]
+	scaleSetName = strings.ToLower(scaleSetName)
+	return scaleSetName, nil
+}
