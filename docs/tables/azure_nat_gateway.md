@@ -47,5 +47,5 @@ from
   azure_subnet as s,
   jsonb_array_elements(n.subnets) as sb
 where
-	sb ->> 'id' = s.id;
+  sb ->> 'id' = s.id;
 ```
