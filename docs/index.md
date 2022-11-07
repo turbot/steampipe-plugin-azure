@@ -112,6 +112,93 @@ connection "azure" {
 }
 ```
 
+## Specify multiple subscriptions
+
+You may create multiple azure connections:
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+
+connection "azure_sub_1" {
+  plugin          = "azure"
+  subscription_id = "azure_01"
+}
+
+connection "azure_sub_2" {
+  plugin          = "azure"
+  subscription_id = "azure_02"
+}
+
+connection "azure_sub_3" {
+  plugin          = "azure"
+  subscription_id = "azure_03"
+}
+```
+
+Depending on the mode of authentication, a multi-subscription configuration can also look like:
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+
+connection "azure_sub_1" {
+  plugin          = "azure"
+  tenant_id       = "00000000-0000-0000-0000-000000000000"
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  client_id       = "00000000-0000-0000-0000-000000000000"
+  client_secret   = "~dummy@3password"
+}
+
+connection "azure_sub_2" {
+  plugin          = "azure"
+  tenant_id       = "00000000-0000-0000-0000-000000000000"
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  client_id       = "00000000-0000-0000-0000-000000000000"
+  client_secret   = "~dummy@3password"
+}
+```
+
+Each connection is implemented as a distinct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html).  As such, you can use qualified table names to query a specific connection:
+
+```sql
+select * from azure_sub_1.azure_subscription
+```
+
+Alternatively, can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/using-steampipe/managing-connections#setting-the-search-path):
+```sql
+select * from azure_subscription
+```
+
+You can multi-account connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection:
+
+```hcl
+connection "azure_all" {
+  plugin      = "azure"
+  type        = "aggregator"
+  connections = ["azure_sub_1", "azure_sub_2", "azure_sub_3"]
+}
+```
+
+Querying tables from this connection will return results from the `azure_sub_1`, `azure_sub_2`, and `azure_sub_3` connections:
+```sql
+select * from azure_all.azure_subscription
+```
+
+Steampipe supports the `*` wildcard in the connection names. For example, to aggregate all the Azure plugin connections whose names begin with `azure_`:
+
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+```
+
 ## Get involved
 
 - Open source: https://github.com/turbot/steampipe-plugin-azure
