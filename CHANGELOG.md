@@ -14,7 +14,7 @@ _Bug fixes_
 
 - Fixed the column `virtual_network_rules` of the `azure_cosmosdb_account` table to correctly return data instead of `null`. ([#532](https://github.com/turbot/steampipe-plugin-azure/pull/532))
 - Fixed the `azure_app_configuration table` table to correctly return results instead of returning an error. ([#531](https://github.com/turbot/steampipe-plugin-azure/pull/531))
-- Fixed the `capabilities`, `costs`, `location_info` and `restrictions` columns in `azure_compute_resource_sku` table to correctly return data instead of an empty array. ([#528](https://github.com/turbot/steampipe-plugin-azure/pull/528))
+- Fixed `capabilities`, `costs`, `location_info` and `restrictions` columns in `azure_compute_resource_sku` table to correctly return data instead of an empty array. ([#528](https://github.com/turbot/steampipe-plugin-azure/pull/528))
 - Fixed invalid references to `GCP Monitor` in various `azure_compute_*` table documents. ([#520](https://github.com/turbot/steampipe-plugin-azure/pull/520)) (Thanks [@JoshRosen](https://github.com/JoshRosen) for the fix!)
 
 ## v0.33.0 [2022-09-29]
