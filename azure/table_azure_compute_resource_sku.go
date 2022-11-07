@@ -92,19 +92,19 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Name:        "capabilities",
 				Description: "A name value pair to describe the capability",
 				Type:        proto.ColumnType_JSON,
-				Transform: 	 transform.FromMethod("ComputeResourceSkuCapabilities"),
+				Transform:   transform.FromMethod("ComputeResourceSkuCapabilities"),
 			},
 			{
 				Name:        "costs",
 				Description: "A list of metadata for retrieving price info",
 				Type:        proto.ColumnType_JSON,
-				Transform: 	 transform.FromMethod("ComputeResourceSkuCosts"),
+				Transform:   transform.FromMethod("ComputeResourceSkuCosts"),
 			},
 			{
 				Name:        "location_info",
 				Description: "A list of locations and availability zones in those locations where the SKU is available",
 				Type:        proto.ColumnType_JSON,
-				Transform: 	 transform.FromMethod("ComputeResourceSkuLocationInfo"),
+				Transform:   transform.FromMethod("ComputeResourceSkuLocationInfo"),
 			},
 			{
 				Name:        "locations",
@@ -116,7 +116,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Name:        "restrictions",
 				Description: "The restrictions because of which SKU cannot be used",
 				Type:        proto.ColumnType_JSON,
-				Transform: 	 transform.FromMethod("ComputeResourceSkuRestrictions"),
+				Transform:   transform.FromMethod("ComputeResourceSkuRestrictions"),
 			},
 
 			// Steampipe standard columns
@@ -141,10 +141,8 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 type skuInfo struct {
 	SubscriptionID string
 	// Capabilities 		[]map[string]interface{}
-	Sku            skus.ResourceSku
+	Sku skus.ResourceSku
 }
-
-
 
 //// LIST FUNCTION
 
@@ -201,7 +199,6 @@ func skuDataToAkas(ctx context.Context, d *transform.TransformData) (interface{}
 	akas := []string{strings.ToLower(id)}
 	return akas, nil
 }
-
 
 //// HELPER TRANSFORM FUNCTIONS to populate columns always returning [{}]
 
