@@ -526,7 +526,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	if h.HydrateResults["getVMNics"] == nil {
 		return nil, nil
 	}
-	
+
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")

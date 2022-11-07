@@ -32,7 +32,9 @@ type Session struct {
 	TenantID                string
 }
 
-/* GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
+/*
+	GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
+
 1. Client secret
 2. Client certificate
 3. Username and password
