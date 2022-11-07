@@ -112,9 +112,10 @@ connection "azure" {
 }
 ```
 
-## Specify multiple subscriptions
+## Multi-Subscription Connections
 
 You may create multiple azure connections:
+
 ```hcl
 connection "azure_all" {
   type        = "aggregator"
@@ -139,6 +140,7 @@ connection "azure_sub_3" {
 ```
 
 Depending on the mode of authentication, a multi-subscription configuration can also look like:
+
 ```hcl
 connection "azure_all" {
   type        = "aggregator"
@@ -163,18 +165,19 @@ connection "azure_sub_2" {
 }
 ```
 
-Each connection is implemented as a distinct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html).  As such, you can use qualified table names to query a specific connection:
+Each connection is implemented as a distinct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html). As such, you can use qualified table names to query a specific connection:
 
 ```sql
 select * from azure_sub_1.azure_subscription
 ```
 
-Alternatively, can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/using-steampipe/managing-connections#setting-the-search-path):
+Alternatively, you can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/using-steampipe/managing-connections#setting-the-search-path):
+
 ```sql
 select * from azure_subscription
 ```
 
-You can multi-account connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection:
+You can create multi-subscription connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection:
 
 ```hcl
 connection "azure_all" {
@@ -185,6 +188,7 @@ connection "azure_all" {
 ```
 
 Querying tables from this connection will return results from the `azure_sub_1`, `azure_sub_2`, and `azure_sub_3` connections:
+
 ```sql
 select * from azure_all.azure_subscription
 ```
@@ -198,11 +202,6 @@ connection "azure_all" {
   connections = ["azure_*"]
 }
 ```
-
-## Get involved
-
-- Open source: https://github.com/turbot/steampipe-plugin-azure
-- Community: [Slack Channel](https://steampipe.io/community/join)
 
 ## Configuring Azure Credentials
 
@@ -326,3 +325,8 @@ connection "azure" {
   plugin = "azure"
 }
 ```
+
+## Get involved
+
+- Open source: https://github.com/turbot/steampipe-plugin-azure
+- Community: [Slack Channel](https://steampipe.io/community/join)
