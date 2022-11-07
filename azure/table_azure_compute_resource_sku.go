@@ -140,7 +140,6 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 
 type skuInfo struct {
 	SubscriptionID string
-	// Capabilities 		[]map[string]interface{}
 	Sku skus.ResourceSku
 }
 
