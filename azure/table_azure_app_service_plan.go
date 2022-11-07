@@ -257,12 +257,22 @@ func getAppServicePlan(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	return op, nil
 }
 
+type AppServicePlanApp struct {
+	SiteProperties *web.SiteProperties
+	ID             *string
+	Name           *string
+	Kind           *string
+	Location       *string
+	Type           *string
+	Tags           map[string]*string
+}
+
 func getServicePlanApps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	servicePlan := h.Item.(web.AppServicePlan)
 
 	resourceGroupName := strings.Split(string(*servicePlan.ID), "/")[4]
 
-	var apps []web.Site
+	var apps []AppServicePlanApp
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -275,18 +285,57 @@ func getServicePlanApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	webClient.Authorizer = session.Authorizer
 
 	op, err := webClient.ListWebApps(ctx, resourceGroupName, *servicePlan.Name, "", "", "")
+
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_plan.getServicePlanApps", "api_error", err)
 		return nil, err
 	}
+	app := &AppServicePlanApp{}
+	for _, data := range op.Values() {
+		if data.SiteProperties != nil {
+			app.SiteProperties = data.SiteProperties
+		}
+		if data.Name != nil {
+			app.Name = data.Name
+		}
+		if data.ID != nil {
+			app.ID = data.ID
+		}
+		if data.Kind != nil {
+			app.Kind = data.Kind
+		}
+		if data.Type != nil {
+			app.Type = data.Type
+		}
+		app.Tags = data.Tags
+		apps = append(apps, *app)
+	}
 
-	apps = append(apps, op.Values()...)
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-		apps = append(apps, op.Values()...)
+		for _, data := range op.Values() {
+			if data.SiteProperties != nil {
+				app.SiteProperties = data.SiteProperties
+			}
+			if data.Name != nil {
+				app.Name = data.Name
+			}
+			if data.ID != nil {
+				app.ID = data.ID
+			}
+			if data.Kind != nil {
+				app.Kind = data.Kind
+			}
+			if data.Type != nil {
+				app.Type = data.Type
+			}
+			app.Tags = data.Tags
+			apps = append(apps, *app)
+		}
 	}
+	
 	return apps, nil
 }
