@@ -44,8 +44,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Name:        "provisioning_state",
 				Description: "he provisioning state of the network interface resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				// Transform: transform.FromField("Interface.ProvisioningState"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "ProvisioningState"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "ProvisioningState"),
 			},
 			{
 				Name:        "type",
@@ -62,71 +61,61 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Name:        "enable_accelerated_networking",
 				Description: "If the network interface is accelerated networking enabled.",
 				Type:        proto.ColumnType_BOOL,
-				// Transform: transform.FromField("Interface.EnableAcceleratedNetworking"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableAcceleratedNetworking"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableAcceleratedNetworking"),
 			},
 			{
 				Name:        "enable_ip_forwarding",
 				Description: "Indicates whether IP forwarding is enabled on this network interface.",
 				Type:        proto.ColumnType_BOOL,
-				// Transform: transform.FromField("Interface.EnableIPForwarding"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableIPForwarding"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableIPForwarding"),
 			},
 			{
 				Name:        "primary",
 				Description: "Whether this is a primary network interface on a virtual machine.",
 				Type:        proto.ColumnType_STRING,
-				// Transform: transform.FromField("Interface.Primary"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "Primary"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "Primary"),
 			},
 			{
 				Name:        "resource_guid",
 				Description: "The resource GUID property of the network interface resource.",
 				Type:        proto.ColumnType_STRING,
-				// Transform: transform.FromField("Interface.ResourceGUID"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "ResourceGUID"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "ResourceGUID"),
 			},
 			{
 				Name:        "dns_settings",
 				Description: "he DNS settings in network interface.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.DNSSettings"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "DNSSettings"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "DNSSettings"),
 			},
 			{
 				Name:        "hosted_workloads",
 				Description: "A list of references to linked BareMetal resources.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.HostedWorkloads"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "HostedWorkloads"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "HostedWorkloads"),
 			},
 			{
 				Name:        "ip_configurations",
 				Description: "A list of IPConfigurations of the network interface.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.IPConfigurations"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "IPConfigurations"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "IPConfigurations"),
 			},
 			{
 				Name:        "network_security_group",
 				Description: "The reference to the NetworkSecurityGroup resource.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.NetworkSecurityGroup"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "NetworkSecurityGroup"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "NetworkSecurityGroup"),
 			},
 			{
 				Name:        "private_endpoint",
 				Description: "A reference to the private endpoint to which the network interface is linked.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.PrivateEndpoint"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "PrivateEndpoint"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "PrivateEndpoint"),
 			},
 			{
-				Name:        "VirtualMachine",
+				Name:        "virtual_machine",
 				Description: "The reference to a virtual machine.",
 				Type:        proto.ColumnType_JSON,
-				// Transform: transform.FromField("Interface.VirtualMachine"),
-				Transform: transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "VirtualMachine"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "VirtualMachine"),
 			},
 
 			// Steampipe standard columns
@@ -178,10 +167,10 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 	client := network.NewInterfacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	scaleSetInfo := h.Item.(compute.VirtualMachineScaleSet)
-	resourceGroupName := strings.Split(string(*scaleSetInfo.ID), "/")[4]
+	scaleSetinfo := h.Item.(compute.VirtualMachineScaleSet)
+	resourceGroupName := strings.Split(string(*scaleSetinfo.ID), "/")[4]
 
-	result, err := client.ListVirtualMachineScaleSetNetworkInterfaces(ctx, resourceGroupName, *scaleSetInfo.Name)
+	result, err := client.ListVirtualMachineScaleSetNetworkInterfaces(ctx, resourceGroupName, *scaleSetinfo.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_compute_virtual_machine_scale_set_network_interface.listAzureComputeVirtualMachineScaleSetInterfaces", "api_error", err)
 		return nil, err
