@@ -140,7 +140,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 
 type skuInfo struct {
 	SubscriptionID string
-	Sku skus.ResourceSku
+	Sku            skus.ResourceSku
 }
 
 //// LIST FUNCTION
