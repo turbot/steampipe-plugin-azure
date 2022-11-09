@@ -48,7 +48,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		session = cachedData.(*Session)
 		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
-			logger.Info("GetNewSession", "cache expired", "delete cache and obtain new session token")
+			logger.Trace("GetNewSession", "cache expired", "delete cache and obtain new session token")
 			d.ConnectionManager.Cache.Delete(cacheKey)
 		} else {
 			return cachedData.(*Session), nil
@@ -161,16 +161,16 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
-		logger.Warn("Getting token for authorizer from Azure CLI")
+		logger.Trace("Getting token for authorizer from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
-			plugin.Logger(ctx).Error("GetNewSession", "cli.GetTokenFromCLI error", err)
+			plugin.Logger(ctx).Error("GetNewSession", "get_token_from_cli_error", err)
 			return nil, err
 		}
 
 		adalToken, err := token.ToADALToken()
 		expiresOn = types.Time(adalToken.Expires())
-		logger.Warn("GetNewSession", "Getting token for authorizer from Azure CLI, expiresOn", expiresOn.Local())
+		logger.Trace("GetNewSession", "Getting token for authorizer from Azure CLI, expiresOn", expiresOn.Local())
 
 		if err != nil {
 			logger.Error("GetNewSession", "Get token from Azure CLI error", err)
@@ -182,13 +182,13 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		}
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 	default:
-		return nil, fmt.Errorf("GetNewSession. invalid authenticaion method, please check plugin configuration and restart plugin.")
+		return nil, fmt.Errorf("invalid Azure authentication method: %s", authMethod)
 	}
 
 	// Get the subscription ID and tenant ID from CLI if not set in connection
 	// config or environment variables
 	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] == "") {
-		logger.Debug("Getting subscription ID and/or tenant ID from from Azure CLI")
+		logger.Trace("Getting subscription ID and/or tenant ID from from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
 			logger.Error("GetNewSession", "getSubscriptionFromCLI error", err)
