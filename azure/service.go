@@ -164,7 +164,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		logger.Trace("Getting token for authorizer from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
-			plugin.Logger(ctx).Error("GetNewSession", "get_token_from_cli_error", err)
+			logger.Error("GetNewSession", "get_token_from_cli_error", err)
 			return nil, err
 		}
 
