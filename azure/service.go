@@ -48,6 +48,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		session = cachedData.(*Session)
 		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
+			logger.Info("GetNewSession", "cache expired", "delete cache and obtain new session token")
 			d.ConnectionManager.Cache.Delete(cacheKey)
 		} else {
 			return cachedData.(*Session), nil
@@ -160,45 +161,34 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
-		logger.Trace("Creating new session authorizer from Azure CLI")
-		authorizer, err = auth.NewAuthorizerFromCLIWithResource(resource)
-		if err != nil {
-			logger.Error("GetNewSession", "NewAuthorizerFromCLIWithResource error", err)
-
-			// Check if the password was changed and the session token is stored in
-			// the system, or if the CLI is outdated
-			if strings.Contains(err.Error(), "invalid_grant") {
-				return nil, fmt.Errorf("ValidationError: The credential data used by the CLI has expired because you might have changed or reset the password. Please clear your browser's cookies and run 'az login'.")
-			}
-			return nil, err
-		}
-	default:
-		logger.Trace("Getting token for authorizer from Azure CLI")
+		logger.Warn("Getting token for authorizer from Azure CLI")
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
+			plugin.Logger(ctx).Error("GetNewSession", "cli.GetTokenFromCLI error", err)
 			return nil, err
 		}
 
 		adalToken, err := token.ToADALToken()
 		expiresOn = types.Time(adalToken.Expires())
+		logger.Warn("GetNewSession", "Getting token for authorizer from Azure CLI, expiresOn", expiresOn.Local())
 
 		if err != nil {
 			logger.Error("GetNewSession", "Get token from Azure CLI error", err)
-
-			// Check if the password was changed and the session token is stored in
-			// the system, or if the CLI is outdated
+			// Check if the password was changed and the session token is stored in the system, or if the CLI is outdated
 			if strings.Contains(err.Error(), "invalid_grant") {
 				return nil, fmt.Errorf("ValidationError: The credential data used by the CLI has expired because you might have changed or reset the password. Please clear your browser's cookies and run 'az login'.")
 			}
 			return nil, err
 		}
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
+	default:
+		return nil, fmt.Errorf("GetNewSession. invalid authenticaion method, please check plugin configuration and restart plugin.")
 	}
 
 	// Get the subscription ID and tenant ID from CLI if not set in connection
 	// config or environment variables
 	if authMethod == "CLI" && (settings.Values[auth.SubscriptionID] == "" || settings.Values[auth.TenantID] == "") {
-		logger.Trace("Getting subscription ID and/or tenant ID from from Azure CLI")
+		logger.Debug("Getting subscription ID and/or tenant ID from from Azure CLI")
 		subscription, err := getSubscriptionFromCLI(resource)
 		if err != nil {
 			logger.Error("GetNewSession", "getSubscriptionFromCLI error", err)
