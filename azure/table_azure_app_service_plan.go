@@ -336,6 +336,6 @@ func getServicePlanApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 			apps = append(apps, *app)
 		}
 	}
-	
+
 	return apps, nil
 }
