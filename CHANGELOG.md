@@ -1,3 +1,9 @@
+## v0.34.2 [2022-11-11]
+
+_Bug fixes_
+
+- Fixed the authentication flow to correctly refresh expired Azure CLI token credentials. ([#544](https://github.com/turbot/steampipe-plugin-azure/pull/544))
+
 ## v0.34.1 [2022-11-10]
 
 _Dependencies_
