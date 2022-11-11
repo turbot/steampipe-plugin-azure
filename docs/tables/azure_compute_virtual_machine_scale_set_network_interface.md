@@ -48,7 +48,7 @@ where
 
 ### Get scale set virtual machine details for scale set network interface
 
-``sql
+```sql
 select
   i.name as name,
   i.id as id,
