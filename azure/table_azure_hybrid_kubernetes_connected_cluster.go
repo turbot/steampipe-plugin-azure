@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/kubernetesconfiguration/mgmt/kubernetesconfiguration"
+	"github.com/Azure/azure-sdk-for-go/services/kubernetesconfiguration/mgmt/2021-09-01/kubernetesconfiguration"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
@@ -293,7 +293,7 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 
 	client := kubernetesconfiguration.NewExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	extensions := []kubernetesconfiguration.ExtensionInstance{}
+	extensions := []kubernetesconfiguration.Extension{}
 	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list", err)

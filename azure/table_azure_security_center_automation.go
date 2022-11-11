@@ -126,7 +126,7 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	subscriptionID := session.SubscriptionID
-	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
 
 	result, err := automationClient.List(ctx)
@@ -173,7 +173,7 @@ func getSecurityCenterAutomation(ctx context.Context, d *plugin.QueryData, _ *pl
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
 
 	automation, err := automationClient.Get(ctx, resourceGroup, name)

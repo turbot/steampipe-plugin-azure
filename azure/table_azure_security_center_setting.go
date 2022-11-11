@@ -78,7 +78,7 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
 	result, err := settingClient.List(ctx)
@@ -123,10 +123,10 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
-	setting, err := settingClient.Get(ctx, name)
+	setting, err := settingClient.Get(ctx, security.SettingName4(name))
 	if err != nil {
 		return err, nil
 	}
