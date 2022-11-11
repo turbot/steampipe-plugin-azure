@@ -59,5 +59,5 @@ from
   azure_compute_virtual_machine_scale_set_network_interface as i,
   azure_compute_virtual_machine_scale_set_vm as v
 where
-  i.virtual_machine ->> 'id' = v.id
+  i.virtual_machine ->> 'id' = v.id;
 ```
