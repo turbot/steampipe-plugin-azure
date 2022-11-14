@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/Azure/azure-sdk-for-go v67.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/apimanagement/armapimanagement v1.0.0
 	github.com/Azure/azure-storage-blob-go v0.12.0
 	github.com/Azure/go-autorest/autorest v0.11.17
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
@@ -16,6 +17,8 @@ require (
 
 require (
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.0.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.10 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
@@ -90,9 +93,9 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.30.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.16.0 // indirect
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
+	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88 // indirect
 	golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf // indirect
-	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
