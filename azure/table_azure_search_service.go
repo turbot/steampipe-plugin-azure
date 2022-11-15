@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/Azure/azure-sdk-for-go/services/search/mgmt/2020-08-01/search"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/search/mgmt/search"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"

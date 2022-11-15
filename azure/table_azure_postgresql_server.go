@@ -8,7 +8,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/postgresql/mgmt/2020-01-01/postgresql"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/postgresql/mgmt/postgresql"
 	"github.com/Azure/go-autorest/autorest/date"
 )
 

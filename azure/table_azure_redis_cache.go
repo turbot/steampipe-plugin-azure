@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/redis/mgmt/2020-06-01/redis"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/redis/mgmt/redis"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
