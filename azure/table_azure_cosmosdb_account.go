@@ -212,7 +212,7 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Name:        "virtual_network_rules",
 				Description: "A list of Virtual Network ACL rules configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.VirtualNetworkRules"),
+				Transform:   transform.From(extractCosmosDBVirtualNetworkRule),
 			},
 			{
 				Name:        "write_locations",
@@ -310,4 +310,16 @@ func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 
 	return databaseAccountInfo{op, op.Name, &resourceGroup}, nil
+}
+
+//// TRANSFORM FUNCTIONS
+
+func extractCosmosDBVirtualNetworkRule(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	info := d.HydrateItem.(databaseAccountInfo)
+	if info.DatabaseAccount.DatabaseAccountGetProperties != nil {
+		if info.DatabaseAccount.DatabaseAccountGetProperties.VirtualNetworkRules != nil {
+			return *info.DatabaseAccount.DatabaseAccountGetProperties.VirtualNetworkRules, nil
+		}
+	}
+	return nil, nil
 }

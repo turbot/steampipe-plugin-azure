@@ -110,6 +110,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_mssql_virtual_machine":                                 tableAzureMSSQLVirtualMachine(ctx),
 			"azure_mysql_flexible_server":                                 tableAzureMySQLFlexibleServer(ctx),
 			"azure_mysql_server":                                          tableAzureMySQLServer(ctx),
+			"azure_nat_gateway":                                           tableAzureNatGateway(ctx),
 			"azure_network_interface":                                     tableAzureNetworkInterface(ctx),
 			"azure_network_security_group":                                tableAzureNetworkSecurityGroup(ctx),
 			"azure_network_watcher":                                       tableAzureNetworkWatcher(ctx),

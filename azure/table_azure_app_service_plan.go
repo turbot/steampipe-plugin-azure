@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	// "github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
@@ -139,6 +140,13 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AppServicePlanProperties.Status").Transform(transform.ToString),
 			},
+			{
+				Name:        "apps",
+				Description: "Site a web app, a mobile app backend, or an API app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getServicePlanApps,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -248,4 +256,87 @@ func getAppServicePlan(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		return nil, err
 	}
 	return op, nil
+}
+
+type AppServicePlanApp struct {
+	SiteProperties *web.SiteProperties
+	ID             *string
+	Name           *string
+	Kind           *string
+	Location       *string
+	Type           *string
+	Tags           map[string]*string
+}
+
+func getServicePlanApps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	servicePlan := h.Item.(web.AppServicePlan)
+
+	resourceGroupName := strings.Split(string(*servicePlan.ID), "/")[4]
+
+	var apps []AppServicePlanApp
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_plan.getServicePlanApps", "session_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.ListWebApps(ctx, resourceGroupName, *servicePlan.Name, "", "", "")
+
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_plan.getServicePlanApps", "api_error", err)
+		return nil, err
+	}
+	app := &AppServicePlanApp{}
+	for _, data := range op.Values() {
+		if data.SiteProperties != nil {
+			app.SiteProperties = data.SiteProperties
+		}
+		if data.Name != nil {
+			app.Name = data.Name
+		}
+		if data.ID != nil {
+			app.ID = data.ID
+		}
+		if data.Kind != nil {
+			app.Kind = data.Kind
+		}
+		if data.Type != nil {
+			app.Type = data.Type
+		}
+		app.Tags = data.Tags
+		apps = append(apps, *app)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, data := range op.Values() {
+			if data.SiteProperties != nil {
+				app.SiteProperties = data.SiteProperties
+			}
+			if data.Name != nil {
+				app.Name = data.Name
+			}
+			if data.ID != nil {
+				app.ID = data.ID
+			}
+			if data.Kind != nil {
+				app.Kind = data.Kind
+			}
+			if data.Type != nil {
+				app.Type = data.Type
+			}
+			app.Tags = data.Tags
+			apps = append(apps, *app)
+		}
+	}
+
+	return apps, nil
 }

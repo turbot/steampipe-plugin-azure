@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_metric_cpu_utilization_daily
 
-GCP Monitoring metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization_daily` table provides metric statistics at 24 hours intervals for the most recent 1 year.
+Azure Monitor metrics provide data about the performance of your systems. The `azure_compute_virtual_machine_metric_cpu_utilization_daily` table provides metric statistics at 24 hours intervals for the most recent 1 year.
 
 ## Examples
 

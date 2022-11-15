@@ -258,9 +258,9 @@ func getPublicNetworkAccess(ctx context.Context, d *plugin.QueryData, h *plugin.
 	// In case of automatic is selected at the time of store creation, PublicNetworkAccess value will be nil in API response.
 	// With a private endpoint, public network access will be automatically disabled.
 	// If there is no private endpoint present, public network access is automatically enabled.
-	if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) == 0 {
+	if len(configurationStore.PublicNetworkAccess) == 0 && configurationStore.PrivateEndpointConnections == nil {
 		return "Enabled", nil
-	} else if len(configurationStore.PublicNetworkAccess) == 0 && len(*configurationStore.PrivateEndpointConnections) != 0 {
+	} else if len(configurationStore.PublicNetworkAccess) == 0 && configurationStore.PrivateEndpointConnections != nil {
 		return "Disabled", nil
 	}
 

@@ -18,8 +18,8 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		Name:        "azure_diagnostic_setting",
 		Description: "Azure Diagnostic Setting",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.SingleColumn("name"),
-			Hydrate:           getDiagnosticSetting,
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getDiagnosticSetting,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},

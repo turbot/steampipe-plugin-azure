@@ -27,7 +27,7 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
-			Hydrate: listMySQLFlexibleServers,
+			Hydrate:       listMySQLFlexibleServers,
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -18,8 +18,8 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 		Name:        "azure_mssql_managed_instance",
 		Description: "Azure Microsoft SQL Managed Instance",
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:           getMSSQLManagedInstance,
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getMSSQLManagedInstance,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
