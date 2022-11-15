@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2022-10-01-preview/insights"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/metrics"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
@@ -15,9 +15,9 @@ type monitoringMetric struct {
 	// Resource Name
 	DimensionValue string
 	// MetadataValue represents a metric metadata value.
-	MetaData *insights.MetadataValue
+	MetaData *metrics.MetadataValue
 	// Metric the result data of a query.
-	Metric *insights.Metric
+	Metric *metrics.Metric
 	// The maximum metric value for the data point.
 	Maximum *float64
 	// The minimum metric value for the data point.
@@ -134,7 +134,7 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 	}
 	subscriptionID := session.SubscriptionID
 
-	monitoringClient := insights.NewMetricsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	monitoringClient := metrics.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	monitoringClient.Authorizer = session.Authorizer
 
 	// Define param values
@@ -144,8 +144,10 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 	orderBy := "timestamp"
 	top := int32(1000) // Maximum number of record fetch with given interval
 	filter := ""
+	autoAdjustTimegrain := false
+	validateDimensions := false
 
-	result, err := monitoringClient.List(ctx, dimensionValue, timeSpan, &interval, metricNames, aggregation, &top, orderBy, filter, insights.ResultTypeData, metricNameSpace)
+	result, err := monitoringClient.List(ctx, dimensionValue, timeSpan, &interval, metricNames, aggregation, &top, orderBy, filter, metrics.ResultTypeData, metricNameSpace, &autoAdjustTimegrain, &validateDimensions)
 	if err != nil {
 		return nil, err
 	}
