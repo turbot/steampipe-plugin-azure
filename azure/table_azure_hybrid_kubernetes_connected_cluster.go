@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/hybridkubernetes/mgmt/hybridkubernetes"
-	"github.com/Azure/azure-sdk-for-go/services/kubernetesconfiguration/mgmt/2021-09-01/kubernetesconfiguration"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/kubernetesconfiguration/mgmt/kubernetesconfiguration"
+
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
