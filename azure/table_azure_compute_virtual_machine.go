@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/guestconfiguration/mgmt/2020-06-25/guestconfiguration"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/guestconfiguration/mgmt/guestconfiguration"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
@@ -401,7 +401,7 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	result, err := client.ListAll(ctx, "")
+	result, err := client.ListAll(ctx, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +526,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	if h.HydrateResults["getVMNics"] == nil {
 		return nil, nil
 	}
-	
+
 	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
