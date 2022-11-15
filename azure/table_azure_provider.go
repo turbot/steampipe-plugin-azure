@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
@@ -77,7 +77,7 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	resourcesClient := resources.NewProvidersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
-	result, err := resourcesClient.List(ctx, nil, "")
+	result, err := resourcesClient.List(ctx, "")
 	if err != nil {
 		return nil, err
 	}

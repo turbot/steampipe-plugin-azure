@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
@@ -73,7 +73,7 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 	}
 
 	subscriptionID := session.SubscriptionID
-	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	autoProvisioningClient.Authorizer = session.Authorizer
 
 	result, err := autoProvisioningClient.List(ctx)
@@ -118,7 +118,7 @@ func getSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData,
 	name := d.KeyColumnQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	autoProvisioningClient.Authorizer = session.Authorizer
 
 	autoProvisioning, err := autoProvisioningClient.Get(ctx, name)
