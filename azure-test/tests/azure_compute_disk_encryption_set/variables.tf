@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c1"
   description = "Azure subscription used for the test."
 }
 
@@ -121,7 +121,7 @@ output "resource_name" {
 }
 
 output "resource_name_upper" {
-  value = "${upper(var.resource_name)}"
+  value = upper(var.resource_name)
 }
 
 output "resource_id" {

@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c1"
   description = "Azure subscription used for the test."
 }
 
@@ -36,14 +36,14 @@ resource "azurerm_resource_group" "named_test_resource" {
  name     = var.resource_name
  location = "West Europe"
 }
- 
+
 resource "azurerm_api_management" "named_test_resource" {
  name                = var.resource_name
  location            = azurerm_resource_group.named_test_resource.location
  resource_group_name = azurerm_resource_group.named_test_resource.name
  publisher_name      = "TurbotHQ"
  publisher_email     = "test@turbot.com"
- 
+
  sku_name = "Developer_1"
 }
 
