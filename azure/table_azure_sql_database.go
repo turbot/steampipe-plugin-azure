@@ -4,9 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv3 "github.com/Azure/azure-sdk-for-go/services/sql/mgmt/2014-04-01/sql"
-	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	sql "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
@@ -300,29 +299,39 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "connection error", err)
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	server := h.Item.(sqlv3.Server)
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
-
-	result, err := client.ListByServer(ctx, resourceGroupName, *server.Name, "", "")
+	client, err := sql.NewDatabasesClient(subscriptionID, cred, nil)
 	if err != nil {
-		return nil, err
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "client error", err)
 	}
 
-	for _, database := range *result.Value {
-		d.StreamLeafListItem(ctx, database)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
-			return nil, nil
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	pager := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
+
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "api error", err)
+		}
+		for _, database := range nextResult.Value {
+			d.StreamListItem(ctx, database)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
@@ -332,11 +341,9 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 //// HYDRATE FUNCTIONS
 
 func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSqlDatabase")
-
 	var serverName, databaseName, resourceGroupName string
 	if h.Item != nil {
-		database := h.Item.(sql.Database)
+		database := h.Item.(*sql.Database)
 		serverName = strings.Split(*database.ID, "/")[8]
 		databaseName = *database.Name
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
@@ -346,16 +353,22 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
 	}
 
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "credential error", err)
+	}
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewDatabasesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "client error", err)
+	}
 
-	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, "")
+	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -370,10 +383,15 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 }
 
 func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(*sql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -381,28 +399,39 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewTransparentDataEncryptionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName)
+	client, err := sql.NewTransparentDataEncryptionsClient(subscriptionID, cred, nil)
 	if err != nil {
-		return nil, err
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "client error", err)
 	}
+
+	op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "api error", err)
+		}
+
+		if len(nextResult.LogicalDatabaseTransparentDataEncryptionListResult.Value) > 0 {
+			return nextResult.LogicalDatabaseTransparentDataEncryptionListResult.Value[0], nil
+		}
 	}
 
 	return nil, nil
 }
 
 func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(*sql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -410,30 +439,39 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewLongTermRetentionPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewLongTermRetentionPoliciesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "client error", err)
+	}
 
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
 	if err != nil {
 		return nil, err
 	}
-
-	// We can add only one retention policy per SQL Database.
-	res := op.Values()
-
-	// For master database we are getting the response as empty array
-	if len(res) == 0 {
-		return nil, nil
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "api error", err)
+		}
+		// We can add only one retention policy per SQL Database.
+		if len(nextResult.LongTermRetentionPolicyListResult.Value) > 0 {
+			return nextResult.LongTermRetentionPolicyListResult.Value[0], nil
+		}
 	}
 
-	return res[0], nil
+	return nil, nil
 }
 
 func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(*sql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -441,49 +479,24 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewDatabaseVulnerabilityAssessmentsClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "client error", err)
+	}
 
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var vulnerabilityAssessments []map[string]interface{}
-
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
-		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
-			objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-			objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-			objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-			objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
-		}
-		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "api error", err)
 		}
-		for _, i := range op.Values() {
-			objectMap := make(map[string]interface{})
+		objectMap := make(map[string]interface{})
+		for _, i := range nextResult.Value {
 			if i.ID != nil {
 				objectMap["id"] = i.ID
 			}
@@ -493,17 +506,17 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 			if i.Type != nil {
 				objectMap["type"] = i.Type
 			}
-			if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
-				objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
+			if i.Properties.RecurringScans != nil {
+				objectMap["recurringScans"] = i.Properties.RecurringScans
 			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-				objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
+			if i.Properties.StorageAccountAccessKey != nil {
+				objectMap["storageAccountAccessKey"] = *i.Properties.StorageAccountAccessKey
 			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-				objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
+			if i.Properties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = *i.Properties.StorageContainerPath
 			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-				objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
+			if i.Properties.StorageContainerSasKey != nil {
+				objectMap["storageContainerSasKey"] = *i.Properties.StorageContainerSasKey
 			}
 			vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 		}
@@ -513,10 +526,15 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 }
 
 func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(*sql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+		cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -524,18 +542,25 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+		client, err := sql.NewDatabaseVulnerabilityAssessmentScansClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "client error", err)
+	}
 
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+		op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, sql.VulnerabilityAssessmentNameDefault, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var vulnerabilityAssessmentScanRecords []map[string]interface{}
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "api error", err)
+		}
 
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
+		for _, i := range nextResult.Value {
+			objectMap := make(map[string]interface{})
 		if i.ID != nil {
 			objectMap["id"] = i.ID
 		}
@@ -545,74 +570,31 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 		if i.Type != nil {
 			objectMap["type"] = i.Type
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
-			objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
+		if i.Properties.ScanID != nil {
+			objectMap["scanID"] = *i.Properties.ScanID
 		}
-		if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
-			objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
+		if len(*i.Properties.TriggerType) > 0 {
+			objectMap["triggerType"] = i.Properties.TriggerType
 		}
-		if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
-			objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
+		if len(*i.Properties.State) > 0 {
+			objectMap["state"] = i.Properties.State
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
-			objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
+		if i.Properties.StartTime != nil {
+			objectMap["startTime"] = i.Properties.StartTime
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
-			objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
+		if i.Properties.EndTime != nil {
+			objectMap["endTime"] = i.Properties.EndTime
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
-			objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
+		if i.Properties.Errors != nil {
+			objectMap["errors"] = i.Properties.Errors
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
-			objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
+		if i.Properties.StorageContainerPath != nil {
+			objectMap["storageContainerPath"] = i.Properties.StorageContainerPath
 		}
-		if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
-			objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
+		if i.Properties.NumberOfFailedSecurityChecks != nil {
+			objectMap["numberOfFailedSecurityChecks"] = *i.Properties.NumberOfFailedSecurityChecks
 		}
 		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, i := range op.Values() {
-			objectMap := make(map[string]interface{})
-			if i.ID != nil {
-				objectMap["id"] = i.ID
-			}
-			if i.Name != nil {
-				objectMap["name"] = i.Name
-			}
-			if i.Type != nil {
-				objectMap["type"] = i.Type
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
-				objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
-			}
-			if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
-				objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
-			}
-			if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
-				objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
-				objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
-				objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
-				objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
-				objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
-				objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
-			}
-			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
 		}
 	}
 

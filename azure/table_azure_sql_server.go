@@ -8,8 +8,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	sql "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -49,7 +49,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Name:        "state",
 				Description: "The state of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.State"),
+				Transform:   transform.FromField("Properties.State"),
 			},
 			{
 				Name:        "kind",
@@ -65,37 +65,37 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Name:        "administrator_login",
 				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
+				Transform:   transform.FromField("Properties.AdministratorLogin"),
 			},
 			{
 				Name:        "administrator_login_password",
 				Description: "The administrator login password.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
+				Transform:   transform.FromField("Properties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "minimal_tls_version",
 				Description: "Minimal TLS version. Allowed values: '1.0', '1.1', '1.2'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.MinimalTLSVersion"),
+				Transform:   transform.FromField("Properties.MinimalTLSVersion"),
 			},
 			{
 				Name:        "public_network_access",
 				Description: "Whether or not public endpoint access is allowed for this server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.PublicNetworkAccess"),
+				Transform:   transform.FromField("Properties.PublicNetworkAccess"),
 			},
 			{
 				Name:        "version",
 				Description: "The version of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.Version"),
+				Transform:   transform.FromField("Properties.Version"),
 			},
 			{
 				Name:        "fully_qualified_domain_name",
 				Description: "The fully qualified domain name of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.FullyQualifiedDomainName"),
+				Transform:   transform.FromField("Properties.FullyQualifiedDomainName"),
 			},
 			{
 				Name:        "server_audit_policy",
@@ -210,33 +210,30 @@ type PrivateConnectionInfo struct {
 //// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "connection error", err)
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "session error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sqlv5.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx, "")
+	client, err := sql.NewServersClient(subscriptionID, cred, nil)
 	if err != nil {
-		return nil, err
-	}
-	for _, server := range result.Values() {
-		d.StreamListItem(ctx, server)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "client error", err)
 	}
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "api error", err)
 		}
-		for _, server := range result.Values() {
+		for _, server := range nextResult.Value {
 			d.StreamListItem(ctx, server)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -245,16 +242,21 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 			}
 		}
 	}
+
 	return nil, err
 }
 
 //// HYDRATE FUNCTIONS
 
 func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServer")
 
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -262,11 +264,14 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlv5.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroup, name, "")
+	client, err := sql.NewServersClient(subscriptionID, cred, nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "client error", err)
+	}
+
+	op, err := client.Get(ctx, resourceGroup, name, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "api error", err)
 		return nil, err
 	}
 
@@ -280,20 +285,26 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 }
 
 func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerAuditPolicy")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewServerBlobAuditingPoliciesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "client error", err)
+	}
 
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -301,326 +312,401 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	// If we return the API response directly, the output only gives
 	// the contents of ServerBlobAuditingPolicyProperties
 	var auditPolicies []map[string]interface{}
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, policy := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if policy.ID != nil {
+				objectMap["id"] = policy.ID
+			}
+			if policy.Name != nil {
+				objectMap["name"] = policy.Name
+			}
+			if policy.Type != nil {
+				objectMap["type"] = policy.Type
+			}
+			if policy.Properties != nil {
+				objectMap["properties"] = policy.Properties
+			}
+			auditPolicies = append(auditPolicies, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.ServerBlobAuditingPolicyProperties != nil {
-			objectMap["properties"] = i.ServerBlobAuditingPolicyProperties
-		}
-		auditPolicies = append(auditPolicies, objectMap)
 	}
 	return auditPolicies, nil
 }
 
 func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listSQLServerPrivateEndpointConnections")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerPrivateEndpointConnections", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv5.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	client, err := sql.NewPrivateEndpointConnectionsClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer", err)
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerPrivateEndpointConnections", "client error", err)
+	}
+
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
+	if err != nil {
 		return nil, err
 	}
 
 	var privateEndpointConnections []PrivateConnectionInfo
 	var connection PrivateConnectionInfo
 
-	for _, conn := range op.Values() {
-		connection = privateEndpointConnectionMap(conn)
-		privateEndpointConnections = append(privateEndpointConnections, connection)
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listSQLServerPrivateEndpointConnections", "ListByServer_pagination", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "api error", err)
 		}
-		for _, conn := range op.Values() {
-			connection = privateEndpointConnectionMap(conn)
+		for _, endpoint := range nextResult.Value {
+			connection = privateEndpointConnectionMap(endpoint)
 			privateEndpointConnections = append(privateEndpointConnections, connection)
 		}
 	}
+
 	return privateEndpointConnections, nil
 }
 
 func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerSecurityAlertPolicy")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewServerSecurityAlertPoliciesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "client error", err)
+	}
 
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
 
+	var securityAlertPolicies []map[string]interface{}
+
 	// If we return the API response directly, the output only gives
 	// the contents of SecurityAlertPolicyProperties
-	var securityAlertPolicies []map[string]interface{}
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, alertPolicy := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if alertPolicy.ID != nil {
+				objectMap["id"] = alertPolicy.ID
+			}
+			if alertPolicy.Name != nil {
+				objectMap["name"] = alertPolicy.Name
+			}
+			if alertPolicy.Type != nil {
+				objectMap["type"] = alertPolicy.Type
+			}
+			if alertPolicy.Properties != nil {
+				objectMap["properties"] = alertPolicy.Properties
+			}
+			securityAlertPolicies = append(securityAlertPolicies, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.SecurityAlertPolicyProperties != nil {
-			objectMap["properties"] = i.SecurityAlertPolicyProperties
-		}
-		securityAlertPolicies = append(securityAlertPolicies, objectMap)
 	}
+
 	return securityAlertPolicies, nil
 }
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerAzureADAdministrator")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewServerAzureADAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	client, err := sql.NewServerAzureADAdministratorsClient(subscriptionID, cred, nil)
 	if err != nil {
-		if strings.Contains(err.Error(), "NotFound") {
-			return nil, nil
-		}
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "client error", err)
+	}
+
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
+	if err != nil {
 		return nil, err
 	}
 
+	var serverAdministrators []map[string]interface{}
 	// If we return the API response directly, the output only gives
 	// the contents of ServerAdministratorProperties
-	var serverAdministrators []map[string]interface{}
-	for _, i := range *op.Value {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, i := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			serverAdministrators = append(serverAdministrators, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.ServerAdministratorProperties != nil {
-			objectMap["properties"] = i.ServerAdministratorProperties
-		}
-		serverAdministrators = append(serverAdministrators, objectMap)
 	}
+
 	return serverAdministrators, nil
 }
 
 func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerEncryptionProtector")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewEncryptionProtectorsClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "client error", err)
+	}
 
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
-	// the contents of EncryptionProtectorProperties
 	var encryptionProtectors []map[string]interface{}
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+
+	// If we return the API response directly, the output only gives
+	// the contents of ServerAdministratorProperties
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, i := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Location != nil {
+				objectMap["location"] = i.Location
+			}
+			if i.Kind != nil {
+				objectMap["kind"] = i.Kind
+			}
+			if i.Properties != nil {
+
+				if i.Properties.Subregion != nil {
+					objectMap["subregion"] = i.Properties.Subregion
+				}
+				if i.Properties.ServerKeyName != nil {
+					objectMap["serverKeyName"] = i.Properties.ServerKeyName
+				}
+				if i.Properties.ServerKeyType != nil {
+					objectMap["serverKeyType"] = i.Properties.ServerKeyType
+				}
+				if i.Properties.URI != nil {
+					objectMap["uri"] = i.Properties.URI
+				}
+				if i.Properties.Thumbprint != nil {
+					objectMap["thumbprint"] = i.Properties.Thumbprint
+				}
+			}
+			encryptionProtectors = append(encryptionProtectors, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.Location != nil {
-			objectMap["location"] = i.Location
-		}
-		if i.Kind != nil {
-			objectMap["kind"] = i.Kind
-		}
-		if i.Subregion != nil {
-			objectMap["subregion"] = i.Subregion
-		}
-		if i.ServerKeyName != nil {
-			objectMap["serverKeyName"] = i.ServerKeyName
-		}
-		if i.ServerKeyType != "" {
-			objectMap["serverKeyType"] = i.ServerKeyType
-		}
-		if i.URI != nil {
-			objectMap["uri"] = i.URI
-		}
-		if i.Thumbprint != nil {
-			objectMap["thumbprint"] = i.Thumbprint
-		}
-		encryptionProtectors = append(encryptionProtectors, objectMap)
 	}
 
 	return encryptionProtectors, nil
 }
 
 func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSQLServerVulnerabilityAssessment")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sqlv5.NewServerVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewServerVulnerabilityAssessmentsClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "client error", err)
+	}
 
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
 
+	var vulnerabilityAssessments []map[string]interface{}
+
 	// If we return the API response directly, the output only gives
 	// the contents of ServerVulnerabilityAssessmentProperties
-	var vulnerabilityAssessments []map[string]interface{}
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, i := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.ServerVulnerabilityAssessmentProperties != nil {
-			objectMap["properties"] = i.ServerVulnerabilityAssessmentProperties
-		}
-		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
 	}
+
 	return vulnerabilityAssessments, nil
 }
 
 func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listSQLServerFirewallRules")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewFirewallRulesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "client error", err)
+	}
 
-	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
+	var firewallRules []map[string]interface{}
 
 	// If we return the API response directly, the output only gives
 	// the contents of FirewallRuleProperties
-	var firewallRules []map[string]interface{}
-	for _, i := range *op.Value {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "api error", err)
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, i := range nextResult.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			firewallRules = append(firewallRules, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.FirewallRuleProperties != nil {
-			objectMap["properties"] = i.FirewallRuleProperties
-		}
-		firewallRules = append(firewallRules, objectMap)
 	}
 
 	return firewallRules, nil
 }
 
 func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listSQLServerVirtualNetworkRules")
-	server := h.Item.(sqlv5.Server)
+	server := h.Item.(*sql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	client := sql.NewVirtualNetworkRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
+	client, err := sql.NewVirtualNetworkRulesClient(subscriptionID, cred, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "client error", err)
+	}
 
-	// If we return the API response directly, the output only gives
-	// the contents of VirtualNetworkRuleProperties
-	var NetworkRules []map[string]interface{}
-	result, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	op := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	if err != nil {
 		return nil, err
 	}
-	for _, networkRule := range result.Values() {
-		NetworkRules = append(NetworkRules, networkRuleMap(networkRule))
-	}
+	var NetworkRules []map[string]interface{}
 
-	for result.NotDone() {
-		err := result.NextWithContext(ctx)
+	// If we return the API response directly, the output only gives
+	// the contents of VirtualNetworkRuleProperties
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			return nil, err
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "api error", err)
 		}
-		for _, networkRule := range result.Values() {
+		for _, networkRule := range nextResult.Value {
 			NetworkRules = append(NetworkRules, networkRuleMap(networkRule))
 		}
 	}
@@ -628,7 +714,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	return NetworkRules, nil
 }
 
-func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
+func networkRuleMap(rule *sql.VirtualNetworkRule) map[string]interface{} {
 	objectMap := make(map[string]interface{})
 	if rule.ID != nil {
 		objectMap["id"] = rule.ID
@@ -639,15 +725,15 @@ func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
 	if rule.Type != nil {
 		objectMap["type"] = rule.Type
 	}
-	if rule.VirtualNetworkRuleProperties != nil {
-		objectMap["properties"] = rule.VirtualNetworkRuleProperties
+	if rule.Properties != nil {
+		objectMap["properties"] = rule.Properties
 	}
 	return objectMap
 }
 
-// If we return the API response directly, the output will not give
-// all the contents of PrivateEndpointConnection
-func privateEndpointConnectionMap(conn sqlv5.PrivateEndpointConnection) PrivateConnectionInfo {
+// // If we return the API response directly, the output will not give
+// // all the contents of PrivateEndpointConnection
+func privateEndpointConnectionMap(conn *sql.PrivateEndpointConnection) PrivateConnectionInfo {
 	var connection PrivateConnectionInfo
 	if conn.ID != nil {
 		connection.PrivateEndpointConnectionId = *conn.ID
@@ -658,25 +744,25 @@ func privateEndpointConnectionMap(conn sqlv5.PrivateEndpointConnection) PrivateC
 	if conn.Type != nil {
 		connection.PrivateEndpointConnectionType = *conn.Type
 	}
-	if conn.PrivateEndpointConnectionProperties != nil {
-		if conn.PrivateEndpoint != nil {
-			if conn.PrivateEndpoint.ID != nil {
-				connection.PrivateEndpointId = *conn.PrivateEndpoint.ID
+	if conn.Properties != nil {
+		if conn.Properties.PrivateEndpoint != nil {
+			if conn.Properties.PrivateEndpoint.ID != nil {
+				connection.PrivateEndpointId = *conn.Properties.PrivateEndpoint.ID
 			}
 		}
-		if conn.PrivateLinkServiceConnectionState != nil {
-			if conn.PrivateLinkServiceConnectionState.ActionsRequired != "" {
-				connection.PrivateLinkServiceConnectionStateActionsRequired = string(conn.PrivateLinkServiceConnectionState.ActionsRequired)
+		if conn.Properties.PrivateLinkServiceConnectionState != nil {
+			if conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+				connection.PrivateLinkServiceConnectionStateActionsRequired = string(*conn.Properties.PrivateLinkServiceConnectionState.ActionsRequired)
 			}
-			if conn.PrivateLinkServiceConnectionState.Status != "" {
-				connection.PrivateLinkServiceConnectionStateStatus = string(conn.PrivateLinkServiceConnectionState.Status)
+			if conn.Properties.PrivateLinkServiceConnectionState.Status != nil {
+				connection.PrivateLinkServiceConnectionStateStatus = string(*conn.Properties.PrivateLinkServiceConnectionState.Status)
 			}
-			if conn.PrivateLinkServiceConnectionState.Description != nil {
-				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
+			if conn.Properties.PrivateLinkServiceConnectionState.Description != nil {
+				connection.PrivateLinkServiceConnectionStateDescription = *conn.Properties.PrivateLinkServiceConnectionState.Description
 			}
 		}
-		if conn.ProvisioningState != "" {
-			connection.ProvisioningState = string(conn.ProvisioningState)
+		if conn.Properties.ProvisioningState != nil {
+			connection.ProvisioningState = string(*conn.Properties.ProvisioningState)
 		}
 	}
 

@@ -8,7 +8,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	sql "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -235,35 +236,26 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "session error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx, "")
+	client, err := sql.NewManagedInstancesClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstances", "list", err)
-		return nil, err
-	}
-	for _, managedInstance := range result.Values() {
-		d.StreamListItem(ctx, managedInstance)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "client error", err)
 	}
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstances", "list_paging", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "api error", err)
 		}
-		for _, managedInstance := range result.Values() {
+		for _, managedInstance := range nextResult.Value {
 			d.StreamListItem(ctx, managedInstance)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -272,20 +264,19 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 			}
 		}
 	}
+
 	return nil, err
 }
 
 //// HYDRATE FUNCTIONS
 
 func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getMSSQLManagedInstance")
-
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
-	// Return nil, of no input provided
-	if name == "" || resourceGroup == "" {
-		return nil, nil
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "credential error", err)
 	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -294,30 +285,29 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroup, name, "")
+	client, err := sql.NewManagedInstancesClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("getMSSQLManagedInstance", "get", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "client error", err)
+	}
+
+	op, err := client.Get(ctx, resourceGroup, name, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "api error", err)
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
-	}
-
-	return nil, nil
+	return op, nil
 }
 
 func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceEncryptionProtectors")
-
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(*sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -325,28 +315,24 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstanceEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := sql.NewManagedInstanceEncryptionProtectorsClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceEncryptionProtectors", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "client error", err)
+	}
+
+	op := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
+	if err != nil {
 		return nil, err
 	}
 
 	var managedInstanceEncryptionProtectors []map[string]interface{}
-
-	for _, i := range op.Values() {
-		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, extractMSSQLManagedInstanceEncryptionProtector(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceEncryptionProtectors", "list_paging", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "api page error", err)
 		}
-		for _, i := range op.Values() {
+
+		for _, i := range nextResult.Value {
 			managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, extractMSSQLManagedInstanceEncryptionProtector(i))
 		}
 	}
@@ -355,11 +341,14 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 }
 
 func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceVulnerabilityAssessments")
-
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(*sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -367,28 +356,25 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedInstanceVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := sql.NewManagedInstanceVulnerabilityAssessmentsClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceVulnerabilityAssessments", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "client error", err)
+	}
+
+	op := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
+	if err != nil {
 		return nil, err
 	}
 
 	var managedInstanceVulnerabilityAssessments []map[string]interface{}
 
-	for _, i := range op.Values() {
-		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, extractMSSQLManagedInstanceVulnerabilityAssessment(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceVulnerabilityAssessments", "list_paging", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "api page error", err)
 		}
-		for _, i := range op.Values() {
+
+		for _, i := range nextResult.Value {
 			managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, extractMSSQLManagedInstanceVulnerabilityAssessment(i))
 		}
 	}
@@ -397,11 +383,14 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 }
 
 func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceSecurityAlertPolicies")
-
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(*sql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "credential error", err)
+	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -409,28 +398,22 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sql.NewManagedServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := sql.NewManagedServerSecurityAlertPoliciesClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list", err)
-		return nil, err
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "client error", err)
 	}
+
+	op := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
 
 	var managedInstanceSecurityAlertPolicies []map[string]interface{}
 
-	for _, i := range op.Values() {
-		managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, extractMSSQLManagedInstanceSecurityAlertPolicy(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	for op.More() {
+		nextResult, err := op.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list_paging", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "api page error", err)
 		}
-		for _, i := range op.Values() {
+
+		for _, i := range nextResult.Value {
 			managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, extractMSSQLManagedInstanceSecurityAlertPolicy(i))
 		}
 	}
@@ -440,7 +423,7 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 
 // If we return the API response directly, the output will not provide
 // all the properties of SecurityAlertPolicies
-func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityAlertPolicy) map[string]interface{} {
+func extractMSSQLManagedInstanceSecurityAlertPolicy(i *sql.ManagedServerSecurityAlertPolicy) map[string]interface{} {
 	managedInstanceSecurityAlertPolicy := make(map[string]interface{})
 	if i.ID != nil {
 		managedInstanceSecurityAlertPolicy["id"] = *i.ID
@@ -454,30 +437,30 @@ func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityA
 	if i.SystemData != nil {
 		managedInstanceSecurityAlertPolicy["systemData"] = i.SystemData
 	}
-	if i.SecurityAlertsPolicyProperties != nil {
-		if len(i.SecurityAlertsPolicyProperties.State) > 0 {
-			managedInstanceSecurityAlertPolicy["state"] = i.SecurityAlertsPolicyProperties.State
+	if i.Properties != nil {
+		if len(*i.Properties.State) > 0 {
+			managedInstanceSecurityAlertPolicy["state"] = *i.Properties.State
 		}
-		if i.SecurityAlertsPolicyProperties.DisabledAlerts != nil {
-			managedInstanceSecurityAlertPolicy["disabledAlerts"] = i.SecurityAlertsPolicyProperties.DisabledAlerts
+		if i.Properties.DisabledAlerts != nil {
+			managedInstanceSecurityAlertPolicy["disabledAlerts"] = i.Properties.DisabledAlerts
 		}
-		if i.SecurityAlertsPolicyProperties.EmailAddresses != nil {
-			managedInstanceSecurityAlertPolicy["emailAddresses"] = i.SecurityAlertsPolicyProperties.EmailAddresses
+		if i.Properties.EmailAddresses != nil {
+			managedInstanceSecurityAlertPolicy["emailAddresses"] = i.Properties.EmailAddresses
 		}
-		if i.SecurityAlertsPolicyProperties.EmailAccountAdmins != nil {
-			managedInstanceSecurityAlertPolicy["emailAccountAdmins"] = i.SecurityAlertsPolicyProperties.EmailAccountAdmins
+		if i.Properties.EmailAccountAdmins != nil {
+			managedInstanceSecurityAlertPolicy["emailAccountAdmins"] = i.Properties.EmailAccountAdmins
 		}
-		if i.SecurityAlertsPolicyProperties.StorageEndpoint != nil {
-			managedInstanceSecurityAlertPolicy["storageEndpoint"] = i.SecurityAlertsPolicyProperties.StorageEndpoint
+		if i.Properties.StorageEndpoint != nil {
+			managedInstanceSecurityAlertPolicy["storageEndpoint"] = i.Properties.StorageEndpoint
 		}
-		if i.SecurityAlertsPolicyProperties.StorageAccountAccessKey != nil {
-			managedInstanceSecurityAlertPolicy["storageAccountAccessKey"] = i.SecurityAlertsPolicyProperties.StorageAccountAccessKey
+		if i.Properties.StorageAccountAccessKey != nil {
+			managedInstanceSecurityAlertPolicy["storageAccountAccessKey"] = i.Properties.StorageAccountAccessKey
 		}
-		if i.SecurityAlertsPolicyProperties.RetentionDays != nil {
-			managedInstanceSecurityAlertPolicy["retentionDays"] = i.SecurityAlertsPolicyProperties.RetentionDays
+		if i.Properties.RetentionDays != nil {
+			managedInstanceSecurityAlertPolicy["retentionDays"] = i.Properties.RetentionDays
 		}
-		if i.SecurityAlertsPolicyProperties.CreationTime != nil {
-			managedInstanceSecurityAlertPolicy["creationTime"] = i.SecurityAlertsPolicyProperties.CreationTime
+		if i.Properties.CreationTime != nil {
+			managedInstanceSecurityAlertPolicy["creationTime"] = i.Properties.CreationTime
 		}
 	}
 	return managedInstanceSecurityAlertPolicy
@@ -485,7 +468,7 @@ func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityA
 
 // If we return the API response directly, the output will not provide
 // all the properties of ManagedInstanceVulnerabilityAssessment
-func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVulnerabilityAssessment) map[string]interface{} {
+func extractMSSQLManagedInstanceVulnerabilityAssessment(i *sql.ManagedInstanceVulnerabilityAssessment) map[string]interface{} {
 	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
 	if i.ID != nil {
 		managedInstanceVulnerabilityAssessment["id"] = *i.ID
@@ -496,24 +479,27 @@ func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVul
 	if i.Type != nil {
 		managedInstanceVulnerabilityAssessment["type"] = *i.Type
 	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans != nil {
-		managedInstanceVulnerabilityAssessment["recurringScans"] = i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-		managedInstanceVulnerabilityAssessment["storageAccountAccessKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-		managedInstanceVulnerabilityAssessment["storageContainerPath"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-		managedInstanceVulnerabilityAssessment["storageContainerSasKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey
+	if i.Properties != nil {
+
+		if i.Properties.RecurringScans != nil {
+			managedInstanceVulnerabilityAssessment["recurringScans"] = i.Properties.RecurringScans
+		}
+		if i.Properties.StorageAccountAccessKey != nil {
+			managedInstanceVulnerabilityAssessment["storageAccountAccessKey"] = *i.Properties.StorageAccountAccessKey
+		}
+		if i.Properties.StorageContainerPath != nil {
+			managedInstanceVulnerabilityAssessment["storageContainerPath"] = *i.Properties.StorageContainerPath
+		}
+		if i.Properties.StorageContainerSasKey != nil {
+			managedInstanceVulnerabilityAssessment["storageContainerSasKey"] = *i.Properties.StorageContainerSasKey
+		}
 	}
 	return managedInstanceVulnerabilityAssessment
 }
 
 // If we return the API response directly, the output will not provide
 // all the properties of ManagedInstanceEncryptionProtector
-func extractMSSQLManagedInstanceEncryptionProtector(i sql.ManagedInstanceEncryptionProtector) map[string]interface{} {
+func extractMSSQLManagedInstanceEncryptionProtector(i *sql.ManagedInstanceEncryptionProtector) map[string]interface{} {
 	managedInstanceEncryptionProtector := make(map[string]interface{})
 	if i.ID != nil {
 		managedInstanceEncryptionProtector["id"] = *i.ID
@@ -527,20 +513,23 @@ func extractMSSQLManagedInstanceEncryptionProtector(i sql.ManagedInstanceEncrypt
 	if i.Kind != nil {
 		managedInstanceEncryptionProtector["kind"] = *i.Kind
 	}
-	if i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled != nil {
-		managedInstanceEncryptionProtector["autoRotationEnabled"] = i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName != nil {
-		managedInstanceEncryptionProtector["serverKeyName"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName
-	}
-	if len(i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType) > 0 {
-		managedInstanceEncryptionProtector["serverKeyType"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.Thumbprint != nil {
-		managedInstanceEncryptionProtector["thumbprint"] = i.ManagedInstanceEncryptionProtectorProperties.Thumbprint
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.URI != nil {
-		managedInstanceEncryptionProtector["uri"] = i.ManagedInstanceEncryptionProtectorProperties.URI
+	if i.Properties != nil {
+
+		if i.Properties.AutoRotationEnabled != nil {
+			managedInstanceEncryptionProtector["autoRotationEnabled"] = i.Properties.AutoRotationEnabled
+		}
+		if i.Properties.ServerKeyName != nil {
+			managedInstanceEncryptionProtector["serverKeyName"] = i.Properties.ServerKeyName
+		}
+		if len(*i.Properties.ServerKeyType) > 0 {
+			managedInstanceEncryptionProtector["serverKeyType"] = i.Properties.ServerKeyType
+		}
+		if i.Properties.Thumbprint != nil {
+			managedInstanceEncryptionProtector["thumbprint"] = i.Properties.Thumbprint
+		}
+		if i.Properties.URI != nil {
+			managedInstanceEncryptionProtector["uri"] = i.Properties.URI
+		}
 	}
 	return managedInstanceEncryptionProtector
 }

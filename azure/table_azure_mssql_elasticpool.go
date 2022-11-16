@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/sql/mgmt/sql"
-	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	sqlNew "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -153,7 +153,7 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	server := h.Item.(sqlV5.Server)
+	server := h.Item.(*sqlNew.Server)
 	serverName := *server.Name
 	resourceGroup := strings.Split(*server.ID, "/")[4]
 

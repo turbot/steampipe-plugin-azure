@@ -7,7 +7,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/sqlvirtualmachine/mgmt/sqlvirtualmachine"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	sqlvirtualmachine "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sqlvirtualmachine/armsqlvirtualmachine"
 )
 
 //// TABLE DEFINITION
@@ -166,44 +167,45 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.listMSSQLVirtualMachines", "connection error", err)
+	}
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.listMSSQLVirtualMachines", "session error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	client := sqlvirtualmachine.NewSQLVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	result, err := client.List(ctx)
+	client, err := sqlvirtualmachine.NewSQLVirtualMachinesClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list", err)
-		return nil, err
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.listMSSQLVirtualMachines", "client error", err)
 	}
 
-	for _, virtualMachine := range result.Values() {
-		d.StreamListItem(ctx, virtualMachine)
-	}
+	pager := client.NewListPager(nil)
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	for pager.More() {
+		nextResult, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list_paging", err)
-			return nil, err
+			plugin.Logger(ctx).Error("azure_mssql_virtual_machine.listMSSQLVirtualMachines", "api error", err)
 		}
-
-		for _, virtualMachine := range result.Values() {
+		for _, virtualMachine := range nextResult.Value {
 			d.StreamListItem(ctx, virtualMachine)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
+
 	return nil, err
 }
 
 //// HYDRATE FUNCTIONS
 
 func getMSSQLVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getMSSQLVirtualMachine")
-
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
@@ -212,18 +214,24 @@ func getMSSQLVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugin.
 		return nil, nil
 	}
 
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.getMSSQLVirtualMachine", "credential error", err)
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
-	client := sqlvirtualmachine.NewSQLVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroup, name, "")
+	client, err := sqlvirtualmachine.NewSQLVirtualMachinesClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("getMSSQLVirtualMachine", "get", err)
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.getMSSQLVirtualMachine", "client error", err)
+	}
+
+	op, err := client.Get(ctx, resourceGroup, name, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_virtual_machine.getMSSQLVirtualMachine", "api error", err)
 		return nil, err
 	}
 
