@@ -26,9 +26,9 @@ run_test () {
 
  # removes files from previous test
 # rm -rf output.txt failed_tests.txt passed_tests.txt
- date >> output1.txt
- date >> failed_tests1.txt
- date >> passed_tests1.txt
+ date >> output.txt
+ date >> failed_tests.txt
+ date >> passed_tests.txt
 
 
 # It is taking too much time(5-6 hrs)
@@ -147,6 +147,6 @@ run_test azure_tenant
 run_test azure_virtual_network
 run_test azure_virtual_network_gateway
 
-date >> output1.txt
-date >> failed_tests1.txt
-date >> passed_tests1.txt
+date >> output.txt
+date >> failed_tests.txt
+date >> passed_tests.txt
