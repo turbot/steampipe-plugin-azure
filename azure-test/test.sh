@@ -34,7 +34,7 @@ run_test () {
 # It is taking too much time(5-6 hrs)
 # run_test azure_api_management
 
-run_test azure_app_configuration
+# run_test azure_app_configuration
 run_test azure_app_service_environment
 run_test azure_app_service_function_app
 run_test azure_app_service_plan

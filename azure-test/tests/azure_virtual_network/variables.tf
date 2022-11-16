@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -47,8 +47,8 @@ resource "azurerm_virtual_network" "named_test_resource" {
   }
 
   subnet {
-    name           = "subnet1"
-    address_prefix = "10.1.2.0/25"
+    name             = "subnet1"
+    address_prefixes = "10.1.2.0/25"
   }
 }
 

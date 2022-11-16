@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -33,18 +33,18 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "named_test_resource" {
- name     = var.resource_name
- location = "West Europe"
+  name     = var.resource_name
+  location = "West Europe"
 }
 
 resource "azurerm_api_management" "named_test_resource" {
- name                = var.resource_name
- location            = azurerm_resource_group.named_test_resource.location
- resource_group_name = azurerm_resource_group.named_test_resource.name
- publisher_name      = "TurbotHQ"
- publisher_email     = "test@turbot.com"
+  name                = var.resource_name
+  location            = azurerm_resource_group.named_test_resource.location
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  publisher_name      = "TurbotHQ"
+  publisher_email     = "test@turbot.com"
 
- sku_name = "Developer_1"
+  sku_name = "Developer_1"
 }
 
 output "region" {
