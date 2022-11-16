@@ -237,6 +237,10 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 
 func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "credential error", err)
+		return nil, err
+	}
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "session error", err)
