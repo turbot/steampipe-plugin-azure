@@ -210,19 +210,15 @@ type PrivateConnectionInfo struct {
 //// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	sess, err := GetCreds(ctx, d, "MANAGEMENT")
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "connection error", err)
 	}
+	// panic(sess)
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "session error", err)
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
+	subscriptionID := sess.SubscriptionID
 
-	client, err := sql.NewServersClient(subscriptionID, cred, nil)
+	client, err := sql.NewServersClient(subscriptionID, sess.Cred, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "client error", err)
 	}
@@ -232,7 +228,10 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		nextResult, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "api error", err)
+			return nil, err
 		}
+		// panic(fmt.Sprintf("Next link %+v", nextResult))
+
 		for _, server := range nextResult.Value {
 			d.StreamListItem(ctx, server)
 			// Check if context has been cancelled or if the limit has been hit (if specified)

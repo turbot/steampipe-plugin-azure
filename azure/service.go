@@ -3,6 +3,8 @@ package azure
 import (
 	"bytes"
 	"context"
+	"crypto"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +14,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -30,6 +36,7 @@ type Session struct {
 	StorageEndpointSuffix   string
 	SubscriptionID          string
 	TenantID                string
+	Cred                    azcore.TokenCredential
 }
 
 /*
@@ -277,6 +284,206 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	logger.Debug("getApplicableAuthorizationDetails", "resource", resource)
 
 	return
+}
+
+func GetCreds(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
+	logger := plugin.Logger(ctx)
+
+	cacheKey := "GetCreds" + tokenAudience
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		session := cachedData.(*Session)
+		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
+			logger.Trace("GetCreds", "cache expired", "delete cache and obtain new session token")
+			d.ConnectionManager.Cache.Delete(cacheKey)
+		} else {
+			return cachedData.(*Session), nil
+		}
+	}
+
+	logger.Debug("Auth session not found in cache, creating new session")
+	var expiresOn *time.Time
+
+	var tenantID, subscriptionID, environment, clientID, clientSecret, certificatePath, certificatePassword, userName, userPassword string
+
+	azureConfig := GetConfig(d.Connection)
+
+	if azureConfig.TenantID != nil {
+		tenantID = *azureConfig.TenantID
+	} else {
+		tenantID = os.Getenv("AZURE_TENANT_ID")
+	}
+
+	if azureConfig.SubscriptionID != nil {
+		subscriptionID = *azureConfig.SubscriptionID
+	} else {
+		subscriptionID = os.Getenv("AZURE_SUBSCRIPTION_ID")
+	}
+
+	if azureConfig.Environment != nil {
+		environment = *azureConfig.Environment
+	} else {
+		environment = os.Getenv("AZURE_ENVIRONMENT")
+	}
+
+	// 1. Client secret credentials
+	if azureConfig.ClientID != nil {
+		clientID = *azureConfig.ClientID
+	} else {
+		clientID = os.Getenv("AZURE_CLIENT_ID")
+	}
+
+	if azureConfig.ClientSecret != nil {
+		clientSecret = *azureConfig.ClientSecret
+	} else {
+		clientSecret = os.Getenv("AZURE_CLIENT_SECRET")
+	}
+
+	// 2. Client certificate credentials
+	if azureConfig.CertificatePath != nil {
+		certificatePath = *azureConfig.CertificatePath
+	} else {
+		certificatePath = os.Getenv("AZURE_CERTIFICATE_PATH")
+	}
+
+	if azureConfig.CertificatePassword != nil {
+		certificatePassword = *azureConfig.CertificatePassword
+	} else {
+		certificatePassword = os.Getenv("AZURE_CERTIFICATE_PASSWORD")
+	}
+
+	// 3. Client username and password
+	if azureConfig.Username != nil {
+		userName = *azureConfig.Username
+	} else {
+		userName = os.Getenv("AZURE_USERNAME")
+	}
+	if azureConfig.Password != nil {
+		userPassword = *azureConfig.Password
+	} else {
+		userPassword = os.Getenv("AZURE_PASSWORD")
+	}
+
+	var cloudConfiguration cloud.Configuration
+	switch environment {
+	case "AZURECHINACLOUD":
+		cloudConfiguration = cloud.AzureChina
+	case "AZUREUSGOVERNMENTCLOUD":
+		cloudConfiguration = cloud.AzureGovernment
+	default:
+		cloudConfiguration = cloud.AzurePublic
+	}
+	var cred azcore.TokenCredential
+	if tenantID == "" { // CLI authentication
+		sub, err := getSubscriptionFromCLI(tokenAudience)
+		if err != nil {
+			return nil, nil
+		}
+
+		subscriptionID = sub.SubscriptionID
+		tenantID = sub.TenantID
+		cred, err = azidentity.NewAzureCLICredential(
+			&azidentity.AzureCLICredentialOptions{},
+		)
+
+		if err != nil {
+			logger.Error("GetCreds", "cli_credential_error", err)
+			return nil, err
+		}
+
+	} else if tenantID != "" && clientID != "" && clientSecret != "" { // Client secret authentication\
+		cred, err = azidentity.NewClientSecretCredential(
+			tenantID,
+			clientID,
+			clientSecret,
+			&azidentity.ClientSecretCredentialOptions{
+				ClientOptions: policy.ClientOptions{
+					Cloud: cloudConfiguration,
+				},
+			},
+		)
+		if err != nil {
+			logger.Error("GetCreds", "client_secret_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && clientID != "" && certificatePath != "" { // Client certificate authentication
+		// Load certificate from given path
+
+		loadFile, err := os.ReadFile(certificatePath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading certificate from %s: %v", certificatePath, err)
+		}
+		var certs []*x509.Certificate
+		var key crypto.PrivateKey
+		if certificatePassword == "" {
+			certs, key, err = azidentity.ParseCertificates(loadFile, nil)
+		} else {
+			certs, key, err = azidentity.ParseCertificates(loadFile, []byte(certificatePassword))
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("error parsing certificate from %s: %v", certificatePath, err)
+		}
+
+		cred, err = azidentity.NewClientCertificateCredential(
+			tenantID,
+			clientID,
+			certs,
+			key,
+			&azidentity.ClientCertificateCredentialOptions{
+				ClientOptions: policy.ClientOptions{
+					Cloud: cloudConfiguration,
+				},
+			},
+		)
+		if err != nil {
+			logger.Error("GetCreds", "client_certificate_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && clientID != "" && userName != "" && userPassword != "" {
+		cred, err = azidentity.NewUsernamePasswordCredential(
+			tenantID,
+			clientID,
+			userName,
+			userPassword,
+			&azidentity.UsernamePasswordCredentialOptions{},
+		)
+		if err != nil {
+			logger.Error("GetCreds", "client_secret_credential_error", err)
+			return nil, err
+		}
+	}
+	// if subscriptionID == "" || tenantID == ""{
+	// 	sub, err := getSubscriptionFromCLI(tokenAudience)
+	// 	if err != nil {
+	// 		return nil, nil
+	// 	}
+	// 	subscriptionID = sub.SubscriptionID
+	// 	tenantID = sub.TenantID
+	// 	cred, err = azidentity.NewDefaultAzureCredential(nil)
+	// 	if err != nil {
+	// 		logger.Error("GetCreds", "client_default_credential_error", err)
+	// 		return nil, err
+	// 	}
+	// }
+	sess := &Session{
+		CloudEnvironment: environment,
+		// Expires: types.Time(session.Cred),
+		ResourceManagerEndpoint: tokenAudience,
+		SubscriptionID:          subscriptionID,
+		TenantID:                tenantID,
+		Cred:                    cred,
+	}
+	var expireMins time.Duration
+	if expiresOn != nil {
+		expireMins = time.Until(*sess.Expires)
+	} else {
+		// Cache for 55 minutes to avoid expiry issue
+		expireMins = time.Minute * 55
+	}
+
+	logger.Debug("Session saved in cache", "expiration_time", expireMins)
+	d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, expireMins)
+	return sess, nil
 }
 
 type subscription struct {
