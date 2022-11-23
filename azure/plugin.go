@@ -87,6 +87,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_key_vault":                                             tableAzureKeyVault(ctx),
 			"azure_key_vault_deleted_vault":                               tableAzureKeyVaultDeletedVault(ctx),
 			"azure_key_vault_key":                                         tableAzureKeyVaultKey(ctx),
+			"azure_key_vault_key_version":                                 tableAzureKeyVaultKeyVersion(ctx),
 			"azure_key_vault_managed_hardware_security_module":            tableAzureKeyVaultManagedHardwareSecurityModule(ctx),
 			"azure_key_vault_secret":                                      tableAzureKeyVaultSecret(ctx),
 			"azure_kubernetes_cluster":                                    tableAzureKubernetesCluster(ctx),
