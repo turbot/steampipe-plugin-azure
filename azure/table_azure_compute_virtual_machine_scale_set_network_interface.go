@@ -36,7 +36,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "id",
-				Description: "The unique id identifying the resource in subscription.",
+				Description: "The unique ID identifying the resource in a subscription.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
