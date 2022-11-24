@@ -95,7 +95,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "ip_configurations",
-				Description: "A list of IPConfigurations of the network interface.",
+				Description: "A list of IP configurations of the network interface.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "IPConfigurations"),
 			},
