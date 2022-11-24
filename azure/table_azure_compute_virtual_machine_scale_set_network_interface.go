@@ -59,7 +59,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "enable_accelerated_networking",
-				Description: "If the network interface is accelerated networking enabled.",
+				Description: "If the network interface has accelerated networking enabled.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableAcceleratedNetworking"),
 			},
