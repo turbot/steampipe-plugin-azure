@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_scale_set_network_interface
 
- A network interface enables an Azure VM to communicate with internet, Azure, and on-premises resources.
+A network interface enables an Azure VM to communicate with internet, Azure, and on-premises resources.
 
 ## Examples
 
