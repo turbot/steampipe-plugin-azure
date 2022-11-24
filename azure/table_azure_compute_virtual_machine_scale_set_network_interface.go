@@ -72,7 +72,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			{
 				Name:        "primary",
 				Description: "Whether this is a primary network interface on a virtual machine.",
-				Type:        proto.ColumnType_STRING,
+				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "Primary"),
 			},
 			{
