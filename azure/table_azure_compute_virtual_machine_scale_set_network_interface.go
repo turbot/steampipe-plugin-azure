@@ -193,7 +193,7 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 
 //// TRANSFORM FUNCTION
 
-func extractScaleSetNetworkInterfaccePrpperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractScaleSetNetworkInterfaceProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	networkInterface := d.HydrateItem.(network.Interface)
 	param := d.Param.(string)
 
