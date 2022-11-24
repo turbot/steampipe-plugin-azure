@@ -83,7 +83,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "dns_settings",
-				Description: "he DNS settings in network interface.",
+				Description: "The DNS settings in network interface.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "DNSSettings"),
 			},
