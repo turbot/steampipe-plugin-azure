@@ -44,7 +44,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Name:        "provisioning_state",
 				Description: "The provisioning state of the network interface resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractScaleSetNetworkInterfacePrperties, "ProvisioningState"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaceProperties, "ProvisioningState"),
 			},
 			{
 				Name:        "type",
