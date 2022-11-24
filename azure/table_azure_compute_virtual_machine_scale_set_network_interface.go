@@ -41,7 +41,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 				Transform:   transform.FromGo(),
 			},
 			{
-				Name:        "provisioning_state",
+				Name:        "	",
 				Description: "The provisioning state of the network interface resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaceProperties, "ProvisioningState"),
@@ -234,12 +234,6 @@ func extractScaleSetNetworkInterfaceProperties(ctx context.Context, d *transform
 	}
 	if networkInterface.HostedWorkloads != nil {
 		objectMap["HostedWorkloads"] = networkInterface.HostedWorkloads
-	}
-	if networkInterface.ResourceGUID != nil {
-		objectMap["ResourceGUID"] = networkInterface.ResourceGUID
-	}
-	if networkInterface.ProvisioningState != "" {
-		objectMap["ProvisioningState"] = networkInterface.ProvisioningState
 	}
 
 	if val, ok := objectMap[param]; ok {
