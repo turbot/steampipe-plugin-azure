@@ -1,6 +1,6 @@
 # Table: azure_compute_virtual_machine_scale_set_network_interface
 
- A network interface enables an Azure VM to communicate with internet, Azure, and on-premises resources.
+A network interface enables an Azure VM to communicate with internet, Azure, and on-premises resources.
 
 ## Examples
 
@@ -48,7 +48,7 @@ where
 
 ### Get scale set virtual machine details for scale set network interface
 
-``sql
+```sql
 select
   i.name as name,
   i.id as id,
@@ -59,5 +59,5 @@ from
   azure_compute_virtual_machine_scale_set_network_interface as i,
   azure_compute_virtual_machine_scale_set_vm as v
 where
-  i.virtual_machine ->> 'id' = v.id
+  i.virtual_machine ->> 'id' = v.id;
 ```

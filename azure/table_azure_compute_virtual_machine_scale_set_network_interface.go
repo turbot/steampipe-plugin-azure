@@ -36,13 +36,13 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "id",
-				Description: "The unique id identifying the resource in subscription.",
+				Description: "The unique ID identifying the resource in a subscription.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "he provisioning state of the network interface resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
+				Description: "The provisioning state of the network interface resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "ProvisioningState"),
 			},
@@ -59,9 +59,9 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "enable_accelerated_networking",
-				Description: "If the network interface is accelerated networking enabled.",
+				Description: "If the network interface has accelerated networking enabled.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "EnableAcceleratedNetworking"),
+				Transform:   transform.FromP(extractScaleSetNetworkInterfaceProperties, "EnableAcceleratedNetworking"),
 			},
 			{
 				Name:        "enable_ip_forwarding",
@@ -83,7 +83,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "dns_settings",
-				Description: "he DNS settings in network interface.",
+				Description: "The DNS settings in network interface.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "DNSSettings"),
 			},
@@ -95,7 +95,7 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 			},
 			{
 				Name:        "ip_configurations",
-				Description: "A list of IPConfigurations of the network interface.",
+				Description: "A list of IP configurations of the network interface.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromP(extractScaleSetNetworkInterfaccePrpperties, "IPConfigurations"),
 			},
@@ -193,7 +193,7 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 
 //// TRANSFORM FUNCTION
 
-func extractScaleSetNetworkInterfaccePrpperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractScaleSetNetworkInterfaceProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	networkInterface := d.HydrateItem.(network.Interface)
 	param := d.Param.(string)
 
