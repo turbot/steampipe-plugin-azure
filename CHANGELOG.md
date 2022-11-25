@@ -1,3 +1,11 @@
+## v0.35.0 [2022-11-25]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_scale_set_network_interface](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_scale_set_network_interface) ([#537](https://github.com/turbot/steampipe-plugin-azure/pull/537))
+  - [azure_key_vault_key_version](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_key_version) ([#549](https://github.com/turbot/steampipe-plugin-azure/pull/549))
+
 ## v0.34.2 [2022-11-11]
 
 _Bug fixes_
