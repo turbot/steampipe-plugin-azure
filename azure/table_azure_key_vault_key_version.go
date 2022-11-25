@@ -197,7 +197,7 @@ func listKeyVaultKeyVersions(ctx context.Context, d *plugin.QueryData, h *plugin
 	var keys []keyvault.Key
 	result, err := client.List(ctx, resourceGroup, *vault.Name)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_key_vault_key_version.listKeyVaultKeyVersions.listKeys", "api_error", err)
+		plugin.Logger(ctx).Error("azure_key_vault_key_version.listKeyVaultKeyVersions", "api_error", err)
 		return nil, err
 	}
 	keys = append(keys, result.Values()...)
