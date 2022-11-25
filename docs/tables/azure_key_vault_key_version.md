@@ -51,7 +51,7 @@ where
 ```sql
 select
   key_name,
-  count(key_name) as count
+  count(name) as key_version_count
 from
   azure_key_vault_key_version
 group by
