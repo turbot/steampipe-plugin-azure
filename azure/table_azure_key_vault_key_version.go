@@ -40,7 +40,13 @@ func tableAzureKeyVaultKeyVersion(_ context.Context) *plugin.Table {
 				Name:        "key_name",
 				Description: "The friendly name that identifies the key.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.From(extractKeyNameFromID),
+				Transform:   transform.FromP(extractKeyNameAndKeyIdFromVersionID, "KeyName"),
+			},
+			{
+				Name:        "key_id",
+				Description: "Contains ID to identify a key uniquely.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromP(extractKeyNameAndKeyIdFromVersionID, "KeyId"),
 			},
 			{
 				Name:        "id",
@@ -273,10 +279,8 @@ func getRowDataForKeyVersion(ctx context.Context, d *plugin.QueryData, h *plugin
 	subscriptionID := session.SubscriptionID
 	resourceGroup := strings.Split(*vault.ID, "/")[4]
 
-
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-
 
 	op, err := client.ListVersions(ctx, resourceGroup, *vault.Name, *key.Name)
 	if err != nil {
@@ -336,8 +340,16 @@ func getKeyVaultKeyVersion(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 //// TRANSFORM FUNCTION
 
-func extractKeyNameFromID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func extractKeyNameAndKeyIdFromVersionID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	param := d.Param.(string)
 	data := d.HydrateItem.(keyvault.Key)
+	splitVersion := strings.Split(*data.ID, "/")
+	removedVersion := splitVersion[:len(splitVersion)-2]
 	keyName := strings.Split(*data.ID, "/")[10]
-	return keyName, nil
+	keyInfo := map[string]string{
+		"KeyName": keyName,
+		"KeyId":   strings.Join(removedVersion[:], "/"),
+	}
+
+	return keyInfo[param], nil
 }
