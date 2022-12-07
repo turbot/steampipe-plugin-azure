@@ -526,13 +526,15 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
 	if err != nil {
+		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+			return vulnerabilityAssessmentScanRecords, nil
+		}
 		return nil, err
 	}
-
-	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
