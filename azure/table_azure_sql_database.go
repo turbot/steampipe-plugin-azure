@@ -530,6 +530,8 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
 	if err != nil {
+		// API throws "VulnerabilityAssessmentInvalidPolicy" error if Vulnerability Assessment settings don't exist or invalid storage specified in settings.
+		// https://learn.microsoft.com/en-us/rest/api/sql/2022-05-01-preview/database-vulnerability-assessment-scans/list-by-database?tabs=HTTP
 		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
 			return vulnerabilityAssessmentScanRecords, nil
 		}
