@@ -294,7 +294,7 @@ func getIpConfigurationAsync(ctx context.Context, ipConfig *network.IPConfigurat
 	rowData, err := getIpConfiguration(ctx, ipConfig, client)
 	if err != nil {
 		errorCh <- err
-	} else if rowData.ID != nil {
+	} else if rowData != nil {
 		ipCh <- rowData
 	}
 }
