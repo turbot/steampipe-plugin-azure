@@ -311,6 +311,9 @@ func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, 
 
 	configuration, err := client.Get(ctx, resourceGroup, networkInterface, configName)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
