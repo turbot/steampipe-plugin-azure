@@ -355,6 +355,49 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	return mySQLServersServerKeys, nil
 }
 
+func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMySQLServerVnetRules")
+
+	namespace := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	serverName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("")
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewVirtualNetworkRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "list", err)
+		return nil, err
+	}
+
+	var vnetRules []mysql.VirtualNetworkRule
+
+	for _, i := range op.Values() {
+		vnetRules = append(vnetRules, i)
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("listMySQLServerVnetRules", "list_paging", err)
+			return nil, err
+		}
+		for _, i := range op.Values() {
+			vnetRules = append(vnetRules, i)
+		}
+	}
+
+	return vnetRules, nil
+}
+
 func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMySQLServersConfigurations")
 
