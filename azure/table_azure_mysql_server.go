@@ -209,7 +209,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "vnet_rules",
-				Description: "The server keys of the server.",
+				Description: "VirtualNetworkRule a virtual network rule.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listMySQLServerVnetRules,
 				Transform:   transform.FromValue(),
@@ -387,9 +387,7 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	var vnetRules []mysql.VirtualNetworkRule
 
-	for _, i := range op.Values() {
-		vnetRules = append(vnetRules, i)
-	}
+	vnetRules = append(vnetRules, op.Values()...)
 
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
@@ -397,9 +395,7 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 			plugin.Logger(ctx).Error("listMySQLServerVnetRules", "list_paging", err)
 			return nil, err
 		}
-		for _, i := range op.Values() {
-			vnetRules = append(vnetRules, i)
-		}
+		vnetRules = append(vnetRules, op.Values()...)
 	}
 
 	return vnetRules, nil
