@@ -363,15 +363,13 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 }
 
 func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listMySQLServerVnetRules")
-
 	namespace := h.Item.(mysql.Server)
 	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
 	serverName := *namespace.Name
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("")
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "connection_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -381,7 +379,7 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	op, err := client.ListByServer(ctx, resourceGroup, serverName)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "list", err)
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error", err)
 		return nil, err
 	}
 
@@ -392,7 +390,7 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMySQLServerVnetRules", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error_pagging", err)
 			return nil, err
 		}
 		vnetRules = append(vnetRules, op.Values()...)
