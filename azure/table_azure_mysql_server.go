@@ -390,7 +390,7 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	for op.NotDone() {
 		err = op.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error_pagging", err)
+			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_pagging_error", err)
 			return nil, err
 		}
 		vnetRules = append(vnetRules, op.Values()...)
