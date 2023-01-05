@@ -207,6 +207,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Hydrate:     listMySQLServersServerKeys,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "vnet_rules",
+				Description: "The server keys of the server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServerVnetRules,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
