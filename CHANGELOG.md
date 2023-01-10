@@ -1,3 +1,10 @@
+## v0.35.1 [2023-01-10]
+
+_Bug fixes_
+
+- Fixed the `vulnerability_assessment_scan_records` column of the `azure_sql_database` table to return `nil` instead of an error when vulnerability assessment settings are unavailable for a SQL database. ([#552](https://github.com/turbot/steampipe-plugin-azure/pull/552))
+- Fixed the `ip_configurations` column of the `azure_subnet` table to return `nil` instead of an error when IP configuration details are unavailable for a subnet. ([#556](https://github.com/turbot/steampipe-plugin-azure/pull/556))
+
 ## v0.35.0 [2022-11-25]
 
 _What's new?_
