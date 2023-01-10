@@ -526,13 +526,17 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
 	if err != nil {
+		// API throws "VulnerabilityAssessmentInvalidPolicy" error if Vulnerability Assessment settings don't exist or invalid storage specified in settings.
+		// https://learn.microsoft.com/en-us/rest/api/sql/2022-05-01-preview/database-vulnerability-assessment-scans/list-by-database?tabs=HTTP
+		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+			return vulnerabilityAssessmentScanRecords, nil
+		}
 		return nil, err
 	}
-
-	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})
