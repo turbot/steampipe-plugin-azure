@@ -145,7 +145,7 @@ select
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
-where 
+where
    configurations ->> 'Name' = 'audit_log_enabled';
 ```
 
@@ -160,7 +160,7 @@ select
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
-where 
+where
    configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
    and configurations ->> 'Name' = 'slow_query_log';
 ```
@@ -176,7 +176,20 @@ select
 from
   azure_mysql_server,
   jsonb_array_elements(server_configurations) as configurations
-where 
+where
    configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
    and configurations ->> 'Name' = 'log_output';
+```
+
+### Get VNET rules details of the server
+
+```sql
+select
+  name as server_name,
+  id as server_id,
+  rules -> 'properties' ->> 'ignoreMissingVnetServiceEndpoint' as ignore_missing_vnet_service_endpoint,
+  rules -> 'properties' ->> 'virtualNetworkSubnetId' as virtual_network_subnet_id
+from
+  azure_mysql_server,
+  jsonb_array_elements(vnet_rules) as rules;
 ```
