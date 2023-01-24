@@ -209,7 +209,7 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "vnet_rules",
-				Description: "VirtualNetworkRule a virtual network rule.",
+				Description: "Rules represented by VNET.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listMySQLServerVnetRules,
 				Transform:   transform.FromValue(),
