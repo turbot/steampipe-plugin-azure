@@ -261,8 +261,8 @@ func ipConfigurationData(ctx context.Context, d *transform.TransformData) (inter
 	data := d.HydrateItem.(network.AzureFirewall)
 
 	var output []map[string]interface{}
-// Add a check for AzureFirewallPropertiesFormat.IPConfigurations data to ensure that
-// it is not null to avoid panic errors
+	// Add a check for AzureFirewallPropertiesFormat.IPConfigurations data to ensure that
+	// it is not null to avoid panic errors
 	if data.AzureFirewallPropertiesFormat.IPConfigurations != nil {
 		for _, firewall := range *data.AzureFirewallPropertiesFormat.IPConfigurations {
 			objectMap := make(map[string]interface{})
