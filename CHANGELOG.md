@@ -1,3 +1,17 @@
+## v0.36.0 [2023-02-10]
+
+_Enhancements_
+
+- Added column `vnet_rules` to `azure_mysql_server` table. ([#558](https://github.com/turbot/steampipe-plugin-azure/pull/558))
+
+_Bug fixes_
+
+- Fixed the `ip_configurations` column in `azure_firewall` table to return `null` instead of a panic error when no IP configuration is set on the Azure firewall. ([#561](https://github.com/turbot/steampipe-plugin-azure/pull/561))
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.12](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v4112-2023-02-09) which fixes the query caching functionality. ([#565](https://github.com/turbot/steampipe-plugin-azure/pull/565))
+
 ## v0.35.1 [2023-01-10]
 
 _Bug fixes_
