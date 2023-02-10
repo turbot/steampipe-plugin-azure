@@ -11,7 +11,7 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v0.4.0
-	github.com/turbot/steampipe-plugin-sdk/v4 v4.1.8
+	github.com/turbot/steampipe-plugin-sdk/v4 v4.1.12
 )
 
 require (
