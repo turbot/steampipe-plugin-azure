@@ -6,7 +6,7 @@ _Enhancements_
 
 _Bug fixes_
 
-- Fixed the `ip_configurations` column in `azure_firewall` table to return `null` instead of a panic error when no IP configuration is set on the Azure firewall. ([#561](https://github.com/turbot/steampipe-plugin-azure/pull/561))
+- Fixed the `ip_configurations` column in `azure_firewall` table to return `null` instead of a panic error when no IP configuration is set on the Azure firewall. ([#561](https://github.com/turbot/steampipe-plugin-azure/pull/561)) (Thanks [@mdaguete](https://github.com/mdaguete) for the contribution!!)
 
 _Dependencies_
 
