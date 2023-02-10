@@ -1,3 +1,32 @@
+## v0.36.0 [2023-02-10]
+
+_Enhancements_
+
+- Added column `vnet_rules` to `azure_mysql_server` table. ([#558](https://github.com/turbot/steampipe-plugin-azure/pull/558))
+
+_Bug fixes_
+
+- Fixed the `ip_configurations` column in `azure_firewall` table to return `null` instead of a panic error when no IP configuration is set on the Azure firewall. ([#561](https://github.com/turbot/steampipe-plugin-azure/pull/561)) (Thanks [@mdaguete](https://github.com/mdaguete) for the contribution!!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.12](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v4112-2023-02-09) which fixes the query caching functionality. ([#565](https://github.com/turbot/steampipe-plugin-azure/pull/565))
+
+## v0.35.1 [2023-01-10]
+
+_Bug fixes_
+
+- Fixed the `vulnerability_assessment_scan_records` column of the `azure_sql_database` table to return `nil` instead of an error when vulnerability assessment settings are unavailable for a SQL database. ([#552](https://github.com/turbot/steampipe-plugin-azure/pull/552))
+- Fixed the `ip_configurations` column of the `azure_subnet` table to return `nil` instead of an error when IP configuration details are unavailable for a subnet. ([#556](https://github.com/turbot/steampipe-plugin-azure/pull/556))
+
+## v0.35.0 [2022-11-25]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_scale_set_network_interface](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_scale_set_network_interface) ([#537](https://github.com/turbot/steampipe-plugin-azure/pull/537))
+  - [azure_key_vault_key_version](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_key_version) ([#549](https://github.com/turbot/steampipe-plugin-azure/pull/549))
+
 ## v0.34.2 [2022-11-11]
 
 _Bug fixes_

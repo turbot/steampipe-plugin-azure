@@ -207,6 +207,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Hydrate:     listMySQLServersServerKeys,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "vnet_rules",
+				Description: "Rules represented by VNET.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServerVnetRules,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -353,6 +360,43 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	return mySQLServersServerKeys, nil
+}
+
+func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	namespace := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	serverName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "connection_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewVirtualNetworkRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error", err)
+		return nil, err
+	}
+
+	var vnetRules []mysql.VirtualNetworkRule
+
+	vnetRules = append(vnetRules, op.Values()...)
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_pagging_error", err)
+			return nil, err
+		}
+		vnetRules = append(vnetRules, op.Values()...)
+	}
+
+	return vnetRules, nil
 }
 
 func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {

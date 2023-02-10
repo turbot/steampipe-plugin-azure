@@ -531,7 +531,7 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 
-		cred, err := azidentity.NewDefaultAzureCredential(nil)
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "credential error", err)
 	}
@@ -542,17 +542,22 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	}
 	subscriptionID := session.SubscriptionID
 
-		client, err := sql.NewDatabaseVulnerabilityAssessmentScansClient(subscriptionID, cred, nil)
+	client, err := sql.NewDatabaseVulnerabilityAssessmentScansClient(subscriptionID, cred, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "client error", err)
 	}
 
-		op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, sql.VulnerabilityAssessmentNameDefault, nil)
+	op := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, sql.VulnerabilityAssessmentNameDefault, nil)
+	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 	if err != nil {
+		// API throws "VulnerabilityAssessmentInvalidPolicy" error if Vulnerability Assessment settings don't exist or invalid storage specified in settings.
+		// https://learn.microsoft.com/en-us/rest/api/sql/2022-05-01-preview/database-vulnerability-assessment-scans/list-by-database?tabs=HTTP
+		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+			return vulnerabilityAssessmentScanRecords, nil
+		}
 		return nil, err
 	}
 
-	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 	for op.More() {
 		nextResult, err := op.NextPage(ctx)
 		if err != nil {
@@ -561,40 +566,40 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 		for _, i := range nextResult.Value {
 			objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
-		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.Properties.ScanID != nil {
-			objectMap["scanID"] = *i.Properties.ScanID
-		}
-		if len(*i.Properties.TriggerType) > 0 {
-			objectMap["triggerType"] = i.Properties.TriggerType
-		}
-		if len(*i.Properties.State) > 0 {
-			objectMap["state"] = i.Properties.State
-		}
-		if i.Properties.StartTime != nil {
-			objectMap["startTime"] = i.Properties.StartTime
-		}
-		if i.Properties.EndTime != nil {
-			objectMap["endTime"] = i.Properties.EndTime
-		}
-		if i.Properties.Errors != nil {
-			objectMap["errors"] = i.Properties.Errors
-		}
-		if i.Properties.StorageContainerPath != nil {
-			objectMap["storageContainerPath"] = i.Properties.StorageContainerPath
-		}
-		if i.Properties.NumberOfFailedSecurityChecks != nil {
-			objectMap["numberOfFailedSecurityChecks"] = *i.Properties.NumberOfFailedSecurityChecks
-		}
-		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties.ScanID != nil {
+				objectMap["scanID"] = *i.Properties.ScanID
+			}
+			if len(*i.Properties.TriggerType) > 0 {
+				objectMap["triggerType"] = i.Properties.TriggerType
+			}
+			if len(*i.Properties.State) > 0 {
+				objectMap["state"] = i.Properties.State
+			}
+			if i.Properties.StartTime != nil {
+				objectMap["startTime"] = i.Properties.StartTime
+			}
+			if i.Properties.EndTime != nil {
+				objectMap["endTime"] = i.Properties.EndTime
+			}
+			if i.Properties.Errors != nil {
+				objectMap["errors"] = i.Properties.Errors
+			}
+			if i.Properties.StorageContainerPath != nil {
+				objectMap["storageContainerPath"] = i.Properties.StorageContainerPath
+			}
+			if i.Properties.NumberOfFailedSecurityChecks != nil {
+				objectMap["numberOfFailedSecurityChecks"] = *i.Properties.NumberOfFailedSecurityChecks
+			}
+			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
 		}
 	}
 
