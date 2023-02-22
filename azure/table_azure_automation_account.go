@@ -17,8 +17,8 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 		Name:        "azure_automation_account",
 		Description: "Azure Automation Account",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:    getAutomationAccount,
+			KeyColumns:   plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:      getAutomationAccount,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -34,7 +34,7 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Fully qualified resource Id for the resource.",
+				Description: "Fully qualified resource ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -46,7 +46,7 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "etag",
-				Description: "Gets or sets the etag of the resource.",
+				Description: "Gets the etag of the resource.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -199,7 +199,7 @@ func getAutomationAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 
 	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
+	// Instead it returns empty data
 	if op.ID != nil {
 		return op, nil
 	}
