@@ -70,7 +70,7 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "is_encrypted",
-				Description: "The encrypted flag of the variable..",
+				Description: "The encrypted flag of the variable.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("VariableProperties.IsEncrypted"),
 			},
