@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/automation/mgmt/2019-06-01/automation"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
@@ -13,31 +12,25 @@ import (
 
 //// TABLE DEFINITION ////
 
-func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
+func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_automation_variable",
-		Description: "Azure Automation Variable",
+		Name:        "azure_automation_account",
+		Description: "Azure Automation Account",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
-			Hydrate:    getAutomationVariable,
+			KeyColumns:   plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:      getAutomationAccount,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
-			ParentHydrate: listAutomationAccounts,
-			Hydrate:       listAutomationVariables,
+			Hydrate: listAutomationAccounts,
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
 				Description: "The name of the resource.",
-			},
-			{
-				Name:        "account_name",
-				Type:        proto.ColumnType_STRING,
-				Description: "The name of the account.",
 			},
 			{
 				Name:        "id",
@@ -47,21 +40,32 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "description",
-				Description: "The description for the variable.",
+				Description: "The description for the account.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VariableProperties.Description"),
+				Transform:   transform.FromField("AccountProperties.Description"),
+			},
+			{
+				Name:        "etag",
+				Description: "Gets the etag of the resource.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "creation_time",
-				Description: "The creation time of the variable.",
+				Description: "The creation time of the account.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("VariableProperties.CreationTime.Time"),
+				Transform:   transform.FromField("AccountProperties.CreationTime.Time"),
 			},
 			{
 				Name:        "last_modified_time",
-				Description: "The last modified time of the variable.",
+				Description: "The last modified time of the account.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("VariableProperties.LastModifiedTime.Time"),
+				Transform:   transform.FromField("AccountProperties.LastModifiedTime.Time"),
+			},
+			{
+				Name:        "last_modified_by",
+				Description: "The account last modified by.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AccountProperties.LastModifiedBy"),
 			},
 			{
 				Name:        "type",
@@ -69,16 +73,28 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "is_encrypted",
-				Description: "The encrypted flag of the variable..",
-				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("VariableProperties.IsEncrypted"),
+				Name:        "state",
+				Description: "The status of account. Possible values include: 'AccountStateOk', 'AccountStateUnavailable', 'AccountStateSuspended'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AccountProperties.State"),
 			},
 			{
-				Name:        "value",
-				Description: "The value of the variable.",
+				Name:        "sku_name",
+				Description: "The SKU name of the account. Possible values include: 'SkuNameEnumFree', 'SkuNameEnumBasic'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("VariableProperties.Value"),
+				Transform:   transform.FromField("Sku.Name"),
+			},
+			{
+				Name:        "sku_family",
+				Description: "The SKU family of the account.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Family"),
+			},
+			{
+				Name:        "sku_capacity",
+				Description: "The SKU capacity of the account.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Sku.Capacity"),
 			},
 
 			// Steampipe standard columns
@@ -89,6 +105,11 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Name"),
 			},
 			{
+				Name:        "tags",
+				Description: ColumnDescriptionTags,
+				Type:        proto.ColumnType_JSON,
+			},
+			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
@@ -96,6 +117,12 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 			},
 
 			// Azure standard columns
+			{
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Location").Transform(toLower),
+			},
 			{
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
@@ -106,40 +133,25 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 	}
 }
 
-type VariableDetails struct {
-	AccountName string
-	automation.Variable
-}
-
 //// LIST FUNCTION ////
 
-func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
-	var account automation.Account
-	if h.Item != nil {
-		account = h.Item.(automation.Account)
-	} else {
-		return nil, nil
-	}
-	resourceGroupName := strings.Split(*account.ID, "/")[4]
-	accountName := account.Name
-
 	subscriptionID := session.SubscriptionID
 
-	accountClient := automation.NewVariableClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	accountClient := automation.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
-	result, err := accountClient.ListByAutomationAccount(ctx, resourceGroupName, *accountName)
+	result, err := accountClient.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, variable := range result.Values() {
-		d.StreamListItem(ctx, &VariableDetails{*accountName, variable})
+	for _, account := range result.Values() {
+		d.StreamListItem(ctx, account)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.QueryStatus.RowsRemaining(ctx) == 0 {
@@ -153,8 +165,8 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 			return nil, err
 		}
 
-		for _, variable := range result.Values() {
-			d.StreamListItem(ctx, &VariableDetails{*accountName, variable})
+		for _, account := range result.Values() {
+			d.StreamListItem(ctx, account)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {
@@ -167,9 +179,8 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 
 //// HYDRATE FUNCTIONS ////
 
-func getAutomationVariable(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getAutomationAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
-	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
 	name := d.KeyColumnQuals["name"].GetStringValue()
 	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
 
@@ -179,18 +190,18 @@ func getAutomationVariable(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	accountClient := automation.NewVariableClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	accountClient := automation.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
-	op, err := accountClient.Get(ctx, resourceGroup, accountName, name)
+	op, err := accountClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
 	}
 
-	// In some cases the API does not return any notFound error
-	// instead it returns empty data
+	// In some cases resource does not give any notFound error
+	// Instead it returns empty data
 	if op.ID != nil {
-		return &VariableDetails{accountName, op}, nil
+		return op, nil
 	}
 
 	return nil, nil
