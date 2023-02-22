@@ -1,3 +1,11 @@
+## v0.37.0 [2023-02-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_automation_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_account) ([#569](https://github.com/turbot/steampipe-plugin-azure/pull/569))
+  - [azure_automation_variable](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_variable) ([#571](https://github.com/turbot/steampipe-plugin-azure/pull/571))
+
 ## v0.36.0 [2023-02-10]
 
 _Enhancements_
