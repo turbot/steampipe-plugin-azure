@@ -116,6 +116,7 @@ type VariableDetails struct {
 func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationVariables", "session_error", err)
 		return nil, err
 	}
 
@@ -135,6 +136,7 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	result, err := accountClient.ListByAutomationAccount(ctx, resourceGroupName, *accountName)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationVariables", "api_error", err)
 		return nil, err
 	}
 
@@ -150,6 +152,7 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_automation_variable.listAutomationVariables", "paginator_error", err)
 			return nil, err
 		}
 
@@ -175,6 +178,7 @@ func getAutomationVariable(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.getAutomationVariable", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -184,6 +188,7 @@ func getAutomationVariable(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	op, err := accountClient.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.getAutomationVariable", "api_error", err)
 		return nil, err
 	}
 

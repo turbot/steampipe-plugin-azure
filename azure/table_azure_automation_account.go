@@ -138,6 +138,7 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationAccounts", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -147,6 +148,7 @@ func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	result, err := accountClient.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationAccounts", "api_error", err)
 		return nil, err
 	}
 
@@ -162,6 +164,7 @@ func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_automation_variable.listAutomationAccounts", "paginator_error", err)
 			return nil, err
 		}
 
@@ -186,6 +189,7 @@ func getAutomationAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.getAutomationAccount", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -195,6 +199,7 @@ func getAutomationAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	op, err := accountClient.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_automation_variable.getAutomationAccount", "api_error", err)
 		return nil, err
 	}
 
