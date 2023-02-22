@@ -50,3 +50,19 @@ from
 where
   creation_time >= now() - interval '30' day;
 ```
+
+### Get details of a variable
+
+```sql
+select
+  id,
+  name,
+  account_name,
+  type,
+  is_encrypted,
+  value
+from
+  azure_automation_variable
+where
+  account_name = 'turbot_account' and name = 'turbot' and resource_group = 'turbot_rg';
+```
