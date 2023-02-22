@@ -64,5 +64,7 @@ select
 from
   azure_automation_variable
 where
-  account_name = 'turbot_account' and name = 'turbot' and resource_group = 'turbot_rg';
+  account_name = 'turbot_account'
+  and name = 'turbot'
+  and resource_group = 'turbot_rg';
 ```
