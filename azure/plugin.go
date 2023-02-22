@@ -39,6 +39,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_app_service_web_app":                                   tableAzureAppServiceWebApp(ctx),
 			"azure_application_gateway":                                   tableAzureApplicationGateway(ctx),
 			"azure_application_security_group":                            tableAzureApplicationSecurityGroup(ctx),
+			"azure_automation_account":                                    tableAzureApAutomationAccount(ctx),
 			"azure_batch_account":                                         tableAzureBatchAccount(ctx),
 			"azure_cognitive_account":                                     tableAzureCognitiveAccount(ctx),
 			"azure_compute_availability_set":                              tableAzureComputeAvailabilitySet(ctx),
