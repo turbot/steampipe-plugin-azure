@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
@@ -27,23 +28,23 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "id",
-				Description: "The unique id identifying the resource in subscription",
+				Description: "The unique ID identifying the resource in subscription.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "name",
-				Description: "Name of the ssh key",
+				Description: "Name of the SSH key.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
-				Description: "The type of the resource in Azure",
+				Description: "The type of the resource in Azure.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "public_key",
-				Description: "SSH public key",
+				Description: "SSH public key.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SSHPublicKeyResourceProperties.PublicKey"),
 			},
@@ -90,6 +91,7 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 	plugin.Logger(ctx).Trace("listAzureComputeSshKeys")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_compute_ssh_key.listAzureComputeSshKeys", "client_error", err)
 		return nil, err
 	}
 
@@ -98,6 +100,7 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 	client.Authorizer = session.Authorizer
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_compute_ssh_key.listAzureComputeSshKeys", "query_error", err)
 		return nil, err
 	}
 
@@ -139,6 +142,7 @@ func getAzureComputeSshKey(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_compute_ssh_key.getAzureComputeSshKey", "client_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -147,6 +151,7 @@ func getAzureComputeSshKey(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_compute_ssh_key.getAzureComputeSshKey", "query_error", err)
 		return nil, err
 	}
 
