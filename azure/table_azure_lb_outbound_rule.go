@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -154,7 +154,7 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 		d.StreamListItem(ctx, LoadBalancerOutboundRulesInfo{rule, *loadBalancer.Name})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -168,7 +168,7 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 			d.StreamListItem(ctx, LoadBalancerOutboundRulesInfo{rule, *loadBalancer.Name})
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -182,9 +182,9 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 func getLoadBalancerOutboundRule(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getLoadBalancerOutboundRule")
 
-	loadBalancerName := d.KeyColumnQuals["load_balancer_name"].GetStringValue()
-	loadBalancerOutboundRuleName := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	loadBalancerName := d.EqualsQuals["load_balancer_name"].GetStringValue()
+	loadBalancerOutboundRuleName := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	// Handle empty check
 	if loadBalancerName == "" || loadBalancerOutboundRuleName == "" || resourceGroup == "" {

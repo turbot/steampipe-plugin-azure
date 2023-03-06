@@ -6,10 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/preview/keyvault/mgmt/2020-04-01-preview/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -170,7 +170,7 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 		d.StreamListItem(ctx, vault)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -184,7 +184,7 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 			d.StreamListItem(ctx, vault)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -212,8 +212,8 @@ func getKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.Que
 		name = *data.Name
 		resourceGroup = strings.Split(*data.ID, "/")[4]
 	} else {
-		name = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
+		name = d.EqualsQuals["name"].GetStringValue()
+		resourceGroup = d.EqualsQuals["resource_group"].GetStringValue()
 	}
 
 	if name == "" || resourceGroup == "" {
