@@ -56,6 +56,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_image":                                         tableAzureComputeImage(ctx),
 			"azure_compute_resource_sku":                                  tableAzureResourceSku(ctx),
 			"azure_compute_snapshot":                                      tableAzureComputeSnapshot(ctx),
+			"azure_compute_ssh_key":                                       tableAzureComputeSshKey(ctx),
 			"azure_compute_virtual_machine":                               tableAzureComputeVirtualMachine(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization":        tableAzureComputeVirtualMachineMetricCpuUtilization(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization_daily":  tableAzureComputeVirtualMachineMetricCpuUtilizationDaily(ctx),
