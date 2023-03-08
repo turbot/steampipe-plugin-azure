@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -119,7 +119,7 @@ func listKeyVaultDeletedVaults(ctx context.Context, d *plugin.QueryData, _ *plug
 		d.StreamListItem(ctx, deletedVault)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -133,7 +133,7 @@ func listKeyVaultDeletedVaults(ctx context.Context, d *plugin.QueryData, _ *plug
 			d.StreamListItem(ctx, deletedVault)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -155,8 +155,8 @@ func getKeyVaultDeletedVault(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	region := d.KeyColumnQuals["region"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	region := d.EqualsQuals["region"].GetStringValue()
 
 	// Return nil, if no input provide
 	if name == "" || region == "" {

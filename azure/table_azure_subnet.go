@@ -6,10 +6,10 @@ import (
 	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-05-01/network"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type subnetInfo = struct {
@@ -180,7 +180,7 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		d.StreamListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -194,7 +194,7 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 			d.StreamListItem(ctx, subnetInfo{subnet, subnet.Name, virtualNetwork.Name, resourceGroupName})
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -216,9 +216,9 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	subnetClient := network.NewSubnetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subnetClient.Authorizer = session.Authorizer
 
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-	virtualNetwork := d.KeyColumnQuals["virtual_network_name"].GetStringValue()
-	name := d.KeyColumnQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	virtualNetwork := d.EqualsQuals["virtual_network_name"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
 
 	op, err := subnetClient.Get(ctx, resourceGroup, virtualNetwork, name, "")
 	if err != nil {
