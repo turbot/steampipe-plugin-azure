@@ -75,6 +75,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_lake_store":                                       tableAzureDataLakeStore(ctx),
 			"azure_databox_edge_device":                                   tableAzureDataBoxEdgeDevice(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
+			"azure_dns_zone":                                              tableAzureDNSZone(ctx),
 			"azure_eventgrid_domain":                                      tableAzureEventGridDomain(ctx),
 			"azure_eventgrid_topic":                                       tableAzureEventGridTopic(ctx),
 			"azure_eventhub_namespace":                                    tableAzureEventHubNamespace(ctx),
