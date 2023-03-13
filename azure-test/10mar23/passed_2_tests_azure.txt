@@ -1,0 +1,11 @@
+Fri Mar 10 07:22:45 UTC 2023
+azure_app_configuration
+azure_app_service_function_app
+azure_automation_account
+azure_compute_snapshot
+azure_data_factory
+azure_eventgrid_domain
+azure_signalr_service
+azure_sql_database
+azure_sql_server
+azure_synapse_workspace
