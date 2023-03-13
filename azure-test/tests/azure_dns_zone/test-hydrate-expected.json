@@ -1,0 +1,13 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{resourceName}}/providers/microsoft.network/dnszones/{{resourceName}}.xyz"
+    ],
+    "name": "{{resourceName}}.xyz",
+    "tags": {
+      "name": "{{resourceName}}.xyz"
+    },
+    "title": "{{resourceName}}.xyz"
+  }
+]
