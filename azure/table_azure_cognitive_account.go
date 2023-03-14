@@ -5,10 +5,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/services/cognitiveservices/mgmt/2021-04-30/cognitiveservices"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -297,8 +297,8 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getCognitiveAccount")
 
-	accountName := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	accountName := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	// Handle empty name or resourceGroup
 	if accountName == "" || resourceGroup == "" {

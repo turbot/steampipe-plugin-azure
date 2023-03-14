@@ -6,10 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -217,7 +217,7 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -240,7 +240,7 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -261,9 +261,9 @@ func getStorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *pl
 		return nil, err
 	}
 
-	resourceGroup := d.KeyColumnQualString("resource_group")
-	storageAccountName := d.KeyColumnQualString("storage_account_name")
-	name := d.KeyColumnQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
+	storageAccountName := d.EqualsQualString("storage_account_name")
+	name := d.EqualsQualString("name")
 
 	if strings.Trim(name, " ") == "" || strings.Trim(resourceGroup, " ") == "" || strings.Trim(storageAccountName, " ") == "" {
 		return nil, nil

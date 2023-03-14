@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -103,8 +103,8 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	authorizationClient.Authorizer = session.Authorizer
 
 	var filter string
-	if d.KeyColumnQuals["principal_id"] != nil {
-		filter = fmt.Sprintf("principalId eq '%s'", d.KeyColumnQuals["principal_id"].GetStringValue())
+	if d.EqualsQuals["principal_id"] != nil {
+		filter = fmt.Sprintf("principalId eq '%s'", d.EqualsQuals["principal_id"].GetStringValue())
 	}
 
 	result, err := authorizationClient.List(ctx, filter)
@@ -115,7 +115,7 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		d.StreamListItem(ctx, roleAssignment)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -129,7 +129,7 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 			d.StreamListItem(ctx, roleAssignment)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -148,7 +148,7 @@ func getIamRoleAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	roleAssignmentID := d.KeyColumnQuals["id"].GetStringValue()
+	roleAssignmentID := d.EqualsQuals["id"].GetStringValue()
 
 	authorizationClient := authorization.NewRoleAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer

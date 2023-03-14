@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
 )
@@ -252,7 +252,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 		d.StreamListItem(ctx, managedInstance)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -267,7 +267,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 			d.StreamListItem(ctx, managedInstance)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -280,8 +280,8 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMSSQLManagedInstance")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	// Return nil, of no input provided
 	if name == "" || resourceGroup == "" {
