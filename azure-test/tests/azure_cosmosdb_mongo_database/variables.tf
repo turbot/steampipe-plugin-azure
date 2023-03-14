@@ -38,11 +38,11 @@ resource "azurerm_resource_group" "named_test_resource" {
 }
 
 resource "azurerm_cosmosdb_account" "named_test_resource" {
-  name = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  offer_type = "Standard"
-  kind = "MongoDB"
+  name                      = var.resource_name
+  location                  = azurerm_resource_group.named_test_resource.location
+  resource_group_name       = azurerm_resource_group.named_test_resource.name
+  offer_type                = "Standard"
+  kind                      = "MongoDB"
   enable_automatic_failover = false
   
   consistency_policy {
@@ -50,8 +50,7 @@ resource "azurerm_cosmosdb_account" "named_test_resource" {
   }
 
   geo_location {
-    prefix = "turbot-cosmos-db"
-    location = azurerm_resource_group.named_test_resource.location
+    location          = azurerm_resource_group.named_test_resource.location
     failover_priority = 0
   }
 }
@@ -66,7 +65,7 @@ resource "null_resource" "delay" {
 }
 
 resource "azurerm_cosmosdb_mongo_database" "named_test_resource" {
-  depends_on = [null_resource.delay]
+  depends_on          = [null_resource.delay]
   name                = var.resource_name
   resource_group_name = azurerm_resource_group.named_test_resource.name
   account_name        = azurerm_cosmosdb_account.named_test_resource.name
