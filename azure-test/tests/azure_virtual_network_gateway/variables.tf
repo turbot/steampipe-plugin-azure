@@ -47,7 +47,7 @@ resource "azurerm_subnet" "named_test_resource" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.named_test_resource.name
   virtual_network_name = azurerm_virtual_network.named_test_resource.name
-  address_prefix       = "10.0.1.0/24"
+  address_prefixes     = ["10.0.1.0/24"]
 }
 
 resource "azurerm_public_ip" "named_test_resource" {

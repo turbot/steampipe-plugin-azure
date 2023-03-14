@@ -63,7 +63,8 @@ resource "azurerm_firewall" "named_test_resource" {
   name                = var.resource_name
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
-  sku_tier = "Standard"
+  sku_name            = "AZFW_VNet"
+  sku_tier            = "Standard"
 
   ip_configuration {
     name                 = var.resource_name

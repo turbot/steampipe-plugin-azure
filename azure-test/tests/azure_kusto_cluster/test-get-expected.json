@@ -2,7 +2,7 @@
 	{
 		"id": "{{ output.resource_id.value }}",
 		"name": "{{ resourceName }}",
-		"sku_name": "Standard_D13_v2",
+		"sku_name": "Standard_E2a_v4",
 		"uri": "{{ output.cluster_uri.value }}"
 	}
 ]
