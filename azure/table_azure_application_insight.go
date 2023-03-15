@@ -34,7 +34,7 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a application insight uniquely",
+				Description: "Contains ID to identify the application insight uniquely",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -45,9 +45,9 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "flow_type",
-				Description: "Determines what kind of flow this component was created by. Possible values include: 'FlowTypeBluefield'",
+				Description: "Determines what kind of flow this component was created by",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ApplicationInsightsComponentProperties.FlowType").Transform(transform.ToString),
+				Transform:   transform.FromField("ApplicationInsightsComponentProperties.FlowType"),
 			},
 			{
 				Name:        "ingestion_mode",
@@ -57,7 +57,7 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "kind",
-				Description: "The kind of application that this component refers to, used to customize UI. This value is a freeform string, values should typically be one of the following: web, ios, other, store, java, phone",
+				Description: "The kind of application that this component refers to, used to customize UI",
 				Type:        proto.ColumnType_STRING,
 			},
 			{

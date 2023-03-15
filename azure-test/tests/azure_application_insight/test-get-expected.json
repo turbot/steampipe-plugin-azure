@@ -1,0 +1,9 @@
+[
+  {
+    "kind": "web",
+    "name": "{{resourceName}}",
+    "region": "westus",
+    "resource_group": "{{resourceName}}",
+    "retention_in_days": 90
+  }
+]
