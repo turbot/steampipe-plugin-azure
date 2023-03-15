@@ -132,6 +132,7 @@ func tableAzureDNSZone(_ context.Context) *plugin.Table {
 func listDNSZones(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_dns_zone. listDNSZones", "client_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
