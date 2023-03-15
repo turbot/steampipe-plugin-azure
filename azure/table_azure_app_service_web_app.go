@@ -149,6 +149,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "slots",
+				Description: "List of all deployment slots for the app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAppServiceWebAppSlots,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "site_config",
 				Description: "A map of all configuration for the app.",
 				Type:        proto.ColumnType_JSON,
@@ -394,6 +401,28 @@ func getWebAppDiagnosticLogsConfiguration(ctx context.Context, d *plugin.QueryDa
 	op, err := webClient.GetDiagnosticLogsConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app.getWebAppDiagnosticLogsConfiguration", "api_error", err)
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func getAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getAppServiceWebAppSlots", "service_creation_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.ListSlots(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.getAppServiceWebAppSlots", "api_error", err)
 		return nil, err
 	}
 
