@@ -17,7 +17,7 @@ from
   azure_bastion_host;
 ```
 
-### List bastion hosts that failed creation
+### List bastion hosts that are in failed state
 
 ```sql
 select
@@ -48,7 +48,7 @@ where
   s.id = ip -> 'properties' -> 'subnet' ->> 'id';
 ```
 
-### Get ip configuration details associated with each host
+### Get IP configuration details associated with each host
 
 ```sql
 select
