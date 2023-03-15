@@ -1,3 +1,21 @@
+## v0.38.0 [2023-03-15]
+
+_What's new?_
+
+- New tables added
+  - [azure_application_insight](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_application_insight) ([#579](https://github.com/turbot/steampipe-plugin-azure/pull/579))
+  - [azure_bastion_host](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_bastion_host) ([#580](https://github.com/turbot/steampipe-plugin-azure/pull/580))
+  - [azure_compute_ssh_key](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_ssh_key) ([#560](https://github.com/turbot/steampipe-plugin-azure/pull/560)) (Thanks [@srgg](https://github.com/srgg) for the contribution!)
+  - [azure_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_dns_zone) ([#575](https://github.com/turbot/steampipe-plugin-azure/pull/575)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed column name typo in `azure_compute_virtual_machine_scale_set_network_interface` table. ([#573](https://github.com/turbot/steampipe-plugin-azure/pull/573)) (Thanks [@jackdelab](https://github.com/jackdelab) for the contribution!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.2.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v520-2023-03-02) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#574](https://github.com/turbot/steampipe-plugin-azure/pull/574))
+
 ## v0.37.0 [2023-02-22]
 
 _What's new?_
