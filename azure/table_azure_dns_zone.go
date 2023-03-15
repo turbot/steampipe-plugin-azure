@@ -15,7 +15,7 @@ import (
 func tableAzureDNSZone(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_dns_zone",
-		Description: "Azure DNS zone",
+		Description: "Azure DNS Zone",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDNSZone,
