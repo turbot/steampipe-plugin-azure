@@ -34,7 +34,7 @@ func tableAzureBastionHost(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Contains id to identify a bastion host uniquely.",
+				Description: "Contains ID to identify a bastion host uniquely.",
 				Transform:   transform.FromGo(),
 				Type:        proto.ColumnType_STRING,
 			},
@@ -46,7 +46,7 @@ func tableAzureBastionHost(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated.",
+				Description: "A unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
