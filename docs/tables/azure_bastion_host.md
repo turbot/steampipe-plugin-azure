@@ -8,62 +8,60 @@ Azure Bastion is a service you deploy that lets you connect to a virtual machine
 
 ```sql
 select
-	name,
-	dns_name,
-	provisioning_state,
-	region,
-	resource_group
+  name,
+  dns_name,
+  provisioning_state,
+  region,
+  resource_group
 from
-	azure_bastion_host;
+  azure_bastion_host;
 ```
-
 
 ### List bastion hosts that failed creation
 
 ```sql
 select
-	name,
-	dns_name,
-	provisioning_state,
-	region,
-	resource_group
+  name,
+  dns_name,
+  provisioning_state,
+  region,
+  resource_group
 from
-	azure_bastion_host
+  azure_bastion_host
 where
-	provisioning_state = 'Failed';
+  provisioning_state = 'Failed';
 ```
-
 
 ### Get subnet details associated with each host
 
 ```sql
 select
-	h.name as bastion_host_name,
-	s.id as subnet_id,
-	s.name as subnet_name,
-	address_prefix
+  h.name as bastion_host_name,
+  s.id as subnet_id,
+  s.name as subnet_name,
+  address_prefix
 from
-	azure_bastion_host h,
-	jsonb_array_elements(ip_configurations) ip,
-	azure_subnet s
+  azure_bastion_host h,
+  jsonb_array_elements(ip_configurations) ip,
+  azure_subnet s
 where
-	s.id = ip -> 'properties' -> 'subnet' ->> 'id';
+  s.id = ip -> 'properties' -> 'subnet' ->> 'id';
 ```
 
 ### Get ip configuration details associated with each host
 
 ```sql
 select
-	h.name as bastion_host_name,
-	i.name as ip_configuration_name,
-	ip_configuration_id,
-	ip_address,
-	public_ip_allocation_method,
-	sku_name as ip_configuration_sku
+  h.name as bastion_host_name,
+  i.name as ip_configuration_name,
+  ip_configuration_id,
+  ip_address,
+  public_ip_allocation_method,
+  sku_name as ip_configuration_sku
 from
-	azure_bastion_host h,
-	jsonb_array_elements(ip_configurations) ip,
-	azure_public_ip i
+  azure_bastion_host h,
+  jsonb_array_elements(ip_configurations) ip,
+  azure_public_ip i
 where
-	i.id = ip -> 'properties' -> 'publicIPAddress' ->> 'id';
+  i.id = ip -> 'properties' -> 'publicIPAddress' ->> 'id';
 ```
