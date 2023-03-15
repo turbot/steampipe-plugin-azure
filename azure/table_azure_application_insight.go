@@ -122,7 +122,7 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "tenant_id",
-				Description: "Azure Tenant Id.",
+				Description: "Azure Tenant ID.",
 				Transform:   transform.FromField("ApplicationInsightsComponentProperties.TenantID"),
 				Type:        proto.ColumnType_STRING,
 			},
