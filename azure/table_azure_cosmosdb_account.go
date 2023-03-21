@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2020-04-01-preview/documentdb"
+	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2021-04-01-preview/documentdb"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -165,6 +165,12 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Description: "Describes the ServerVersion of an a MongoDB account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.APIProperties.ServerVersion").Transform(transform.ToString),
+			},
+			{
+				Name:        "backup_policy",
+				Description: "The object representing the policy for taking backups on an account.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.BackupPolicy"),
 			},
 			{
 				Name:        "capabilities",
