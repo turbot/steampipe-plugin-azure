@@ -209,6 +209,12 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.PrivateEndpointConnections"),
 			},
 			{
+				Name:        "private_endpoint_connections_t",
+				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(cosmosDBPrivateEndpointConnectionMap),
+			},
+			{
 				Name:        "read_locations",
 				Description: "A list of read locations enabled for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
@@ -328,4 +334,49 @@ func extractCosmosDBVirtualNetworkRule(ctx context.Context, d *transform.Transfo
 		}
 	}
 	return nil, nil
+}
+
+// If we return the API response directly, the output will not give
+// all the contents of PrivateEndpointConnection
+func cosmosDBPrivateEndpointConnectionMap(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	info := d.HydrateItem.(databaseAccountInfo)
+	conns := info.DatabaseAccount.PrivateEndpointConnections
+	var privateEndpointConnections []PrivateConnectionInfo
+
+	for _, conn := range *conns {
+		var connection PrivateConnectionInfo
+		if conn.ID != nil {
+			connection.PrivateEndpointConnectionId = string(*conn.ID)
+		}
+		if conn.Name != nil {
+			connection.PrivateEndpointConnectionName = string(*conn.Name)
+		}
+		if conn.Type != nil {
+			connection.PrivateEndpointConnectionType = string(*conn.Type)
+		}
+		if conn.PrivateEndpointConnectionProperties != nil {
+			if conn.PrivateEndpoint != nil {
+				if conn.PrivateEndpoint.ID != nil {
+					connection.PrivateEndpointId = string(*conn.PrivateEndpoint.ID)
+				}
+			}
+			if conn.PrivateLinkServiceConnectionState != nil {
+				if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+					connection.PrivateLinkServiceConnectionStateActionsRequired = string(*conn.PrivateLinkServiceConnectionState.ActionsRequired)
+				}
+				if conn.PrivateLinkServiceConnectionState.Status != nil {
+					connection.PrivateLinkServiceConnectionStateStatus = string(*conn.PrivateLinkServiceConnectionState.Status)
+				}
+				if conn.PrivateLinkServiceConnectionState.Description != nil {
+					connection.PrivateLinkServiceConnectionStateDescription = string(*conn.PrivateLinkServiceConnectionState.Description)
+				}
+			}
+			if conn.ProvisioningState != nil {
+				connection.ProvisioningState = string(*conn.ProvisioningState)
+			}
+		}
+		privateEndpointConnections = append(privateEndpointConnections, connection)
+	}
+
+	return privateEndpointConnections, nil
 }
