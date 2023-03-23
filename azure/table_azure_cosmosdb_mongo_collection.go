@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2020-04-01-preview/documentdb"
+	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2021-04-01-preview/documentdb"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -105,10 +105,29 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.Ts").Transform(transform.ToInt),
 			},
 			{
+				Name:        "shard_key",
+				Description: "A key-value pair of shard keys to be applied for the request.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.ShardKey"),
+			},
+			{
+				Name:        "indexes",
+				Description: "List of index keys.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.Indexes"),
+			},
+			{
 				Name:        "throughput",
 				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Options.Throughput"),
+			},
+			{
+				Name:        "throughput_settings",
+				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getCosmosDBMongoCollectionThroughput,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -219,4 +238,93 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	return mongoCollectionInfo{result, &accountName, &databaseName, result.Name, &resourceGroup, result.Location}, nil
+}
+
+func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	collection := h.Item.(mongoCollectionInfo)
+	databaseName := collection.Database
+	resourceGroup := collection.ResourceGroup
+	accountName := collection.Account
+	collectionName := collection.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	documentDBClient.Authorizer = session.Authorizer
+
+	result, err := documentDBClient.GetMongoDBCollectionThroughput(ctx, *resourceGroup, *accountName, *databaseName, *collectionName)
+	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return mapThroughputSettings(result), nil
+}
+
+func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *ThroughputSettings {
+	var data ThroughputSettings
+
+	if result.ID == nil {
+		return nil
+	}
+
+	if result.ID != nil {
+		data.ID = *result.ID
+	}
+	if result.Name != nil {
+		data.Name = *result.Name
+	}
+	if result.Type != nil {
+		data.Type = *result.Type
+	}
+	if result.Location != nil {
+		data.Location = *result.Location
+	}
+
+	if result.Resource != nil {
+
+		if result.Resource.Throughput != nil {
+			data.Throughput = *result.Resource.Throughput
+		}
+		if result.Resource.AutoscaleSettings != nil {
+
+			if result.Resource.AutoscaleSettings.MaxThroughput != nil {
+				data.MaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
+			}
+
+			if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
+				data.ThroughputPolicy = documentdb.ThroughputPolicyResource{
+					IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
+					IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
+				}
+			}
+
+			if result.Resource.AutoscaleSettings.TargetMaxThroughput != nil {
+				data.TargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
+			}
+		}
+		if result.Resource.MinimumThroughput != nil {
+			data.MinimumThroughput = *result.Resource.MinimumThroughput
+		}
+		if result.Resource.OfferReplacePending != nil {
+			data.OfferReplacePending = *result.Resource.OfferReplacePending
+		}
+		if result.Resource.Rid != nil {
+			data.Rid = *result.Resource.Rid
+		}
+		if result.Resource.Ts != nil {
+			data.Ts = *result.Resource.Ts
+		}
+		if result.Resource.Etag != nil {
+			data.Etag = *result.Resource.Etag
+		}
+	}
+
+	return &data
 }
