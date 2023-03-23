@@ -196,6 +196,16 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
+	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	databaseAccountClient.Authorizer = session.Authorizer
+
+	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	location := op.Location
+
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
@@ -204,7 +214,7 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, err
 	}
 
-	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, result.Location}, nil
+	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, location}, nil
 }
 
 type ThroughputSettings = struct {
