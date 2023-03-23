@@ -264,11 +264,29 @@ func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 
-	return mapThroughputSettings(result), nil
+	return mapCollectionThroughputSettings(result), nil
 }
 
-func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *ThroughputSettings {
-	var data ThroughputSettings
+type CollectionThroughputSettings = struct {
+	ID         string
+	Name       string
+	Type       string
+	Location   string
+	Throughput int32
+
+	MaxThroughput       int32
+	ThroughputPolicy    documentdb.ThroughputPolicyResource
+	TargetMaxThroughput int32
+
+	MinimumThroughput   string
+	OfferReplacePending string
+	Rid                 string
+	Ts                  float64
+	Etag                string
+}
+
+func mapCollectionThroughputSettings(result documentdb.ThroughputSettingsGetResults) *CollectionThroughputSettings {
+	var data CollectionThroughputSettings
 
 	if result.ID == nil {
 		return nil
