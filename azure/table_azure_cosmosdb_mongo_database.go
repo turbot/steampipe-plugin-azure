@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2020-04-01-preview/documentdb"
+	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2021-04-01-preview/documentdb"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -95,6 +95,13 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Options.Throughput"),
+			},
+			{
+				Name:        "throughput_settings",
+				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getCosmosDBMongoThroughput,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -189,16 +196,6 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 	subscriptionID := session.SubscriptionID
 
-	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	databaseAccountClient.Authorizer = session.Authorizer
-
-	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
-	if err != nil {
-		return nil, err
-	}
-
-	location := op.Location
-
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
@@ -207,5 +204,108 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 		return nil, err
 	}
 
-	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, location}, nil
+	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, result.Location}, nil
+}
+
+type ThroughputSettings = struct {
+	ID         string
+	Name       string
+	Type       string
+	Location   string
+	Throughput int32
+
+	MaxThroughput       int32
+	ThroughputPolicy    documentdb.ThroughputPolicyResource
+	TargetMaxThroughput int32
+
+	MinimumThroughput   string
+	OfferReplacePending string
+	Rid                 string
+	Ts                  float64
+	Etag                string
+}
+
+func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(mongoDatabaseInfo)
+	name := database.Name
+	resourceGroup := database.ResourceGroup
+	accountName := database.Account
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	documentDBClient.Authorizer = session.Authorizer
+
+	result, err := documentDBClient.GetMongoDBDatabaseThroughput(ctx, *resourceGroup, *accountName, *name)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapThroughputSettings(result), nil
+}
+
+func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *ThroughputSettings {
+	var data ThroughputSettings
+
+	if result.ID == nil {
+		return nil
+	}
+
+	if result.ID != nil {
+		data.ID = *result.ID
+	}
+	if result.Name != nil {
+		data.Name = *result.Name
+	}
+	if result.Type != nil {
+		data.Type = *result.Type
+	}
+	if result.Location != nil {
+		data.Location = *result.Location
+	}
+
+	if result.Resource != nil {
+
+		if result.Resource.Throughput != nil {
+			data.Throughput = *result.Resource.Throughput
+		}
+		if result.Resource.AutoscaleSettings != nil {
+
+			if result.Resource.AutoscaleSettings.MaxThroughput != nil {
+				data.MaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
+			}
+
+			if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
+				data.ThroughputPolicy = documentdb.ThroughputPolicyResource{
+					IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
+					IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
+				}
+			}
+
+			if result.Resource.AutoscaleSettings.TargetMaxThroughput != nil {
+				data.TargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
+			}
+		}
+		if result.Resource.MinimumThroughput != nil {
+			data.MinimumThroughput = *result.Resource.MinimumThroughput
+		}
+		if result.Resource.OfferReplacePending != nil {
+			data.OfferReplacePending = *result.Resource.OfferReplacePending
+		}
+		if result.Resource.Rid != nil {
+			data.Rid = *result.Resource.Rid
+		}
+		if result.Resource.Ts != nil {
+			data.Ts = *result.Resource.Ts
+		}
+		if result.Resource.Etag != nil {
+			data.Etag = *result.Resource.Etag
+		}
+	}
+
+	return &data
 }
