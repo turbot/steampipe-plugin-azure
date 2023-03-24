@@ -126,6 +126,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_policy_assignment":                                     tableAzurePolicyAssignment(ctx),
 			"azure_policy_definition":                                     tableAzurePolicyDefinition(ctx),
 			"azure_postgresql_server":                                     tableAzurePostgreSqlServer(ctx),
+			"azure_private_dns_zone":                                      tableAzurePrivateDNSZone(ctx),
 			"azure_provider":                                              tableAzureProvider(ctx),
 			"azure_public_ip":                                             tableAzurePublicIP(ctx),
 			"azure_recovery_services_vault":                               tableAzureRecoveryServicesVault(ctx),

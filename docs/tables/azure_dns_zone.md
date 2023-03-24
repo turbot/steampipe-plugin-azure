@@ -1,6 +1,6 @@
 # Table: azure_dns_zone
 
-Azure DNS zone is used to host the DNS records for a particular domain.
+Azure DNS zone is used to host the DNS records for a particular domain. Please note that this table only retrieves public DNS zones, use the `azure_private_dns_zone` table for private DNS zones.
 
 ## Examples
 
@@ -9,23 +9,22 @@ Azure DNS zone is used to host the DNS records for a particular domain.
 ```sql
 select
   name,
-  id,
-  zone_type
+  resource_group,
+  tags
 from
   azure_dns_zone;
 ```
 
-### List private DNS zones
+### List public DNS zones with record sets
 
 ```sql
 select
   name,
-  id,
-  tags
+  resource_group
 from
   azure_dns_zone
 where
-  zone_type = 'Private';
+  number_of_record_sets > 1;
 ```
 
 ### List public DNS zones with delegated name servers
@@ -33,7 +32,7 @@ where
 ```sql
 select
   name,
-  id,
+  resource_group,
   ns
 from
   azure_dns_zone, jsonb_array_elements_text(name_servers) as ns
