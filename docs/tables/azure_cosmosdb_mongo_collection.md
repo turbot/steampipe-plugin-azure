@@ -2,7 +2,7 @@
 
 An Azure Cosmos DB container is where data is stored. Unlike most relational databases which scale up with larger VM sizes, Azure Cosmos DB scales out. A collection is a grouping of MongoDB documents.
 
-**You must specify the Database Name** in the `where` clause (`where database_name='`).
+**You must specify the CosmosDB Mongo Database Name** in the `where` clause (`where database_name='<cosmosdb_mongo_database_name>'`).
 
 ## Examples
 
