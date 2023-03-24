@@ -337,6 +337,10 @@ func cosmosDBPrivateEndpointConnectionMap(ctx context.Context, d *transform.Tran
 	conns := info.DatabaseAccount.PrivateEndpointConnections
 	var privateEndpointConnections []PrivateConnectionInfo
 
+	if len(*conns) == 0 {
+		return nil, nil
+	}
+
 	for _, conn := range *conns {
 		var connection PrivateConnectionInfo
 		if conn.ID != nil {
