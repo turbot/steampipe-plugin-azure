@@ -30,3 +30,16 @@ from
 group by
   account_name;
 ```
+
+### Get throughput settings for each database
+
+```sql
+select
+  throughput_settings ->> 'Name' as name,
+  throughput_settings ->> 'ResourceThroughput' as throughput,
+  throughput_settings ->> 'AutoscaleSettingsMaxThroughput' as maximum_throughput,
+  throughput_settings ->> 'ResourceMinimumThroughput' as minimum_throughput,
+  throughput_settings ->> 'ID' as id
+from
+  azure_cosmosdb_mongo_database;
+```

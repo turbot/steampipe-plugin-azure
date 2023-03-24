@@ -218,21 +218,19 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 }
 
 type ThroughputSettings = struct {
-	ID         string
-	Name       string
-	Type       string
-	Location   string
-	Throughput int32
-
-	MaxThroughput       int32
-	ThroughputPolicy    documentdb.ThroughputPolicyResource
-	TargetMaxThroughput int32
-
-	MinimumThroughput   string
-	OfferReplacePending string
-	Rid                 string
-	Ts                  float64
-	Etag                string
+	ID                                   string
+	Name                                 string
+	Type                                 string
+	Location                             string
+	ResourceThroughput                   int32
+	ResourceMinimumThroughput            string
+	ResourceOfferReplacePending          string
+	ResourceRid                          string
+	ResourceTs                           float64
+	ResourceEtag                         string
+	AutoscaleSettingsMaxThroughput       int32
+	AutoscaleSettingsTargetMaxThroughput int32
+	AutoscaleSettingsThroughputPolicy    documentdb.ThroughputPolicyResource
 }
 
 func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -281,39 +279,39 @@ func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *Thro
 	if result.Resource != nil {
 
 		if result.Resource.Throughput != nil {
-			data.Throughput = *result.Resource.Throughput
+			data.ResourceThroughput = *result.Resource.Throughput
 		}
 		if result.Resource.AutoscaleSettings != nil {
 
 			if result.Resource.AutoscaleSettings.MaxThroughput != nil {
-				data.MaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
+				data.AutoscaleSettingsMaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
 			}
 
 			if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
-				data.ThroughputPolicy = documentdb.ThroughputPolicyResource{
+				data.AutoscaleSettingsThroughputPolicy = documentdb.ThroughputPolicyResource{
 					IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
 					IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
 				}
 			}
 
 			if result.Resource.AutoscaleSettings.TargetMaxThroughput != nil {
-				data.TargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
+				data.AutoscaleSettingsTargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
 			}
 		}
 		if result.Resource.MinimumThroughput != nil {
-			data.MinimumThroughput = *result.Resource.MinimumThroughput
+			data.ResourceMinimumThroughput = *result.Resource.MinimumThroughput
 		}
 		if result.Resource.OfferReplacePending != nil {
-			data.OfferReplacePending = *result.Resource.OfferReplacePending
+			data.ResourceOfferReplacePending = *result.Resource.OfferReplacePending
 		}
 		if result.Resource.Rid != nil {
-			data.Rid = *result.Resource.Rid
+			data.ResourceRid = *result.Resource.Rid
 		}
 		if result.Resource.Ts != nil {
-			data.Ts = *result.Resource.Ts
+			data.ResourceTs = *result.Resource.Ts
 		}
 		if result.Resource.Etag != nil {
-			data.Etag = *result.Resource.Etag
+			data.ResourceEtag = *result.Resource.Etag
 		}
 	}
 
