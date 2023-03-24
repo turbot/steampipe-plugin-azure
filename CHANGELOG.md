@@ -1,3 +1,16 @@
+## v0.39.0 [2023-03-24]
+
+_What's new?_
+
+- New tables added
+  - [azure_cosmosdb_mongo_collection](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_mongo_collection) ([#589](https://github.com/turbot/steampipe-plugin-azure/pull/589))
+  - [azure_private_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_private_dns_zone) ([#583](https://github.com/turbot/steampipe-plugin-azure/pull/583)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Enhancements_
+
+- Added column `throughput_settings` to `azure_cosmosdb_mongo_database` table. ([#587](https://github.com/turbot/steampipe-plugin-azure/pull/587))
+- Added column `backup_policy` to `azure_cosmosdb_account` table. ([#585](https://github.com/turbot/steampipe-plugin-azure/pull/585))
+
 ## v0.38.0 [2023-03-15]
 
 _What's new?_
