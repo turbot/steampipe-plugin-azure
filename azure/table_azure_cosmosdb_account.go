@@ -335,11 +335,12 @@ func extractCosmosDBVirtualNetworkRule(ctx context.Context, d *transform.Transfo
 func cosmosDBPrivateEndpointConnectionMap(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	info := d.HydrateItem.(databaseAccountInfo)
 	conns := info.DatabaseAccount.PrivateEndpointConnections
-	var privateEndpointConnections []PrivateConnectionInfo
 
 	if len(*conns) == 0 {
 		return nil, nil
 	}
+
+	var privateEndpointConnections []PrivateConnectionInfo
 
 	for _, conn := range *conns {
 		var connection PrivateConnectionInfo
