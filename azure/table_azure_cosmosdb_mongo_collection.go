@@ -34,7 +34,14 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			KeyColumns:    plugin.SingleColumn("database_name"),
+			KeyColumns: plugin.KeyColumnSlice{
+				{
+					Name: "database_name", Require: plugin.Required,
+				},
+				{
+					Name: "account_name", Require: plugin.Optional,
+				},
+			},
 			ParentHydrate: listCosmosDBAccounts,
 			Hydrate:       listCosmosDBMongoCollections,
 		},
@@ -42,23 +49,23 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			{
 				Name:        "name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the Mongo DB database.",
+				Description: "The friendly name that identifies the Mongo DB collection.",
 			},
 			{
 				Name:        "account_name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the database account in which the database is created.",
+				Description: "The friendly name that identifies the cosmosdb account in which the collection is created.",
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "database_name",
 				Type:        proto.ColumnType_STRING,
-				Description: "The friendly name that identifies the database account in which the database is created.",
+				Description: "The friendly name that identifies the database in which the collection is created.",
 				Transform:   transform.FromField("Database"),
 			},
 			{
 				Name:        "id",
-				Description: "Contains ID to identify a Mongo DB database uniquely.",
+				Description: "Contains ID to identify a Mongo DB collection uniquely.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoCollection.ID"),
 			},
@@ -70,7 +77,7 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "analytical_storage_ttl",
-				Description: "Contains maximum throughput, the resource can scale up to.",
+				Description: "Analytical TTL.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.AnalyticalStorageTTL"),
 			},
@@ -88,13 +95,13 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "collection_id",
-				Description: "Name of the Cosmos DB MongoDB database.",
+				Description: "Name of the Cosmos DB MongoDB collection.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.ID"),
 			},
 			{
 				Name:        "collection_rid",
-				Description: "A system generated unique identifier for database.",
+				Description: "A system generated unique identifier for collection.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Resource.Rid"),
 			},
@@ -118,13 +125,13 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "throughput",
-				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
+				Description: "Contains the value of the Cosmos DB resource throughput.",
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoCollection.MongoDBCollectionGetProperties.Options.Throughput"),
 			},
 			{
 				Name:        "throughput_settings",
-				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
+				Description: "Contains the Cosmos DB resource throughput or autoscaleSettings.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getCosmosDBMongoCollectionThroughput,
 				Transform:   transform.FromValue(),
@@ -171,6 +178,7 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 
 func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of cosmos db account
+	logger := plugin.Logger(ctx)
 	account := h.Item.(databaseAccountInfo)
 	databaseName := d.EqualsQuals["database_name"].GetStringValue()
 
@@ -178,10 +186,17 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 		return nil, nil
 	}
 
+	// Validate is hydrate account name matches the user provided account name
+	if d.EqualsQuals["account_name"] != nil && d.EqualsQualString("account_name") != *account.Name {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		logger.Error("azure_cosmosdb_mongo_collection.listCosmosDBMongoCollections", "session_error", err)
 		return nil, err
 	}
+
 	subscriptionID := session.SubscriptionID
 
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
@@ -189,6 +204,7 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 
 	result, err := documentDBClient.ListMongoDBCollections(ctx, *account.ResourceGroup, *account.Name, databaseName)
 	if err != nil {
+		logger.Error("azure_cosmosdb_mongo_collection.listCosmosDBMongoCollections", "api_error", err)
 		return nil, err
 	}
 
@@ -203,13 +219,13 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 		}
 	}
 
-	return nil, err
+	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
 func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getCosmosDBMongoCollection")
+	logger := plugin.Logger(ctx)
 
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
@@ -217,14 +233,13 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 	databaseName := d.EqualsQuals["database_name"].GetStringValue()
 
 	// Length of Account name must be greater than, or equal to 3
-	// Error: pq: rpc error: code = Unknown desc = documentdb.DatabaseAccountsClient#Get: Invalid input: autorest/validation: validation failed: parameter=accountName
-	// constraint=MinLength value="" details: value length must be greater than or equal to 3
-	if len(accountName) < 3 || len(resourceGroup) < 1 {
+	if len(accountName) < 3 || len(resourceGroup) < 1 || len(name) < 1 || len(databaseName) < 1 {
 		return nil, nil
 	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		logger.Error("azure_cosmosdb_mongo_collection.getCosmosDBMongoCollection", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -234,6 +249,7 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 
 	result, err := documentDBClient.GetMongoDBCollection(ctx, resourceGroup, accountName, databaseName, name)
 	if err != nil {
+		logger.Error("azure_cosmosdb_mongo_collection.getCosmosDBMongoCollection", "api_error", err)
 		return nil, err
 	}
 
@@ -241,6 +257,7 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 }
 
 func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	logger := plugin.Logger(ctx)
 	collection := h.Item.(mongoCollectionInfo)
 	databaseName := collection.Database
 	resourceGroup := collection.ResourceGroup
@@ -249,6 +266,7 @@ func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryDa
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		logger.Error("azure_cosmosdb_mongo_collection.getCosmosDBMongoCollectionThroughput", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -261,28 +279,28 @@ func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryDa
 		if strings.Contains(err.Error(), "404") {
 			return nil, nil
 		}
+		logger.Error("azure_cosmosdb_mongo_collection.getCosmosDBMongoCollectionThroughput", "api_error", err)
 		return nil, err
 	}
 
+	// Initialize lazy loaded values
 	return mapCollectionThroughputSettings(result), nil
 }
 
 type CollectionThroughputSettings = struct {
-	ID         string
-	Name       string
-	Type       string
-	Location   string
-	Throughput int32
-
-	MaxThroughput       int32
-	ThroughputPolicy    documentdb.ThroughputPolicyResource
-	TargetMaxThroughput int32
-
-	MinimumThroughput   string
-	OfferReplacePending string
-	Rid                 string
-	Ts                  float64
-	Etag                string
+	ID                                   string
+	Name                                 string
+	Type                                 string
+	Location                             string
+	ResourceThroughput                   int32
+	ResourceMinimumThroughput            string
+	ResourceOfferReplacePending          string
+	ResourceRid                          string
+	ResourceTs                           float64
+	ResourceEtag                         string
+	AutoscaleSettingsMaxThroughput       int32
+	AutoscaleSettingsTargetMaxThroughput int32
+	AutoscaleSettingsThroughputPolicy    documentdb.ThroughputPolicyResource
 }
 
 func mapCollectionThroughputSettings(result documentdb.ThroughputSettingsGetResults) *CollectionThroughputSettings {
@@ -308,39 +326,39 @@ func mapCollectionThroughputSettings(result documentdb.ThroughputSettingsGetResu
 	if result.Resource != nil {
 
 		if result.Resource.Throughput != nil {
-			data.Throughput = *result.Resource.Throughput
+			data.ResourceThroughput = *result.Resource.Throughput
 		}
 		if result.Resource.AutoscaleSettings != nil {
 
 			if result.Resource.AutoscaleSettings.MaxThroughput != nil {
-				data.MaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
+				data.AutoscaleSettingsMaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
 			}
 
 			if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
-				data.ThroughputPolicy = documentdb.ThroughputPolicyResource{
+				data.AutoscaleSettingsThroughputPolicy = documentdb.ThroughputPolicyResource{
 					IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
 					IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
 				}
 			}
 
 			if result.Resource.AutoscaleSettings.TargetMaxThroughput != nil {
-				data.TargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
+				data.AutoscaleSettingsTargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
 			}
 		}
 		if result.Resource.MinimumThroughput != nil {
-			data.MinimumThroughput = *result.Resource.MinimumThroughput
+			data.ResourceMinimumThroughput = *result.Resource.MinimumThroughput
 		}
 		if result.Resource.OfferReplacePending != nil {
-			data.OfferReplacePending = *result.Resource.OfferReplacePending
+			data.ResourceOfferReplacePending = *result.Resource.OfferReplacePending
 		}
 		if result.Resource.Rid != nil {
-			data.Rid = *result.Resource.Rid
+			data.ResourceRid = *result.Resource.Rid
 		}
 		if result.Resource.Ts != nil {
-			data.Ts = *result.Resource.Ts
+			data.ResourceTs = *result.Resource.Ts
 		}
 		if result.Resource.Etag != nil {
-			data.Etag = *result.Resource.Etag
+			data.ResourceEtag = *result.Resource.Etag
 		}
 	}
 
