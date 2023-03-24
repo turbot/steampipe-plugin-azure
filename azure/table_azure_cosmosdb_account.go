@@ -206,12 +206,6 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.PrivateEndpointConnections"),
-			},
-			{
-				Name:        "private_endpoint_connections_t",
-				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account.",
-				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(cosmosDBPrivateEndpointConnectionMap),
 			},
 			{
