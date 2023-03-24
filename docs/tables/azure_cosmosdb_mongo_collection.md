@@ -24,7 +24,7 @@ where
   c.database_name = d.name;
 ```
 
-### Collection count by cosmosdb database name
+### Collection count by cosmos DB database name
 
 ```sql
 select
