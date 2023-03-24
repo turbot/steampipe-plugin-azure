@@ -86,6 +86,7 @@ where
 
 ### Get private endpoint connection details for each account
 
+```sql
 select
   c ->> 'PrivateEndpointConnectionName' as private_endpoint_connection_name,
   c ->> 'PrivateEndpointConnectionType' as private_endpoint_connection_type,
@@ -98,3 +99,4 @@ select
 from
   azure_cosmosdb_account,
   jsonb_array_elements(private_endpoint_connections) as c;
+```
