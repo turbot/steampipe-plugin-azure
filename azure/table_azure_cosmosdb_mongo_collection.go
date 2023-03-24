@@ -48,19 +48,19 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
-				Type:        proto.ColumnType_STRING,
 				Description: "The friendly name that identifies the Mongo DB collection.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "account_name",
-				Type:        proto.ColumnType_STRING,
 				Description: "The friendly name that identifies the cosmosdb account in which the collection is created.",
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account"),
 			},
 			{
 				Name:        "database_name",
-				Type:        proto.ColumnType_STRING,
 				Description: "The friendly name that identifies the database in which the collection is created.",
+				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Database"),
 			},
 			{
@@ -182,6 +182,7 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 	account := h.Item.(databaseAccountInfo)
 	databaseName := d.EqualsQuals["database_name"].GetStringValue()
 
+	// Validate user input for databaseName
 	if databaseName == "" {
 		return nil, nil
 	}
@@ -305,10 +306,6 @@ type CollectionThroughputSettings = struct {
 
 func mapCollectionThroughputSettings(result documentdb.ThroughputSettingsGetResults) *CollectionThroughputSettings {
 	var data CollectionThroughputSettings
-
-	if result.ID == nil {
-		return nil
-	}
 
 	if result.ID != nil {
 		data.ID = *result.ID
