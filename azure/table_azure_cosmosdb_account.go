@@ -336,7 +336,7 @@ func cosmosDBPrivateEndpointConnectionMap(ctx context.Context, d *transform.Tran
 	info := d.HydrateItem.(databaseAccountInfo)
 	conns := info.DatabaseAccount.PrivateEndpointConnections
 
-	if len(*conns) == 0 {
+	if conns == nil || len(*conns) == 0 {
 		return nil, nil
 	}
 
