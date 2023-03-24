@@ -97,4 +97,4 @@ select
   c ->> 'PrivateEndpointConnectionId' as private_endpoint_connection_id
 from
   azure_cosmosdb_account,
-  jsonb_array_elements(private_endpoint_connections_t) as c;
+  jsonb_array_elements(private_endpoint_connections) as c;
