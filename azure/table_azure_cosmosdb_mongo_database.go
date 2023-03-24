@@ -241,6 +241,7 @@ func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plu
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_cosmosdb_mongo_database.getCosmosDBMongoThroughput", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -253,6 +254,7 @@ func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plu
 		if strings.Contains(err.Error(), "404") {
 			return nil, nil
 		}
+		plugin.Logger(ctx).Error("azure_cosmosdb_mongo_database.getCosmosDBMongoThroughput", "api_error", err)
 		return nil, err
 	}
 
