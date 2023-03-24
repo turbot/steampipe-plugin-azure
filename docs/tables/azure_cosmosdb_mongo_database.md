@@ -35,6 +35,8 @@ group by
 
 ```sql
 select
+  name,
+  account_name,
   throughput_settings ->> 'Name' as name,
   throughput_settings ->> 'ResourceThroughput' as throughput,
   throughput_settings ->> 'AutoscaleSettingsMaxThroughput' as maximum_throughput,
