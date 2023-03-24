@@ -250,6 +250,9 @@ func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plu
 
 	result, err := documentDBClient.GetMongoDBDatabaseThroughput(ctx, *resourceGroup, *accountName, *name)
 	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -258,10 +261,6 @@ func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plu
 
 func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *ThroughputSettings {
 	var data ThroughputSettings
-
-	if result.ID == nil {
-		return nil
-	}
 
 	if result.ID != nil {
 		data.ID = *result.ID
