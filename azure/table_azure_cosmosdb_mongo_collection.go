@@ -211,7 +211,7 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 
 	for _, mongoCollection := range *result.Value {
 		resourceGroup := &strings.Split(string(*mongoCollection.ID), "/")[4]
-		d.StreamLeafListItem(ctx, mongoCollectionInfo{mongoCollection, account.Name, &databaseName, mongoCollection.Name, resourceGroup, mongoCollection.Location})
+		d.StreamLeafListItem(ctx, mongoCollectionInfo{mongoCollection, account.Name, &databaseName, mongoCollection.Name, resourceGroup, account.DatabaseAccount.Location})
 
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
@@ -245,6 +245,16 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	subscriptionID := session.SubscriptionID
 
+	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	databaseAccountClient.Authorizer = session.Authorizer
+
+	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	location := op.Location
+
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
@@ -254,7 +264,7 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 		return nil, err
 	}
 
-	return mongoCollectionInfo{result, &accountName, &databaseName, result.Name, &resourceGroup, result.Location}, nil
+	return mongoCollectionInfo{result, &accountName, &databaseName, result.Name, &resourceGroup, location}, nil
 }
 
 func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
