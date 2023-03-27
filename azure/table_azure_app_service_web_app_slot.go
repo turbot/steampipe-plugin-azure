@@ -71,7 +71,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 				Name:        "last_modified_time_utc",
 				Description: "Last time the app was modified, in UTC.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("SiteProperties.LastModifiedTimeUtc"),
+				Transform:   transform.FromField("SiteProperties.LastModifiedTimeUtc.TIme"),
 			},
 			{
 				Name:        "repository_site_name",
