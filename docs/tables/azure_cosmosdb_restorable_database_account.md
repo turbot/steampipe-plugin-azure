@@ -45,19 +45,3 @@ where
   ra.account_name =  a.name
   and ra.subscription_id = a.subscription_id;
 ```
-
-### Get accounts restored from a point-in-time
-
-```sql
-select
-  ra.account_name,
-  ra.name as restorable_database_account_name,
-  creation_time,
-  ra.id as restorable_database_account_id
-from
-  azure_cosmosdb_restorable_database_account ra,
-  azure_cosmosdb_account a
-where
-  ra.account_name =  a.name
-  and ra.subscription_id = a.subscription_id;
-```
