@@ -106,8 +106,8 @@ from
 ```sql
 select
   name,
-  restore_parameters -> 'restoreMode' as restore_mode,
-  restore_parameters -> 'restoreSource' as restore_source,
+  restore_parameters ->> 'restoreMode' as restore_mode,
+  restore_parameters ->> 'restoreSource' as restore_source,
   d ->> 'databaseName' as restored_database_name,
   c as restored_collection_name
 from
