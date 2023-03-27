@@ -215,6 +215,12 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ReadLocations"),
 			},
 			{
+				Name:        "restore_parameters",
+				Description: "Parameters to indicate the information about the restore.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.RestoreParameters"),
+			},
+			{
 				Name:        "virtual_network_rules",
 				Description: "A list of Virtual Network ACL rules configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
