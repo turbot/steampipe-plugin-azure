@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -216,6 +217,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 				Name:        "identity",
 				Description: "Managed service identity.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.From(slotIdentity),
 			},
 			{
 				Name:        "host_names",
@@ -427,24 +429,24 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 	return nil, nil
 }
 
-// //// TRANSFORM FUNCTION
+//// TRANSFORM FUNCTION
 
-// func webAppIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-// 	data := d.HydrateItem.(web.Site)
-// 	objectMap := make(map[string]interface{})
-// 	if data.Identity != nil {
-// 		if types.SafeString(data.Identity.Type) != "" {
-// 			objectMap["Type"] = data.Identity.Type
-// 		}
-// 		if data.Identity.TenantID != nil {
-// 			objectMap["TenantID"] = data.Identity.TenantID
-// 		}
-// 		if data.Identity.PrincipalID != nil {
-// 			objectMap["PrincipalID"] = data.Identity.PrincipalID
-// 		}
-// 		if data.Identity.UserAssignedIdentities != nil {
-// 			objectMap["UserAssignedIdentities"] = data.Identity.UserAssignedIdentities
-// 		}
-// 	}
-// 	return objectMap, nil
-// }
+func slotIdentity(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	data := d.HydrateItem.(*SlotInfo)
+	objectMap := make(map[string]interface{})
+	if data.Identity != nil {
+		if types.SafeString(data.Identity.Type) != "" {
+			objectMap["Type"] = data.Identity.Type
+		}
+		if data.Identity.TenantID != nil {
+			objectMap["TenantID"] = data.Identity.TenantID
+		}
+		if data.Identity.PrincipalID != nil {
+			objectMap["PrincipalID"] = data.Identity.PrincipalID
+		}
+		if data.Identity.UserAssignedIdentities != nil {
+			objectMap["UserAssignedIdentities"] = data.Identity.UserAssignedIdentities
+		}
+	}
+	return objectMap, nil
+}
