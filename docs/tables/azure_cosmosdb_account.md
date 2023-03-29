@@ -113,5 +113,5 @@ select
 from
   azure_cosmosdb_account,
   jsonb_array_elements(restore_parameters -> 'databasesToRestore') d,
-  jsonb_array_elements_text(d -> 'collectionNames') c
+  jsonb_array_elements_text(d -> 'collectionNames') c;
 ```
