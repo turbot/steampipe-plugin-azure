@@ -34,7 +34,7 @@ func tableAzureCosmosDBRestorableDatabaseAccount(_ context.Context) *plugin.Tabl
 			},
 			{
 				Name:        "account_name",
-				Description: "Contains ID to identify a restorable database account uniquely.",
+				Description: "The name of the global database account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("RestorableDatabaseAccountProperties.AccountName"),
 			},
