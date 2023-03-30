@@ -17,7 +17,7 @@ from
   azure_cosmosdb_restorable_database_account;
 ```
 
-### Get the regions the database accounts can be restored from
+### Get the regions that the database accounts can be restored from
 
 ```sql
 select
@@ -42,6 +42,18 @@ from
   azure_cosmosdb_restorable_database_account ra,
   azure_cosmosdb_account a
 where
-  ra.account_name =  a.name
+  ra.account_name = a.name
   and ra.subscription_id = a.subscription_id;
+```
+
+### Get the restorable account count per api type
+
+```sql
+select
+  api_type,
+  count(ra.*) as accounts
+from
+  azure_cosmosdb_restorable_database_account ra
+group by
+  api_type;
 ```
