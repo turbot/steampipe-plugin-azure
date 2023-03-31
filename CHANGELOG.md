@@ -1,3 +1,20 @@
+## v0.40.0 [2023-03-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_app_service_web_app_slot](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_app_service_web_app_slot) ([#592](https://github.com/turbot/steampipe-plugin-azure/pull/592))
+  - [azure_cosmosdb_restorable_database_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_restorable_database_account) ([#596](https://github.com/turbot/steampipe-plugin-azure/pull/596))
+  - [azure_firewall_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_firewall_policy) ([#598](https://github.com/turbot/steampipe-plugin-azure/pull/598))
+
+_Enhancements_
+
+- Added column `restore_parameters` to `azure_cosmosdb_account` table. ([#594](https://github.com/turbot/steampipe-plugin-azure/pull/594))
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.3.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v530-2023-03-16) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#599](https://github.com/turbot/steampipe-plugin-azure/pull/599))
+
 ## v0.39.0 [2023-03-24]
 
 _What's new?_
