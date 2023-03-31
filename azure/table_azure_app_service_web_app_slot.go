@@ -159,7 +159,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "custom_domain_verification_id",
-				Description: "Unique identifier that verifies the custom domains assigned to the app. Customer will add this id to a txt record for verification.",
+				Description: "Unique identifier that verifies the custom domains assigned to the app. The customer will add this ID to a text record for verification.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SiteProperties.CustomDomainVerificationID"),
 			},
