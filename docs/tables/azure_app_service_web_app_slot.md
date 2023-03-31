@@ -1,6 +1,6 @@
 # Table: azure_app_service_web_app
 
-When you deploy your web app, web app on Linux, mobile back end, or API app to Azure App Service, you can use a separate deployment slot instead of the default production slot when you're running in the Standard, Premium, or Isolated App Service plan tier. Deployment slots are live apps with their own host names. App content and configurations elements can be swapped between two deployment slots, including the production slot.
+When you deploy your web app on Linux, mobile back end, or API app to Azure App Service, you can use a separate deployment slot instead of the default production slot when running in the Standard, Premium, or Isolated App Service plan tier. Deployment slots are live apps with their host names. App content and configuration elements can be swapped between two deployment slots, including the production slot.
 
 ## Examples
 
@@ -21,7 +21,7 @@ from
   azure_app_service_web_app_slot;
 ```
 
-### List slots that are enabled
+### List slots where the apps are enabled
 
 ```sql
 select
@@ -39,7 +39,7 @@ where
   enabled;
 ```
 
-### List slots which accepts HTTP traffics (i.e HTTPS only is disabled)
+### ist slots that accepts HTTP traffic (i.e only HTTPS is disabled)
 
 ```sql
 select

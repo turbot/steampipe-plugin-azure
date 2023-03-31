@@ -111,7 +111,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "is_xenon",
-				Description: "Hyper-V sandbox.",
+				Description: "Obsolete: Hyper-V sandbox.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.IsXenon"),
 			},
@@ -201,7 +201,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "https_only",
-				Description: "configures a web site to accept only https requests.",
+				Description: "Configures a web site to accept only https requests.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("SiteProperties.HTTPSOnly"),
 			},
@@ -377,20 +377,20 @@ func listAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plug
 			}
 		}
 	}
-	return nil, err
+	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
 func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
-	appName := d.EqualsQuals["name"].GetStringValue()
+	appName := d.EqualsQuals["app_name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-	slot := d.EqualsQuals["name"].GetStringValue()
+	slotName := d.EqualsQuals["name"].GetStringValue()
 
 	// Error: pq: rpc error: code = Unknown desc = web.AppsClient#GetSlot: Invalid input: autorest/validation: validation failed: parameter=resourceGroupName
 	// constraint=MinLength value="" details: value length must be greater than or equal to 1
-	if len(resourceGroup) < 1 || len(appName) < 1 || len(slot) < 1 {
+	if len(resourceGroup) < 1 || len(appName) < 1 || len(slotName) < 1 {
 		return nil, nil
 	}
 
@@ -404,7 +404,7 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	op, err := webClient.GetSlot(ctx, resourceGroup, appName, slot)
+	op, err := webClient.GetSlot(ctx, resourceGroup, appName, slotName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getAppServiceWebAppSlot", "api_error", err)
 		return nil, err
