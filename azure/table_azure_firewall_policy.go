@@ -40,7 +40,7 @@ func tableAzureFirewallPolicy(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "etag",
-				Description: "An unique read-only string that changes whenever the resource is updated.",
+				Description: "A unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
 			},
 			{
@@ -109,7 +109,7 @@ func tableAzureFirewallPolicy(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "rule_collection_groups",
-				Description: "List of references to FirewallPolicyRuleCollectionGroups",
+				Description: "List of references to FirewallPolicyRuleCollectionGroups.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("AzureFirewallPropertiesFormat.RuleCollectionGroups"),
 			},
@@ -210,7 +210,7 @@ func listFirewallPolicies(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 			}
 		}
 	}
-	return nil, err
+	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS ////
@@ -244,33 +244,3 @@ func getFirewallPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	return nil, nil
 }
-
-//// Transform Functions
-
-// func ipConfigurationData(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-// 	data := d.HydrateItem.(network.AzureFirewall)
-
-// 	var output []map[string]interface{}
-// 	// Add a check for AzureFirewallPropertiesFormat.IPConfigurations data to ensure that
-// 	// it is not null to avoid panic errors
-// 	if data.AzureFirewallPropertiesFormat.IPConfigurations != nil {
-// 		for _, firewall := range *data.AzureFirewallPropertiesFormat.IPConfigurations {
-// 			objectMap := make(map[string]interface{})
-// 			if firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress != nil {
-// 				objectMap["privateIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress
-// 			}
-// 			if firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress != nil {
-// 				objectMap["publicIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress
-// 			}
-// 			if firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet != nil {
-// 				objectMap["subnet"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet
-// 			}
-// 			if firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState != "" {
-// 				objectMap["provisioningState"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState
-// 			}
-// 			output = append(output, objectMap)
-// 		}
-// 		return output, nil
-// 	}
-// 	return nil, nil
-// }
