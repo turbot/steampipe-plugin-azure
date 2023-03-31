@@ -39,7 +39,7 @@ where
   enabled;
 ```
 
-### ist slots that accepts HTTP traffic (i.e only HTTPS is disabled)
+### List slots that accept HTTP traffic (i.e only HTTPS is disabled)
 
 ```sql
 select
@@ -53,7 +53,7 @@ where
   not https_only;
 ```
 
-### Host names of each slots
+### Host names of each slot
 
 ```sql
 select
