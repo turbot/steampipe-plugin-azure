@@ -47,7 +47,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Resource Id.",
+				Description: "Resource ID of the app slot.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
