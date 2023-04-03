@@ -341,10 +341,12 @@ func mapCollectionThroughputSettings(result documentdb.ThroughputSettingsGetResu
 				data.AutoscaleSettingsMaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
 			}
 
-			if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
-				data.AutoscaleSettingsThroughputPolicy = documentdb.ThroughputPolicyResource{
-					IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
-					IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
+			if result.Resource.AutoscaleSettings.AutoUpgradePolicy != nil {
+				if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
+					data.AutoscaleSettingsThroughputPolicy = documentdb.ThroughputPolicyResource{
+						IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
+						IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
+					}
 				}
 			}
 
