@@ -2,7 +2,7 @@
 
 _Bug fixes_
 
-- Fixed the `throughput_settings` column of `azure_cosmosdb_mongo_collection` and `azure_cosmosdb_mongo_database` tables to correctly return data instead of an error, when default throughput setting is set on the databases. ([#602](https://github.com/turbot/steampipe-plugin-azure/pull/602))
+- Fixed the `throughput_settings` column of `azure_cosmosdb_mongo_collection` and `azure_cosmosdb_mongo_database` tables to correctly return data instead of an error, when default throughput setting is used for databases or collections. ([#602](https://github.com/turbot/steampipe-plugin-azure/pull/602))
 
 ## v0.40.0 [2023-03-31]
 
