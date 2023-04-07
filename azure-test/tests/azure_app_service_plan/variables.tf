@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -43,8 +43,8 @@ resource "azurerm_app_service_plan" "named_test_resource" {
   resource_group_name = azurerm_resource_group.named_test_resource.name
 
   sku {
-    tier = "Standard"
-    size = "S1"
+    tier     = "Standard"
+    size     = "S1"
     capacity = 0
   }
 
