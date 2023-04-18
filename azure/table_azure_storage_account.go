@@ -350,7 +350,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "status_of_secondary",
-				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'Available', 'Unavailable'",
+				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'Available', 'Unavailable'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.StatusOfSecondary"),
 			},
