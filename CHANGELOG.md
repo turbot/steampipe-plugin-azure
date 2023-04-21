@@ -1,3 +1,9 @@
+## v0.41.0 [2023-04-21]
+
+_Enhancements_
+
+- Added columns `status_of_primary` and `status_of_secondary` to `azure_storage_account` table. ([#605](https://github.com/turbot/steampipe-plugin-azure/pull/605)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
 ## v0.40.1 [2023-04-05]
 
 _Bug fixes_
@@ -307,7 +313,7 @@ _Deprecated_
   - [azure_ad_user](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_user) (replaced by [azuread_user](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_user))
 
 ## v0.19.0 [2021-10-07]
-  
+
 _What's new?_
 
 - New tables added
