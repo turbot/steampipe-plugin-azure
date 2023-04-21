@@ -2,7 +2,7 @@
 
 _Enhancements_
 
-- Added column `status_of_primary` and `status_of_secondary` to `azure_storage_account` table. ([#605](https://github.com/turbot/steampipe-plugin-azure/pull/605))
+- Added column `status_of_primary` and `status_of_secondary` to `azure_storage_account` table. ([#605](https://github.com/turbot/steampipe-plugin-azure/pull/605)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
 
 ## v0.40.1 [2023-04-05]
 
