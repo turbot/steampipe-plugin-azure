@@ -135,7 +135,7 @@ _Dependencies_
 
 ## v0.32.0 [2022-09-15]
 
-q
+_Enhancements_
 
 - Added column `diagnostic_logs_configuration` to `azure_app_service_web_app` table. ([#517](https://github.com/turbot/steampipe-plugin-azure/pull/517))
 
