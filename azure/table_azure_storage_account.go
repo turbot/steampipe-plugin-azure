@@ -325,8 +325,14 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Web"),
 			},
 			{
+				Name:        "status_of_primary",
+				Description: "The status indicating whether the primary location of the storage account is available or unavailable. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfPrimary"),
+			},
+			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the virtual network resource.",
+				Description: "The provisioning state of the storage account resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.ProvisioningState").Transform(transform.ToString),
 			},
@@ -341,6 +347,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "Contains the location of the geo-replicated secondary for the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.SecondaryLocation"),
+			},
+			{
+				Name:        "status_of_secondary",
+				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfSecondary"),
 			},
 			{
 				Name:        "diagnostic_settings",
