@@ -52,49 +52,49 @@ func tableAzureFirewallPolicy(_ context.Context) *plugin.Table {
 				Name:        "provisioning_state",
 				Description: "The provisioning state of the firewall policy resource. Possible values include: 'Succeeded', 'Updating', 'Deleting', 'Failed'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FirewallPolicyPropertiesFormat.ProvisioningState").Transform(transform.ToString),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "ProvisioningState"),
 			},
 			{
 				Name:        "intrusion_detection_mode",
 				Description: "Intrusion detection general state. Possible values include: 'FirewallPolicyIntrusionDetectionStateTypeOff', 'FirewallPolicyIntrusionDetectionStateTypeAlert', 'FirewallPolicyIntrusionDetectionStateTypeDeny'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.IntrusionDetection.Mode"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "IntrusionDetectionMode"),
 			},
-						{
+			{
 				Name:        "sku_tier",
 				Description: "Tier of Firewall Policy. Possible values include: 'FirewallPolicySkuTierStandard', 'FirewallPolicySkuTierPremium'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.Sku.Tier"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "SKUTire"),
 			},
 			{
 				Name:        "threat_intel_mode",
 				Description: "The operation mode for Threat Intelligence. Possible values include: 'AzureFirewallThreatIntelModeAlert', 'AzureFirewallThreatIntelModeDeny', 'AzureFirewallThreatIntelModeOff'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("FirewallPolicyPropertiesFormat.ThreatIntelMode.ID"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "ThreatIntelMode"),
 			},
 			{
 				Name:        "base_policy",
 				Description: "The parent firewall policy from which rules are inherited.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.BasePolicy"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "BasePolicy"),
 			},
 			{
 				Name:        "child_policies",
 				Description: "List of references to Child Firewall Policies.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.ChildPolicies"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "ChildPolicies"),
 			},
 			{
 				Name:        "dns_settings",
 				Description: "DNS Proxy Settings definition.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.DNSSettings"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "DNSSettings"),
 			},
 			{
 				Name:        "firewalls",
 				Description: "List of references to Azure Firewalls that this Firewall Policy is associated with.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.Firewalls"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "Firewalls"),
 			},
 			{
 				Name:        "identity",
@@ -105,31 +105,31 @@ func tableAzureFirewallPolicy(_ context.Context) *plugin.Table {
 				Name:        "intrusion_detection_configuration",
 				Description: "Intrusion detection configuration properties.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.IntrusionDetection.Configuration"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "IntrusionDetectionConfiguration"),
 			},
 			{
 				Name:        "rule_collection_groups",
 				Description: "List of references to FirewallPolicyRuleCollectionGroups.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.RuleCollectionGroups"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "RuleCollectionGroups"),
 			},
 			{
 				Name:        "threat_intel_whitelist_ip_addresses",
 				Description: "List of IP addresses for the ThreatIntel Whitelist.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.IPAddresses"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "ThreatIntelWhitelistIPAddresses"),
 			},
 			{
 				Name:        "threat_intel_whitelist_fqdns",
 				Description: "List of FQDNs for the ThreatIntel Whitelist.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.Fqdns"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "ThreatIntelWhitelistFqdns"),
 			},
 			{
 				Name:        "transport_security_certificate_authority",
 				Description: "The CA used for intermediate CA generation.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AzureFirewallPropertiesFormat.TransportSecurity.CertificateAuthority"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "TransportSecurityCertificateAuthority"),
 			},
 
 			// Steampipe standard columns
@@ -240,6 +240,70 @@ func getFirewallPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
 		return op, nil
+	}
+
+	return nil, nil
+}
+
+//// TRANSFORM FUNCTIONS
+
+func extractAzureFirewallProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	firewall := d.HydrateItem.(network.FirewallPolicy)
+	properties := make(map[string]interface{})
+	param := d.Param.(string)
+
+	if firewall.FirewallPolicyPropertiesFormat != nil {
+		if firewall.FirewallPolicyPropertiesFormat.IntrusionDetection != nil {
+			if firewall.FirewallPolicyPropertiesFormat.IntrusionDetection.Mode != "" {
+				properties["IntrusionDetectionMode"] = string(firewall.FirewallPolicyPropertiesFormat.IntrusionDetection.Mode)
+			}
+			if firewall.FirewallPolicyPropertiesFormat.IntrusionDetection.Configuration != nil {
+				properties["IntrusionDetectionConfiguration"] = firewall.FirewallPolicyPropertiesFormat.IntrusionDetection.Configuration
+			}
+		}
+		if firewall.FirewallPolicyPropertiesFormat.RuleCollectionGroups != nil {
+			properties["RuleCollectionGroups"] = firewall.FirewallPolicyPropertiesFormat.RuleCollectionGroups
+		}
+		if firewall.FirewallPolicyPropertiesFormat.ProvisioningState != "" {
+			properties["ProvisioningState"] = firewall.FirewallPolicyPropertiesFormat.ProvisioningState
+		}
+		if firewall.FirewallPolicyPropertiesFormat.BasePolicy != nil {
+			properties["BasePolicy"] = firewall.FirewallPolicyPropertiesFormat.BasePolicy
+		}
+		if firewall.FirewallPolicyPropertiesFormat.Firewalls != nil {
+			properties["Firewalls"] = firewall.FirewallPolicyPropertiesFormat.Firewalls
+		}
+		if firewall.FirewallPolicyPropertiesFormat.ChildPolicies != nil {
+			properties["ChildPolicies"] = firewall.FirewallPolicyPropertiesFormat.ChildPolicies
+		}
+		if firewall.FirewallPolicyPropertiesFormat.ThreatIntelMode != "" {
+			properties["ThreatIntelMode"] = firewall.FirewallPolicyPropertiesFormat.ThreatIntelMode
+		}
+		if firewall.FirewallPolicyPropertiesFormat.ThreatIntelWhitelist != nil {
+			if firewall.FirewallPolicyPropertiesFormat.ThreatIntelWhitelist.IPAddresses != nil {
+				properties["ThreatIntelWhitelistIPAddresses"] = firewall.FirewallPolicyPropertiesFormat.ThreatIntelWhitelist.IPAddresses
+			}
+			if firewall.FirewallPolicyPropertiesFormat.ThreatIntelWhitelist.Fqdns != nil {
+				properties["ThreatIntelWhitelistFqdns"] = firewall.FirewallPolicyPropertiesFormat.ThreatIntelWhitelist.Fqdns
+			}
+		}
+		if firewall.FirewallPolicyPropertiesFormat.DNSSettings != nil {
+			properties["DNSSettings"] = firewall.FirewallPolicyPropertiesFormat.DNSSettings
+		}
+		if firewall.FirewallPolicyPropertiesFormat.TransportSecurity != nil {
+			if firewall.FirewallPolicyPropertiesFormat.TransportSecurity.CertificateAuthority != nil {
+				properties["TransportSecurityCertificateAuthority"] = firewall.FirewallPolicyPropertiesFormat.TransportSecurity.CertificateAuthority
+			}
+		}
+		if firewall.FirewallPolicyPropertiesFormat.Sku != nil {
+			if firewall.FirewallPolicyPropertiesFormat.Sku.Tier != "" {
+				properties["SKUTire"] = firewall.FirewallPolicyPropertiesFormat.Sku.Tier
+			}
+		}
+	}
+
+	if val, ok := properties[param]; ok {
+		return val, nil
 	}
 
 	return nil, nil
