@@ -64,7 +64,7 @@ func tableAzureFirewallPolicy(_ context.Context) *plugin.Table {
 				Name:        "sku_tier",
 				Description: "Tier of Firewall Policy. Possible values include: 'FirewallPolicySkuTierStandard', 'FirewallPolicySkuTierPremium'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromP(extractAzureFirewallProperties, "SKUTire"),
+				Transform:   transform.FromP(extractAzureFirewallProperties, "SKUTier"),
 			},
 			{
 				Name:        "threat_intel_mode",
