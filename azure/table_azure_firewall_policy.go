@@ -297,7 +297,7 @@ func extractAzureFirewallProperties(ctx context.Context, d *transform.TransformD
 		}
 		if firewall.FirewallPolicyPropertiesFormat.Sku != nil {
 			if firewall.FirewallPolicyPropertiesFormat.Sku.Tier != "" {
-				properties["SKUTire"] = firewall.FirewallPolicyPropertiesFormat.Sku.Tier
+				properties["SKUTier"] = firewall.FirewallPolicyPropertiesFormat.Sku.Tier
 			}
 		}
 	}
