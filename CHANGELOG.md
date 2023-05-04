@@ -1,3 +1,9 @@
+## v0.41.1 [2023-05-04]
+
+_Bug fixes_
+
+- Fixed the `intrusion_detection_mode` column of `azure_firewall_policy table` to correctly return data instead of `null`. ([#609](https://github.com/turbot/steampipe-plugin-azure/pull/609))
+
 ## v0.41.0 [2023-04-21]
 
 _Enhancements_
