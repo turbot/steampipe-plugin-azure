@@ -1,6 +1,6 @@
-# Table: table_azure_compute_ssh_key
+# Table: azure_compute_ssh_key
 
-Azure SSH public key used by VM. 
+Azure SSH public key used by VMs. 
 
 ## Examples
 
@@ -27,4 +27,3 @@ from
   jsonb_array_elements(linux_configuration_ssh_public_keys) as s
   left join azure_compute_ssh_key as k on k.public_key = s ->> 'keyData';
 ```
-
