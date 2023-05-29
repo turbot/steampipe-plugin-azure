@@ -296,7 +296,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			{
 				Name:        "table_logging_retention_policy",
 				Description: "The retention policy.",
-				Type:        proto.ColumnType_STRING,
+				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureStorageAccountTableProperties,
 				Transform:   transform.FromField("Logging.RetentionPolicy"),
 			},
