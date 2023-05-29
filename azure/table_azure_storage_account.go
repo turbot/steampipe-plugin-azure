@@ -9,10 +9,10 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
 	"github.com/tombuildsstuff/giovanni/storage/2019-12-12/blob/accounts"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type storageAccountInfo = struct {
@@ -325,8 +325,14 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Web"),
 			},
 			{
+				Name:        "status_of_primary",
+				Description: "The status indicating whether the primary location of the storage account is available or unavailable. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfPrimary"),
+			},
+			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the virtual network resource.",
+				Description: "The provisioning state of the storage account resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.ProvisioningState").Transform(transform.ToString),
 			},
@@ -341,6 +347,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "Contains the location of the geo-replicated secondary for the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.SecondaryLocation"),
+			},
+			{
+				Name:        "status_of_secondary",
+				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfSecondary"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -449,7 +461,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -465,7 +477,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -484,8 +496,8 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer

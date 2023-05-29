@@ -45,11 +45,12 @@ resource "azurerm_storage_account" "named_test_resource" {
 }
 
 resource "azurerm_batch_account" "named_test_resource" {
-  name                 = var.resource_name
-  resource_group_name  = azurerm_resource_group.named_test_resource.name
-  location             = azurerm_resource_group.named_test_resource.location
-  pool_allocation_mode = "BatchService"
-  storage_account_id   = azurerm_storage_account.named_test_resource.id
+  name                                = var.resource_name
+  resource_group_name                 = azurerm_resource_group.named_test_resource.name
+  location                            = azurerm_resource_group.named_test_resource.location
+  pool_allocation_mode                = "BatchService"
+  storage_account_id                  = azurerm_storage_account.named_test_resource.id
+  storage_account_authentication_mode = "StorageKeys"
 }
 
 output "resource_aka" {

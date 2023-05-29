@@ -69,6 +69,7 @@ resource "azurerm_log_analytics_workspace" "named_test_resource" {
 }
 
 resource "azurerm_network_watcher_flow_log" "named_test_resource" {
+  name                 = var.resource_name
   network_watcher_name = azurerm_network_watcher.named_test_resource.name
   resource_group_name  = azurerm_resource_group.named_test_resource.name
 

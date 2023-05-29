@@ -1,0 +1,9 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "provisioning_state": "Succeeded",
+    "resource_group": "{{ resourceName }}",
+    "type": "Microsoft.Network/FirewallPolicies"
+  }
+]

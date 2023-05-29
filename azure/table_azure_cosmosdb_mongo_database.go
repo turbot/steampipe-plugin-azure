@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/cosmos-db/mgmt/documentdb"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type mongoDatabaseInfo = struct {
@@ -96,6 +96,13 @@ func tableAzureCosmosDBMongoDatabase(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_INT,
 				Transform:   transform.FromField("MongoDatabase.MongoDBDatabaseGetProperties.Options.Throughput"),
 			},
+			{
+				Name:        "throughput_settings",
+				Description: "Contains the value of the Cosmos DB resource throughput or autoscaleSettings.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getCosmosDBMongoThroughput,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -159,7 +166,7 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 		d.StreamLeafListItem(ctx, mongoDatabaseInfo{mongoDatabase, account.Name, mongoDatabase.Name, resourceGroup, account.DatabaseAccount.Location})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -172,9 +179,9 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getCosmosDBMongoDatabase")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
-	accountName := d.KeyColumnQuals["account_name"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	accountName := d.EqualsQuals["account_name"].GetStringValue()
 
 	// Length of Account name must be greater than, or equal to 3
 	// Error: pq: rpc error: code = Unknown desc = documentdb.DatabaseAccountsClient#Get: Invalid input: autorest/validation: validation failed: parameter=accountName
@@ -208,4 +215,108 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	return mongoDatabaseInfo{result, &accountName, result.Name, &resourceGroup, location}, nil
+}
+
+type ThroughputSettings = struct {
+	ID                                   string
+	Name                                 string
+	Type                                 string
+	Location                             string
+	ResourceThroughput                   int32
+	ResourceMinimumThroughput            string
+	ResourceOfferReplacePending          string
+	ResourceRid                          string
+	ResourceTs                           float64
+	ResourceEtag                         string
+	AutoscaleSettingsMaxThroughput       int32
+	AutoscaleSettingsTargetMaxThroughput int32
+	AutoscaleSettingsThroughputPolicy    documentdb.ThroughputPolicyResource
+}
+
+func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(mongoDatabaseInfo)
+	name := database.Name
+	resourceGroup := database.ResourceGroup
+	accountName := database.Account
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_cosmosdb_mongo_database.getCosmosDBMongoThroughput", "session_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	documentDBClient.Authorizer = session.Authorizer
+
+	result, err := documentDBClient.GetMongoDBDatabaseThroughput(ctx, *resourceGroup, *accountName, *name)
+	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			return nil, nil
+		}
+		plugin.Logger(ctx).Error("azure_cosmosdb_mongo_database.getCosmosDBMongoThroughput", "api_error", err)
+		return nil, err
+	}
+
+	return mapThroughputSettings(result), nil
+}
+
+func mapThroughputSettings(result documentdb.ThroughputSettingsGetResults) *ThroughputSettings {
+	var data ThroughputSettings
+
+	if result.ID != nil {
+		data.ID = *result.ID
+	}
+	if result.Name != nil {
+		data.Name = *result.Name
+	}
+	if result.Type != nil {
+		data.Type = *result.Type
+	}
+	if result.Location != nil {
+		data.Location = *result.Location
+	}
+
+	if result.Resource != nil {
+
+		if result.Resource.Throughput != nil {
+			data.ResourceThroughput = *result.Resource.Throughput
+		}
+		if result.Resource.AutoscaleSettings != nil {
+
+			if result.Resource.AutoscaleSettings.MaxThroughput != nil {
+				data.AutoscaleSettingsMaxThroughput = *result.Resource.AutoscaleSettings.MaxThroughput
+			}
+
+			if result.Resource.AutoscaleSettings.AutoUpgradePolicy != nil {
+				if result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy != nil {
+					data.AutoscaleSettingsThroughputPolicy = documentdb.ThroughputPolicyResource{
+						IsEnabled:        result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IsEnabled,
+						IncrementPercent: result.Resource.AutoscaleSettings.AutoUpgradePolicy.ThroughputPolicy.IncrementPercent,
+					}
+				}
+			}
+
+			if result.Resource.AutoscaleSettings.TargetMaxThroughput != nil {
+				data.AutoscaleSettingsTargetMaxThroughput = *result.Resource.AutoscaleSettings.TargetMaxThroughput
+			}
+		}
+		if result.Resource.MinimumThroughput != nil {
+			data.ResourceMinimumThroughput = *result.Resource.MinimumThroughput
+		}
+		if result.Resource.OfferReplacePending != nil {
+			data.ResourceOfferReplacePending = *result.Resource.OfferReplacePending
+		}
+		if result.Resource.Rid != nil {
+			data.ResourceRid = *result.Resource.Rid
+		}
+		if result.Resource.Ts != nil {
+			data.ResourceTs = *result.Resource.Ts
+		}
+		if result.Resource.Etag != nil {
+			data.ResourceEtag = *result.Resource.Etag
+		}
+	}
+
+	return &data
 }

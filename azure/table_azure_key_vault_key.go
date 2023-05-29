@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -194,7 +194,7 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		d.StreamListItem(ctx, key)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -209,7 +209,7 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 			d.StreamListItem(ctx, key)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -231,9 +231,9 @@ func getKeyVaultKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		name = *data.Name
 		resourceGroup = splitID[4]
 	} else {
-		vaultName = d.KeyColumnQuals["vault_name"].GetStringValue()
-		name = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroup = d.KeyColumnQuals["resource_group"].GetStringValue()
+		vaultName = d.EqualsQuals["vault_name"].GetStringValue()
+		name = d.EqualsQuals["name"].GetStringValue()
+		resourceGroup = d.EqualsQuals["resource_group"].GetStringValue()
 	}
 
 	// Create session

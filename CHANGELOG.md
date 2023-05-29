@@ -1,3 +1,83 @@
+## v0.42.0 [2023-05-11]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.4.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v541-2023-05-05) which fixes increased plugin initialization time due to multiple connections causing the schema to be loaded repeatedly. ([#604](https://github.com/turbot/steampipe-plugin-azure/pull/604))
+
+## v0.41.1 [2023-05-04]
+
+_Bug fixes_
+
+- Fixed the `intrusion_detection_mode` column of `azure_firewall_policy table` to correctly return data instead of `null`. ([#609](https://github.com/turbot/steampipe-plugin-azure/pull/609))
+
+## v0.41.0 [2023-04-21]
+
+_Enhancements_
+
+- Added columns `status_of_primary` and `status_of_secondary` to `azure_storage_account` table. ([#605](https://github.com/turbot/steampipe-plugin-azure/pull/605)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+## v0.40.1 [2023-04-05]
+
+_Bug fixes_
+
+- Fixed the `throughput_settings` column of `azure_cosmosdb_mongo_collection` and `azure_cosmosdb_mongo_database` tables to correctly return data instead of an error, when default throughput setting is used for databases or collections. ([#602](https://github.com/turbot/steampipe-plugin-azure/pull/602))
+
+## v0.40.0 [2023-03-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_app_service_web_app_slot](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_app_service_web_app_slot) ([#592](https://github.com/turbot/steampipe-plugin-azure/pull/592))
+  - [azure_cosmosdb_restorable_database_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_restorable_database_account) ([#596](https://github.com/turbot/steampipe-plugin-azure/pull/596))
+  - [azure_firewall_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_firewall_policy) ([#598](https://github.com/turbot/steampipe-plugin-azure/pull/598))
+
+_Enhancements_
+
+- Added column `restore_parameters` to `azure_cosmosdb_account` table. ([#594](https://github.com/turbot/steampipe-plugin-azure/pull/594))
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.3.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v530-2023-03-16) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#599](https://github.com/turbot/steampipe-plugin-azure/pull/599))
+
+## v0.39.0 [2023-03-24]
+
+_What's new?_
+
+- New tables added
+  - [azure_cosmosdb_mongo_collection](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_mongo_collection) ([#589](https://github.com/turbot/steampipe-plugin-azure/pull/589))
+  - [azure_private_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_private_dns_zone) ([#583](https://github.com/turbot/steampipe-plugin-azure/pull/583)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Enhancements_
+
+- Added column `throughput_settings` to `azure_cosmosdb_mongo_database` table. ([#587](https://github.com/turbot/steampipe-plugin-azure/pull/587))
+- Added column `backup_policy` to `azure_cosmosdb_account` table. ([#585](https://github.com/turbot/steampipe-plugin-azure/pull/585))
+
+## v0.38.0 [2023-03-15]
+
+_What's new?_
+
+- New tables added
+  - [azure_application_insight](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_application_insight) ([#579](https://github.com/turbot/steampipe-plugin-azure/pull/579))
+  - [azure_bastion_host](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_bastion_host) ([#580](https://github.com/turbot/steampipe-plugin-azure/pull/580))
+  - [azure_compute_ssh_key](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_ssh_key) ([#560](https://github.com/turbot/steampipe-plugin-azure/pull/560)) (Thanks [@srgg](https://github.com/srgg) for the contribution!)
+  - [azure_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_dns_zone) ([#575](https://github.com/turbot/steampipe-plugin-azure/pull/575)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed column name typo in `azure_compute_virtual_machine_scale_set_network_interface` table. ([#573](https://github.com/turbot/steampipe-plugin-azure/pull/573)) (Thanks [@jackdelab](https://github.com/jackdelab) for the contribution!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.2.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v520-2023-03-02) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#574](https://github.com/turbot/steampipe-plugin-azure/pull/574))
+
+## v0.37.0 [2023-02-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_automation_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_account) ([#569](https://github.com/turbot/steampipe-plugin-azure/pull/569))
+  - [azure_automation_variable](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_variable) ([#571](https://github.com/turbot/steampipe-plugin-azure/pull/571))
+
 ## v0.36.0 [2023-02-10]
 
 _Enhancements_
@@ -245,7 +325,7 @@ _Deprecated_
   - [azure_ad_user](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_user) (replaced by [azuread_user](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_user))
 
 ## v0.19.0 [2021-10-07]
-  
+
 _What's new?_
 
 - New tables added

@@ -59,9 +59,9 @@ steampipe plugin install azure
 | Item        | Description                                                                                                                                                                                                                     |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Credentials | Use the `az login` command to setup your [Azure Default Connection](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).                                                                                         |
-| Permissions | Grant the `Global Reader` permission to your user.                                                                                                                                                                              |
-| Radius      | Each connection represents a single Azure Subscription.                                                                                                                                                                         |
-| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azure.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`. |
+| Permissions | Assign the `Reader` role to your user or service principal in the subscription.                                                                                                                                                                              |
+| Radius      | Each connection represents a single Azure subscription.                                                                                                                                                                         |
+| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azure.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`.<br />3. Credentials from the Azure CLI. |
 
 ### Configuration
 

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{ resourceName }}",
+    "region": "{{ output.location.value }}",
+    "resource_group": "{{ resourceName }}",
+    "subscription_id": "{{ output.subscription_id.value }}",
+    "type": "Microsoft.Automation/AutomationAccounts"
+  }
+]

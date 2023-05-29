@@ -6,10 +6,10 @@ import (
 	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -241,7 +241,7 @@ func listKeyVaultKeyVersions(ctx context.Context, d *plugin.QueryData, h *plugin
 			d.StreamLeafListItem(ctx, data)
 
 			// Context may get cancelled due to manual cancellation or if the limit has been reached
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -263,7 +263,7 @@ func getRowDataForKeyVersionAsync(ctx context.Context, d *plugin.QueryData, h *p
 
 func getRowDataForKeyVersion(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, key keyvault.Key) ([]keyvault.Key, error) {
 	vault := h.Item.(keyvault.Resource)
-	keyName := d.KeyColumnQuals["key_name"].GetStringValue()
+	keyName := d.EqualsQuals["key_name"].GetStringValue()
 	var items []keyvault.Key
 
 	if keyName != "" && keyName != *key.Name {

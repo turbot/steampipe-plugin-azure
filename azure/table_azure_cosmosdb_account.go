@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/cosmos-db/mgmt/documentdb"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type databaseAccountInfo = struct {
@@ -167,6 +167,12 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.APIProperties.ServerVersion").Transform(transform.ToString),
 			},
 			{
+				Name:        "backup_policy",
+				Description: "The object representing the policy for taking backups on an account.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.BackupPolicy"),
+			},
+			{
 				Name:        "capabilities",
 				Description: "A list of Cosmos DB capabilities for the account.",
 				Type:        proto.ColumnType_JSON,
@@ -200,13 +206,19 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Name:        "private_endpoint_connections",
 				Description: "A list of Private Endpoint Connections configured for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.PrivateEndpointConnections"),
+				Transform:   transform.From(cosmosDBPrivateEndpointConnectionMap),
 			},
 			{
 				Name:        "read_locations",
 				Description: "A list of read locations enabled for the Cosmos DB account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.ReadLocations"),
+			},
+			{
+				Name:        "restore_parameters",
+				Description: "Parameters to indicate the information about the restore.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.RestoreParameters"),
 			},
 			{
 				Name:        "virtual_network_rules",
@@ -280,7 +292,7 @@ func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		d.StreamListItem(ctx, databaseAccountInfo{account, account.Name, resourceGroup})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -298,8 +310,8 @@ func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	documentDBClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
@@ -322,4 +334,54 @@ func extractCosmosDBVirtualNetworkRule(ctx context.Context, d *transform.Transfo
 		}
 	}
 	return nil, nil
+}
+
+// If we return the API response directly, the output will not give
+// all the contents of PrivateEndpointConnection
+func cosmosDBPrivateEndpointConnectionMap(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	info := d.HydrateItem.(databaseAccountInfo)
+	conns := info.DatabaseAccount.PrivateEndpointConnections
+
+	if conns == nil || len(*conns) == 0 {
+		return nil, nil
+	}
+
+	var privateEndpointConnections []PrivateConnectionInfo
+
+	for _, conn := range *conns {
+		var connection PrivateConnectionInfo
+		if conn.ID != nil {
+			connection.PrivateEndpointConnectionId = string(*conn.ID)
+		}
+		if conn.Name != nil {
+			connection.PrivateEndpointConnectionName = string(*conn.Name)
+		}
+		if conn.Type != nil {
+			connection.PrivateEndpointConnectionType = string(*conn.Type)
+		}
+		if conn.PrivateEndpointConnectionProperties != nil {
+			if conn.PrivateEndpoint != nil {
+				if conn.PrivateEndpoint.ID != nil {
+					connection.PrivateEndpointId = string(*conn.PrivateEndpoint.ID)
+				}
+			}
+			if conn.PrivateLinkServiceConnectionState != nil {
+				if conn.PrivateLinkServiceConnectionState.ActionsRequired != nil {
+					connection.PrivateLinkServiceConnectionStateActionsRequired = string(*conn.PrivateLinkServiceConnectionState.ActionsRequired)
+				}
+				if conn.PrivateLinkServiceConnectionState.Status != nil {
+					connection.PrivateLinkServiceConnectionStateStatus = string(*conn.PrivateLinkServiceConnectionState.Status)
+				}
+				if conn.PrivateLinkServiceConnectionState.Description != nil {
+					connection.PrivateLinkServiceConnectionStateDescription = string(*conn.PrivateLinkServiceConnectionState.Description)
+				}
+			}
+			if conn.ProvisioningState != nil {
+				connection.ProvisioningState = string(*conn.ProvisioningState)
+			}
+		}
+		privateEndpointConnections = append(privateEndpointConnections, connection)
+	}
+
+	return privateEndpointConnections, nil
 }
