@@ -2,7 +2,7 @@
 
 _Enhancements_
 
-- Added columns `table_logging_read`, `table_logging_write`, `table_logging_delete`, `table_logging_version`, `table_logging_retention_policy` and `table_properties` to `azure_storage_account` table. ([#614](https://github.com/turbot/steampipe-plugin-azure/pull/614))
+- Added columns `table_logging_delete`, `table_logging_read`, `table_logging_retention_policy`, `table_logging_version`, `table_logging_write`, and `table_properties` to `azure_storage_account` table. ([#614](https://github.com/turbot/steampipe-plugin-azure/pull/614))
 
 ## v0.42.0 [2023-05-11]
 
