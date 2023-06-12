@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-07-01/network"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION ////
@@ -201,7 +201,7 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		d.StreamListItem(ctx, firewall)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -216,7 +216,7 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 			d.StreamListItem(ctx, firewall)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -229,8 +229,8 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 func getFirewall(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getFirewall")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
@@ -261,21 +261,26 @@ func ipConfigurationData(ctx context.Context, d *transform.TransformData) (inter
 	data := d.HydrateItem.(network.AzureFirewall)
 
 	var output []map[string]interface{}
-	for _, firewall := range *data.AzureFirewallPropertiesFormat.IPConfigurations {
-		objectMap := make(map[string]interface{})
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress != nil {
-			objectMap["privateIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress
+	// Add a check for AzureFirewallPropertiesFormat.IPConfigurations data to ensure that
+	// it is not null to avoid panic errors
+	if data.AzureFirewallPropertiesFormat.IPConfigurations != nil {
+		for _, firewall := range *data.AzureFirewallPropertiesFormat.IPConfigurations {
+			objectMap := make(map[string]interface{})
+			if firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress != nil {
+				objectMap["privateIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PrivateIPAddress
+			}
+			if firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress != nil {
+				objectMap["publicIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress
+			}
+			if firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet != nil {
+				objectMap["subnet"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet
+			}
+			if firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState != "" {
+				objectMap["provisioningState"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState
+			}
+			output = append(output, objectMap)
 		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress != nil {
-			objectMap["publicIPAddress"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.PublicIPAddress
-		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet != nil {
-			objectMap["subnet"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.Subnet
-		}
-		if firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState != "" {
-			objectMap["provisioningState"] = firewall.AzureFirewallIPConfigurationPropertiesFormat.ProvisioningState
-		}
-		output = append(output, objectMap)
+		return output, nil
 	}
-	return output, nil
+	return nil, nil
 }

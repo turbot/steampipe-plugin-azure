@@ -1,0 +1,11 @@
+[
+  {
+    "dns_name": "{{ output.resource_dns_name.value }}",
+    "id": "{{ output.resource_id.value }}",
+    "name": "{{resourceName}}",
+    "resource_group": "{{resourceName}}",
+    "tags": {
+      "name": "{{resourceName}}"
+    }
+  }
+]

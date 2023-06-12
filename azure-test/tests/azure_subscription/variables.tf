@@ -18,9 +18,7 @@ variable "azure_subscription" {
 
 provider "azuread" {
   # Cannot be passed as a variable
-  environment     = var.azure_environment
-  subscription_id = var.azure_subscription
-  features {}
+  environment = var.azure_environment
 }
 
 data "azuread_client_config" "current" {}

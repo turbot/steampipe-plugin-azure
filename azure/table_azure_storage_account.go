@@ -5,14 +5,15 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
+	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
 	"github.com/tombuildsstuff/giovanni/storage/2019-12-12/blob/accounts"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type storageAccountInfo = struct {
@@ -265,6 +266,41 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Logging.Write"),
 			},
 			{
+				Name:        "table_logging_read",
+				Description: "Indicates whether all read requests should be logged.",
+				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.Read"),
+			},
+			{
+				Name:        "table_logging_write",
+				Description: "Indicates whether all write requests should be logged.",
+				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.Write"),
+			},
+			{
+				Name:        "table_logging_delete",
+				Description: "Indicates whether all delete requests should be logged.",
+				Type:        proto.ColumnType_BOOL,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.Delete"),
+			},
+			{
+				Name:        "table_logging_version",
+				Description: "The version of Analytics to configure.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.Version"),
+			},
+			{
+				Name:        "table_logging_retention_policy",
+				Description: "The retention policy.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.RetentionPolicy"),
+			},
+			{
 				Name:        "minimum_tls_version",
 				Description: "Contains the minimum TLS version to be permitted on requests to storage.",
 				Type:        proto.ColumnType_STRING,
@@ -325,8 +361,14 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Web"),
 			},
 			{
+				Name:        "status_of_primary",
+				Description: "The status indicating whether the primary location of the storage account is available or unavailable. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfPrimary"),
+			},
+			{
 				Name:        "provisioning_state",
-				Description: "The provisioning state of the virtual network resource.",
+				Description: "The provisioning state of the storage account resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.ProvisioningState").Transform(transform.ToString),
 			},
@@ -341,6 +383,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "Contains the location of the geo-replicated secondary for the storage account.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.SecondaryLocation"),
+			},
+			{
+				Name:        "status_of_secondary",
+				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'available', 'unavailable'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.StatusOfSecondary"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -380,6 +428,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "A list of private endpoint connection associated with the specified storage account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.PrivateEndpointConnections"),
+			},
+			{
+				Name:        "table_properties",
+				Description: "Azure Analytics Logging settings of tables.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "virtual_network_rules",
@@ -449,7 +504,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -465,7 +520,7 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -484,8 +539,8 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
@@ -558,6 +613,56 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 		return nil, err
 	}
 	return op, nil
+}
+
+func getAzureStorageAccountTableProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	// Blob is not supported for the account if storage type is FileStorage
+	if accountData.Account.Kind == "FileStorage" {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	storageClient.Authorizer = session.Authorizer
+
+	// List Storage account keys
+	keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties.ListKeys", "api_error", err)
+		return nil, err
+	}
+
+	// Get table properties
+	var tableProperties aztables.ServiceProperties
+	for _, key := range *keys.Keys {
+		serviceUrl := "https://" + *accountData.Name + ".table.core.windows.net/"
+
+		auth, err := aztables.NewSharedKeyCredential(*accountData.Name, *key.Value)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "credential_error", err)
+			return nil, err
+		}
+
+		client, _ := aztables.NewServiceClientWithSharedKey(serviceUrl, auth, nil)
+
+		op, err := client.GetProperties(ctx, &aztables.GetPropertiesOptions{})
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "api_error", err)
+			return nil, err
+		} else {
+			tableProperties = op.ServiceProperties
+			break
+		}
+	}
+
+	return tableProperties, nil
 }
 
 func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {

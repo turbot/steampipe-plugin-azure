@@ -1,3 +1,149 @@
+## v0.43.0 [2023-05-30]
+
+_Enhancements_
+
+- Added columns `table_logging_delete`, `table_logging_read`, `table_logging_retention_policy`, `table_logging_version`, `table_logging_write`, and `table_properties` to `azure_storage_account` table. ([#614](https://github.com/turbot/steampipe-plugin-azure/pull/614))
+
+## v0.42.0 [2023-05-11]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.4.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v541-2023-05-05) which fixes increased plugin initialization time due to multiple connections causing the schema to be loaded repeatedly. ([#604](https://github.com/turbot/steampipe-plugin-azure/pull/604))
+
+## v0.41.1 [2023-05-04]
+
+_Bug fixes_
+
+- Fixed the `intrusion_detection_mode` column of `azure_firewall_policy table` to correctly return data instead of `null`. ([#609](https://github.com/turbot/steampipe-plugin-azure/pull/609))
+
+## v0.41.0 [2023-04-21]
+
+_Enhancements_
+
+- Added columns `status_of_primary` and `status_of_secondary` to `azure_storage_account` table. ([#605](https://github.com/turbot/steampipe-plugin-azure/pull/605)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+## v0.40.1 [2023-04-05]
+
+_Bug fixes_
+
+- Fixed the `throughput_settings` column of `azure_cosmosdb_mongo_collection` and `azure_cosmosdb_mongo_database` tables to correctly return data instead of an error, when default throughput setting is used for databases or collections. ([#602](https://github.com/turbot/steampipe-plugin-azure/pull/602))
+
+## v0.40.0 [2023-03-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_app_service_web_app_slot](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_app_service_web_app_slot) ([#592](https://github.com/turbot/steampipe-plugin-azure/pull/592))
+  - [azure_cosmosdb_restorable_database_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_restorable_database_account) ([#596](https://github.com/turbot/steampipe-plugin-azure/pull/596))
+  - [azure_firewall_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_firewall_policy) ([#598](https://github.com/turbot/steampipe-plugin-azure/pull/598))
+
+_Enhancements_
+
+- Added column `restore_parameters` to `azure_cosmosdb_account` table. ([#594](https://github.com/turbot/steampipe-plugin-azure/pull/594))
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.3.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v530-2023-03-16) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#599](https://github.com/turbot/steampipe-plugin-azure/pull/599))
+
+## v0.39.0 [2023-03-24]
+
+_What's new?_
+
+- New tables added
+  - [azure_cosmosdb_mongo_collection](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cosmosdb_mongo_collection) ([#589](https://github.com/turbot/steampipe-plugin-azure/pull/589))
+  - [azure_private_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_private_dns_zone) ([#583](https://github.com/turbot/steampipe-plugin-azure/pull/583)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Enhancements_
+
+- Added column `throughput_settings` to `azure_cosmosdb_mongo_database` table. ([#587](https://github.com/turbot/steampipe-plugin-azure/pull/587))
+- Added column `backup_policy` to `azure_cosmosdb_account` table. ([#585](https://github.com/turbot/steampipe-plugin-azure/pull/585))
+
+## v0.38.0 [2023-03-15]
+
+_What's new?_
+
+- New tables added
+  - [azure_application_insight](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_application_insight) ([#579](https://github.com/turbot/steampipe-plugin-azure/pull/579))
+  - [azure_bastion_host](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_bastion_host) ([#580](https://github.com/turbot/steampipe-plugin-azure/pull/580))
+  - [azure_compute_ssh_key](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_ssh_key) ([#560](https://github.com/turbot/steampipe-plugin-azure/pull/560)) (Thanks [@srgg](https://github.com/srgg) for the contribution!)
+  - [azure_dns_zone](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_dns_zone) ([#575](https://github.com/turbot/steampipe-plugin-azure/pull/575)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed column name typo in `azure_compute_virtual_machine_scale_set_network_interface` table. ([#573](https://github.com/turbot/steampipe-plugin-azure/pull/573)) (Thanks [@jackdelab](https://github.com/jackdelab) for the contribution!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.2.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v520-2023-03-02) which includes fixes for query cache pending item mechanism and aggregator connections not working for dynamic tables. ([#574](https://github.com/turbot/steampipe-plugin-azure/pull/574))
+
+## v0.37.0 [2023-02-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_automation_account](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_account) ([#569](https://github.com/turbot/steampipe-plugin-azure/pull/569))
+  - [azure_automation_variable](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_automation_variable) ([#571](https://github.com/turbot/steampipe-plugin-azure/pull/571))
+
+## v0.36.0 [2023-02-10]
+
+_Enhancements_
+
+- Added column `vnet_rules` to `azure_mysql_server` table. ([#558](https://github.com/turbot/steampipe-plugin-azure/pull/558))
+
+_Bug fixes_
+
+- Fixed the `ip_configurations` column in `azure_firewall` table to return `null` instead of a panic error when no IP configuration is set on the Azure firewall. ([#561](https://github.com/turbot/steampipe-plugin-azure/pull/561)) (Thanks [@mdaguete](https://github.com/mdaguete) for the contribution!!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.12](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v4112-2023-02-09) which fixes the query caching functionality. ([#565](https://github.com/turbot/steampipe-plugin-azure/pull/565))
+
+## v0.35.1 [2023-01-10]
+
+_Bug fixes_
+
+- Fixed the `vulnerability_assessment_scan_records` column of the `azure_sql_database` table to return `nil` instead of an error when vulnerability assessment settings are unavailable for a SQL database. ([#552](https://github.com/turbot/steampipe-plugin-azure/pull/552))
+- Fixed the `ip_configurations` column of the `azure_subnet` table to return `nil` instead of an error when IP configuration details are unavailable for a subnet. ([#556](https://github.com/turbot/steampipe-plugin-azure/pull/556))
+
+## v0.35.0 [2022-11-25]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_scale_set_network_interface](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_scale_set_network_interface) ([#537](https://github.com/turbot/steampipe-plugin-azure/pull/537))
+  - [azure_key_vault_key_version](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_key_version) ([#549](https://github.com/turbot/steampipe-plugin-azure/pull/549))
+
+## v0.34.2 [2022-11-11]
+
+_Bug fixes_
+
+- Fixed the authentication flow to correctly refresh expired Azure CLI token credentials. ([#544](https://github.com/turbot/steampipe-plugin-azure/pull/544))
+
+## v0.34.1 [2022-11-10]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.8](https://github.com/turbot/steampipe-plugin-aws/pull/1384) which increases the default open file limit. ([#543](https://github.com/turbot/steampipe-plugin-azure/pull/543))
+
+## v0.34.0 [2022-11-07]
+
+_What's new?_
+
+- New tables added
+  - [azure_nat_gateway](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_nat_gateway) ([#533](https://github.com/turbot/steampipe-plugin-azure/pull/533))
+
+_Enhancements_
+
+- Updated the `docs/index.md` file to include multi-subscription configuration examples. ([#538](https://github.com/turbot/steampipe-plugin-azure/pull/538))
+- Added column `apps` to the `azure_app_service_plan` table. ([#536](https://github.com/turbot/steampipe-plugin-azure/pull/536))
+
+_Bug fixes_
+
+- Fixed the column `virtual_network_rules` of the `azure_cosmosdb_account` table to correctly return data instead of `null`. ([#532](https://github.com/turbot/steampipe-plugin-azure/pull/532))
+- Fixed the `azure_app_configuration table` table to correctly return results instead of returning an error. ([#531](https://github.com/turbot/steampipe-plugin-azure/pull/531))
+- Fixed `capabilities`, `costs`, `location_info` and `restrictions` columns in `azure_compute_resource_sku` table to correctly return data instead of an empty array. ([#528](https://github.com/turbot/steampipe-plugin-azure/pull/528))
+- Fixed invalid references to `GCP Monitor` in various `azure_compute_*` table documents. ([#520](https://github.com/turbot/steampipe-plugin-azure/pull/520)) (Thanks [@JoshRosen](https://github.com/JoshRosen) for the fix!)
+
 ## v0.33.0 [2022-09-29]
 
 _Dependencies_
@@ -185,7 +331,7 @@ _Deprecated_
   - [azure_ad_user](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_ad_user) (replaced by [azuread_user](https://hub.steampipe.io/plugins/turbot/azuread/tables/azuread_user))
 
 ## v0.19.0 [2021-10-07]
-  
+
 _What's new?_
 
 - New tables added

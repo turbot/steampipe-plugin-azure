@@ -17,7 +17,6 @@ from
   azure_storage_account;
 ```
 
-
 ### List storage accounts with versioning disabled
 
 ```sql
@@ -29,7 +28,6 @@ from
 where
   not blob_versioning_enabled;
 ```
-
 
 ### List storage accounts with blob soft delete disabled
 
@@ -44,7 +42,6 @@ where
   not blob_soft_delete_enabled;
 ```
 
-
 ### List storage accounts that allow blob public access
 
 ```sql
@@ -57,7 +54,6 @@ where
   allow_blob_public_access;
 ```
 
-
 ### List storage accounts with encryption in transit disabled
 
 ```sql
@@ -69,7 +65,6 @@ from
 where
   not enable_https_traffic_only;
 ```
-
 
 ### List storage accounts that do not have a cannot-delete lock
 
@@ -89,7 +84,6 @@ where
   );
 ```
 
-
 ### List storage accounts with queue logging enabled
 
 ```sql
@@ -105,7 +99,6 @@ where
   and queue_logging_read
   and queue_logging_write;
 ```
-
 
 ### List storage accounts without lifecycle
 
@@ -125,6 +118,45 @@ where
 select
   name,
   jsonb_pretty(diagnostic_settings) as diagnostic_settings
+from
+  azure_storage_account;
+```
+
+### List storage accounts with replication but unavailable secondary
+
+```sql
+select
+  name,
+  status_of_primary,
+  status_of_secondary,
+  sku_name
+from
+  azure_storage_account
+where
+  status_of_primary = 'available'
+  and status_of_secondary != 'available'
+  and sku_name in ('Standard_GRS', 'Standard_RAGRS')
+```
+
+### Get table properties of storage accounts
+
+```sql
+select
+  name,
+  table_properties -> 'Cors' as table_logging_cors,
+  table_properties -> 'Logging' -> 'Read' as table_logging_read,
+  table_properties -> 'Logging' -> 'Write' as table_logging_write,
+  table_properties -> 'Logging' -> 'Delete' as table_logging_delete,
+  table_properties -> 'Logging' ->> 'Version' as table_logging_version,
+  table_properties -> 'Logging' -> 'RetentionPolicy' as table_logging_retention_policy,
+  table_properties -> 'HourMetrics' -> 'Enabled' as table_hour_metrics_enabled,
+  table_properties -> 'HourMetrics' -> 'IncludeAPIs' as table_hour_metrics_include_ap_is,
+  table_properties -> 'HourMetrics' ->> 'Version' as table_hour_metrics_version,
+  table_properties -> 'HourMetrics' -> 'RetentionPolicy' as table_hour_metrics_retention_policy,
+  table_properties -> 'MinuteMetrics' -> 'Enabled' as table_minute_metrics_enabled,
+  table_properties -> 'MinuteMetrics' -> 'IncludeAPIs' as table_minute_metrics_include_ap_is,
+  table_properties -> 'MinuteMetrics' ->> 'Version' as table_minute_metrics_version,
+  table_properties -> 'MinuteMetrics' -> 'RetentionPolicy' as table_minute_metrics_retention_policy
 from
   azure_storage_account;
 ```

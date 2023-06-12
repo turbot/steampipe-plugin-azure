@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-09-01/skus"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -92,19 +92,19 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Name:        "capabilities",
 				Description: "A name value pair to describe the capability",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Sku.Capabilities"),
+				Transform:   transform.FromMethod("ComputeResourceSkuCapabilities"),
 			},
 			{
 				Name:        "costs",
 				Description: "A list of metadata for retrieving price info",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Sku.Costs"),
+				Transform:   transform.FromMethod("ComputeResourceSkuCosts"),
 			},
 			{
 				Name:        "location_info",
 				Description: "A list of locations and availability zones in those locations where the SKU is available",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Sku.LocationInfo"),
+				Transform:   transform.FromMethod("ComputeResourceSkuLocationInfo"),
 			},
 			{
 				Name:        "locations",
@@ -116,7 +116,7 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 				Name:        "restrictions",
 				Description: "The restrictions because of which SKU cannot be used",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Sku.Restrictions"),
+				Transform:   transform.FromMethod("ComputeResourceSkuRestrictions"),
 			},
 
 			// Steampipe standard columns
@@ -165,7 +165,7 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -180,7 +180,7 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 			d.StreamListItem(ctx, &skuInfo{subscriptionID, sku})
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -197,4 +197,91 @@ func skuDataToAkas(ctx context.Context, d *transform.TransformData) (interface{}
 	id := "azure:///subscriptions/" + sku.SubscriptionID + "/locations/" + locations[0] + "/resourcetypes" + *sku.Sku.ResourceType + "name/" + *sku.Sku.Name
 	akas := []string{strings.ToLower(id)}
 	return akas, nil
+}
+
+//// HELPER TRANSFORM FUNCTIONS to populate columns always returning [{}]
+
+func (skuData *skuInfo) ComputeResourceSkuCapabilities() []map[string]interface{} {
+	if skuData.Sku.Capabilities == nil {
+		return nil
+	}
+	capabilities := []map[string]interface{}{}
+
+	for _, a := range *skuData.Sku.Capabilities {
+		data := map[string]interface{}{}
+		if a.Name != nil {
+			data["name"] = *a.Name
+		}
+		if a.Value != nil {
+			data["value"] = *a.Value
+		}
+		capabilities = append(capabilities, data)
+	}
+
+	return capabilities
+}
+
+func (skuData *skuInfo) ComputeResourceSkuRestrictions() []map[string]interface{} {
+	if skuData.Sku.Capabilities == nil {
+		return nil
+	}
+	restrictions := []map[string]interface{}{}
+
+	for _, a := range *skuData.Sku.Restrictions {
+		data := map[string]interface{}{}
+		data["type"] = &a.Type
+		data["reasonCode"] = &a.ReasonCode
+		if a.Values != nil {
+			data["Values"] = *a.Values
+		}
+		if a.RestrictionInfo != nil {
+			data["restrictionInfo"] = *a.RestrictionInfo
+		}
+		restrictions = append(restrictions, data)
+	}
+
+	return restrictions
+}
+
+func (skuData *skuInfo) ComputeResourceSkuLocationInfo() []map[string]interface{} {
+	if skuData.Sku.LocationInfo == nil {
+		return nil
+	}
+	locationInfo := []map[string]interface{}{}
+
+	for _, a := range *skuData.Sku.LocationInfo {
+		data := map[string]interface{}{}
+		if a.Location != nil {
+			data["location"] = *a.Location
+		}
+		if a.Zones != nil {
+			data["zones"] = *a.Zones
+		}
+		locationInfo = append(locationInfo, data)
+	}
+
+	return locationInfo
+}
+
+func (skuData *skuInfo) ComputeResourceSkuCosts() []map[string]interface{} {
+	if skuData.Sku.Costs == nil {
+		return nil
+	}
+	costs := []map[string]interface{}{}
+
+	for _, a := range *skuData.Sku.Costs {
+		data := map[string]interface{}{}
+		if a.MeterID != nil {
+			data["meterID"] = *a.MeterID
+		}
+		if a.Quantity != nil {
+			data["quantity"] = *a.Quantity
+		}
+		if a.ExtendedUnit != nil {
+			data["extendedUnit"] = *a.ExtendedUnit
+		}
+		costs = append(costs, data)
+	}
+
+	return costs
 }

@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 const pluginName = "steampipe-plugin-azure"
@@ -37,8 +37,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_app_service_function_app":                              tableAzureAppServiceFunctionApp(ctx),
 			"azure_app_service_plan":                                      tableAzureAppServicePlan(ctx),
 			"azure_app_service_web_app":                                   tableAzureAppServiceWebApp(ctx),
+			"azure_app_service_web_app_slot":                              tableAzureAppServiceWebAppSlot(ctx),
 			"azure_application_gateway":                                   tableAzureApplicationGateway(ctx),
+			"azure_application_insight":                                   tableAzureApplicationInsight(ctx),
 			"azure_application_security_group":                            tableAzureApplicationSecurityGroup(ctx),
+			"azure_automation_account":                                    tableAzureApAutomationAccount(ctx),
+			"azure_automation_variable":                                   tableAzureApAutomationVariable(ctx),
+			"azure_bastion_host":                                          tableAzureBastionHost(ctx),
 			"azure_batch_account":                                         tableAzureBatchAccount(ctx),
 			"azure_cognitive_account":                                     tableAzureCognitiveAccount(ctx),
 			"azure_compute_availability_set":                              tableAzureComputeAvailabilitySet(ctx),
@@ -54,15 +59,19 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_image":                                         tableAzureComputeImage(ctx),
 			"azure_compute_resource_sku":                                  tableAzureResourceSku(ctx),
 			"azure_compute_snapshot":                                      tableAzureComputeSnapshot(ctx),
+			"azure_compute_ssh_key":                                       tableAzureComputeSshKey(ctx),
 			"azure_compute_virtual_machine":                               tableAzureComputeVirtualMachine(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization":        tableAzureComputeVirtualMachineMetricCpuUtilization(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization_daily":  tableAzureComputeVirtualMachineMetricCpuUtilizationDaily(ctx),
 			"azure_compute_virtual_machine_metric_cpu_utilization_hourly": tableAzureComputeVirtualMachineMetricCpuUtilizationHourly(ctx),
 			"azure_compute_virtual_machine_scale_set":                     tableAzureComputeVirtualMachineScaleSet(ctx),
+			"azure_compute_virtual_machine_scale_set_network_interface":   tableAzureComputeVirtualMachineScaleSetNetworkInterface(ctx),
 			"azure_compute_virtual_machine_scale_set_vm":                  tableAzureComputeVirtualMachineScaleSetVm(ctx),
 			"azure_container_registry":                                    tableAzureContainerRegistry(ctx),
 			"azure_cosmosdb_account":                                      tableAzureCosmosDBAccount(ctx),
+			"azure_cosmosdb_mongo_collection":                             tableAzureCosmosDBMongoCollection(ctx),
 			"azure_cosmosdb_mongo_database":                               tableAzureCosmosDBMongoDatabase(ctx),
+			"azure_cosmosdb_restorable_database_account":                  tableAzureCosmosDBRestorableDatabaseAccount(ctx),
 			"azure_cosmosdb_sql_database":                                 tableAzureCosmosDBSQLDatabase(ctx),
 			"azure_data_factory":                                          tableAzureDataFactory(ctx),
 			"azure_data_factory_dataset":                                  tableAzureDataFactoryDataset(ctx),
@@ -71,11 +80,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_lake_store":                                       tableAzureDataLakeStore(ctx),
 			"azure_databox_edge_device":                                   tableAzureDataBoxEdgeDevice(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
+			"azure_dns_zone":                                              tableAzureDNSZone(ctx),
 			"azure_eventgrid_domain":                                      tableAzureEventGridDomain(ctx),
 			"azure_eventgrid_topic":                                       tableAzureEventGridTopic(ctx),
 			"azure_eventhub_namespace":                                    tableAzureEventHubNamespace(ctx),
 			"azure_express_route_circuit":                                 tableAzureExpressRouteCircuit(ctx),
 			"azure_firewall":                                              tableAzureFirewall(ctx),
+			"azure_firewall_policy":                                       tableAzureFirewallPolicy(ctx),
 			"azure_frontdoor":                                             tableAzureFrontDoor(ctx),
 			"azure_hdinsight_cluster":                                     tableAzureHDInsightCluster(ctx),
 			"azure_healthcare_service":                                    tableAzureHealthcareService(ctx),
@@ -87,6 +98,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_key_vault":                                             tableAzureKeyVault(ctx),
 			"azure_key_vault_deleted_vault":                               tableAzureKeyVaultDeletedVault(ctx),
 			"azure_key_vault_key":                                         tableAzureKeyVaultKey(ctx),
+			"azure_key_vault_key_version":                                 tableAzureKeyVaultKeyVersion(ctx),
 			"azure_key_vault_managed_hardware_security_module":            tableAzureKeyVaultManagedHardwareSecurityModule(ctx),
 			"azure_key_vault_secret":                                      tableAzureKeyVaultSecret(ctx),
 			"azure_kubernetes_cluster":                                    tableAzureKubernetesCluster(ctx),
@@ -110,6 +122,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_mssql_virtual_machine":                                 tableAzureMSSQLVirtualMachine(ctx),
 			"azure_mysql_flexible_server":                                 tableAzureMySQLFlexibleServer(ctx),
 			"azure_mysql_server":                                          tableAzureMySQLServer(ctx),
+			"azure_nat_gateway":                                           tableAzureNatGateway(ctx),
 			"azure_network_interface":                                     tableAzureNetworkInterface(ctx),
 			"azure_network_security_group":                                tableAzureNetworkSecurityGroup(ctx),
 			"azure_network_watcher":                                       tableAzureNetworkWatcher(ctx),
@@ -117,6 +130,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_policy_assignment":                                     tableAzurePolicyAssignment(ctx),
 			"azure_policy_definition":                                     tableAzurePolicyDefinition(ctx),
 			"azure_postgresql_server":                                     tableAzurePostgreSqlServer(ctx),
+			"azure_private_dns_zone":                                      tableAzurePrivateDNSZone(ctx),
 			"azure_provider":                                              tableAzureProvider(ctx),
 			"azure_public_ip":                                             tableAzurePublicIP(ctx),
 			"azure_recovery_services_vault":                               tableAzureRecoveryServicesVault(ctx),

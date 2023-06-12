@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/services/mysql/mgmt/2021-05-01/mysqlflexibleservers"
@@ -27,7 +27,7 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
-			Hydrate: listMySQLFlexibleServers,
+			Hydrate:       listMySQLFlexibleServers,
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -262,7 +262,7 @@ func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, h *plugi
 		d.StreamListItem(ctx, server)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -276,7 +276,7 @@ func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, h *plugi
 			d.StreamListItem(ctx, server)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -290,8 +290,8 @@ func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, h *plugi
 func getMySQLFlexibleServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMySQLFlexibleServer")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	// check if name or resourceGroup is empty
 	if resourceGroup == "" || name == "" {

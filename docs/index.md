@@ -59,9 +59,9 @@ steampipe plugin install azure
 | Item        | Description                                                                                                                                                                                                                     |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Credentials | Use the `az login` command to setup your [Azure Default Connection](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).                                                                                         |
-| Permissions | Grant the `Global Reader` permission to your user.                                                                                                                                                                              |
-| Radius      | Each connection represents a single Azure Subscription.                                                                                                                                                                         |
-| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azure.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`. |
+| Permissions | Assign the `Reader` role to your user or service principal in the subscription.                                                                                                                                                                              |
+| Radius      | Each connection represents a single Azure subscription.                                                                                                                                                                         |
+| Resolution  | 1. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/azure.spc`).<br />2. Credentials specified in [environment variables](#credentials-from-environment-variables), e.g., `AZURE_SUBSCRIPTION_ID`.<br />3. Credentials from the Azure CLI. |
 
 ### Configuration
 
@@ -112,10 +112,96 @@ connection "azure" {
 }
 ```
 
-## Get involved
+## Multi-Subscription Connections
 
-- Open source: https://github.com/turbot/steampipe-plugin-azure
-- Community: [Slack Channel](https://steampipe.io/community/join)
+You may create multiple azure connections:
+
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+
+connection "azure_sub_1" {
+  plugin          = "azure"
+  subscription_id = "azure_01"
+}
+
+connection "azure_sub_2" {
+  plugin          = "azure"
+  subscription_id = "azure_02"
+}
+
+connection "azure_sub_3" {
+  plugin          = "azure"
+  subscription_id = "azure_03"
+}
+```
+
+Depending on the mode of authentication, a multi-subscription configuration can also look like:
+
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+
+connection "azure_sub_1" {
+  plugin          = "azure"
+  tenant_id       = "00000000-0000-0000-0000-000000000000"
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  client_id       = "00000000-0000-0000-0000-000000000000"
+  client_secret   = "~dummy@3password"
+}
+
+connection "azure_sub_2" {
+  plugin          = "azure"
+  tenant_id       = "00000000-0000-0000-0000-000000000000"
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  client_id       = "00000000-0000-0000-0000-000000000000"
+  client_secret   = "~dummy@3password"
+}
+```
+
+Each connection is implemented as a distinct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html). As such, you can use qualified table names to query a specific connection:
+
+```sql
+select * from azure_sub_1.azure_subscription
+```
+
+Alternatively, you can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/using-steampipe/managing-connections#setting-the-search-path):
+
+```sql
+select * from azure_subscription
+```
+
+You can create multi-subscription connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection:
+
+```hcl
+connection "azure_all" {
+  plugin      = "azure"
+  type        = "aggregator"
+  connections = ["azure_sub_1", "azure_sub_2", "azure_sub_3"]
+}
+```
+
+Querying tables from this connection will return results from the `azure_sub_1`, `azure_sub_2`, and `azure_sub_3` connections:
+
+```sql
+select * from azure_all.azure_subscription
+```
+
+Steampipe supports the `*` wildcard in the connection names. For example, to aggregate all the Azure plugin connections whose names begin with `azure_`:
+
+```hcl
+connection "azure_all" {
+  type        = "aggregator"
+  plugin      = "azure"
+  connections = ["azure_*"]
+}
+```
 
 ## Configuring Azure Credentials
 
@@ -239,3 +325,8 @@ connection "azure" {
   plugin = "azure"
 }
 ```
+
+## Get involved
+
+- Open source: https://github.com/turbot/steampipe-plugin-azure
+- Community: [Slack Channel](https://steampipe.io/community/join)

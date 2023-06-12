@@ -7,10 +7,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
 	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 //// TABLE DEFINITION
@@ -321,7 +321,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		d.StreamLeafListItem(ctx, database)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -341,9 +341,9 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		databaseName = *database.Name
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
 	} else {
-		serverName = d.KeyColumnQuals["server_name"].GetStringValue()
-		databaseName = d.KeyColumnQuals["name"].GetStringValue()
-		resourceGroupName = d.KeyColumnQuals["resource_group"].GetStringValue()
+		serverName = d.EqualsQuals["server_name"].GetStringValue()
+		databaseName = d.EqualsQuals["name"].GetStringValue()
+		resourceGroupName = d.EqualsQuals["resource_group"].GetStringValue()
 	}
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -526,13 +526,17 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
 	if err != nil {
+		// API throws "VulnerabilityAssessmentInvalidPolicy" error if Vulnerability Assessment settings don't exist or invalid storage specified in settings.
+		// https://learn.microsoft.com/en-us/rest/api/sql/2022-05-01-preview/database-vulnerability-assessment-scans/list-by-database?tabs=HTTP
+		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+			return vulnerabilityAssessmentScanRecords, nil
+		}
 		return nil, err
 	}
-
-	var vulnerabilityAssessmentScanRecords []map[string]interface{}
 
 	for _, i := range op.Values() {
 		objectMap := make(map[string]interface{})

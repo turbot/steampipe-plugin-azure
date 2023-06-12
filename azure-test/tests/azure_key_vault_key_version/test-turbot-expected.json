@@ -1,0 +1,13 @@
+[
+	{
+		"akas": [
+			"azure:///subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.KeyVault/vaults/{{ resourceName }}/keys/{{ resourceName }}/versions/{{ output.key_version.value }}",
+			"azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{ resourceName }}/providers/microsoft.keyvault/vaults/{{ resourceName }}/keys/{{ resourceName }}/versions/{{ output.key_version.value }}"
+		],
+		"name": "{{ output.key_version.value }}",
+		"tags": {
+			"name": "{{ resourceName }}"
+		},
+		"title": "{{ output.key_version.value }}"
+	}
+]

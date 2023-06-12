@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/services/mysql/mgmt/2020-01-01/mysql"
 )
@@ -207,6 +207,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Hydrate:     listMySQLServersServerKeys,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "vnet_rules",
+				Description: "Rules represented by VNET.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServerVnetRules,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -267,7 +274,7 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		d.StreamListItem(ctx, server)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -280,8 +287,8 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMySQLServer")
 
-	name := d.KeyColumnQuals["name"].GetStringValue()
-	resourceGroup := d.KeyColumnQuals["resource_group"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
 	// Error: mysql.ServersClient#Get: Invalid input: autorest/validation: validation failed: parameter=resourceGroupName
 	// constraint=MinLength value="" details: value length must be greater than or equal to 1
@@ -353,6 +360,43 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	return mySQLServersServerKeys, nil
+}
+
+func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	namespace := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	serverName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "connection_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewVirtualNetworkRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error", err)
+		return nil, err
+	}
+
+	var vnetRules []mysql.VirtualNetworkRule
+
+	vnetRules = append(vnetRules, op.Values()...)
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_pagging_error", err)
+			return nil, err
+		}
+		vnetRules = append(vnetRules, op.Values()...)
+	}
+
+	return vnetRules, nil
 }
 
 func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {

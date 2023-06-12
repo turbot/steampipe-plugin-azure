@@ -1,0 +1,13 @@
+[
+  {
+    "akas": [
+      "{{ output.resource_aka.value }}",
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourcegroups/{{resourceName}}/providers/microsoft.network/privatednszones/{{resourceName}}.local"
+    ],
+    "name": "{{resourceName}}.local",
+    "tags": {
+      "name": "{{resourceName}}.local"
+    },
+    "title": "{{resourceName}}.local"
+  }
+]

@@ -43,7 +43,7 @@ resource "azurerm_kusto_cluster" "named_test_resource" {
   resource_group_name = azurerm_resource_group.named_test_resource.name
 
   sku {
-    name     = "Standard_D13_v2"
+    name     = "Standard_E2a_v4"
     capacity = 2
   }
 
