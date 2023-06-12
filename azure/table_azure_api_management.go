@@ -304,6 +304,8 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 
 	apiManagementClient := apimanagement.NewServiceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
+	apiManagementClient.RetryAttempts = session.RetryAttempts
+	apiManagementClient.RetryDuration = session.RetryDuration
 
 	result, err := apiManagementClient.List(ctx)
 	if err != nil {
@@ -362,6 +364,8 @@ func getAPIManagement(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	apiManagementClient := apimanagement.NewServiceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
+	apiManagementClient.RetryAttempts = session.RetryAttempts
+	apiManagementClient.RetryDuration = session.RetryDuration
 
 	op, err := apiManagementClient.Get(ctx, resourceGroup, name)
 	if err != nil {
@@ -385,6 +389,8 @@ func listAPIManagementDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+	client.RetryAttempts = session.RetryAttempts
+	client.RetryDuration = session.RetryDuration
 
 	op, err := client.List(ctx, id)
 	if err != nil {

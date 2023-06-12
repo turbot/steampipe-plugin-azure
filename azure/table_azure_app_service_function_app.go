@@ -183,6 +183,8 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	result, err := webClient.List(ctx)
 	if err != nil {
@@ -244,6 +246,8 @@ func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.Get(ctx, resourceGroup, name)
 	if err != nil {
@@ -272,6 +276,8 @@ func getAppServiceFunctionAppSiteConfiguration(ctx context.Context, d *plugin.Qu
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {
@@ -294,6 +300,8 @@ func getAppServiceFunctionAppSiteAuthSetting(ctx context.Context, d *plugin.Quer
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {

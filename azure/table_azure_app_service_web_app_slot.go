@@ -336,6 +336,8 @@ func listAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plug
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	result, err := webClient.ListSlots(ctx, resourceGroupName, appName)
 	if err != nil {
@@ -403,6 +405,8 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetSlot(ctx, resourceGroup, appName, slotName)
 	if err != nil {

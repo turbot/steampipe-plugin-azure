@@ -136,6 +136,8 @@ func listAzureMonitorMetricStatistics(ctx context.Context, d *plugin.QueryData, 
 
 	monitoringClient := insights.NewMetricsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	monitoringClient.Authorizer = session.Authorizer
+	monitoringClient.RetryAttempts = session.RetryAttempts
+	monitoringClient.RetryDuration = session.RetryDuration
 
 	// Define param values
 	interval := getMonitoringIntervalForGranularity(granularity)

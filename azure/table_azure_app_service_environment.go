@@ -178,6 +178,8 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 
 	webClient := web.NewAppServiceEnvironmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	result, err := webClient.List(ctx)
 	if err != nil {
@@ -234,6 +236,8 @@ func getAppServiceEnvironment(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	webClient := web.NewAppServiceEnvironmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+	webClient.RetryAttempts = session.RetryAttempts
+	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.Get(ctx, resourceGroup, name)
 	if err != nil {
