@@ -28,6 +28,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			Schema:      ConfigSchema,
 		},
 		TableMap: map[string]*plugin.Table{
+			"azure_cost_management":                                       tableAzureCostManagement(ctx),
 			"azure_ad_group":                                              tableAzureAdGroup(ctx),
 			"azure_ad_service_principal":                                  tableAzureAdServicePrincipal(ctx),
 			"azure_ad_user":                                               tableAzureAdUser(ctx),
