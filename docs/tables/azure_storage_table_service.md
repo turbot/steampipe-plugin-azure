@@ -4,7 +4,7 @@ The properties of a storage account’s Table service endpoint, including proper
 
 ## Examples
 
-### Storage table service basic info
+### Basic info
 
 ```sql
 select
@@ -15,7 +15,6 @@ select
 from
   azure_storage_table_service;
 ```
-
 
 ### CORS rules info of each storage table service
 

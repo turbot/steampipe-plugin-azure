@@ -33,13 +33,5 @@ where
 ### List data lake stores with firewall disabled
 
 ```sql
-select
-  name,
-  id,
-  type,
-  provisioning_state
-from
-  azure_data_lake_store
-where
-  firewall_state = 'Disabled';
+\
 ```

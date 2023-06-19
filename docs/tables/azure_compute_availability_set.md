@@ -4,7 +4,7 @@ An Availability Set is a logical grouping capability for isolating VM resources 
 
 ## Examples
 
-### Availability set basic info
+### Basic info
 
 ```sql
 select

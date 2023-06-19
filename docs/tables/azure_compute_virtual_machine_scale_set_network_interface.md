@@ -25,7 +25,7 @@ select
   name,
   id,
   enable_ip_forwarding,
-  sku_name
+  scale_set_name
 from
   azure_compute_virtual_machine_scale_set_network_interface
 where
@@ -39,7 +39,7 @@ select
   name,
   id,
   enable_accelerated_networking,
-  sku_name
+  scale_set_name
 from
   azure_compute_virtual_machine_scale_set_network_interface
 where

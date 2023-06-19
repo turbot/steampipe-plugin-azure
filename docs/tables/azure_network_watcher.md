@@ -8,21 +8,20 @@ Network Watcher is a regional service that enables you to monitor and diagnose c
 
 ```sql
 select
-	name,
-	location
+  name,
+  region
 from
-	azure_network_watcher;
+  azure_network_watcher;
 ```
-
 
 ### List of Network watcher without application tag key
 
 ```sql
 select
-	name,
-	tags
+  name,
+  tags
 from
-	azure_network_watcher
+  azure_network_watcher
 where
-	not tags :: JSONB ? 'application';
+  not tags :: JSONB ? 'application';
 ```

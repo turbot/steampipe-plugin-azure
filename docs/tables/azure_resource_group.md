@@ -8,21 +8,20 @@ A resource group is a container that holds related resources for an Azure soluti
 
 ```sql
 select
-	name,
-	location
+  name,
+  region 
 from
-	azure_resource_group;
+  azure_resource_group;
 ```
-
 
 ### List of resource groups without owner tag key
 
 ```sql
 select
-	name,
-	tags
+  name,
+  tags
 from
-	azure_resource_group
+  azure_resource_group
 where
-	not tags :: JSONB ? 'owner';
+  not tags :: JSONB ? 'owner';
 ```

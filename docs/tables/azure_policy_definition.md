@@ -14,7 +14,7 @@ select
   type,
   jsonb_pretty(policy_rule) as policy_rule
 from
-  azure_policy_definition
+  azure_policy_definition;
 ```
 
 ### Get the policy definition by display name

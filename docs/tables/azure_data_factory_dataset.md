@@ -10,13 +10,11 @@ Azure Data Factory datasets identify data within different data stores, such as 
 select
   name,
   id,
-  description,
   etag,
   type
 from
   azure_data_factory_dataset;
 ```
-
 
 ### List relational table type datasets
 

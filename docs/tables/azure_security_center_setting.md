@@ -10,7 +10,7 @@ Azure security center settings contains different configurations in security cen
 select
   id,
   name,
-  enabled,
+  enabled
 from
   azure_security_center_setting;
 ```

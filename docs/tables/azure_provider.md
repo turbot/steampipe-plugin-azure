@@ -8,22 +8,21 @@ A Azure Resource Provider (RP, for short) is simply an HTTPS RESTful API contrac
 
 ```sql
 select
-	id,
-	namespace,
-	registration_state
+  id,
+  namespace,
+  registration_state
 from
-	azure_provider;
+  azure_provider;
 ```
-
 
 ### List of azure providers which are not registered for use
 
 ```sql
 select
-	namespace,
-	registration_state
+  namespace,
+  registration_state
 from
-	azure_provider
+  azure_provider
 where
-	registration_state = 'NotRegistered';
+  registration_state = 'NotRegistered';
 ```

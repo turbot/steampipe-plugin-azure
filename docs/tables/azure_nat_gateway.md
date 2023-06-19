@@ -34,7 +34,6 @@ where
   ip ->> 'id' = i.id;
 ```
 
-
 ### List subnet details associated with each nat gateway
 
 ```sql

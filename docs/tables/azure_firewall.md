@@ -9,12 +9,11 @@ Azure Firewall is a managed, cloud-based network security service that protects 
 ```sql
 select
   name,
-  location,
+  region,
   jsonb_array_length(availability_zones) availability_zones_count
 from
   azure_firewall;
 ```
-
 
 ### Basic IP configuration info
 
@@ -34,7 +33,6 @@ from
   cross join jsonb_array_elements(ip_configurations) as ip;
 ```
 
-
 ### List the premium category firewalls
 
 ```sql
@@ -47,7 +45,6 @@ from
 where
   sku_tier = 'Premium';
 ```
-
 
 ### List of firewalls where threat intel mode is off
 

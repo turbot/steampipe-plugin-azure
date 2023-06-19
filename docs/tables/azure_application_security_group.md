@@ -9,7 +9,7 @@ Application security groups enable you to configure network security as a natura
 ```sql
 select
   name,
-  location,
+  region,
   resource_group
 from
   azure_application_security_group;

@@ -17,7 +17,6 @@ from
   azure_sql_database;
 ```
 
-
 ### List databases that are not online
 
 ```sql
@@ -33,7 +32,6 @@ from
 where
   status != 'Online';
 ```
-
 
 ### List databases that are not encrypted
 

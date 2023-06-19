@@ -11,7 +11,7 @@ select
   name,
   account_name,
   database_users,
-  location,
+  region,
   resource_group
 from
   azure_cosmosdb_sql_database;

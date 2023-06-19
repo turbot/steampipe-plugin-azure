@@ -10,7 +10,7 @@ Compute Engine offers many preconfigured public images that have compatible Linu
 select
   name,
   type,
-  location,
+  region,
   hyper_v_generation,
   split_part(source_virtual_machine_id, '/', 9) as source_virtual_machine
 from

@@ -4,7 +4,7 @@ Azure role assignments is the authorization system to manage access to Azure res
 
 ## Examples
 
-### Role assignment basic info
+### Basic info
 
 ```sql
 select
@@ -15,7 +15,6 @@ select
 from
   azure_role_assignment;
 ```
-
 
 ### List of role assignments which has permission at root level
 
@@ -29,7 +28,6 @@ from
 where
   scope = '/';
 ```
-
 
 ### List of role assignments which has subscription level permission and full access to the subscription
 

@@ -29,5 +29,5 @@ select
 from
   azure_virtual_network_gateway
 where
-   gateway_connection is null;
+   gateway_connections is null;
 ```

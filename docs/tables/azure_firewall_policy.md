@@ -13,9 +13,9 @@ select
   type,
   provisioning_state,
   sku_tier,
-  base_policy,,
+  base_policy,
   child_policies,
-  location,
+  region
 from
   azure_firewall_policy;
 ```

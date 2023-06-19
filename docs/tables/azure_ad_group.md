@@ -6,7 +6,7 @@ Azure Active Directory groups is used to manage access to your cloud-based apps,
 
 ## Examples
 
-### AD groups' users basic info
+### Basic info
 
 ```sql
 select

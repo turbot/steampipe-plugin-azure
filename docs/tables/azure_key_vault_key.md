@@ -38,11 +38,11 @@ where
 select
   name,
   enabled,
-  expired_at
+  expires_at
 from
   azure_key_vault_key
 where
-  expired_at is null;
+  expires_at is null;
 ```
 
 ### List keys which have never been updated

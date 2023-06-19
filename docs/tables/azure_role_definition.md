@@ -19,7 +19,6 @@ where
   role_type = 'CustomRole';
 ```
 
-
 ### List of roles whose assignable scope is set to root('/') scope
 
 ```sql
@@ -33,7 +32,6 @@ from
 where
   scope = '/';
 ```
-
 
 ### Permissions of all custom roles
 

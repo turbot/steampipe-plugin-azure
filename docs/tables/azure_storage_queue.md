@@ -8,11 +8,11 @@ Azure Queue Storage is a service for storing large numbers of messages which all
 
 ```sql
 select
-	name as queue_name,
-	storage_account_name,
-	location
+  name as queue_name,
+  storage_account_name,
+  region
 from
-	azure_storage_queue;
+  azure_storage_queue;
 ```
 
 
@@ -20,10 +20,10 @@ from
 
 ```sql
 select
-	name,
-	tags
+  name,
+  tags
 from
-	azure_application_security_group
+  azure_application_security_group
 where
-	not tags :: JSONB ? 'owner';
+  not tags :: JSONB ? 'owner';
 ```

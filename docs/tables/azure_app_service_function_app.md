@@ -11,7 +11,7 @@ select
   name,
   https_only,
   kind,
-  location
+  region
 from
   azure_app_service_function_app
 where
@@ -52,7 +52,7 @@ select
   name,
   client_cert_enabled,
   kind,
-  location
+  region
 from
   azure_app_service_function_app
 where

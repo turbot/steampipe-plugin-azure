@@ -26,7 +26,7 @@ select
   name,
   hyper_v,
   kind,
-  location
+  region
 from
   azure_app_service_plan
 where
@@ -41,7 +41,7 @@ select
   name,
   is_spot,
   kind,
-  location,
+  region,
   resource_group
 from
   azure_app_service_plan
