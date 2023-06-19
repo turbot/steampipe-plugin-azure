@@ -44,7 +44,7 @@ select
 from
   azure_application_insight
 where
-  public_network_access_for_query = 'Enabled';
+  public_network_access_for_query ? 'Enabled';
 ```
 
 ### List insights that allow ingestion publicly
@@ -59,5 +59,5 @@ select
 from
   azure_application_insight
 where
-  public_network_access_for_ingestion = 'Enabled';
+  public_network_access_for_ingestion ? 'Enabled';
 ```

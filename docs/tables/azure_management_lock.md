@@ -20,10 +20,10 @@ from
 
 ```sql
 select
-	name,
-	split_part(id, '/', 8) as resource_type,
-	split_part(id, '/', 9) as resource_name,
-	lock_level
+  name,
+  split_part(id, '/', 8) as resource_type,
+  split_part(id, '/', 9) as resource_name,
+  lock_level
 from
-	azure_management_lock;
+  azure_management_lock;
 ```

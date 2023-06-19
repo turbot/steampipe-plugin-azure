@@ -4,7 +4,7 @@ Azure Table storage is a service that stores structured NoSQL data in the cloud,
 
 ## Examples
 
-### Azure Table storage basic info
+### Basic info
 
 ```sql
 select

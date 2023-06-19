@@ -10,13 +10,12 @@ The properties of a storage account's Blob service endpoint, including propertie
 select
   name,
   storage_account_name,
-  location,
+  region,
   sku_name,
   sku_tier
 from
   azure_storage_blob_service;
 ```
-
 
 ### List of storage blob service where delete retention policy is not enabled
 
@@ -31,7 +30,6 @@ where
   delete_retention_policy -> 'enabled' = 'false';
 ```
 
-
 ### List of storage blob service where versioning is not enabled
 
 ```sql
@@ -44,7 +42,6 @@ from
 where
   not is_versioning_enabled;
 ```
-
 
 ### CORS rules info for storage blob service
 

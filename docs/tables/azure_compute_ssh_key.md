@@ -1,6 +1,6 @@
 # Table: azure_compute_ssh_key
 
-Azure SSH public key used by VMs. 
+Azure SSH public key used by VMs.
 
 ## Examples
 
@@ -9,9 +9,9 @@ Azure SSH public key used by VMs.
 ```sql
 select
   name,
-  publicKey
+  public_key
 from
-    table_azure_compute_ssh_key
+  azure_compute_ssh_key
 where
   name = 'key-name.';
 ```

@@ -33,3 +33,4 @@ select
   network_profile ->> 'ServiceRuntimeSubnetID' as network_profile_service_runtime_subnet_id
 from
   azure_spring_cloud_service;
+```
