@@ -7,9 +7,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
-// set default retry limits
-var retryAttempts = 9
-var retryDuration = 25
+var retryAttempts int64
+var retryDuration int64
 
 // isNotFoundError:: function which returns an ErrorPredicate for Azure API calls
 func isNotFoundError(notFoundErrors []string) plugin.ErrorPredicateWithContext {
@@ -57,13 +56,17 @@ func shouldRetryError(retryErrors []string) plugin.ErrorPredicateWithContext {
 	return func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, err error) bool {
 		azureConfig := GetConfig(d.Connection)
 
+		// set default retry limits
+		retryAttempts = 9
+		retryDuration = 25
+
 		if azureConfig.MaxErrorRetryAttempts != nil {
-			retryAttempts = *azureConfig.MaxErrorRetryAttempts
+			retryAttempts = int64(*azureConfig.MaxErrorRetryAttempts)
 		}
 		if azureConfig.MinErrorRetryDelay != nil {
-			retryDuration = *azureConfig.MinErrorRetryDelay
+			retryDuration = int64(*azureConfig.MinErrorRetryDelay)
 		}
-
+		plugin.Logger(ctx).Error("err:---", err.Error())
 		for _, pattern := range retryErrors {
 			// handle retry error
 			if strings.Contains(err.Error(), pattern) {

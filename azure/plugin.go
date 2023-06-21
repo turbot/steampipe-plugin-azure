@@ -23,7 +23,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		DefaultIgnoreConfig: &plugin.IgnoreConfig{
 			ShouldIgnoreErrorFunc: shouldIgnoreErrorPluginDefault(),
 		},
-		//	DefaultRetryConfig: getRetryConfig(ctx),
+		DefaultRetryConfig: getRetryConfig(ctx),
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
 			Schema:      ConfigSchema,
@@ -180,8 +180,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 func getRetryConfig(ctx context.Context) *plugin.RetryConfig {
 	retryConfig := &plugin.RetryConfig{
 		ShouldRetryErrorFunc: shouldRetryError([]string{"429"}),
-		MaxAttempts:          int64(retryAttempts),
-		RetryInterval:        int64(retryDuration),
+		MaxAttempts:          retryAttempts, // here I want to set this value from connection
+		RetryInterval:        retryDuration, // here I want to set this value from connection
 	}
 	plugin.Logger(ctx).Error("retryConfig:", retryConfig.MaxAttempts, "RetryInterval----", retryConfig.RetryInterval)
 	return retryConfig
