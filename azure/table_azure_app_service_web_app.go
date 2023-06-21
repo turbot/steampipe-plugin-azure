@@ -209,8 +209,6 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	result, err := webClient.List(ctx)
 	if err != nil {
@@ -271,8 +269,6 @@ func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.Get(ctx, resourceGroup, name)
 	if err != nil {
@@ -301,8 +297,6 @@ func getAppServiceWebAppSiteConfiguration(ctx context.Context, d *plugin.QueryDa
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {
@@ -325,8 +319,6 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetAuthSettings(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {
@@ -356,8 +348,6 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	// Return nil, if no virtual network is configured
 	if *vnet.SiteConfig.VnetName == "" {
@@ -400,8 +390,6 @@ func getWebAppDiagnosticLogsConfiguration(ctx context.Context, d *plugin.QueryDa
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
-	webClient.RetryAttempts = session.RetryAttempts
-	webClient.RetryDuration = session.RetryDuration
 
 	op, err := webClient.GetDiagnosticLogsConfiguration(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
 	if err != nil {

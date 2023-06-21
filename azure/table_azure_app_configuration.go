@@ -148,8 +148,6 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	client.RetryAttempts = session.RetryAttempts
-	client.RetryDuration = session.RetryDuration
 
 	result, err := client.List(ctx, "")
 	if err != nil {
@@ -196,8 +194,6 @@ func getAppConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	client.RetryAttempts = session.RetryAttempts
-	client.RetryDuration = session.RetryDuration
 
 	config, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
@@ -227,8 +223,6 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	client.RetryAttempts = session.RetryAttempts
-	client.RetryDuration = session.RetryDuration
 
 	op, err := client.List(ctx, id)
 	if err != nil {

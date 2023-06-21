@@ -305,8 +305,6 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDisksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	client.RetryAttempts = session.RetryAttempts
-	client.RetryDuration = session.RetryDuration
 
 	result, err := client.List(ctx)
 	if err != nil {
@@ -356,8 +354,6 @@ func getAzureComputeDisk(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDisksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	client.RetryAttempts = session.RetryAttempts
-	client.RetryDuration = session.RetryDuration
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

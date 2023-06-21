@@ -30,8 +30,6 @@ type Session struct {
 	StorageEndpointSuffix   string
 	SubscriptionID          string
 	TenantID                string
-	RetryAttempts           int
-	RetryDuration           time.Duration
 }
 
 /*
@@ -205,17 +203,6 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			logger.Trace("Setting subscription ID from Azure CLI", "subscription_id", subscriptionID)
 		}
 	}
-	
-	// set default retry limits
-	RetryAttempts := 9
-	RetryDuration := 25 * time.Millisecond
-
-	if azureConfig.MaxErrorRetryAttempts != nil {
-		RetryAttempts = *azureConfig.MaxErrorRetryAttempts
-	}
-	if azureConfig.MinErrorRetryDelay != nil {
-		RetryDuration = time.Duration(*azureConfig.MinErrorRetryDelay) * time.Millisecond
-	}
 
 	sess := &Session{
 		Authorizer:              authorizer,
@@ -226,8 +213,6 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		StorageEndpointSuffix:   settings.Environment.StorageEndpointSuffix,
 		SubscriptionID:          subscriptionID,
 		TenantID:                tenantID,
-		RetryAttempts:           RetryAttempts,
-		RetryDuration:           RetryDuration,
 	}
 
 	var expireMins time.Duration
