@@ -18,7 +18,6 @@ func tableAzureAKSOrchestractor(_ context.Context) *plugin.Table {
 		Description: "Azure Kubernetes Service Version",
 		List: &plugin.ListConfig{
 			Hydrate: listAKSOrchestractors,
-			// KeyColumns: plugin.AllColumns([]string{"region", "resource_type"}),
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:    "location",
