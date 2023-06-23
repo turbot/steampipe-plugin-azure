@@ -21,7 +21,7 @@ func tableAzureAKSOrchestractor(_ context.Context) *plugin.Table {
 			// KeyColumns: plugin.AllColumns([]string{"region", "resource_type"}),
 			KeyColumns: plugin.KeyColumnSlice{
 				{
-					Name:    "region",
+					Name:    "location",
 					Require: plugin.Required,
 				},
 				{
@@ -95,10 +95,10 @@ func tableAzureAKSOrchestractor(_ context.Context) *plugin.Table {
 
 			// Azure standard columns
 			{
-				Name:        "region",
+				Name:        "location",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromQual("region"),
+				Transform:   transform.FromQual("location"),
 			},
 		}),
 	}
@@ -126,7 +126,7 @@ type OrchestratorInfo struct {
 //// LIST FUNCTION
 
 func listAKSOrchestractors(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := d.EqualsQualString("region")
+	location := d.EqualsQualString("location")
 	resourceType := d.EqualsQualString("resource_type")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -140,7 +140,7 @@ func listAKSOrchestractors(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	containerserviceClient := containerservice.NewContainerServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	containerserviceClient.Authorizer = session.Authorizer
 
-	result, err := containerserviceClient.ListOrchestrators(ctx, region, resourceType)
+	result, err := containerserviceClient.ListOrchestrators(ctx, location, resourceType)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_kubernetes_service_version.listAKSOrchestractors", "api_error", err)
 		return nil, err
