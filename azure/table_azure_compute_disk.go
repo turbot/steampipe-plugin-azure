@@ -296,7 +296,7 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeDisks")
+	plugin.Logger(ctx).Error("listAzureComputeDisks")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -305,7 +305,6 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDisksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err

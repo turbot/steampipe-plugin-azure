@@ -7,9 +7,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
-var retryAttempts int64
-var retryDuration int64
-
 // isNotFoundError:: function which returns an ErrorPredicate for Azure API calls
 func isNotFoundError(notFoundErrors []string) plugin.ErrorPredicateWithContext {
 	return func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, err error) bool {
@@ -54,19 +51,6 @@ func hasIgnoredErrorCodes(connection *plugin.Connection) bool {
 
 func shouldRetryError(retryErrors []string) plugin.ErrorPredicateWithContext {
 	return func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, err error) bool {
-		azureConfig := GetConfig(d.Connection)
-
-		// set default retry limits
-		retryAttempts = 9
-		retryDuration = 25
-
-		if azureConfig.MaxErrorRetryAttempts != nil {
-			retryAttempts = int64(*azureConfig.MaxErrorRetryAttempts)
-		}
-		if azureConfig.MinErrorRetryDelay != nil {
-			retryDuration = int64(*azureConfig.MinErrorRetryDelay)
-		}
-		plugin.Logger(ctx).Error("err:---", err.Error())
 		for _, pattern := range retryErrors {
 			// handle retry error
 			if strings.Contains(err.Error(), pattern) {
@@ -74,5 +58,31 @@ func shouldRetryError(retryErrors []string) plugin.ErrorPredicateWithContext {
 			}
 		}
 		return false
+	}
+}
+
+func getDynamicRetryConfig() func(ctx context.Context, d *plugin.QueryData) *plugin.RetryConfig {
+	return func(ctx context.Context, d *plugin.QueryData) *plugin.RetryConfig {
+		azureConfig := GetConfig(d.Connection)
+
+		// set default retry limits
+		retryAttempts := int64(2)
+		retryDuration := int64(5)
+
+		if azureConfig.MaxErrorRetryAttempts != nil {
+			retryAttempts = *azureConfig.MaxErrorRetryAttempts
+		}
+		if azureConfig.MinErrorRetryDelay != nil {
+			retryDuration = *azureConfig.MinErrorRetryDelay
+		}
+
+		retryConfig := &plugin.RetryConfig{
+			//	ShouldRetryErrorFunc: shouldRetryError([]string{"429"}),
+			MaxAttempts:      retryAttempts,
+			RetryInterval:    retryDuration,
+			BackoffAlgorithm: "Exponential",
+		}
+
+		return retryConfig
 	}
 }

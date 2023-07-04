@@ -16,8 +16,8 @@ type azureConfig struct {
 	Password              *string  `cty:"password"`
 	Environment           *string  `cty:"environment"`
 	IgnoreErrorCodes      []string `cty:"ignore_error_codes"`
-	MaxErrorRetryAttempts *int     `cty:"max_error_retry_attempts"`
-	MinErrorRetryDelay    *int     `cty:"min_error_retry_delay"`
+	MaxErrorRetryAttempts *int64   `cty:"max_error_retry_attempts"`
+	MinErrorRetryDelay    *int64   `cty:"min_error_retry_delay"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
