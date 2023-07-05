@@ -37,7 +37,7 @@ func tableAzureAKSOrchestractor(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Id of the orchestrator version profile list result.",
+				Description: "ID of the orchestrator version profile list result.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
