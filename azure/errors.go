@@ -51,6 +51,7 @@ func hasIgnoredErrorCodes(connection *plugin.Connection) bool {
 
 func shouldRetryError(retryErrors []string) plugin.ErrorPredicateWithContext {
 	return func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, err error) bool {
+		plugin.Logger(ctx).Error("err***", err.Error())
 		for _, pattern := range retryErrors {
 			// handle retry error
 			if strings.Contains(err.Error(), pattern) {
@@ -61,7 +62,8 @@ func shouldRetryError(retryErrors []string) plugin.ErrorPredicateWithContext {
 	}
 }
 
-func getDynamicRetryConfig() func(ctx context.Context, d *plugin.QueryData) *plugin.RetryConfig {
+func getDynamicRetryConfig(ctx context.Context, retryErrors []string) func(ctx context.Context, d *plugin.QueryData) *plugin.RetryConfig {
+	plugin.Logger(ctx).Error("getDynamicRetryConfig")
 	return func(ctx context.Context, d *plugin.QueryData) *plugin.RetryConfig {
 		azureConfig := GetConfig(d.Connection)
 
@@ -75,12 +77,12 @@ func getDynamicRetryConfig() func(ctx context.Context, d *plugin.QueryData) *plu
 		if azureConfig.MinErrorRetryDelay != nil {
 			retryDuration = *azureConfig.MinErrorRetryDelay
 		}
-
+		plugin.Logger(ctx).Error("retryAttempts", retryAttempts, retryDuration)
 		retryConfig := &plugin.RetryConfig{
-			//	ShouldRetryErrorFunc: shouldRetryError([]string{"429"}),
-			MaxAttempts:      retryAttempts,
-			RetryInterval:    retryDuration,
-			BackoffAlgorithm: "Exponential",
+			ShouldRetryErrorFunc: shouldRetryError(retryErrors),
+			MaxAttempts:          retryAttempts,
+			RetryInterval:        retryDuration,
+			BackoffAlgorithm:     "Exponential",
 		}
 
 		return retryConfig
