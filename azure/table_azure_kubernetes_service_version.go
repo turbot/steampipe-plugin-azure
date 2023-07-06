@@ -128,6 +128,11 @@ func listAKSOrchestractors(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	location := d.EqualsQualString("location")
 	resourceType := d.EqualsQualString("resource_type")
 
+	// Empty Check
+	if location == "" {
+		return nil, nil
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_kubernetes_service_version.listAKSOrchestractors", "session_error", err)
