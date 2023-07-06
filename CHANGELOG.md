@@ -1,3 +1,10 @@
+## v0.45.0 [2023-07-06]
+
+_What's new?_
+
+- New tables added
+  - [azure_kubernetes_service_version](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_kubernetes_service_version) ([#623](https://github.com/turbot/steampipe-plugin-azure/pull/623))
+
 ## v0.44.0 [2023-06-20]
 
 _Dependencies_
