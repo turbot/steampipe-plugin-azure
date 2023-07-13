@@ -79,6 +79,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_lake_analytics_account":                           tableAzureDataLakeAnalyticsAccount(ctx),
 			"azure_data_lake_store":                                       tableAzureDataLakeStore(ctx),
 			"azure_databox_edge_device":                                   tableAzureDataBoxEdgeDevice(ctx),
+			"azure_databox_job":                                           tableAzureDataBoxJob(ctx),
 			"azure_diagnostic_setting":                                    tableAzureDiagnosticSetting(ctx),
 			"azure_dns_zone":                                              tableAzureDNSZone(ctx),
 			"azure_eventgrid_domain":                                      tableAzureEventGridDomain(ctx),
