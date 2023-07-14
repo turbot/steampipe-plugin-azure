@@ -1,3 +1,9 @@
+## v0.45.1 [2023-07-14]
+
+_Bug fixes_
+
+- Fixed the `private_endpoint_connections` column of the `azure_mariadb_server` table to correctly return data instead of null. ([#631](https://github.com/turbot/steampipe-plugin-azure/pull/631))
+
 ## v0.45.0 [2023-07-06]
 
 _What's new?_
