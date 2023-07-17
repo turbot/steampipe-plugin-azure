@@ -80,7 +80,7 @@ select
   i ->> 'Username' as username,
   i ->> 'Password' as password,
   i ->> 'Identity' as identity,
-  i ->> 'IdentityURL' as identity_url,
+  i ->> 'IdentityURL' as identity_url
 from
   azure_container_group,
   jsonb_array_elements(image_registry_credentials) as i;
@@ -92,9 +92,9 @@ from
 select
   name,
   id,
-  dns_config -> "NameServers" as name_servers,
-  dns_config ->> "SearchDomains" as search_domains,
-  dns_config ->> "Options" as options
+  dns_config -> 'NameServers' as name_servers,
+  dns_config ->> 'SearchDomains' as search_domains,
+  dns_config ->> 'Options' as options
 from
   azure_container_group;
 ```
