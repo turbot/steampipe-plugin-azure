@@ -31,7 +31,7 @@ from
   azure_container_group;
 ```
 
-### List groups that have retry policy set to OnFailure
+### List groups that have restart policy set to `OnFailure`
 
 ```sql
 select
