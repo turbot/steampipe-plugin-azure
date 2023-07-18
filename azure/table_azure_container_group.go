@@ -74,7 +74,7 @@ func tableAzureContainerGroup(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ContainerGroupProperties.EncryptionProperties"),
 			},
 			{
-				Name:        "Containers",
+				Name:        "containers",
 				Description: "The containers within the container group.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ContainerGroupProperties.Containers"),
