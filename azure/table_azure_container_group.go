@@ -221,8 +221,8 @@ func listContainerGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 
 func getContainerGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
-	name := d.EqualsQuals["name"].GetStringValue()
-	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	name := d. EqualsQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
 
 	// Return nil, if no input provided
 	if name == "" || resourceGroup == "" {
