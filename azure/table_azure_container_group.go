@@ -14,7 +14,7 @@ import (
 func tableAzureContainerGroup(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_container_group",
-		Description: "Azure Container Registry",
+		Description: "Azure Container Group",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getContainerGroup,
