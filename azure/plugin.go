@@ -67,6 +67,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_virtual_machine_scale_set":                     tableAzureComputeVirtualMachineScaleSet(ctx),
 			"azure_compute_virtual_machine_scale_set_network_interface":   tableAzureComputeVirtualMachineScaleSetNetworkInterface(ctx),
 			"azure_compute_virtual_machine_scale_set_vm":                  tableAzureComputeVirtualMachineScaleSetVm(ctx),
+			"azure_container_group":                                       tableAzureContainerGroup(ctx),
 			"azure_container_registry":                                    tableAzureContainerRegistry(ctx),
 			"azure_cosmosdb_account":                                      tableAzureCosmosDBAccount(ctx),
 			"azure_cosmosdb_mongo_collection":                             tableAzureCosmosDBMongoCollection(ctx),
