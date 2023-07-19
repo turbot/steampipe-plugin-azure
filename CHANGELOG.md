@@ -1,3 +1,10 @@
+## v0.46.0 [2023-07-19]
+
+_What's new?_
+
+- New tables added
+  - [azure_container_group](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_container_group) ([#634](https://github.com/turbot/steampipe-plugin-azure/pull/634))
+
 ## v0.45.1 [2023-07-14]
 
 _Bug fixes_
