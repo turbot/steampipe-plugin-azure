@@ -132,6 +132,11 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ClusterProperties.URI"),
 			},
 			{
+				Name:        "identity",
+				Description: "The identity of the cluster, if configured.",
+				Type:        proto.ColumnType_JSON,
+			},
+			{
 				Name:        "language_extensions",
 				Description: "List of the cluster's language extensions.",
 				Type:        proto.ColumnType_JSON,
