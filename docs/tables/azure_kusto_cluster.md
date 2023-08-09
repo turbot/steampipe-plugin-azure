@@ -45,3 +45,16 @@ from
 where
   state = 'Running';
 ```
+
+### List the kusto clusters with system-assigned identity
+
+```sql
+select
+  name,
+  id,
+  state
+from
+  azure_kusto_cluster
+where
+  identity ->> 'type' = 'SystemAssigned';
+```
