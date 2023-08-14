@@ -216,6 +216,13 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				Hydrate:     listPostgreSQLServerKeys,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "server_security_alert_policy",
+				Description: "Server security alert policy associated with the PostgreSQL Server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getServerSecurityAlertPolicy,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -293,7 +300,7 @@ func listPostgreSqlServers(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 //// HYDRATE FUNCTIONS
 
 func getPostgreSqlServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getPostgreSqlServer")
+	plugin.Logger(ctx).Debug("getPostgreSqlServer")
 
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
@@ -328,7 +335,7 @@ func getPostgreSqlServer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 }
 
 func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getPostgreSQLServerFirewallRules")
+	plugin.Logger(ctx).Debug("getPostgreSQLServerFirewallRules")
 	server := h.Item.(postgresql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -370,7 +377,7 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 }
 
 func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listPostgreSQLServerKeys")
+	plugin.Logger(ctx).Debug("listPostgreSQLServerKeys")
 	server := h.Item.(postgresql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -412,7 +419,7 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 }
 
 func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getPostgreSQLServerAdministrator")
+	plugin.Logger(ctx).Debug("getPostgreSQLServerAdministrator")
 	server := h.Item.(postgresql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -453,7 +460,7 @@ func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, 
 }
 
 func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getPostgreSQLServerConfigurations")
+	plugin.Logger(ctx).Debug("getPostgreSQLServerConfigurations")
 	server := h.Item.(postgresql.Server)
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
@@ -491,6 +498,28 @@ func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData,
 		serverParameters = append(serverParameters, objectMap)
 	}
 	return serverParameters, nil
+}
+
+func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Debug("getServerSecurityAlertPolicy")
+	server := h.Item.(postgresql.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := postgresql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return *op.SecurityAlertPolicyProperties, nil
 }
 
 func postgreSqlServerkeyMap(key postgresql.ServerKey) ServerKeyInfo {
