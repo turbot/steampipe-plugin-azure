@@ -40,6 +40,7 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "Resource Name.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Name").Transform(lastPathElement),
 			},
 			{
 				Name:        "app_name",
@@ -438,20 +439,11 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 
 func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("getConfigurationSlot")
-	var appName, resourceGroupName, slotName string
-	if h.Item != nil {
-		data := h.Item.(*SlotInfo)
-		appName = *data.AppName
-		slotName = *data.Name
-		resourceGroupName = *data.SiteProperties.ResourceGroup
-	} else {
-		return nil, nil
-	}
 
-	// Restrict the API call for other apps if the app name is specified in the query paramater
-	if d.EqualsQualString("app_name") != "" && d.EqualsQualString("app_name") != appName {
-		return nil, nil
-	}
+	data := h.Item.(*SlotInfo)
+	appName := *data.AppName
+	slotName := *data.Name
+	resourceGroupName := *data.SiteProperties.ResourceGroup
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
