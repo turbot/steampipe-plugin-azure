@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
 	"github.com/turbot/go-kit/types"
@@ -261,7 +262,13 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("SiteProperties.SlotSwapStatus"),
 			},
-
+			{
+				Name:        "site_config_resource",
+				Description: "Configuration of an app, such as platform version and bitness, default documents, virtual applications, Always On, etc.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getConfigurationSlot,
+				Transform:   transform.FromValue(),
+			},
 			// Steampipe standard columns
 			{
 				Name:        "title",
@@ -427,6 +434,42 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	return nil, nil
+}
+
+func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Debug("getConfigurationSlot")
+	var appName, resourceGroupName, slotName string
+	if h.Item != nil {
+		data := h.Item.(*SlotInfo)
+		appName = *data.AppName
+		slotName = *data.Name
+		resourceGroupName = *data.SiteProperties.ResourceGroup
+	} else {
+		return nil, nil
+	}
+
+	// Restrict the API call for other apps if the app name is specified in the query paramater
+	if d.EqualsQualString("app_name") != "" && d.EqualsQualString("app_name") != appName {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getConfigurationSlot", "session_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, strings.Split(slotName, "/")[1])
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getConfigurationSlot", "api_error", err)
+		return nil, err
+	}
+
+	return *op.SiteConfig, nil
 }
 
 //// TRANSFORM FUNCTION
