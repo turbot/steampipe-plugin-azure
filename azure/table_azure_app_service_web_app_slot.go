@@ -437,11 +437,12 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 
 func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("getConfigurationSlot")
-	var appName, resourceGroupName string
+	var appName, resourceGroupName, slotName string
 	if h.Item != nil {
-		data := h.Item.(web.Site)
-		appName = *data.Name
-		resourceGroupName = *data.ResourceGroup
+		data := h.Item.(*SlotInfo)
+		appName = *data.AppName
+		slotName = *data.Name
+		resourceGroupName = *data.SiteProperties.ResourceGroup
 	} else {
 		return nil, nil
 	}
@@ -461,7 +462,8 @@ func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, "")
+	plugin.Logger(ctx).Debug("azure_app_service_web_app_slot.getConfigurationSlot", "delete_me_slot_name", slotName)
+	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, slotName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getConfigurationSlot", "api_error", err)
 		return nil, err
