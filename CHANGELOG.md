@@ -1,3 +1,15 @@
+## v0.47.0 [2023-08-17]
+
+_Enhancements_
+
+- Added the `server_security_alert_policy` column to `azure_postgresql_server` table. ([#651](https://github.com/turbot/steampipe-plugin-azure/pull/651))
+- Added the `identity` column to `azure_kusto_cluster` table. ([#652](https://github.com/turbot/steampipe-plugin-azure/pull/652))
+- Added the `site_config_resource` column to `azure_app_service_web_app_slot` table. ([#653](https://github.com/turbot/steampipe-plugin-azure/pull/653))
+
+_Bug fixes_
+
+- Fixed the `GetConfig` of `azure_app_service_web_app_slot` table to correctly return data instead of an empty row. ([#654](https://github.com/turbot/steampipe-plugin-azure/pull/654))
+
 ## v0.46.0 [2023-07-19]
 
 _What's new?_
