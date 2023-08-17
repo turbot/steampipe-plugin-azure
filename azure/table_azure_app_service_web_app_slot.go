@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
 	"github.com/turbot/go-kit/types"
@@ -462,8 +463,7 @@ func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
-	plugin.Logger(ctx).Debug("azure_app_service_web_app_slot.getConfigurationSlot", "delete_me_slot_name", slotName)
-	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, slotName)
+	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, strings.Split(slotName, "/")[1])
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getConfigurationSlot", "api_error", err)
 		return nil, err
