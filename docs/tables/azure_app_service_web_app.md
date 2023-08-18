@@ -15,7 +15,6 @@ from
   azure_app_service_web_app;
 ```
 
-
 ### List web apps which accepts HTTP traffics (i.e HTTPS only is disabled)
 
 ```sql
@@ -29,7 +28,6 @@ from
 where
   not https_only;
 ```
-
 
 ### List of web app where client certificate mode is disabled
 
@@ -45,7 +43,6 @@ where
   not client_cert_enabled;
 ```
 
-
 ### Host names of each web app
 
 ```sql
@@ -58,7 +55,6 @@ select
 from
   azure_app_service_web_app;
 ```
-
 
 ### List web apps with latest HTTP version
 
@@ -73,7 +69,6 @@ where
   (configuration -> 'properties' ->> 'http20Enabled')::boolean;
 ```
 
-
 ### List web apps that have FTP deployments set to disabled
 
 ```sql
@@ -85,7 +80,6 @@ from
 where
   configuration -> 'properties' ->> 'ftpsState' <> 'AllAllowed';
 ```
-
 
 ### List web apps that have managed service identity disabled
 
@@ -99,4 +93,20 @@ from
   azure_app_service_web_app
 where
   identity = '{}';
+```
+
+### Get the storage information associated to a particular app
+
+```sql
+select
+  name,
+  nabled,
+  region,
+  identity
+  storage_info_value
+from
+  azure_app_service_web_app
+where
+  resource_group = 'demo'
+  and name = 'web-app-test-storage-info';
 ```
