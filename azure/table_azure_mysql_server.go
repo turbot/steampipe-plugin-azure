@@ -194,6 +194,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.From(extractMySQLServerPrivateEndpointConnections),
 			},
 			{
+				Name:        "server_security_alert_policy",
+				Description: "Security alert policy associated with the MySQL Server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getMySQLServerSecurityAlertPolicy,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "server_configurations",
 				Description: "The server configurations(parameters) details of the server.",
 				Type:        proto.ColumnType_JSON,
@@ -428,6 +435,32 @@ func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h 
 	}
 
 	return mySQLServersConfigurations, nil
+}
+
+func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Debug("getMySQLServerSecurityAlertPolicy")
+
+	server := h.Item.(mysql.Server)
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+	serverName := *server.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("getMySQLServerSecurityAlertPolicy")
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	
+
+	client := mysql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroupName, serverName)
+	if err != nil {
+		return nil, err
+	}
+
+	return *op.SecurityAlertPolicyProperties, nil
 }
 
 //// TRANSFORM FUNCTION
