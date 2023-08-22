@@ -51,42 +51,12 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Description: "The geo-location where the resource lives.",
 				Type:        proto.ColumnType_STRING,
 			},
-			{
-				Name:        "created_by",
-				Description: "The identity that created the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedBy"),
-			},
-			{
-				Name:        "created_by_type",
-				Description: "The type of identity that created the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedByType"),
-			},
-			{
-				Name:        "created_at",
-				Description: "The timestamp of resource creation (UTC).",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedAt"),
-			},
-			{
-				Name:        "last_modified_by",
-				Description: "The identity that last modified the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.LastModifiedBy"),
-			},
-			{
-				Name:        "last_modified_type",
-				Description: "The type of identity that last modified the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.LastModifiedByType"),
-			},
-			{
-				Name:        "last_modified_at",
-				Description: "The timestamp of resource last modification (UTC).",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("SystemData.LastModifiedAt").Transform(convertDateToTime),
-			},
+			// We have raised a support request for this as SystemData is always null
+			// {
+			// 	Name:        "system_data",
+			// 	Description: "The system data for the server.",
+			// 	Type:        proto.ColumnType_JSON,
+			// },
 			{
 				Name:        "sku",
 				Description: "The SKU (pricing tier) of the server.",
