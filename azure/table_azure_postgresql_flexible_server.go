@@ -52,40 +52,9 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
-				Name:        "created_by",
-				Description: "The identity that created the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedBy"),
-			},
-			{
-				Name:        "created_by_type",
-				Description: "The type of identity that created the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.CreatedByType"),
-			},
-			{
-				Name:        "created_at",
-				Description: "The timestamp of resource creation (UTC).",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("SystemData.CreatedAt"),
-			},
-			{
-				Name:        "last_modified_by",
-				Description: "The identity that last modified the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.LastModifiedBy"),
-			},
-			{
-				Name:        "last_modified_type",
-				Description: "The type of identity that last modified the resource.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("SystemData.LastModifiedByType"),
-			},
-			{
-				Name:        "last_modified_at",
-				Description: "The timestamp of resource last modification (UTC).",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("SystemData.LastModifiedAt"),
+				Name:        "system_data",
+				Description: "The system metadata relating to this server.",
+				Type:        proto.ColumnType_JSON,
 			},
 			{
 				Name:        "sku",
