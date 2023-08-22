@@ -82,7 +82,7 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SystemData.LastModifiedByType"),
 			},
 			{
-				Name:        "created_at",
+				Name:        "last_modified_at",
 				Description: "The timestamp of resource last modification (UTC).",
 				Type:        proto.ColumnType_TIMESTAMP,
 				Transform:   transform.FromField("SystemData.LastModifiedAt"),
