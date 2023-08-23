@@ -11,43 +11,11 @@ select
   name,
   id,
   cloud_environment,
-  flexible_server_configurations,
-  created_at,
+  properties,
+  system_data ->> 'createdAt' as creation_time,
   location
 from
   azure_postgresql_flexible_server;
-```
-
-### List the flexible servers created in the last 7 days
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  flexible_server_configurations,
-  created_at,
-  location
-from
-  azure_postgresql_flexible_server
-where
-  created_at >= now() - interval '7' day;
-```
-
-### List the flexible servers that have never been modified
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  flexible_server_configurations,
-  created_at,
-  location
-from
-  azure_postgresql_flexible_server
-where
-  last_modified_at is null;
 ```
 
 ### List SKU details of the flexible servers
@@ -59,9 +27,7 @@ select
   sku ->> 'name' as sku_name,
   sku ->> 'tier' as sku_tier
 from
-  azure_postgresql_flexible_server
-where
-  last_modified_at is null;
+  azure_postgresql_flexible_server;
 ```
 
 ### List flexible servers that have geo-redundant backup enabled
@@ -71,14 +37,13 @@ select
   name,
   id,
   cloud_environment,
-  flexible_server_configurations,
-  created_at,
-  server_properties -> 'backup' ->> 'geoRedundantBackup',
+  system_data ->> 'createdAt',
+  properties -> 'backup' ->> 'geoRedundantBackup' as geo_redundant_backup,
   location
 from
   azure_postgresql_flexible_server
 where
-  server_properties -> 'backup' ->> 'geoRedundantBackup' = 'Enabled';
+  properties -> 'backup' ->> 'geoRedundantBackup' = 'Enabled';
 ```
 
 ### List flexible servers configured in more than one availability zones
@@ -88,14 +53,13 @@ select
   name,
   id,
   cloud_environment,
-  flexible_server_configurations,
-  server_properties ->> 'availabilityZone',
-  created_at,
+  properties ->> 'availabilityZone',
+  system_data ->> 'createdAt',
   location
 from
   azure_postgresql_flexible_server
 where
-  server_properties ->> 'availabilityZone' > 1;
+  (properties ->> 'availabilityZone')::int > 1;
 ```
 
 ### List flexible servers that have high availability mode enabled
@@ -105,12 +69,59 @@ select
   name,
   id,
   cloud_environment,
-  flexible_server_configurations,
-  server_properties -> 'highAvailability' ->> 'mode' as high_availability_mode,
-  created_at,
+  properties -> 'highAvailability' ->> 'mode' as high_availability_mode,
+  system_data ->> 'createdAt',
   location
 from
   azure_postgresql_flexible_server
 where
-  server_properties -> 'highAvailability' ->> 'mode' = 'Disabled';
+  properties -> 'highAvailability' ->> 'mode' = 'Disabled';
+```
+
+### List flexible servers that have password authentication enabled
+
+```sql
+select
+  name,
+  id,
+  cloud_environment,
+  properties -> 'authConfig' ->> 'passwordAuth' as password_authentication,
+  system_data ->> 'createdAt',
+  location
+from
+  azure_postgresql_flexible_server
+where
+  properties -> 'authConfig' ->> 'passwordAuth' = 'Enabled';
+```
+
+### List flexible servers that have AD authentication enabled
+
+```sql
+select
+  name,
+  id,
+  cloud_environment,
+  properties -> 'authConfig' ->> 'activeDirectoryAuth' as active_directory_authentication,
+  system_data ->> 'createdAt',
+  location
+from
+  azure_postgresql_flexible_server
+where
+  properties -> 'authConfig' ->> 'activeDirectoryAuth' = 'Enabled';
+```
+
+### List the servers that are publicly accessible
+
+```sql
+select
+  name,
+  id,
+  cloud_environment,
+  properties -> 'network' ->> 'publicNetworkAccess' as public_network_access,
+  system_data ->> 'createdAt',
+  location
+from
+  azure_postgresql_flexible_server
+where
+  properties -> 'network' ->> 'publicNetworkAccess' = 'Enabled';
 ```
