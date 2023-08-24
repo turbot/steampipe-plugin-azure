@@ -1,3 +1,14 @@
+## v0.48.0 [2023-08-24]
+
+_Enhancements_
+
+- Added the `server_security_alert_policy` column to `azure_mysql_server` table. ([#656](https://github.com/turbot/steampipe-plugin-azure/pull/656))
+- Added the `storage_info_value` column to `azure_app_service_web_app` table. ([#657](https://github.com/turbot/steampipe-plugin-azure/pull/657))
+
+_Bug fixes_
+
+- Fixed the `disable_local_auth` column in `azure_eventgrid_domain` table to correctly return data instead of `null`. ([#658](https://github.com/turbot/steampipe-plugin-azure/pull/658))
+
 ## v0.47.0 [2023-08-17]
 
 _Enhancements_
