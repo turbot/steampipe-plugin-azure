@@ -11,8 +11,7 @@ select
   name,
   id,
   cloud_environment,
-  properties,
-  system_data ->> 'createdAt' as creation_time,
+  flexible_server_configurations,
   location
 from
   azure_postgresql_flexible_server;
@@ -37,13 +36,13 @@ select
   name,
   id,
   cloud_environment,
-  system_data ->> 'createdAt',
-  properties -> 'backup' ->> 'geoRedundantBackup' as geo_redundant_backup,
+  flexible_server_configurations,
+  server_properties -> 'backup' ->> 'geoRedundantBackup',
   location
 from
   azure_postgresql_flexible_server
 where
-  properties -> 'backup' ->> 'geoRedundantBackup' = 'Enabled';
+  server_properties -> 'backup' ->> 'geoRedundantBackup' = 'Enabled';
 ```
 
 ### List flexible servers configured in more than one availability zones
@@ -53,75 +52,11 @@ select
   name,
   id,
   cloud_environment,
-  properties ->> 'availabilityZone',
-  system_data ->> 'createdAt',
+  flexible_server_configurations,
+  server_properties ->> 'availabilityZone',
   location
 from
   azure_postgresql_flexible_server
 where
-  (properties ->> 'availabilityZone')::int > 1;
-```
-
-### List flexible servers that have high availability mode enabled
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  properties -> 'highAvailability' ->> 'mode' as high_availability_mode,
-  system_data ->> 'createdAt',
-  location
-from
-  azure_postgresql_flexible_server
-where
-  properties -> 'highAvailability' ->> 'mode' = 'Disabled';
-```
-
-### List flexible servers that have password authentication enabled
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  properties -> 'authConfig' ->> 'passwordAuth' as password_authentication,
-  system_data ->> 'createdAt',
-  location
-from
-  azure_postgresql_flexible_server
-where
-  properties -> 'authConfig' ->> 'passwordAuth' = 'Enabled';
-```
-
-### List flexible servers that have AD authentication enabled
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  properties -> 'authConfig' ->> 'activeDirectoryAuth' as active_directory_authentication,
-  system_data ->> 'createdAt',
-  location
-from
-  azure_postgresql_flexible_server
-where
-  properties -> 'authConfig' ->> 'activeDirectoryAuth' = 'Enabled';
-```
-
-### List the servers that are publicly accessible
-
-```sql
-select
-  name,
-  id,
-  cloud_environment,
-  properties -> 'network' ->> 'publicNetworkAccess' as public_network_access,
-  system_data ->> 'createdAt',
-  location
-from
-  azure_postgresql_flexible_server
-where
-  properties -> 'network' ->> 'publicNetworkAccess' = 'Enabled';
+  (server_properties ->> 'availabilityZone')::int > 1;
 ```

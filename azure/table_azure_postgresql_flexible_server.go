@@ -2,14 +2,14 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v3"
+	"github.com/Azure/azure-sdk-for-go/services/postgresql/mgmt/2021-06-01/postgresqlflexibleservers"
 )
 
 //// TABLE DEFINITION
@@ -39,38 +39,40 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Name:        "id",
 				Description: "Fully qualified resource ID for the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID"),
+				Transform:   transform.FromGo(),
+			},
+			{
+				Name:        "type",
+				Description: "The type of the resource.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "location",
 				Description: "The geo-location where the resource lives.",
 				Type:        proto.ColumnType_STRING,
 			},
-			{
-				Name:        "identity",
-				Description: "Describes the identity of the application.",
-				Type:        proto.ColumnType_JSON,
-			},
-			{
-				Name:        "properties",
-				Description: "Properties of the server.",
-				Type:        proto.ColumnType_JSON,
-			},
+			// We have raised a support request for this as SystemData is always null
+			// {
+			// 	Name:        "system_data",
+			// 	Description: "The system data for the server.",
+			// 	Type:        proto.ColumnType_JSON,
+			// },
 			{
 				Name:        "sku",
 				Description: "The SKU (pricing tier) of the server.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("SKU"),
 			},
 			{
-				Name:        "system_data",
-				Description: "Azure Resource Manager metadata containing createdBy and modifiedBy information.",
+				Name:        "server_properties",
+				Description: "Properties of the server.",
 				Type:        proto.ColumnType_JSON,
 			},
 			{
-				Name:        "type",
-				Description: "The type of the resource.",
-				Type:        proto.ColumnType_STRING,
+				Name:        "flexible_server_configurations",
+				Description: "The server configurations(parameters) details of the server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listPostgreSQLFlexibleServersConfigurations,
+				Transform:   transform.FromValue(),
 			},
 			// Steampipe standard columns
 			{
@@ -116,31 +118,41 @@ func listPostgreSqlFlexibleServers(ctx context.Context, d *plugin.QueryData, h *
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	clientFactory, err := armpostgresqlflexibleservers.NewClientFactory(subscriptionID, cred, nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.listPostgreSqlFlexibleServers", "client_error", err)
-		return nil, err
-	}
-	client := clientFactory.NewServersClient()
+
+	client := postgresqlflexibleservers.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
 	resourceGroupName := h.Item.(resources.Group).Name
 
-	result := client.NewListByResourceGroupPager(*resourceGroupName, &armpostgresqlflexibleservers.ServersClientListByResourceGroupOptions{})
-
-	for result.More() {
-	page, err := result.NextPage(ctx)
+	result, err := client.ListByResourceGroup(ctx, *resourceGroupName)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.listPostgreSqlFlexibleServers", "api_error", err)
-		return nil, nil
+		plugin.Logger(ctx).Error("listMySQLFlexibleServers", "list", err)
+		return nil, err
 	}
 
-	for _, server := range page.Value {
+	for _, server := range result.Values() {
 		d.StreamListItem(ctx, server)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, server := range result.Values() {
+			d.StreamListItem(ctx, server)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
 	}
+
 	return nil, err
 }
 
@@ -149,11 +161,6 @@ func listPostgreSqlFlexibleServers(ctx context.Context, d *plugin.QueryData, h *
 func getPostgreSqlFlexibleServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getPostgreSqlFlexibleServer")
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.getPostgreSqlFlexibleServer", "credential_error", err)
-	}
-
 	name := d.EqualsQualString("name")
 	resourceGroup := d.EqualsQualString("resource_group")
 
@@ -161,25 +168,80 @@ func getPostgreSqlFlexibleServer(ctx context.Context, d *plugin.QueryData, h *pl
 	if resourceGroup == "" || name == "" {
 		return nil, nil
 	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	clientFactory, err := armpostgresqlflexibleservers.NewClientFactory(subscriptionID, cred, nil)
+	client := postgresqlflexibleservers.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.getPostgreSqlFlexibleServer", "client_error", err)
+		plugin.Logger(ctx).Error("getPostgreSqlFlexibleServer", "get", err)
+		return nil, err
 	}
 
-	res, err := clientFactory.NewServersClient().Get(ctx, resourceGroup, name, nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.getPostgreSqlFlexibleServer", "api_error", err)
-	}
-
-	if res.Server.ID != nil {
-		return res.Server, nil
+	// In some cases resource does not give any notFound error
+	// instead of notFound error, it returns empty data
+	if op.ID != nil {
+		return op, nil
 	}
 
 	return nil, nil
+}
+
+func listPostgreSQLFlexibleServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listPostgreSQLFlexibleServersConfigurations")
+
+	server := h.Item.(postgresqlflexibleservers.Server)
+	resourceGroup := strings.Split(string(*server.ID), "/")[4]
+	serverName := *server.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := postgresqlflexibleservers.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listPostgreSQLFlexibleServersConfigurations", "list", err)
+		return nil, err
+	}
+
+	var postgreSQLFlexibleServersConfigurations []map[string]interface{}
+
+	for _, i := range op.Values() {
+		postgreSQLFlexibleServersConfigurations = append(postgreSQLFlexibleServersConfigurations, extractpostgreSQLFlexibleServersconfiguration(i))
+	}
+
+	return postgreSQLFlexibleServersConfigurations, nil
+}
+
+//// TRANSFORM FUNCTION
+
+// If we return the API response directly, the output will not provide the properties of Configurations
+func extractpostgreSQLFlexibleServersconfiguration(i postgresqlflexibleservers.Configuration) map[string]interface{} {
+	postgreSQLFlexibleServersconfiguration := make(map[string]interface{})
+
+	if i.ID != nil {
+		postgreSQLFlexibleServersconfiguration["ID"] = *i.ID
+	}
+	if i.Name != nil {
+		postgreSQLFlexibleServersconfiguration["Name"] = *i.Name
+	}
+	if i.Type != nil {
+		postgreSQLFlexibleServersconfiguration["Type"] = *i.Type
+	}
+	if i.ConfigurationProperties != nil {
+		postgreSQLFlexibleServersconfiguration["ConfigurationProperties"] = *i.ConfigurationProperties
+	}
+
+	return postgreSQLFlexibleServersconfiguration
 }
