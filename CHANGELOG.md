@@ -1,3 +1,10 @@
+## v0.49.0 [2023-08-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_postgresql_flexible_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_postgresql_flexible_server) ([#659](https://github.com/turbot/steampipe-plugin-azure/pull/659))
+
 ## v0.48.0 [2023-08-24]
 
 _Enhancements_
