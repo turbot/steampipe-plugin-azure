@@ -125,7 +125,7 @@ func listPostgreSqlFlexibleServers(ctx context.Context, d *plugin.QueryData, h *
 
 	result, err := client.ListByResourceGroup(ctx, *resourceGroupName)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMySQLFlexibleServers", "list", err)
+		plugin.Logger(ctx).Error("listPostgreSqlFlexibleServers", "list", err)
 		return nil, err
 	}
 
@@ -194,7 +194,7 @@ func getPostgreSqlFlexibleServer(ctx context.Context, d *plugin.QueryData, h *pl
 }
 
 func listPostgreSQLFlexibleServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listPostgreSQLFlexibleServersConfigurations")
+	plugin.Logger(ctx).Debug("listPostgreSQLFlexibleServersConfigurations")
 
 	server := h.Item.(postgresqlflexibleservers.Server)
 	resourceGroup := strings.Split(string(*server.ID), "/")[4]
