@@ -654,8 +654,8 @@ github.com/tkrajina/go-reflector v0.5.6 h1:hKQ0gyocG7vgMD2M3dRlYN6WBBOmdoOzJ6njQ
 github.com/tkrajina/go-reflector v0.5.6/go.mod h1:ECbqLgccecY5kPmPmXg1MrHW585yMcDkVl6IvJe64T4=
 github.com/tombuildsstuff/giovanni v0.15.1 h1:CVRaLOJ7C/eercCrKIsarfJ4SZoGMdBL9Q2deFDUXco=
 github.com/tombuildsstuff/giovanni v0.15.1/go.mod h1:0TZugJPEtqzPlMpuJHYfXY6Dq2uLPrXf98D2XQSxNbA=
-github.com/turbot/go-kit v0.6.0 h1:X+dzxuGmlOhayJ9OE8K9m1MpJ3zlSWK8s/J9rsgmc94=
-github.com/turbot/go-kit v0.6.0/go.mod h1:QIOX91BIxQ/1JEtM4rIHWDito3c3GUP2Z+dUT5F6z94=
+github.com/turbot/go-kit v0.7.0 h1:Jiua34hnICSWzJgYmqup/sY7G/1jlMqcElJgDIM8uFU=
+github.com/turbot/go-kit v0.7.0/go.mod h1:QIOX91BIxQ/1JEtM4rIHWDito3c3GUP2Z+dUT5F6z94=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.5.0 h1:a6sgeHUcATGJJ6rDn4S27WCr5DHrVH7dlattLW4h+ek=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.5.0/go.mod h1:HH2yeMCo0nOajYnH3Oh+alEH/8iSji5m5t+o1ezfrRs=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
