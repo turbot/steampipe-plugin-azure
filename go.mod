@@ -11,7 +11,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/tombuildsstuff/giovanni v0.15.1
-	github.com/turbot/go-kit v0.6.0
+	github.com/turbot/go-kit v0.8.1
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.5.1
 )
 
@@ -100,7 +100,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/stevenle/topsort v0.2.0 // indirect
-	github.com/stretchr/testify v1.8.3 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/zclconf/go-cty v1.12.1 // indirect
