@@ -212,13 +212,28 @@ func listMonitorActivityLogEvents(ctx context.Context, d *plugin.QueryData, _ *p
 		return nil, err
 	}
 
-	// Currently the API does not support pagination
-	for _, server := range result.Values() {
-		d.StreamListItem(ctx, server)
+	for _, event := range result.Values() {
+		d.StreamListItem(ctx, event)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, event := range result.Values() {
+			d.StreamListItem(ctx, event)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
