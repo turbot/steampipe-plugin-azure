@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/services/recoveryservices/mgmt/2021-01-01/backup"
@@ -19,6 +20,9 @@ func tableAzureBackupJob(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listAzureBackupJobs,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:    "vault_name",
@@ -40,17 +44,13 @@ func tableAzureBackupJob(_ context.Context) *plugin.Table {
 				Name:        "vault_name",
 				Description: "The recovery vault name.",
 				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromQual("vault_name"),
 			},
 			{
 				Name:        "id",
 				Description: "Resource Id represents the complete path to the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
-			},
-			{
-				Name:        "type",
-				Description: "Resource type represents the complete path of the form Namespace/ResourceType/ResourceType/...",
-				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
@@ -134,11 +134,15 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client.Authorizer = session.Authorizer
 	result, err := client.List(ctx, vaultName, *resourceGroup.Name, "", "")
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
 	for _, job := range result.Values() {
 		d.StreamListItem(ctx, job)
+
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
@@ -149,6 +153,9 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			if strings.Contains(err.Error(), "ResourceNotFound") {
+				return nil, nil
+			}
 			return nil, err
 		}
 
