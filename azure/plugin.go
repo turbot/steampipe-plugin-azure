@@ -119,6 +119,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_management_group":                                      tableAzureManagementGroup(ctx),
 			"azure_management_lock":                                       tableAzureManagementLock(ctx),
 			"azure_mariadb_server":                                        tableAzureMariaDBServer(ctx),
+			"azure_monitor_activity_log_event":                            tableAzureMonitorActivityLogEvent(ctx),
 			"azure_mssql_elasticpool":                                     tableAzureMSSQLElasticPool(ctx),
 			"azure_mssql_managed_instance":                                tableAzureMSSQLManagedInstance(ctx),
 			"azure_mssql_virtual_machine":                                 tableAzureMSSQLVirtualMachine(ctx),
