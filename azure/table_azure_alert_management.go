@@ -268,8 +268,6 @@ func listAlertManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	alertManagementClient := alertsmanagement.NewAlertsClientWithBaseURI(session.ResourceManagerEndpoint, "subscriptions/"+subscriptionID, subscriptionID, "")
 	alertManagementClient.Authorizer = session.Authorizer
 
-	plugin.Logger(ctx).Error("111111111111")
-
 	var targetResource, targetResourceType, targetResourceGroup, alertRule, smartGroupID, sortOrder, selectParameter, customTimeRange string
 	var includeContext, includeEgressConfig bool = true, true
 	var pageCount *int32
@@ -301,6 +299,7 @@ func listAlertManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	for _, alertManagement := range result.Values() {
 		d.StreamListItem(ctx, alertManagement)
+
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
@@ -353,8 +352,8 @@ func getAlertManagement(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	return op, nil
 }
 
-//// INPUT PARAMETER FUNCTION
-
+//// INPUT PARAMETER FUNCTIONS
+// We currently lack an SDK-defined function for retrieving the enum value based on the enum string value. To achieve this, explicit manipulation is required.
 func getShortOrderValue(s string) alertsmanagement.AlertsSortByFields {
 	sortByFields := alertsmanagement.PossibleAlertsSortByFieldsValues()
 	for _, i := range sortByFields {
