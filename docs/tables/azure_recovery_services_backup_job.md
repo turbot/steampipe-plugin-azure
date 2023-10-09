@@ -1,8 +1,6 @@
-# Table: azure_backup_job
+# Table: azure_recovery_services_backup_job
 
 An Azure Backup job is a task that you can define and run to perform data protection operations on your Azure resources. These jobs are typically used to back up and restore data from various Azure services, such as virtual machines, databases, and files.
-
-**Note**: `vault_name` is required in query parameter to get the job details of the job.
 
 ## Examples
 
@@ -16,7 +14,7 @@ select
   vault_name,
   region
 from
-  azure_backup_job
+  azure_recovery_services_backup_job
 where
   vault_name = 'my-vault';
 ```
@@ -36,7 +34,5 @@ select
   properties ->> 'StartTime' as start_time,
   properties ->> 'Status' as Status
 from
-  azure_backup_job
-where
-  vault_name = 'my-vault';
+  azure_recovery_services_backup_job;
 ```

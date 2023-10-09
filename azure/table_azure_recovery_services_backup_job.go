@@ -2,8 +2,9 @@ package azure
 
 import (
 	"context"
+	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -13,20 +14,20 @@ import (
 
 //// TABLE DEFINITION ////
 
-func tableAzureBackupJob(_ context.Context) *plugin.Table {
+func tableAzureRecoveryServicesBackupJob(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_backup_job",
-		Description: "Azure Backup Job",
+		Name:        "azure_recovery_services_backup_job",
+		Description: "Azure Recovery Services Backup Job",
 		List: &plugin.ListConfig{
-			ParentHydrate: listResourceGroups,
-			Hydrate:       listAzureBackupJobs,
+			ParentHydrate: listRecoveryServicesVaults,
+			Hydrate:       listRecoveryServicesAzureBackupJobs,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
 			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:    "vault_name",
-					Require: plugin.Required,
+					Require: plugin.Optional,
 				},
 				{
 					Name:    "resource_group",
@@ -44,7 +45,6 @@ func tableAzureBackupJob(_ context.Context) *plugin.Table {
 				Name:        "vault_name",
 				Description: "The recovery vault name.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromQual("vault_name"),
 			},
 			{
 				Name:        "id",
@@ -108,9 +108,20 @@ func tableAzureBackupJob(_ context.Context) *plugin.Table {
 	}
 }
 
+type JobInfo struct {
+	VaultName  *string
+	ETag       *string
+	Location   *string
+	Properties armrecoveryservicesbackup.JobClassification
+	Tags       map[string]*string
+	ID         *string
+	Name       *string
+	Type       *string
+}
+
 //// LIST FUNCTION ////
 
-func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listRecoveryServicesAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -122,17 +133,21 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		return nil, err
 	}
 
-	resourceGroup := h.Item.(resources.Group)
+	vault := h.Item.(recoveryservices.Vault)
+
+	plugin.Logger(ctx).Error("Parameter ====>>", vault.Name, strings.Split(*vault.ID, "/")[4])
 
 	vaultName := d.EqualsQualString("vault_name")
 	rgName := d.EqualsQualString("resource_group")
 
-	if vaultName == "" {
-		return nil, nil
+	if vaultName != "" {
+		if vaultName != *vault.Name {
+			return nil, nil
+		}
 	}
 
 	if rgName != "" {
-		if rgName != *resourceGroup.Name {
+		if rgName != strings.Split(*vault.ID, "/")[4] {
 			return nil, nil
 		}
 	}
@@ -143,7 +158,7 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		plugin.Logger(ctx).Error("azure_backup_job.listAzureBackupJobs", "NewBackupJobsClient", err)
 		return nil, nil
 	}
-	pager := clientFactory.NewListPager(vaultName, *resourceGroup.Name, &armrecoveryservicesbackup.BackupJobsClientListOptions{Filter: nil,
+	pager := clientFactory.NewListPager(*vault.Name, strings.Split(*vault.ID, "/")[4], &armrecoveryservicesbackup.BackupJobsClientListOptions{Filter: nil,
 		SkipToken: nil,
 	})
 	for pager.More() {
@@ -154,7 +169,16 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 		}
 
 		for _, v := range page.Value {
-			d.StreamListItem(ctx, v)
+			d.StreamListItem(ctx, JobInfo{
+				ETag:       v.ETag,
+				Location:   v.Location,
+				Properties: v.Properties,
+				Tags:       v.Tags,
+				ID:         v.ID,
+				Name:       v.Name,
+				Type:       v.Type,
+				VaultName:  vault.Name,
+			})
 
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -170,7 +194,7 @@ func listAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 //// TRANSFORM FUNCTION
 
 func backupJobProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(*armrecoveryservicesbackup.JobResource)
+	data := d.HydrateItem.(JobInfo)
 
 	output := make(map[string]interface{})
 
