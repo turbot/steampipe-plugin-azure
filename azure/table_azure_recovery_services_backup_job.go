@@ -164,7 +164,7 @@ func listRecoveryServicesAzureBackupJobs(ctx context.Context, d *plugin.QueryDat
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_backup_job.listAzureBackupJobs", "api_error", err)
+			plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listAzureBackupJobs", "api_error", err)
 			return nil, nil
 		}
 
