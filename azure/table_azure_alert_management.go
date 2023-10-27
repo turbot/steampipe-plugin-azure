@@ -154,7 +154,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "target_resource_name",
-				Description: "Name of the target ARM resource name, on which alert got created.",
+				Description: "Name of the target ARM resource, on which alert got created.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Essentials.TargetResourceName"),
 			},
