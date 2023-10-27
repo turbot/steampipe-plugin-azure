@@ -112,7 +112,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "custom_time_range",
-				Description: "Filter by custom time range in the format <start-time>/<end-time>  where time is in (ISO-8601 format)'.",
+				Description: "Filter by custom time range in the format <start-time>/<end-time> where time is in (ISO-8601 format).",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromQual("custom_time_range"),
 			},
