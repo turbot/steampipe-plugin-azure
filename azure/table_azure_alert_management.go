@@ -106,7 +106,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sort_by",
-				Description: "Sort the query results by input field,  Default value is 'lastModifiedDateTime'.",
+				Description: "Sort the query results by input field, default value is 'lastModifiedDateTime'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromQual("sort_by"),
 			},
