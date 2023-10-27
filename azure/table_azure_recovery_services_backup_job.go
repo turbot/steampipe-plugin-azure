@@ -155,7 +155,7 @@ func listRecoveryServicesAzureBackupJobs(ctx context.Context, d *plugin.QueryDat
 	subscriptionID := session.SubscriptionID
 	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(subscriptionID, cred, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_backup_job.listAzureBackupJobs", "NewBackupJobsClient", err)
+		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listAzureBackupJobs", "client_error", err)
 		return nil, nil
 	}
 	pager := clientFactory.NewListPager(*vault.Name, strings.Split(*vault.ID, "/")[4], &armrecoveryservicesbackup.BackupJobsClientListOptions{Filter: nil,
