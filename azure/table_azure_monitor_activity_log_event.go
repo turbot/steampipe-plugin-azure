@@ -84,7 +84,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "resource_id",
-				Description: "The resource uri that uniquely identifies the resource that caused this event.",
+				Description: "The resource URI that uniquely identifies the resource that caused this event.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ResourceID"),
 			},
@@ -114,7 +114,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "category",
-				Description: "The event category",
+				Description: "The event category.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Category.Value"),
 			},
@@ -144,7 +144,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "sub_status",
-				Description: "The event sub status. Most of the time, when included, this captures the HTTP status code of the REST call. Common values are: OK (HTTP Status Code: 200), Created (HTTP Status Code: 201), Accepted (HTTP Status Code: 202), No Content (HTTP Status Code: 204), Bad Request(HTTP Status Code: 400), Not Found (HTTP Status Code: 404), Conflict (HTTP Status Code: 409), Internal Server Error (HTTP Status Code: 500), Service Unavailable (HTTP Status Code:503), Gateway Timeout (HTTP Status Code: 504)",
+				Description: "The event sub status. Most of the time, when included, this captures the HTTP status code of the REST call. Common values are: OK (HTTP Status Code: 200), Created (HTTP Status Code: 201), Accepted (HTTP Status Code: 202), No Content (HTTP Status Code: 204), Bad Request(HTTP Status Code: 400), Not Found (HTTP Status Code: 404), Conflict (HTTP Status Code: 409), Internal Server Error (HTTP Status Code: 500), Service Unavailable (HTTP Status Code:503), Gateway Timeout (HTTP Status Code: 504).",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("SubStatus.Value").Transform(transform.ToString),
 			},
@@ -208,7 +208,7 @@ func listMonitorActivityLogEvents(ctx context.Context, d *plugin.QueryData, _ *p
 
 	result, err := client.List(ctx, filter, "")
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_monitor_activity_log_event.listMonitorActivityLogEvents", "list", err)
+		plugin.Logger(ctx).Error("azure_monitor_activity_log_event.listMonitorActivityLogEvents", "api_error", err)
 		return nil, err
 	}
 
@@ -230,7 +230,7 @@ func listMonitorActivityLogEvents(ctx context.Context, d *plugin.QueryData, _ *p
 
 		for _, event := range result.Values() {
 			d.StreamListItem(ctx, event)
-			
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -303,264 +303,3 @@ func buildActivityLogFilter(quals plugin.KeyColumnQualMap) string {
 
 	return filter
 }
-
-//// HYDRATE FUNCTIONS
-
-// func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-// 	plugin.Logger(ctx).Trace("getMySQLServer")
-
-// 	name := d.EqualsQuals["name"].GetStringValue()
-// 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-
-// 	// Error: mysql.ServersClient#Get: Invalid input: autorest/validation: validation failed: parameter=resourceGroupName
-// 	// constraint=MinLength value="" details: value length must be greater than or equal to 1
-// 	if len(resourceGroup) < 1 {
-// 		return nil, nil
-// 	}
-
-// 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	subscriptionID := session.SubscriptionID
-
-// 	client := mysql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-// 	client.Authorizer = session.Authorizer
-
-// 	op, err := client.Get(ctx, resourceGroup, name)
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("getMySQLServer", "get", err)
-// 		return nil, err
-// 	}
-
-// 	// In some cases resource does not give any notFound error
-// 	// instead of notFound error, it returns empty data
-// 	if op.ID != nil {
-// 		return op, nil
-// 	}
-
-// 	return nil, nil
-// }
-
-// func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-// 	plugin.Logger(ctx).Trace("listMySQLServersServerKeys")
-
-// 	namespace := h.Item.(mysql.Server)
-// 	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
-// 	serverName := *namespace.Name
-
-// 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	subscriptionID := session.SubscriptionID
-
-// 	client := mysql.NewServerKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-// 	client.Authorizer = session.Authorizer
-
-// 	op, err := client.List(ctx, resourceGroup, serverName)
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list", err)
-// 		return nil, err
-// 	}
-
-// 	var mySQLServersServerKeys []map[string]interface{}
-
-// 	for _, i := range op.Values() {
-// 		mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
-// 	}
-
-// 	for op.NotDone() {
-// 		err = op.NextWithContext(ctx)
-// 		if err != nil {
-// 			plugin.Logger(ctx).Error("listMySQLServersServerKeys", "list_paging", err)
-// 			return nil, err
-// 		}
-// 		for _, i := range op.Values() {
-// 			mySQLServersServerKeys = append(mySQLServersServerKeys, extractMySQLServersServerKey(i))
-// 		}
-// 	}
-
-// 	return mySQLServersServerKeys, nil
-// }
-
-// func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-// 	namespace := h.Item.(mysql.Server)
-// 	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
-// 	serverName := *namespace.Name
-
-// 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "connection_error", err)
-// 		return nil, err
-// 	}
-// 	subscriptionID := session.SubscriptionID
-
-// 	client := mysql.NewVirtualNetworkRulesClient(subscriptionID)
-// 	client.Authorizer = session.Authorizer
-
-// 	op, err := client.ListByServer(ctx, resourceGroup, serverName)
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error", err)
-// 		return nil, err
-// 	}
-
-// 	var vnetRules []mysql.VirtualNetworkRule
-
-// 	vnetRules = append(vnetRules, op.Values()...)
-
-// 	for op.NotDone() {
-// 		err = op.NextWithContext(ctx)
-// 		if err != nil {
-// 			plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_pagging_error", err)
-// 			return nil, err
-// 		}
-// 		vnetRules = append(vnetRules, op.Values()...)
-// 	}
-
-// 	return vnetRules, nil
-// }
-
-// func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-// 	plugin.Logger(ctx).Trace("listMySQLServersConfigurations")
-
-// 	server := h.Item.(mysql.Server)
-// 	resourceGroup := strings.Split(string(*server.ID), "/")[4]
-// 	serverName := *server.Name
-
-// 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	subscriptionID := session.SubscriptionID
-
-// 	client := mysql.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-// 	client.Authorizer = session.Authorizer
-
-// 	op, err := client.ListByServer(ctx, resourceGroup, serverName)
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("listMySQLServersConfigurations", "list", err)
-// 		return nil, err
-// 	}
-
-// 	var mySQLServersConfigurations []map[string]interface{}
-
-// 	for _, i := range *op.Value {
-// 		mySQLServersConfigurations = append(mySQLServersConfigurations, extractMySQLServersconfiguration(i))
-// 	}
-
-// 	return mySQLServersConfigurations, nil
-// }
-
-// func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-// 	plugin.Logger(ctx).Debug("getMySQLServerSecurityAlertPolicy")
-
-// 	server := h.Item.(mysql.Server)
-// 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
-// 	serverName := *server.Name
-
-// 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-// 	if err != nil {
-// 		plugin.Logger(ctx).Error("getMySQLServerSecurityAlertPolicy")
-// 		return nil, err
-// 	}
-// 	subscriptionID := session.SubscriptionID
-
-// 	client := mysql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-// 	client.Authorizer = session.Authorizer
-
-// 	op, err := client.Get(ctx, resourceGroupName, serverName)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return *op.SecurityAlertPolicyProperties, nil
-// }
-
-// //// TRANSFORM FUNCTION
-
-// // If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections
-// func extractMySQLServerPrivateEndpointConnections(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-// 	server := d.HydrateItem.(mysql.Server)
-// 	var properties []map[string]interface{}
-
-// 	if server.ServerProperties.PrivateEndpointConnections != nil {
-// 		for _, i := range *server.ServerProperties.PrivateEndpointConnections {
-// 			objectMap := make(map[string]interface{})
-// 			if i.ID != nil {
-// 				objectMap["id"] = i.ID
-// 			}
-// 			if i.Properties != nil {
-// 				if i.Properties.PrivateEndpoint != nil {
-// 					objectMap["privateEndpointPropertyId"] = i.Properties.PrivateEndpoint.ID
-// 				}
-// 				if i.Properties.PrivateLinkServiceConnectionState != nil {
-// 					if len(i.Properties.PrivateLinkServiceConnectionState.ActionsRequired) > 0 {
-// 						objectMap["privateLinkServiceConnectionStateActionsRequired"] = i.Properties.PrivateLinkServiceConnectionState.ActionsRequired
-// 					}
-// 					if len(i.Properties.PrivateLinkServiceConnectionState.Status) > 0 {
-// 						objectMap["privateLinkServiceConnectionStateStatus"] = i.Properties.PrivateLinkServiceConnectionState.Status
-// 					}
-// 					if i.Properties.PrivateLinkServiceConnectionState.Description != nil {
-// 						objectMap["privateLinkServiceConnectionStateDescription"] = i.Properties.PrivateLinkServiceConnectionState.Description
-// 					}
-// 				}
-// 				if len(i.Properties.ProvisioningState) > 0 {
-// 					objectMap["provisioningState"] = i.Properties.ProvisioningState
-// 				}
-// 			}
-// 			properties = append(properties, objectMap)
-// 		}
-// 	}
-
-// 	return properties, nil
-// }
-
-// // If we return the API response directly, the output will not provide the properties of ServerKeys
-// func extractMySQLServersServerKey(i mysql.ServerKey) map[string]interface{} {
-// 	mySQLServersServerKey := make(map[string]interface{})
-// 	if i.ID != nil {
-// 		mySQLServersServerKey["id"] = *i.ID
-// 	}
-// 	if i.Name != nil {
-// 		mySQLServersServerKey["name"] = *i.Name
-// 	}
-// 	if i.Type != nil {
-// 		mySQLServersServerKey["type"] = *i.Type
-// 	}
-// 	if i.Type != nil {
-// 		mySQLServersServerKey["kind"] = *i.Kind
-// 	}
-// 	if i.ServerKeyProperties != nil {
-// 		if i.ServerKeyProperties.ServerKeyType != nil {
-// 			mySQLServersServerKey["serverKeyType"] = i.ServerKeyProperties.ServerKeyType
-// 		}
-// 		if i.ServerKeyProperties.URI != nil {
-// 			mySQLServersServerKey["uri"] = i.ServerKeyProperties.URI
-// 		}
-// 		if i.ServerKeyProperties.CreationDate != nil {
-// 			mySQLServersServerKey["creationDate"] = i.ServerKeyProperties.CreationDate
-// 		}
-// 	}
-// 	return mySQLServersServerKey
-// }
-
-// // If we return the API response directly, the output will not provide the properties of Configurations
-// func extractMySQLServersconfiguration(i mysql.Configuration) map[string]interface{} {
-// 	mySQLServersconfiguration := make(map[string]interface{})
-
-// 	if i.ID != nil {
-// 		mySQLServersconfiguration["ID"] = *i.ID
-// 	}
-// 	if i.Name != nil {
-// 		mySQLServersconfiguration["Name"] = *i.Name
-// 	}
-// 	if i.Type != nil {
-// 		mySQLServersconfiguration["Type"] = *i.Type
-// 	}
-// 	if i.ConfigurationProperties != nil {
-// 		mySQLServersconfiguration["ConfigurationProperties"] = *i.ConfigurationProperties
-// 	}
-
-// 	return mySQLServersconfiguration
-// }
