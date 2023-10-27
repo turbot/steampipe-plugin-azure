@@ -184,7 +184,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "smart_group_id",
-				Description: "Unique Id of the smart group.",
+				Description: "Unique ID of the smart group.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Essentials.SmartGroupID"),
 			},
