@@ -172,7 +172,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "alert_rule",
-				Description: "Rule(monitor) which fired alert instance. Depending on the monitor service, this would be ARM id or name of the rule.",
+				Description: "Rule(monitor) which fired alert instance. Depending on the monitor service, this would be ARM ID or name of the rule.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Essentials.AlertRule"),
 			},
