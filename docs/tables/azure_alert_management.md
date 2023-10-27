@@ -56,7 +56,7 @@ where
   monitor_condition = 'Fired';
 ```
 
-### List alerts with in last 7 days
+### List alerts within last 7 days
 
 ```sql
 select
