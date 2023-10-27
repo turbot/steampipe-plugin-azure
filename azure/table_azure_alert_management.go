@@ -89,7 +89,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Azure resource Id",
+				Description: "Azure resource ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
