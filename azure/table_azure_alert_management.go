@@ -178,7 +178,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "source_created_id",
-				Description: "Unique Id created by monitor service for each alert instance. This could be used to track the issue at the monitor service, in case of Nagios, Zabbix, SCOM etc.",
+				Description: "Unique ID created by monitor service for each alert instance. This could be used to track the issue at the monitor service, in case of Nagios, Zabbix, SCOM, etc.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Properties.Essentials.SourceCreatedID"),
 			},
