@@ -50,7 +50,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "id",
-				Description: "The Id of this event as required by ARM for RBAC. It contains the EventDataID and a timestamp information.",
+				Description: "The ID of this event as required by ARM for RBAC. It contains the EventDataID and a timestamp information.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -73,7 +73,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "correlation_id",
-				Description: "The correlation Id, usually a GUID in the string format. The correlation Id is shared among the events that belong to the same uber operation.",
+				Description: "The correlation ID, usually a GUID in the string format. The correlation ID is shared among the events that belong to the same Uber operation.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("CorrelationID"),
 			},
