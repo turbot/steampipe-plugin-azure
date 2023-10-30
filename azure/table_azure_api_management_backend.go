@@ -20,9 +20,9 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"backend_id", "resource_group", "service_name"}),
 			Hydrate:    getAPIManagementBackend,
-			// IgnoreConfig: &plugin.IgnoreConfig{
-			// 	ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "InvalidApiVersionParameter", "ResourceGroupNotFound"}),
-			// },
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listAPIManagements,
@@ -95,13 +95,13 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "service_name",
-				Description: "Name of the API management service",
+				Description: "Name of the API management service.",
 				Type:        proto.ColumnType_STRING,
 			},
-			// We have added this as an extra column because the get call takes only the last path of the id as the backend_id which we do not get from the API 
+			// We have added this as an extra column because the get call takes only the last path of the id as the backend_id which we do not get from the API
 			{
 				Name:        "backend_id",
-				Description: "Name of the API management service",
+				Description: "The API management backend ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID").Transform(lastPathElement),
 			},
