@@ -6,7 +6,7 @@ Azure Alert Management is a service and set of tools within Microsoft Azure that
 
 - This table offers access to alert management details for the past 30 days. If no value is specified in the query parameter (`time_range`) within the WHERE clause, the default value will be set to `1d`(One Day).
 - For improved performance, it is advised that you use the optional qual to limit the result set.
-- This table supports optional quals. Queries with optional quals are optimised to use Alert Management filters. Optional quals are supported for the following columns:
+- This table supports optional quals. Queries with optional quals are optimized to use Alert Management filters. Optional quals are supported for the following columns:
 
   - `target_resource`: Filter by the target resource (full ARM ID). The default value selects all resources.
   - `target_resource_type`: Filter by target resource type. The default value selects all resource types.
@@ -56,7 +56,7 @@ where
   monitor_condition = 'Fired';
 ```
 
-### List alerts within last 7 days
+### List alerts within the last 7 days
 
 ```sql
 select
