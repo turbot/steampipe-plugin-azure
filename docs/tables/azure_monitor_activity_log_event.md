@@ -6,7 +6,7 @@ Azure Monitor Activity Log is a service in Microsoft Azure that provides insight
 
 - This table can provide event details for the previous 90 days.
 - For improved performance, it is advised that you use the optional qual `event_timestamp` to limit the result set to a specific time period.
-- This table supports optional quals. Queries with optional quals are optimised to use Monitor Activity Log filters. Optional quals are supported for the following columns:
+- This table supports optional quals. Queries with optional quals are optimized to use Monitor Activity Log filters. Optional quals are supported for the following columns:
   - `event_timestamp`
   - `resource_group`
   - `correlation_id`
@@ -62,7 +62,7 @@ where
   event_timestamp >= now() - interval '5 minutes';
 ```
 
-### List ordered events that occurred between five to ten minutes ago
+### List ordered events that occurred in the past five to ten minutes
 
 ```sql
 select
@@ -92,7 +92,7 @@ from
   azure_monitor_activity_log_event;
 ```
 
-### Get HTTP request detaisl of events
+### Get HTTP request details of events
 
 ```sql
 select
