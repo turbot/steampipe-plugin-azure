@@ -48,7 +48,7 @@ func tableAzureRecoveryServicesBackupJob(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Resource Id represents the complete path to the resource.",
+				Description: "Resource ID represents the complete path to the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
