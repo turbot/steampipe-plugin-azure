@@ -20,7 +20,7 @@ func tableAzureRecoveryServicesBackupJob(_ context.Context) *plugin.Table {
 		Description: "Azure Recovery Services Backup Job",
 		List: &plugin.ListConfig{
 			ParentHydrate: listRecoveryServicesVaults,
-			Hydrate:       listRecoveryServicesAzureBackupJobs,
+			Hydrate:       listRecoveryServicesBackupJobs,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
 			},
