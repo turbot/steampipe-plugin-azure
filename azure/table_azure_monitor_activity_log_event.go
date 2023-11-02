@@ -67,7 +67,7 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "event_data_id",
-				Description: "The event data Id. This is a unique identifier for an event.",
+				Description: "The event data ID. This is a unique identifier for an event.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("EventDataID"),
 			},
