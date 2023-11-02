@@ -121,7 +121,7 @@ type JobInfo struct {
 
 //// LIST FUNCTION ////
 
-func listRecoveryServicesAzureBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
