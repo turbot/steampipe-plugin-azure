@@ -139,6 +139,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_private_dns_zone":                                      tableAzurePrivateDNSZone(ctx),
 			"azure_provider":                                              tableAzureProvider(ctx),
 			"azure_public_ip":                                             tableAzurePublicIP(ctx),
+			"azure_recovery_services_backup_job":                          tableAzureRecoveryServicesBackupJob(ctx),
 			"azure_recovery_services_vault":                               tableAzureRecoveryServicesVault(ctx),
 			"azure_redis_cache":                                           tableAzureRedisCache(ctx),
 			"azure_resource_group":                                        tableAzureResourceGroup(ctx),
