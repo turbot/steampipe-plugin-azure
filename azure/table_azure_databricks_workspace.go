@@ -20,7 +20,7 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDatabricksWorkspace,
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
@@ -34,7 +34,7 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "id",
-				Description: "Fully qualified resource Id for the resource.",
+				Description: "Fully qualified resource ID for the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromGo(),
 			},
@@ -55,7 +55,7 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "managed_resource_group_id",
-				Description: "The managed resource group Id.",
+				Description: "The managed resource group ID.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("WorkspaceProperties.ManagedResourceGroupID"),
 			},
@@ -159,7 +159,7 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listDatabricksWorkspaces")
+	plugin.Logger(ctx).Debug("listDatabricksWorkspaces")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -197,8 +197,8 @@ func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getDatabricksWorkspace")
 
-	workspaceName := d.EqualsQuals["name"].GetStringValue()
-	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	workspaceName := d.EqualsQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
 
 	// Return nil, if no input provide
 	if workspaceName == "" || resourceGroup == "" {
