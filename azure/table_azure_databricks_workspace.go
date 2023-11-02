@@ -195,7 +195,7 @@ func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 //// HYDRATE FUNCTIONS
 
 func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getDatabricksWorkspace")
+	plugin.Logger(ctx).Debug("getDatabricksWorkspace")
 
 	workspaceName := d.EqualsQualString("name")
 	resourceGroup := d.EqualsQualString("resource_group")
