@@ -1,3 +1,13 @@
+## v0.51.0 [2023-11-02]
+
+_What's new?_
+
+- New tables added
+  - [azure_alert_management](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_alert_management) ([#685](https://github.com/turbot/steampipe-plugin-azure/pull/685))
+  - [azure_databricks_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_databricks_workspace) ([#692](https://github.com/turbot/steampipe-plugin-azure/pull/692))
+  - [azure_monitor_activity_log_event](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_monitor_activity_log_event) ([#684](https://github.com/turbot/steampipe-plugin-azure/pull/684))
+  - [azure_recovery_services_backup_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_backup_job) ([#681](https://github.com/turbot/steampipe-plugin-azure/pull/681))
+
 ## v0.50.1 [2023-10-04]
 
 _Dependencies_
