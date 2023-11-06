@@ -2,8 +2,6 @@
 
 Azure Key Vault is a cloud service for securely storing and accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, or cryptographic keys.
 
-Note: If we intend to list the secrets by vault name using the WHERE clause (select * from azure_key_vault_secret where vault_name = 'test-vault';), the vault name must be in lowercase, even if the vault name appears in camel case in the portal.
-
 ## Examples
 
 ### Basic info
