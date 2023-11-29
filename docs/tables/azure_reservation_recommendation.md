@@ -100,7 +100,7 @@ select
   modern_recommendation_properties -> 'SkuProperties' as sku_properties,
   modern_recommendation_properties ->> 'SubscriptionID' as subscription_id,
   modern_recommendation_properties ->> 'ResourceType' as resource_type,
-  modern_recommendation_properties ->> 'SkuName' as sku_name,
+  modern_recommendation_properties ->> 'SkuName' as sku_name
 from
   azure_reservation_recommendation
 where
