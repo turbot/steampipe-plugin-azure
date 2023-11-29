@@ -1,10 +1,20 @@
-# Table: azure_compute_disk_encryption_set
+---
+title: "Steampipe Table: azure_compute_disk_encryption_set - Query Azure Compute Disk Encryption Sets using SQL"
+description: "Allows users to query Azure Compute Disk Encryption Sets."
+---
 
-Disk Encryption Set simplifies the key management for managed disks. When a disk encryption set is created, a system-assigned managed identity is created in Azure Active Directory (AD) and associated with the disk encryption set.
+# Table: azure_compute_disk_encryption_set - Query Azure Compute Disk Encryption Sets using SQL
+
+Azure Disk Encryption is a capability that helps you encrypt your Windows and Linux IaaS virtual machine disks. Disk Encryption Sets are a resource in Azure that contain and manage the key for server-side encryption of Azure managed disks and snapshots. It simplifies the key management for disk encryption and allows you to use Customer Managed Keys for managed disks instead of platform-managed keys.
+
+## Table Usage Guide
+
+The 'azure_compute_disk_encryption_set' table provides insights into Disk Encryption Sets within Azure Compute. As a security engineer, explore Disk Encryption Set-specific details through this table, including the encryption type, key URL, and source vault. Utilize it to uncover information about encryption sets, such as those with server-side encryption and customer-managed keys. The schema presents a range of attributes of the Disk Encryption Set for your analysis, like the id, name, type, location, and associated tags.
 
 ## Examples
 
 ### Key vault associated with each disk encryption set
+Identify the specific key vault associated with each disk encryption set in your Azure Compute environment. This is useful for managing and auditing your encryption keys and their usage.
 
 ```sql
 select
@@ -17,6 +27,7 @@ from
 
 
 ### List of encryption sets which are not using customer managed key
+Explore which encryption sets in Azure's Compute Disk Encryption are not utilizing customer-managed keys, providing a way to identify potential areas for enhancing data security practices.
 
 ```sql
 select
@@ -33,6 +44,7 @@ where
 
 
 ### Identity info of each disk encryption set
+Explore which disk encryption sets in your Azure Compute resources have specific identities associated with them. This can help in assessing security configurations and managing access control within your environment.
 
 ```sql
 select

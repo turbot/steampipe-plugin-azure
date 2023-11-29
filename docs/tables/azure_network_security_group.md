@@ -1,10 +1,20 @@
-# Table: azure_network_security_group
+---
+title: "Steampipe Table: azure_network_security_group - Query Azure Network Security Groups using SQL"
+description: "Allows users to query Azure Network Security Groups"
+---
 
-A network security group contains security rules that allow or deny inbound network traffic to, or outbound network traffic from, several types of Azure resources.
+# Table: azure_network_security_group - Query Azure Network Security Groups using SQL
+
+An Azure Network Security Group is a feature in Microsoft Azure that provides inbound and outbound network traffic filtering for various types of Azure resources. It acts as a virtual firewall, offering a layer of security by enabling you to configure network traffic rules. Network Security Groups can be associated with subnets, network interfaces, or both, providing control over traffic flowing in and out of Azure resources within a virtual network.
+
+## Table Usage Guide
+
+The 'azure_network_security_group' table provides insights into Network Security Groups within Azure Networking. As a Network Administrator, explore specific details through this table, including security rules, default rules, and associated subnets. Utilize it to uncover information about Network Security Groups, such as those with open inbound or outbound rules, the associated resources, and the verification of rule priorities. The schema presents a range of attributes of the Network Security Group for your analysis, like the group name, location, type, and associated tags.
 
 ## Examples
 
 ### Subnets and network interfaces attached to the network security groups
+Discover the segments that are linked to your network security groups by analyzing network interfaces and subnets. This allows you to better understand and assess your Azure network configuration and security posture.
 
 ```sql
 select
@@ -19,6 +29,7 @@ from
 ```
 
 ### List the network security groups whose inbound is not restricted from the internet
+Determine the network security groups in your Azure environment that have unrestricted inbound access from the internet. This can help you identify potential security risks and take necessary actions to secure your network.
 
 ```sql
 select
@@ -43,6 +54,7 @@ where
 ```
 
 ### Default security group rules info
+Gain insights into the default security rules of your Azure network security group. This query can help you understand the access, description, direction, priority, and protocol of each rule, which is crucial for maintaining network security and troubleshooting connectivity issues.
 
 ```sql
 select

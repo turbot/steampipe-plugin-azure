@@ -1,10 +1,20 @@
-# Table: azure_recovery_services_backup_job
+---
+title: "Steampipe Table: azure_recovery_services_backup_job - Query Azure Recovery Services Backup Jobs using SQL"
+description: "Allows users to query Azure Recovery Services Backup Jobs."
+---
 
-An Azure Backup job is a task that you can define and run to perform data protection operations on your Azure resources. These jobs are typically used to back up and restore data from various Azure services, such as virtual machines, databases, and files.
+# Table: azure_recovery_services_backup_job - Query Azure Recovery Services Backup Jobs using SQL
+
+Azure Recovery Services is a service within Microsoft Azure that provides data protection and disaster recovery capabilities. It enables backup and restore functionalities for Azure Virtual Machines, SQL workloads, and on-premises Windows Servers. Azure Recovery Services helps maintain data availability and ensures business continuity during planned and unplanned outages.
+
+## Table Usage Guide
+
+The 'azure_recovery_services_backup_job' table provides insights into backup jobs within Azure Recovery Services. As a DevOps engineer, explore job-specific details through this table, including job status, start and end times, and associated metadata. Utilize it to uncover information about jobs, such as those with errors, the duration of jobs, and the verification of backup items. The schema presents a range of attributes of the backup job for your analysis, like the job ID, backup management type, duration, and associated tags.
 
 ## Examples
 
 ### Basic info
+Analyze the settings to understand the specifics of backup jobs in a particular Azure recovery services vault. This can help in evaluating the backup strategy and ensuring data recovery measures are in line with your organization's policies.
 
 ```sql
 select
@@ -20,6 +30,7 @@ where
 ```
 
 ### Get job properties of jobs
+Explore the specifics of different jobs, such as the type, associated activities, management methods, and operational status. This can provide insights into job performance and help identify areas for optimization.
 
 ```sql
 select

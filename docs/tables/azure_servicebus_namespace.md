@@ -1,10 +1,20 @@
-# Table: azure_servicebus_namespace
+---
+title: "Steampipe Table: azure_servicebus_namespace - Query Azure Service Bus Namespaces using SQL"
+description: "Allows users to query Azure Service Bus Namespaces, providing insights into their properties, statuses, and configurations."
+---
 
-A ServiceBus namespace is a container for all messaging components (queues and topics). Multiple queues and topics can be in a single namespace, and namespaces often serve as application containers. A Service Bus namespace is your own capacity slice of a large cluster made up of dozens of all-active virtual machines.
+# Table: azure_servicebus_namespace - Query Azure Service Bus Namespaces using SQL
+
+Azure Service Bus is a fully managed enterprise integration message broker. It can decouple applications and services, enabling them to communicate independently and reliably through messages. A namespace is a scoping container for all messaging components, providing a unique environment within the Service Bus where the queues, topics, and subscriptions reside.
+
+## Table Usage Guide
+
+The 'azure_servicebus_namespace' table provides insights into Azure Service Bus Namespaces, allowing you to explore details such as their properties, statuses, and configurations. As a DevOps engineer, leverage this table to understand the setup and management of your Service Bus Namespaces, including their SKU details, provisioning states, and associated tags. The schema presents a range of attributes of the Service Bus Namespace for your analysis, such as the name, region, resource group, subscription ID, and more. Utilize it to monitor the health and performance of your Azure Service Bus Namespaces, ensuring they meet predefined conditions and standards.
 
 ## Examples
 
 ### Basic info
+Explore which Azure Service Bus namespaces are currently in use, to understand their provisioning status and when they were created. This can help in managing resources and planning for future capacity needs.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List premium namespaces
+Explore which service bus namespaces in your Azure environment are operating on a premium tier, allowing you to assess your resource allocation and optimize cost management.
 
 ```sql
 select
@@ -31,6 +42,7 @@ where
 ```
 
 ### List unencrypted namespaces
+Explore the premium tier of your Azure Service Bus to identify namespaces that lack encryption. This is useful for improving your security measures and ensuring data protection.
 
 ```sql
 select
@@ -45,6 +57,7 @@ where
 ```
 
 ### List namespaces not using a virtual network service endpoint
+Identify premium Azure Service Bus namespaces that are not utilizing a virtual network service endpoint. This can be used to enhance network security by ensuring all namespaces are connected to a secure network.
 
 ```sql
 select
@@ -69,6 +82,7 @@ where
 ```
 
 ### List private endpoint connection details
+Explore the details of private endpoint connections in your Azure Service Bus Namespace. This can be useful to understand the state and type of each connection, which can assist in managing and optimizing your network's performance.
 
 ```sql
 select
@@ -86,6 +100,7 @@ from
 ```
 
 ### List encryption details
+Explore the encryption details of your Azure Service Bus namespaces to understand their security configurations and ensure that they meet your organization's requirements. This query is particularly useful for auditing and compliance purposes.
 
 ```sql
 select

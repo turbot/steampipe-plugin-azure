@@ -1,10 +1,20 @@
-# Table: azure_app_service_web_app
+---
+title: "Steampipe Table: azure_app_service_web_app_slot - Query Azure App Service Web App Slots using SQL"
+description: "Allows users to query Azure App Service Web App Slots"
+---
 
-When you deploy your web app on Linux, mobile back end, or API app to Azure App Service, you can use a separate deployment slot instead of the default production slot when running in the Standard, Premium, or Isolated App Service plan tier. Deployment slots are live apps with their host names. App content and configuration elements can be swapped between two deployment slots, including the production slot.
+# Table: azure_app_service_web_app_slot - Query Azure App Service Web App Slots using SQL
+
+Azure App Service is a fully managed platform for building, deploying, and scaling web apps. You can host web apps, mobile app back ends, RESTful APIs, or automated business processes. Web App Slots are live apps with their own hostnames that are used to deploy different versions of an app and then swap them to production with zero downtime.
+
+## Table Usage Guide
+
+The 'azure_app_service_web_app_slot' table provides insights into Web App Slots within Azure App Service. As a DevOps engineer, explore slot-specific details through this table, including configuration settings, app service plans, and associated metadata. Utilize it to uncover information about slots, such as those in stopped state, the configuration settings of each slot, and the verification of app service plans. The schema presents a range of attributes of the Web App Slot for your analysis, like the slot name, kind, fully qualified domain name, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which web application slots in Azure App Service are currently active and when they were last modified. This can be useful to manage and monitor your application deployment slots.
 
 ```sql
 select
@@ -22,6 +32,7 @@ from
 ```
 
 ### List slots where the apps are enabled
+Explore which slots have apps enabled to gain insights into active app usage and distribution. This can be beneficial for managing resources and optimizing app performance.
 
 ```sql
 select
@@ -40,6 +51,7 @@ where
 ```
 
 ### List slots that accept HTTP traffic (i.e only HTTPS is disabled)
+Explore which Azure App Service slots are configured to accept HTTP traffic, allowing you to identify potential security vulnerabilities where HTTPS is not enforced. This could be useful in a security audit to ensure all web applications are using secure protocols.
 
 ```sql
 select
@@ -54,6 +66,7 @@ where
 ```
 
 ### Host names of each slot
+Explore which web application slots are hosted in different regions and resource groups. This can aid in managing and organizing your Azure App Service resources effectively.
 
 ```sql
 select
@@ -67,6 +80,7 @@ from
 ```
 
 ### List enabled host names
+Explore which web application slots in your Azure App Service are currently enabled. This can be useful for managing your resources and understanding the active components within your cloud environment.
 
 ```sql
 select
@@ -80,6 +94,7 @@ from
 ```
 
 ### Get slot swap status of each slot
+Assess the status of slot swaps within your application, identifying the source and destination of each swap. This allows you to track changes and manage your app's performance effectively.
 
 ```sql
 select
@@ -93,6 +108,7 @@ from
 ```
 
 ### Get site config details of each slot
+Assess the configuration details of each web application slot to gain insights into the number of workers, enabled features, and software versions installed. This can help in managing resources and ensuring optimal performance.
 
 ```sql
 select

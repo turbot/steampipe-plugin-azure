@@ -1,10 +1,20 @@
-# Table: azure_postgresql_server
+---
+title: "Steampipe Table: azure_postgresql_server - Query Azure Database for PostgreSQL Servers using SQL"
+description: "Allows users to query Azure Database for PostgreSQL Servers."
+---
 
-Azure Database for PostgreSQL is a relational database service based on the open-source Postgres database engine. It's a fully managed database-as-a-service that can handle mission-critical workloads with predictable performance, security, high availability, and dynamic scalability.
+# Table: azure_postgresql_server - Query Azure Database for PostgreSQL Servers using SQL
+
+Azure Database for PostgreSQL is a fully managed database service provided by Microsoft Azure. It is built on the open-source PostgreSQL database engine and offers compatibility with PostgreSQL, which allows users to use familiar PostgreSQL tools and scripts. This service provides built-in high availability, automatic backups, and scaling of resources in minutes without application downtime.
+
+## Table Usage Guide
+
+The 'azure_postgresql_server' table provides insights into PostgreSQL servers within Azure Database for PostgreSQL. As a database administrator or DevOps engineer, explore server-specific details through this table, including configurations, network settings, and associated metadata. Utilize it to uncover information about servers, such as those with specific configurations, the networking rules applied to servers, and the verification of server statuses. The schema presents a range of attributes of the PostgreSQL server for your analysis, like the server name, resource group, region, version, SSL enforcement, and storage capacity.
 
 ## Examples
 
 ### Basic info
+Explore the details of your Azure PostgreSQL servers, such as their names, IDs, and locations. This can be useful for managing and organizing your servers across various locations.
 
 ```sql
 select
@@ -16,6 +26,7 @@ from
 ```
 
 ### List servers with encryption disabled
+Discover the segments that have encryption disabled on their servers. This is crucial for identifying potential security risks and ensuring data protection standards are upheld.
 
 ```sql
 select
@@ -30,6 +41,8 @@ where
 ```
 
 ### List servers that allow access to Azure services
+1. Discover the segments that allow access to Azure services from any location, which could potentially indicate a security risk.
+2. Identify instances where servers lack an assigned Active Directory admin, which could pose a management or security issue.
 
 ```sql
 select
@@ -62,6 +75,7 @@ where
 ```
 
 ### List servers with log checkpoints disabled
+Explore which servers have disabled log checkpoints, which could potentially compromise data integrity and recovery. This can be useful for auditing server configurations and ensuring optimal data safety practices.
 
 ```sql
 select
@@ -77,6 +91,7 @@ where
 ```
 
 ### List servers with a logging retention period greater than 3 days
+This query is useful for identifying servers that maintain logs for more than three days, which can be beneficial for organizations that need to keep track of server activities for extended periods for auditing or troubleshooting purposes.
 
 ```sql
 select
@@ -92,6 +107,7 @@ where
 ```
 
 ### List servers with geo-redundant backup storage disabled
+Uncover the details of servers that have disabled geo-redundant backup storage, helping to highlight potential areas of risk in your Azure PostgreSQL Server setup. This is useful for ensuring data redundancy and disaster recovery planning.
 
 ```sql
 select
@@ -106,6 +122,7 @@ where
 ```
 
 ### List private endpoint connection details
+Explore the status and details of private endpoint connections within a server. This can be useful to monitor and manage the connections' state and actions required for maintaining optimal server performance.
 
 ```sql
 select
