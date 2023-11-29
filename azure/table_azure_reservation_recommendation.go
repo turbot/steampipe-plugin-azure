@@ -121,8 +121,8 @@ func tableAzureReservationRecommendation(ctx context.Context) *plugin.Table {
 }
 
 type RecomendationInfo struct {
-	LegacyRecommendationProperties *consumption.LegacyReservationRecommendationProperties
-	ModernRecommendationProperties *consumption.ModernReservationRecommendationProperties
+	LegacyRecommendationProperties map[string]interface{}
+	ModernRecommendationProperties map[string]interface{}
 	ID                             *string
 	Name                           *string
 	Type                           *string
@@ -213,7 +213,7 @@ func getReservationRecomendationProperties(data consumption.BasicReservationReco
 		result.Sku = mInfo.Sku
 		result.Tags = mInfo.Tags
 		result.Type = mInfo.Type
-		result.ModernRecommendationProperties = mInfo.ModernReservationRecommendationProperties
+		result.ModernRecommendationProperties = extractRecomemendationProperties(mInfo.ModernReservationRecommendationProperties)
 		results = append(results, result)
 	}
 
@@ -227,11 +227,123 @@ func getReservationRecomendationProperties(data consumption.BasicReservationReco
 		result.Sku = lInfo.Sku
 		result.Tags = lInfo.Tags
 		result.Type = lInfo.Type
-		result.LegacyRecommendationProperties = lInfo.LegacyReservationRecommendationProperties
+		result.LegacyRecommendationProperties = extractRecomemendationProperties(lInfo.LegacyReservationRecommendationProperties)
 		results = append(results, result)
 	}
 
 	return results
+}
+
+func extractRecomemendationProperties(r interface{}) map[string]interface{} {
+	objectMap := make(map[string]interface{})
+	switch item := r.(type) {
+	case *consumption.LegacyReservationRecommendationProperties:
+		if item != nil {
+			if item.LookBackPeriod != nil {
+				objectMap["LookBackPeriod"] = *item.LookBackPeriod
+			}
+			if item.InstanceFlexibilityRatio != nil {
+				objectMap["InstanceFlexibilityRatio"] = *item.InstanceFlexibilityRatio
+			}
+			if item.InstanceFlexibilityGroup != nil {
+				objectMap["InstanceFlexibilityGroup"] = *item.InstanceFlexibilityGroup
+			}
+			if item.NormalizedSize != nil {
+				objectMap["NormalizedSize"] = *item.NormalizedSize
+			}
+			if item.RecommendedQuantityNormalized != nil {
+				objectMap["RecommendedQuantityNormalized"] = *item.RecommendedQuantityNormalized
+			}
+			if item.MeterID != nil {
+				objectMap["MeterID"] = *item.MeterID
+			}
+			if item.ResourceType != nil {
+				objectMap["ResourceType"] = *item.ResourceType
+			}
+			if item.Term != nil {
+				objectMap["Term"] = *item.Term
+			}
+			if item.CostWithNoReservedInstances != nil {
+				objectMap["CostWithNoReservedInstances"] = *item.CostWithNoReservedInstances
+			}
+			if item.RecommendedQuantity != nil {
+				objectMap["RecommendedQuantity"] = *item.RecommendedQuantity
+			}
+			if item.TotalCostWithReservedInstances != nil {
+				objectMap["TotalCostWithReservedInstances"] = *item.TotalCostWithReservedInstances
+			}
+			if item.NetSavings != nil {
+				objectMap["NetSavings"] = *item.NetSavings
+			}
+			if item.FirstUsageDate != nil {
+				objectMap["FirstUsageDate"] = *item.FirstUsageDate
+			}
+			if item.Scope != nil {
+				objectMap["Scope"] = *item.Scope
+			}
+			if item.SkuProperties != nil {
+				objectMap["SkuProperties"] = *item.SkuProperties
+			}
+		}
+	case *consumption.ModernReservationRecommendationProperties:
+		if item != nil {
+			if item.Location != nil {
+				objectMap["Location"] = *item.Location
+			}
+			if item.LookBackPeriod != nil {
+				objectMap["LookBackPeriod"] = *item.LookBackPeriod
+			}
+			if item.InstanceFlexibilityRatio != nil {
+				objectMap["InstanceFlexibilityRatio"] = *item.InstanceFlexibilityRatio
+			}
+			if item.InstanceFlexibilityGroup != nil {
+				objectMap["InstanceFlexibilityGroup"] = *item.InstanceFlexibilityGroup
+			}
+			if item.NormalizedSize != nil {
+				objectMap["NormalizedSize"] = *item.NormalizedSize
+			}
+			if item.RecommendedQuantityNormalized != nil {
+				objectMap["RecommendedQuantityNormalized"] = *item.RecommendedQuantityNormalized
+			}
+			if item.MeterID != nil {
+				objectMap["MeterID"] = *item.MeterID
+			}
+			if item.Term != nil {
+				objectMap["Term"] = *item.Term
+			}
+			if item.CostWithNoReservedInstances != nil {
+				objectMap["CostWithNoReservedInstances"] = *item.CostWithNoReservedInstances
+			}
+			if item.RecommendedQuantity != nil {
+				objectMap["RecommendedQuantity"] = *item.RecommendedQuantity
+			}
+			if item.TotalCostWithReservedInstances != nil {
+				objectMap["TotalCostWithReservedInstances"] = *item.TotalCostWithReservedInstances
+			}
+			if item.NetSavings != nil {
+				objectMap["NetSavings"] = *item.NetSavings
+			}
+			if item.FirstUsageDate != nil {
+				objectMap["FirstUsageDate"] = *item.FirstUsageDate
+			}
+			if item.Scope != nil {
+				objectMap["Scope"] = *item.Scope
+			}
+			if item.SkuProperties != nil {
+				objectMap["SkuProperties"] = *item.SkuProperties
+			}
+			if item.SkuName != nil {
+				objectMap["SkuName"] = *item.SkuName
+			}
+			if item.ResourceType != nil {
+				objectMap["ResourceType"] = *item.ResourceType
+			}
+			if item.SubscriptionID != nil {
+				objectMap["SubscriptionID"] = *item.SubscriptionID
+			}
+		}
+	}
+	return objectMap
 }
 
 //// BUILD INPUT FILTER FROM QUALS VALUE
@@ -247,16 +359,16 @@ func buildReservationRecomendationFilter(quals plugin.KeyColumnQualMap) string {
 
 	for columnName, filterName := range filterQuals {
 		if quals[columnName] != nil {
-				for _, q := range quals[columnName].Quals {
-					if q.Operator == "=" {
-						if filter == "" {
-							filter = filterName + " eq " + q.Value.GetStringValue()
-						} else {
-							filter += " AND " + filterName + " eq " + q.Value.GetStringValue()
-						}
+			for _, q := range quals[columnName].Quals {
+				if q.Operator == "=" {
+					if filter == "" {
+						filter = filterName + " eq " + q.Value.GetStringValue()
+					} else {
+						filter += " AND " + filterName + " eq " + q.Value.GetStringValue()
 					}
 				}
 			}
+		}
 	}
 
 	return filter
