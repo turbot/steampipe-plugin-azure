@@ -18,6 +18,11 @@ func tableAzureReservationRecommendation(ctx context.Context) *plugin.Table {
 		Description: "Azure Reservation Recommendation",
 		List: &plugin.ListConfig{
 			Hydrate: listReservedInstanceRecomendations,
+			KeyColumns: plugin.KeyColumnSlice{
+				{Name: "look_back_period", Require: plugin.Optional, Operators: []string{"="}},
+				{Name: "resource_type", Require: plugin.Optional, Operators: []string{"="}},
+				{Name: "scope", Require: plugin.Optional, Operators: []string{"="}},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -35,6 +40,27 @@ func tableAzureReservationRecommendation(ctx context.Context) *plugin.Table {
 				Name:        "kind",
 				Description: "Specifies the kind of reservation recommendation.",
 				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "look_back_period",
+				Description: "The number of days of usage to look back for recommendation. Allowed values Last7Days, Last30Days, Last60Days and default value is Last7Days.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromQual("look_back_period"),
+				Default:     "Last7Days'",
+			},
+			{
+				Name:        "resource_type",
+				Description: "The type of resource for recommendation. Possible values are: VirtualMachines, SQLDatabases, PostgreSQL, ManagedDisk, MySQL, RedHat, MariaDB, RedisCache, CosmosDB, SqlDataWarehouse, SUSELinux, AppService, BlockBlob, AzureDataExplorer, VMwareCloudSimple and default value is VirtualMachines.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromQual("resource_type"),
+				Default:     "VirtualMachines",
+			},
+			{
+				Name:        "scope",
+				Description: "Shared or single recommendation. allowed values 'Single' or 'Shared' and default value is Single.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromQual("scope"),
+				Default:     "Single",
 			},
 			{
 				Name:        "etag",
@@ -118,7 +144,10 @@ func listReservedInstanceRecomendations(ctx context.Context, d *plugin.QueryData
 
 	reservedInstanceClient := consumption.NewReservationRecommendationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	reservedInstanceClient.Authorizer = session.Authorizer
-	result, err := reservedInstanceClient.List(ctx, "subscriptions/"+subscriptionID, "")
+
+	filter := buildReservationRecomendationFilter(d.Quals)
+
+	result, err := reservedInstanceClient.List(ctx, "subscriptions/"+subscriptionID, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -203,4 +232,32 @@ func getReservationRecomendationProperties(data consumption.BasicReservationReco
 	}
 
 	return results
+}
+
+//// BUILD INPUT FILTER FROM QUALS VALUE
+
+func buildReservationRecomendationFilter(quals plugin.KeyColumnQualMap) string {
+	filter := ""
+
+	filterQuals := map[string]string{
+		"look_back_period": "properties/lookBackPeriod",
+		"resource_type":    "properties/resourceType",
+		"scope":            "properties/scope",
+	}
+
+	for columnName, filterName := range filterQuals {
+		if quals[columnName] != nil {
+				for _, q := range quals[columnName].Quals {
+					if q.Operator == "=" {
+						if filter == "" {
+							filter = filterName + " eq " + q.Value.GetStringValue()
+						} else {
+							filter += " AND " + filterName + " eq " + q.Value.GetStringValue()
+						}
+					}
+				}
+			}
+	}
+
+	return filter
 }
