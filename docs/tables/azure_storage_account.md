@@ -1,10 +1,20 @@
-# Table: azure_storage_account
+---
+title: "Steampipe Table: azure_storage_account - Query Azure Storage Accounts using SQL"
+description: "Allows users to query Azure Storage Accounts."
+---
 
-An Azure storage account contains all of your Azure Storage data objects: blobs, files, queues, tables, and disks.
+# Table: azure_storage_account - Query Azure Storage Accounts using SQL
+
+Azure Storage Account is a service provided by Microsoft Azure that offers highly scalable and secure data storage. It allows you to store and retrieve large amounts of unstructured data, such as documents and media files, and structured data, such as databases. Azure Storage Account supports different data types including blobs, files, queues, tables, and disks.
+
+## Table Usage Guide
+
+The 'azure_storage_account' table provides insights into Storage Accounts within Microsoft Azure. As a DevOps engineer, explore account-specific details through this table, including creation time, primary location, and associated metadata. Utilize it to uncover information about accounts, such as those with public access, the replication type, and the status of primary and secondary locations. The schema presents a range of attributes of the Storage Account for your analysis, like the account name, resource group, subscription ID, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which Azure storage accounts are in use, their associated SKU names and tiers, and their primary and secondary locations. This can help in understanding the distribution and classification of storage resources within your Azure environment.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List storage accounts with versioning disabled
+Discover the segments that have disabled versioning within their storage accounts, enabling you to identify potential risks and ensure data recovery options.
 
 ```sql
 select
@@ -30,6 +41,7 @@ where
 ```
 
 ### List storage accounts with blob soft delete disabled
+Explore which Azure storage accounts have the blob soft delete feature disabled. This is useful in identifying potential data loss risks, as these accounts do not have a recovery option for accidentally deleted blobs.
 
 ```sql
 select
@@ -43,6 +55,7 @@ where
 ```
 
 ### List storage accounts that allow blob public access
+Explore which Azure storage accounts permit public access to blob data. This is useful for assessing potential security risks and ensuring appropriate access controls are in place.
 
 ```sql
 select
@@ -55,6 +68,7 @@ where
 ```
 
 ### List storage accounts with encryption in transit disabled
+Explore which Azure storage accounts lack encryption in transit, a feature crucial for maintaining data security during transmission. This query is useful for identifying potential security vulnerabilities within your cloud storage infrastructure.
 
 ```sql
 select
@@ -67,6 +81,7 @@ where
 ```
 
 ### List storage accounts that do not have a cannot-delete lock
+Analyze the settings to understand which storage accounts lack a 'cannot-delete' lock, therefore potentially posing a risk of accidental deletion. This query is useful in identifying areas that need improved security measures.
 
 ```sql
 select
@@ -85,6 +100,7 @@ where
 ```
 
 ### List storage accounts with queue logging enabled
+Explore which Azure storage accounts have queue logging enabled for all actions, such as delete, read, and write. This is useful in monitoring activity and maintaining security within your storage accounts.
 
 ```sql
 select
@@ -101,6 +117,7 @@ where
 ```
 
 ### List storage accounts without lifecycle
+Discover the storage accounts that lack a lifecycle management policy. This is useful for identifying areas where data retention and deletion policies may not be properly enforced, potentially leading to unnecessary storage costs or compliance issues.
 
 ```sql
 select
@@ -113,6 +130,7 @@ where
 ```
 
 ### List diagnostic settings details
+Explore the diagnostic settings of your Azure storage accounts. This can help you better understand and manage the logging and monitoring capabilities of your storage resources.
 
 ```sql
 select
@@ -123,6 +141,7 @@ from
 ```
 
 ### List storage accounts with replication but unavailable secondary
+Determine the areas in which storage accounts have replication enabled but the secondary is unavailable. This is useful to identify potential risks and ensure data redundancy in case of primary failure.
 
 ```sql
 select
@@ -139,6 +158,7 @@ where
 ```
 
 ### Get table properties of storage accounts
+Explore the properties of your storage accounts to understand their configurations, such as logging settings and metrics, which can help in optimizing storage usage and improving data management practices.
 
 ```sql
 select

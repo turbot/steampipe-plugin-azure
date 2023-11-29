@@ -1,10 +1,20 @@
-# Table: azure_container_group
+---
+title: "Steampipe Table: azure_container_group - Query Azure Container Instances using SQL"
+description: "Allows users to query Azure Container Groups."
+---
 
-An Azure Container Group is a specific type of Azure Container Instances resource that allows you to group multiple containers together and run them as a single unit. A container group can contain one or more containers that are tightly coupled and need to be deployed and managed together. For example, you may have a microservices-based application that consists of multiple containers, such as a front-end container, a back-end container, and a database container. You can create an Azure Container Group to deploy and manage all these containers as a single entity.
+# Table: azure_container_group - Query Azure Container Instances using SQL
+
+Azure Container Instances offers the fastest and simplest way to run a container in Azure, without having to provision any virtual machines and without having to adopt a higher-level service. It is a solution for any scenario that can operate in isolated containers, without orchestration. Run event-driven applications, quickly deploy from your container development pipelines, and run data processing and build jobs.
+
+## Table Usage Guide
+
+The 'azure_container_group' table provides insights into Container Groups within Azure Container Instances. As a DevOps engineer, explore Container Group-specific details through this table, including the containers within the group, the image they are using, the commands they are running, and associated metadata. Utilize it to uncover information about Container Groups, such as their current state, the events that have occurred within them, and the configurations they have been given. The schema presents a range of attributes of the Container Group for your analysis, like the group name, creation date, associated containers, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the configuration of your Azure Container Groups to understand their provisioning states and restart policies. This is useful for assessing the performance and management of your resources across different regions.
 
 ```sql
 select
@@ -19,6 +29,7 @@ from
 ```
 
 ### Get encryption details of each group
+Uncover the details of encryption for each group within your Azure Container service. This will help you assess the security measures in place and ensure that each group is properly protected.
 
 ```sql
 select
@@ -32,6 +43,7 @@ from
 ```
 
 ### List groups that have restart policy set to `OnFailure`
+Discover the segments that have their restart policy set to 'OnFailure' in the Azure Container Group. This can be useful in assessing system resilience and planning for potential system failures.
 
 ```sql
 select
@@ -46,6 +58,7 @@ where
 ```
 
 ### Count groups by operation type
+Analyze the distribution of Azure container groups based on their operating system type. This can provide insights into the predominant OS types used within your container groups, aiding in system optimization and resource planning.
 
 ```sql
 select
@@ -58,6 +71,7 @@ group by
 ```
 
 ### Get IP address details of each group
+Explore which containers in your Azure environment are associated with specific IP addresses. This can help you manage your network configuration and identify potential bottlenecks or security risks.
 
 ```sql
 select
@@ -72,6 +86,7 @@ from
 ```
 
 ### Get image registry credential details of each group
+Explore the authentication details for image registries used by different container groups. This can be useful to ensure proper security measures are in place and to manage access to your image repositories.
 
 ```sql
 select
@@ -87,6 +102,7 @@ from
 ```
 
 ### Get DNS configuration details of each group
+Explore the DNS configuration details for each container group in Azure. This can help you understand how your container groups are configured for network communication, aiding in network troubleshooting and optimization.
 
 ```sql
 select

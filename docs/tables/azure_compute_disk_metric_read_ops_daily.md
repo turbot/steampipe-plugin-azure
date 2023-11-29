@@ -1,10 +1,20 @@
-# Table: azure_compute_disk_metric_read_ops_daily
+---
+title: "Steampipe Table: azure_compute_disk_metric_read_ops_daily - Query Azure Compute Disks using SQL"
+description: "Allows users to query Azure Compute Disks daily read operations metrics."
+---
 
-Azure Monitor metrics provide data about the performance of your systems. The `azure_compute_disk_metric_read_ops_daily` table provides metric statistics at 24 hours intervals for the most recent 1 year.
+# Table: azure_compute_disk_metric_read_ops_daily - Query Azure Compute Disks using SQL
+
+Azure Compute Disks are a key component of Azure Infrastructure-as-a-Service (IaaS) based solutions, providing high-performance, reliable, and resilient block storage for Azure Virtual Machines. They support a wide range of workloads like relational databases, high-volume transactional systems, and big data applications. Azure Compute Disks offer a variety of disk storage options to meet varying workload requirements.
+
+## Table Usage Guide
+
+The 'azure_compute_disk_metric_read_ops_daily' table provides insights into the daily read operations of Azure Compute Disks. As a system administrator or a DevOps engineer, you can explore disk-specific details through this table, including the total number of read operations, maximum and average read operations, and the time at which the maximum read operations occurred. Utilize it to monitor the performance of your disks, identify potential bottlenecks, and plan capacity. The schema presents a range of attributes of the disk read operations for your analysis, like the resource group name, subscription ID, time grain, and unit type.
 
 ## Examples
 
 ### Basic info
+Explore the daily read operations metrics for Azure compute disks to understand usage patterns and performance. This can help in identifying any unusual activity or potential areas for optimization.
 
 ```sql
 select
@@ -22,6 +32,7 @@ order by
 ```
 
 ### Operations Over 10 Bytes average
+Explore which operations have an average higher than 10 bytes. This is useful for identifying potential areas of heavy data usage or inefficiency in your Azure compute disk metrics.
 
 ```sql
 select

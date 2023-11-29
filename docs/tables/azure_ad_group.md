@@ -7,6 +7,7 @@ Azure Active Directory groups is used to manage access to your cloud-based apps,
 ## Examples
 
 ### Basic info
+Determine the areas in which your Azure Active Directory groups are mail-enabled. This could be beneficial for managing group email communications and understanding which groups have specific email settings.
 
 ```sql
 select
@@ -21,6 +22,7 @@ from
 
 
 ### List of AD groups where security is not enabled
+Determine the areas in which Azure Active Directory groups are not security-enabled. This is crucial for identifying potential vulnerabilities and enhancing the security posture of your organization.
 
 ```sql
 select
@@ -35,6 +37,7 @@ where
 
 
 ### List of AD groups where mail is not enabled
+Determine the areas in which Azure Active Directory groups have not enabled mail. This can be useful in identifying groups that may not be receiving important communications or updates.
 
 ```sql
 select

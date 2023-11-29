@@ -1,10 +1,20 @@
-# Table: azure_application_gateway
+---
+title: "Steampipe Table: azure_application_gateway - Query Azure Network Application Gateways using SQL"
+description: "Allows users to query Azure Network Application Gateways"
+---
 
-Azure Application Gateway is a web traffic load balancer that enables you to manage traffic to your web applications. Traditional load balancers operate at the transport layer (OSI layer 4 - TCP and UDP) and route traffic based on source IP address and port, to a destination IP address and port. Application Gateway can make routing decisions based on additional attributes of an HTTP request, for example URI path or host headers.
+# Table: azure_application_gateway - Query Azure Network Application Gateways using SQL
+
+An Azure Application Gateway is a web traffic load balancer that enables you to manage traffic to your web applications. It operates at the application layer (Layer 7) of the Open Systems Interconnection (OSI) model. This service provides routing capabilities and can make routing decisions based on additional attributes of an HTTP request, for instance, URI path or host headers.
+
+## Table Usage Guide
+
+The 'azure_application_gateway' table provides insights into Application Gateways within Azure Network. As a Network Engineer, explore Application Gateway-specific details through this table, including backend configurations, SSL policy, and associated metadata. Utilize it to uncover information about Application Gateways, such as their SKU, operational state, and the verification of SSL policies. The schema presents a range of attributes of the Application Gateway for your analysis, like the gateway's ID, name, type, region, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which application gateways in your Azure environment are currently being provisioned and where they are located. This is beneficial for keeping track of your network resources and their geographical distribution.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List web application firewall configurations for application gateway 
+Analyze the settings to understand the configurations of your web application firewall for application gateways. This can help you assess its current status, identify any disabled rule groups, exclusions, and understand the limitations such as file upload limit and maximum request body size.
 
 ```sql
 select
@@ -37,6 +48,7 @@ from
 ```
 
 ### List http listeners for application gateway 
+Determine the areas in which HTTP listeners for the application gateway are configured. This is useful for understanding the setup and configuration of your application gateway, particularly for troubleshooting or optimizing network traffic management.
 
 ```sql
 select
@@ -54,6 +66,7 @@ from
 ```
 
 ### List backend http settings collection for application gateway 
+This query aids in gaining insights into the backend HTTP settings for an application gateway. It's particularly useful for understanding settings such as cookie-based affinity, host name selection, port, protocol, and request timeout, which can help optimize the application gateway's performance and security.
 
 ```sql
 select
@@ -72,6 +85,7 @@ from
 ```
 
 ### List frontend IP configurations for application gateway 
+This example helps you identify the different frontend IP configurations for your application gateway in Azure. It's useful for managing and understanding the various IP settings associated with your application gateway, including public and private IP allocations.
 
 ```sql
 select

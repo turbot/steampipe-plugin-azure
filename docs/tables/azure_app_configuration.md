@@ -1,10 +1,20 @@
-# Table: azure_app_configuration
+---
+title: "Steampipe Table: azure_app_configuration - Query Azure App Configuration Stores using SQL"
+description: "Allows users to query Azure App Configuration Stores"
+---
 
-Azure App Configuration provides a service to centrally manage application settings and feature flags. App Configuration is used to store all the settings for your application and secure their accesses in one place.
+# Table: azure_app_configuration - Query Azure App Configuration Stores using SQL
+
+Azure App Configuration is a managed service that helps developers centralize their application and feature settings simply and securely. It provides a way to manage and distribute application settings, helping to improve the speed and reliability of application deployment. Azure App Configuration also allows you to automate the process of managing and updating these settings across multiple environments.
+
+## Table Usage Guide
+
+The 'azure_app_configuration' table provides insights into App Configuration Stores within Azure App Configuration. As a DevOps engineer, explore store-specific details through this table, including store names, resource groups, subscription IDs, and associated metadata. Utilize it to uncover information about stores, such as their provisioning states, creation times, and the number of failed requests. The schema presents a range of attributes of the App Configuration Store for your analysis, like the store name, creation date, provisioning state, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the status and creation dates of your Azure application configurations. This can help you understand the overall state of your applications, allowing for better management and timely updates.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List public network access enabled app configurations
+Explore which app configurations have public network access enabled. This can be useful in identifying potential security risks and ensuring your app configurations adhere to best practices.
 
 ```sql
 select
@@ -33,6 +44,7 @@ where
 ```
 
 ### List app configurations with user assigned identities
+This query helps in identifying the application configurations within Azure that have been assigned user identities. It is useful in managing and tracking user access, contributing to improved security and compliance.
 
 ```sql
 select
@@ -53,6 +65,7 @@ where
 ```
 
 ### List private endpoint connection details for app configurations
+Explore the details of private endpoint connections for your app configurations. This can help you understand their current status, any required actions, and their provisioning state, which can be useful for troubleshooting or optimizing your app's performance.
 
 ```sql
 select
@@ -70,6 +83,7 @@ from
 ```
 
 ### List encryption details for app configurations
+Explore the encryption details of your app configurations to ensure secure data handling. This is particularly useful in maintaining data security standards and regulatory compliance.
 
 ```sql
 select

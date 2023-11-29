@@ -7,6 +7,7 @@ An Azure service principal is an identity created for use with applications, hos
 ## Examples
 
 ### List of ad service principals where service principal account is disabled
+Determine which ad service principals have their account disabled in Azure. This is useful for identifying potential inactive or unused resources within your Azure environment.
 
 ```sql
 select
@@ -22,6 +23,7 @@ where
 
 
 ### List of ad service principals where app role assignment is not required
+Determine the areas in which ad service principals do not require app role assignments. This is useful to identify potential areas of your Azure AD environment where security could be improved by requiring app role assignments.
 
 ```sql
 select
@@ -36,6 +38,7 @@ where
 
 
 ### Application role info of service principals
+Identify the roles of service principals within an application to gain insights into their permissions and status. This is useful for understanding who has access to what within your application and ensuring appropriate security measures are in place.
 
 ```sql
 select
@@ -53,6 +56,7 @@ from
 
 
 ### Oauth 2.0 permission info of ad service principal
+This query is useful to gain insights into the permissions related to the OAuth 2.0 protocol for an advertising service principal in Azure. It allows you to understand the consent descriptions, display names, IDs and the status (enabled or not) of these permissions, which is crucial for managing access and maintaining security.
 
 ```sql
 select

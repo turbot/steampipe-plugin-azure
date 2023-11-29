@@ -1,10 +1,20 @@
-# Table: azure_bastion_host
+---
+title: "Steampipe Table: azure_bastion_host - Query Azure Bastion Hosts using SQL"
+description: "Allows users to query Azure Bastion Hosts to retrieve information about the state, configurations, and associated resources."
+---
 
-Azure Bastion is a service you deploy that lets you connect to a virtual machine using your browser and the Azure portal, or via the native SSH or RDP client already installed on your local computer. The Azure Bastion service is a fully platform-managed PaaS service that you provision inside your virtual network. It provides secure and seamless RDP/SSH connectivity to your virtual machines directly from the Azure portal over TLS. When you connect via Azure Bastion, your virtual machines don't need a public IP address, agent, or special client software.
+# Table: azure_bastion_host - Query Azure Bastion Hosts using SQL
+
+Azure Bastion is a fully managed network security service that provides secure and seamless RDP and SSH access to your virtual machines directly from the Azure portal. Azure Bastion is provisioned directly in your Virtual Network (VNet) and supports all VMs in your VNet. Using Azure Bastion protects your virtual machines from exposing RDP/SSH ports to the outside world, while providing secure access to manage your VMs.
+
+## Table Usage Guide
+
+The 'azure_bastion_host' table provides insights into Bastion Hosts within Azure Bastion service. As an IT administrator, explore host-specific details through this table, including its state, configurations, and associated resources. Utilize it to uncover information about hosts, such as those with specific configurations, the associated subnets, and the verification of their state. The schema presents a range of attributes of the Bastion Host for your analysis, like the host name, provisioning state, type, id, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which Azure Bastion Hosts are currently provisioned and where they are located. This helps in managing resources and planning deployment strategies across different regions.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List bastion hosts that are in failed state
+Discover the segments that have bastion hosts in a failed state. This can help in identifying and troubleshooting problematic hosts, ensuring the stability and security of your Azure environment.
 
 ```sql
 select
@@ -33,6 +44,7 @@ where
 ```
 
 ### Get subnet details associated with each host
+Discover the network organization of your Azure resources by identifying the specific subnets associated with each bastion host. This allows for efficient infrastructure management and helps in identifying potential network vulnerabilities.
 
 ```sql
 select
@@ -49,6 +61,7 @@ where
 ```
 
 ### Get IP configuration details associated with each host
+Explore the IP configurations linked to each host in your Azure environment to gain insights into allocation methods and SKU details. This can help in managing and optimizing your network resources in Azure.
 
 ```sql
 select

@@ -1,10 +1,20 @@
-# Table: azure_virtual_network
+---
+title: "Steampipe Table: azure_virtual_network - Query Azure Virtual Networks using SQL"
+description: "Allows users to query Azure Virtual Networks."
+---
 
-A virtual network is a network where all devices, servers, virtual machines, and data centers that are connected are done so through software and wireless technology.
+# Table: azure_virtual_network - Query Azure Virtual Networks using SQL
+
+Azure Virtual Networks (VNet) is a fundamental building block for your private network in Azure. VNet enables many types of Azure resources, such as Azure Virtual Machines (VM), to securely communicate with each other, the internet, and on-premises networks. VNet is similar to a traditional network that you'd operate in your own data center, but brings with it additional benefits of Azure's infrastructure, such as scale, availability, and isolation.
+
+## Table Usage Guide
+
+The 'azure_virtual_network' table provides insights into Virtual Networks within Azure. As a DevOps engineer, explore network-specific details through this table, including address spaces, DNS servers, and associated subnets. Utilize it to uncover information about networks, such as those with certain security rules, the associated subnets, and the verification of DNS servers. The schema presents a range of attributes of the Virtual Network for your analysis, like the network ID, creation date, associated subnets, and associated tags.
 
 ## Examples
 
 ### List of virtual networks where DDoS(Distributed Denial of Service attacks) Protection is not enabled
+Explore the virtual networks that lack protection against Distributed Denial of Service (DDoS) attacks. This allows for the identification of potential network vulnerabilities and aids in strengthening security measures.
 
 ```sql
 select
@@ -19,6 +29,7 @@ where
 ```
 
 ### CIDR list for each virtual network
+Explore which address blocks are associated with each virtual network in Azure. This can help you understand the network structure and manage IP address allocation efficiently.
 
 ```sql
 select
@@ -29,6 +40,7 @@ from
 ```
 
 ### List VPCs with public CIDR blocks
+Determine the areas in which Azure Virtual Networks are configured with public CIDR blocks, allowing you to assess potential exposure to the internet and take necessary security measures.
 
 ```sql
 select
@@ -47,6 +59,7 @@ where
 
 
 ### Subnet details associated with the virtual network
+Explore the configuration of your virtual network to understand the details of associated subnets. This can help in managing network policies, service endpoints, and routing tables efficiently.
 
 ```sql
 select

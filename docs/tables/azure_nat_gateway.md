@@ -1,10 +1,20 @@
-# Table: azure_nat_gateway
+---
+title: "Steampipe Table: azure_nat_gateway - Query Azure NAT Gateways using SQL"
+description: "Allows users to query Azure NAT Gateways."
+---
 
-NAT gateway provides outbound internet connectivity for one or more subnets of a virtual network. Once NAT gateway is associated to a subnet, NAT provides source network address translation (SNAT) for that subnet. NAT gateway specifies which static IP addresses virtual machines use when creating outbound flows.
+# Table: azure_nat_gateway - Query Azure NAT Gateways using SQL
+
+Azure NAT (Network Address Translation) Gateway is a resource that provides outbound internet connectivity for virtual networks. The NAT gateway sends outbound traffic from a virtual network to the internet. It also enables you to configure a static, outbound public IP address, which can be used for the services in your virtual network.
+
+## Table Usage Guide
+
+The 'azure_nat_gateway' table provides insights into NAT Gateways within Azure Networking. As a Network Engineer, explore NAT Gateway-specific details through this table, including subnet details, IP configuration, and associated metadata. Utilize it to uncover information about NAT Gateways, such as those with specific IP configurations, the subnet relationships, and the verification of IP addresses. The schema presents a range of attributes of the NAT Gateway for your analysis, like the NAT Gateway ID, creation date, subnet count, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the basic information of your Azure NAT Gateway to understand its provisioning state and type. This can be useful in managing resources and troubleshooting potential issues.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List public IP address details for each nat gateway
+This query aids in identifying the details of public IP addresses associated with each NAT gateway. It's useful for managing network traffic and ensuring secure and efficient data routing.
 
 ```sql
 select
@@ -35,6 +46,7 @@ where
 ```
 
 ### List subnet details associated with each nat gateway
+Analyze the settings to understand the association between each NAT gateway and the related subnet details in your Azure environment. This can be beneficial in managing network topology and ensuring correct routing configurations.
 
 ```sql
 select

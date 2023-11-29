@@ -1,10 +1,20 @@
-# Table: azure_recovery_services_vault
+---
+title: "Steampipe Table: azure_recovery_services_vault - Query Azure Recovery Services Vaults using SQL"
+description: "Allows users to query Azure Recovery Services Vaults"
+---
 
-A Recovery Services vault is a storage entity in Azure that houses data. The data is typically copies of data, or configuration information for virtual machines (VMs), workloads, servers, or workstations. You can use Recovery Services vaults to hold backup data for various Azure services such as IaaS VMs (Linux or Windows) and Azure SQL databases.
+# Table: azure_recovery_services_vault - Query Azure Recovery Services Vaults using SQL
+
+Azure Recovery Services vault is a management entity that stores recovery points created over time and provides an interface to perform backup related operations. These operations include taking on-demand backups, performing restores, and creating backup policies. It offers backup support for Azure virtual machines, SQL workloads, and on-premises VMware machines.
+
+## Table Usage Guide
+
+The 'azure_recovery_services_vault' table provides insights into Recovery Services Vaults within Azure Recovery Services. As a DevOps engineer, explore vault-specific details through this table, such as the vault's location, resource group, subscription ID, and associated tags. Utilize it to uncover information about each vault, including its storage redundancy and soft delete feature status. The schema presents a range of attributes of the Recovery Services Vault for your analysis, like the vault name, type, SKU name, and provisioning state.
 
 ## Examples
 
 ### Basic info
+Explore the different types of recovery services vaults available in various regions of your Azure environment. This can help in managing and organizing your backup and disaster recovery resources effectively.
 
 ```sql
 select
@@ -17,6 +27,7 @@ from
 ```
 
 ### List failed recovery service vaults
+Discover the segments that have unsuccessful recovery service vaults in Azure. This is useful to pinpoint specific locations where the provisioning process failed, allowing for targeted troubleshooting and resolution.
 
 ```sql
 select

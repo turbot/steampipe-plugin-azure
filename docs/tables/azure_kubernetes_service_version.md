@@ -1,12 +1,20 @@
-# Table: azure_kubernetes_service_version
+---
+title: "Steampipe Table: azure_kubernetes_service_version - Query Azure Kubernetes Services using SQL"
+description: "Allows users to query Azure Kubernetes Service Versions."
+---
 
-Azure AKS (Azure Kubernetes Service) orchestrator is a managed container orchestration service provided by Microsoft Azure. It simplifies the deployment, management, and scaling of containerized applications using Kubernetes. AKS allows you to deploy and manage containerized applications without the need to manage the underlying infrastructure. It provides automated Kubernetes upgrades, built-in monitoring and diagnostics, and seamless integration with other Azure services. AKS enables developers and DevOps teams to focus on application development and deployment, while Azure takes care of the underlying Kubernetes infrastructure.
+# Table: azure_kubernetes_service_version - Query Azure Kubernetes Services using SQL
 
-**Note:** You need to pass the `location` in the where clause to query this table.
+Azure Kubernetes Service (AKS) is a managed container orchestration service provided by Microsoft Azure. AKS simplifies the deployment, scaling, and operations of Kubernetes by hosting the Kubernetes environment on Azure. With AKS, you can easily manage and scale your applications using Kubernetes, without the complexities of handling the underlying infrastructure.
+
+## Table Usage Guide
+
+The 'azure_kubernetes_service_version' table provides insights into the versions of Azure Kubernetes Services (AKS). As a DevOps engineer, explore version-specific details through this table, including the release date, Kubernetes version, and whether it's a preview version. Utilize it to uncover information about the availability of different versions, their status, and the upgrade paths. The schema presents a range of attributes of the AKS version for your analysis, like the version name, release date, and whether it's a default version.
 
 ## Examples
 
 ### Basic info
+Explore which versions of Azure Kubernetes Service are available in the 'eastus2' location. This could be useful when planning deployments or upgrades in that specific region.
 
 ```sql
 select
@@ -22,6 +30,7 @@ where
 ```
 
 ### List major kubernetes versions
+Explore major versions of Kubernetes services deployed in the 'eastus2' region of Azure. This can help you understand the types of Kubernetes orchestrators used and their versions for better management and updates.
 
 ```sql
 select
@@ -38,6 +47,7 @@ and
 ```
 
 ### List kubernetes orchestrator type
+Determine the areas in which Kubernetes is used as the orchestrator type within the Azure Kubernetes service in the East US 2 region to understand its prevalence and preview status.
 
 ```sql
 select
@@ -55,6 +65,7 @@ and
 ```
 
 ### List kubernetes versions that are not in preview
+Explore the various versions of Kubernetes that are fully released and available for use in the East US 2 region. This can be useful for planning and implementing your Kubernetes deployments in that specific region.
 
 ```sql
 select
@@ -72,6 +83,7 @@ and
 ```
 
 ### Get upgrade details of each kubernetes version
+Explore the details of each Kubernetes upgrade, including the orchestrator type and version, and understand whether it is a preview version. This is particularly useful for managing and planning upgrades in the 'eastus2' location.
 
 ```sql
 select

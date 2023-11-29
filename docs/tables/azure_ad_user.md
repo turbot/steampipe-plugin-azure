@@ -7,6 +7,7 @@ Azure Active Directory (Azure AD) is Microsoft's cloud-based identity and access
 ## Examples
 
 ### Basic active directory user info
+Explore user details within your Azure Active Directory to gain insights into their status and contact information. This can be particularly useful for managing user access and maintaining up-to-date records.
 
 ```sql
 select
@@ -22,6 +23,7 @@ from
 
 
 ### List of guest users in the active directory
+Determine the areas in which guest users are active within your directory. This can help in managing user access and maintaining security protocols.
 
 ```sql
 select
@@ -38,6 +40,7 @@ where
 
 
 ### Password profile info of each user
+Determine the areas in which user password policies are enforced and where users are required to change their passwords at their next login. This helps to understand and manage user security within your Azure Active Directory.
 
 ```sql
 select
@@ -48,4 +51,3 @@ select
 from
   azure_ad_user;
 ```
-

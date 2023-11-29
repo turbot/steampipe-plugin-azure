@@ -1,10 +1,20 @@
-# Table: azure_machine_learning_workspace
+---
+title: "Steampipe Table: azure_machine_learning_workspace - Query Azure Machine Learning Workspaces using SQL"
+description: "Allows users to query Azure Machine Learning Workspaces."
+---
 
-The workspace is the top-level resource for Azure Machine Learning, providing a centralized place to work with all the artifacts you create when you use Azure Machine Learning. The workspace keeps a history of all training runs, including logs, metrics, output, and a snapshot of your scripts. You use this information to determine which training run produces the best model.
+# Table: azure_machine_learning_workspace - Query Azure Machine Learning Workspaces using SQL
+
+Azure Machine Learning is a cloud-based service for creating and managing machine learning solutions. It's designed to help data scientists and developers to prepare data, develop experiments, and deploy models at cloud scale. The service supports a wide range of open-source machine learning frameworks like TensorFlow, PyTorch, and scikit-learn.
+
+## Table Usage Guide
+
+The 'azure_machine_learning_workspace' table provides insights into Machine Learning Workspaces within Azure Machine Learning. As a data scientist or developer, explore workspace-specific details through this table, including SKUs, identities, and associated metadata. Utilize it to uncover information about workspaces, such as their provisioning states, their associated application insights, and their linked storage accounts. The schema presents a range of attributes of the Machine Learning Workspace for your analysis, like the workspace name, creation time, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the status and types of your Azure Machine Learning workspaces to better understand your resource allocation and management. This can help you identify areas for optimization or reallocation to improve your machine learning workflows.
 
 ```sql
 select
@@ -17,6 +27,7 @@ from
 ```
 
 ### List system assigned identity type workspace
+Gain insights into Azure Machine Learning Workspaces that are using system-assigned identities. This is beneficial for managing and auditing security and access controls within your Azure environment.
 
 ```sql
 select
@@ -31,6 +42,7 @@ where
 ```
 
 ### List key vault used by workspaces with soft deletion disabled
+Explore which workspaces are using key vaults that have soft deletion disabled. This can help identify potential areas of risk and ensure data protection measures are in place.
 
 ```sql
 select

@@ -1,10 +1,20 @@
-# Table: azure_firewall_policy
+---
+title: "Steampipe Table: azure_firewall_policy - Query Azure Firewall Policies using SQL"
+description: "Allows users to query Azure Firewall Policies"
+---
 
-Azure Firewall Policy is the recommended method to configure your Azure Firewall. It's a global resource that can be used across multiple Azure Firewall instances in Secured Virtual Hubs and Hub Virtual Networks. Policies work across regions and subscriptions.
+# Table: azure_firewall_policy - Query Azure Firewall Policies using SQL
+
+Azure Firewall Policy is a configuration schema for Azure Firewall that can be used across multiple instances. It provides threat intelligence, service tags, application rules, and network rules as top level properties. Firewall policies can be managed independently from firewall instances, allowing for centralized management of your firewall security rules.
+
+## Table Usage Guide
+
+The 'azure_firewall_policy' table provides insights into Firewall Policies within Azure Firewall. As a security engineer, explore policy-specific details through this table, including threat intelligence, service tags, application rules, and network rules. Utilize it to uncover information about policies, such as those associated with specific firewall instances, the rules they enforce, and their overall configuration. The schema presents a range of attributes of the Firewall Policy for your analysis, like the policy ID, name, type, subscription ID, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which firewall policies are currently active within your Azure environment. This can help you assess your security measures and identify any areas that may need additional coverage or modifications.
 
 ```sql
 select
@@ -21,6 +31,7 @@ from
 ```
 
 ### List policies that are in failed state
+Identify the firewall policies that are currently in a failed state. This can assist in troubleshooting and maintaining the overall health of your Azure firewall policies.
 
 ```sql
 select
@@ -35,6 +46,7 @@ where
 ```
 
 ### Get firewall details of each policy
+Determine the details of each firewall policy in Azure, including the number of public IP addresses each firewall has. This is useful for understanding the scope and scale of your firewall protection.
 
 ```sql
 select
@@ -52,6 +64,7 @@ where
 ```
 
 ### Get DNS setting details of each policy
+Explore the DNS settings of each policy to understand whether a proxy is enabled or required for network rules. This can be useful for analyzing and managing network security configurations.
 
 ```sql
 select
@@ -65,6 +78,7 @@ from
 ```
 
 ### List threat intel whitelist IP addresses of firewall policies
+Explore the firewall policies that have specific IP addresses whitelisted, aiding in the understanding of threat intelligence and enhancing security measures.
 
 ```sql
 select
@@ -77,6 +91,7 @@ from
 ```
 
 ### List threat intel whitelist FQDNs of firewall policies
+Explore the whitelist domain names of firewall policies to understand potential safe sources of traffic in your Azure environment. This can help you maintain a secure network by identifying trusted entities.
 
 ```sql
 select

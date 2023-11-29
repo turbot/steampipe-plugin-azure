@@ -1,10 +1,20 @@
-# Table: azure_lb_probe
+---
+title: "Steampipe Table: azure_lb_probe - Query Azure Load Balancer Probes using SQL"
+description: "Allows users to query Azure Load Balancer Probes."
+---
 
-When using load-balancing rules with Azure Load Balancer, you need to specify health probes to allow Load Balancer to detect the backend endpoint status. The configuration of the health probe and probe responses determine which backend pool instances will receive new flows. You can use health probes to detect the failure of an application on a backend endpoint.
+# Table: azure_lb_probe - Query Azure Load Balancer Probes using SQL
+
+Azure Load Balancer is a high-performance, ultra low-latency Layer 4 load-balancing service for all UDP and TCP protocols. Probes in Azure Load Balancer monitor the health of the resources in your load balancer's backend pool. They automatically detect failures and take steps to ensure that traffic only goes to healthy resources.
+
+## Table Usage Guide
+
+The 'azure_lb_probe' table provides insights into the probes within Azure Load Balancer. As a DevOps engineer, explore probe-specific details through this table, including protocol, port, request path, and associated metadata. Utilize it to uncover information about probes, such as their interval and timeout settings, the number of unhealthy responses before marking a resource as "unhealthy", and the load balancer that each probe is associated with. The schema presents a range of attributes of the probe for your analysis, like the probe's ID, name, and type, as well as the resource group and subscription it belongs to.
 
 ## Examples
 
 ### Basic info
+Explore which Azure load balancer probes are currently active. This can help in determining the operational status and managing the load balancing configuration effectively.
 
 ```sql
 select
@@ -19,6 +29,7 @@ from
 ```
 
 ### List failed load balancer probes
+Discover the segments that have failed load balancer probes to identify potential issues with your Azure load balancer setup. This could help in troubleshooting and enhancing the overall performance and reliability of your network infrastructure.
 
 ```sql
 select
@@ -33,6 +44,7 @@ where
 ```
 
 ### List load balancer probes order by interval
+Analyze the settings to understand the frequency of load balancer probes within your Azure environment. This can help optimize network performance by identifying probes with unusually high or low intervals.
 
 ```sql
 select

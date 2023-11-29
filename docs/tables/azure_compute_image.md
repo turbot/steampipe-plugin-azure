@@ -1,10 +1,21 @@
-# Table: azure_compute_image
+---
+title: "Steampipe Table: azure_compute_image - Query Azure Compute Images using SQL"
+description: "Allows users to query Azure Compute Images."
+---
 
-Compute Engine offers many preconfigured public images that have compatible Linux or Windows operating systems. Compute Engine uses selected image to create a persistent boot disk for each instance.
+# Table: azure_compute_image - Query Azure Compute Images using SQL
+
+Azure Compute Images are resources within Microsoft Azure that represent a virtual machine's operating system, applications, and configuration settings. These images can be used to create multiple identical virtual machines within Azure. They provide an efficient way to package, provision, and manage VMs in your cloud environment.
+
+## Table Usage Guide
+
+The 'azure_compute_image' table provides insights into Azure Compute Images. As a DevOps engineer, explore image-specific details through this table, including publisher details, offer information, and associated metadata. Utilize it to uncover information about images, such as those used in multiple VM deployments, the publishers of these images, and the verification of image configurations. The schema presents a range of attributes of the Azure Compute Image for your analysis, like the image name, resource group, publisher, offer, SKU, and version.
+
 
 ## Examples
 
 ### Basic compute image info
+Explore the types and regional distribution of virtual machine images in your Azure environment. This can help in understanding the configuration and usage patterns of virtual machines, thereby aiding in resource management and optimization.
 
 ```sql
 select
@@ -19,6 +30,7 @@ from
 
 
 ### Storage profile's OS disk info of each compute image
+Determine the storage characteristics of each compute image in your Azure environment. This could help optimize storage utilization and cost by revealing details such as disk size, snapshot ID, storage account type, state, and disk type.
 
 ```sql
 select
@@ -34,6 +46,7 @@ from
 
 
 ### List of compute images where disk storage type is Premium_LRS
+Determine the areas in which your compute images are using premium disk storage type. This query can be useful for understanding your storage usage and optimizing costs.
 
 ```sql
 select
@@ -51,6 +64,7 @@ where
 
 
 ### List of compute images which do not have owner or app_id tag key
+Discover the segments that lack either an 'owner' or 'app_id' tag key within your Azure compute images. This query can be used to identify potential gaps in your image tagging strategy, which can help improve resource tracking and management.
 
 ```sql
 select

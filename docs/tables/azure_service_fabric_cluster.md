@@ -1,10 +1,20 @@
-# Table: azure_service_fabric_cluster
+---
+title: "Steampipe Table: azure_service_fabric_cluster - Query Azure Service Fabric Clusters using SQL"
+description: "Allows users to query Azure Service Fabric Clusters."
+---
 
-An Azure Service Fabric cluster is a network-connected set of virtual or physical machines into which your microservices are deployed and managed. It rebalances the partition replicas and instances across the increase or decreased number of nodes to make better use of the hardware on each node. It allows for the creation of clusters on any VMs or computers running Windows Server or Linux.
+# Table: azure_service_fabric_cluster - Query Azure Service Fabric Clusters using SQL
+
+Azure Service Fabric is a distributed systems platform that makes it easy to package, deploy, and manage scalable and reliable microservices and containers. It also provides comprehensive runtime and lifecycle management capabilities to applications that are composed of these microservices or containers. This platform simplifies the delivery of cloud services and provides developers with a comprehensive, agnostic and intrinsically secure approach to building, scaling and updating cloud applications.
+
+## Table Usage Guide
+
+The 'azure_service_fabric_cluster' table provides insights into Service Fabric Clusters within Azure Service Fabric. As a DevOps engineer, explore cluster-specific details through this table, including cluster code versions, reliability levels, upgrade modes, and associated metadata. Utilize it to uncover information about clusters, such as those with specific reliability levels, the upgrade modes of the clusters, and the verification of cluster health policies. The schema presents a range of attributes of the Service Fabric Cluster for your analysis, like the cluster ID, creation date, upgrade mode, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which Azure Service Fabric Clusters are being used by reviewing their basic information. This helps in managing resources and understanding their provisioning states and upgrade modes.
 
 ```sql
 select
@@ -21,6 +31,7 @@ from
 ```
 
 ### List azure active directory details for clusters
+Explore the Azure Active Directory details associated with your clusters to understand the client and cluster applications. This can be beneficial for assessing the elements within your Azure Service Fabric Cluster, such as the tenant ID.
 
 ```sql
 select
@@ -34,6 +45,7 @@ from
 ```
 
 ### List certificate details for clusters
+Discover the segments that have specific certificate details for clusters. This can be useful in identifying potential security vulnerabilities or ensuring compliance with organizational policies.
 
 ```sql
 select
@@ -47,6 +59,7 @@ from
 ```
 
 ### List fabric setting details for clusters
+Analyze the settings to understand the configuration details for specific clusters within the Azure Service Fabric. This can help in managing and troubleshooting your service fabric clusters effectively.
 
 ```sql
 select
@@ -60,6 +73,7 @@ from
 ```
 
 ### List node type details for clusters
+Assess the configuration of cluster nodes to better understand their connection points, durability levels, and port settings. This information can be useful for optimizing resource allocation and enhancing network security.
 
 ```sql
 select

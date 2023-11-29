@@ -1,10 +1,20 @@
-# Table: azure_frontdoor
+---
+title: "Steampipe Table: azure_frontdoor - Query Azure Front Door Services using SQL"
+description: "Allows users to query Azure Front Door Services."
+---
 
-Azure Front Door is a global, scalable entry-point that uses the Microsoft global edge network to create fast, secure, and widely scalable web applications. With Front Door, you can transform your global consumer and enterprise applications into robust, high-performing personalized modern applications with contents that reach a global audience through Azure.
+# Table: azure_frontdoor - Query Azure Front Door Services using SQL
+
+Azure Front Door is a scalable and secure entry point for fast delivery of your global web applications. It provides global load balancing and site acceleration service for fast and reliable application delivery at global scale. It offers SSL offload, path-based routing, fast failover, and many more capabilities.
+
+## Table Usage Guide
+
+The 'azure_frontdoor' table provides insights into Front Door Services within Azure. As a DevOps engineer, explore service-specific details through this table, including routing rules, backend pools, frontend endpoints, and associated metadata. Utilize it to uncover information about services, such as those with specific routing rules, the health probes between backend pools, and the verification of frontend endpoints. The schema presents a range of attributes of the Front Door Service for your analysis, like the service ID, creation date, enabled state, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the basic details of your Azure Front Door service to understand its current state and type. This can help you assess the overall setup and configuration for effective resource management.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List backend pools settings details
+Explore the configuration settings of backend pools in an Azure Front Door service. This allows you to assess security measures, like enforcing certificate name checks, and performance parameters, such as send/receive timeout durations.
 
 ```sql
 select
@@ -30,6 +41,7 @@ from
 ```
 
 ### List routing rules details
+Determine the specific details of routing rules, such as their enabled state, resource state, accepted protocols, and associated endpoints. This can assist in understanding how traffic is being directed and managed within your Azure Front Door service.
 
 ```sql
 select
@@ -49,6 +61,7 @@ from
 ```
 
 ### List load balancing settings details
+Explore the specifics of load balancing settings to assess their properties and understand their configuration, which is crucial for managing traffic distribution and ensuring efficient resource utilization.
 
 ```sql
 select
@@ -66,6 +79,7 @@ from
 ```
 
 ### List frontend endpoints details
+Explore the details of frontend endpoints to gain insights into their properties such as host name, session affinity enabled state, and resource state. This can be useful in understanding and managing the configuration of these endpoints, especially in terms of their security settings like the web application firewall policy link.
 
 ```sql
 select
@@ -84,6 +98,7 @@ from
 ```
 
 ### List health probe settings details
+Explore the configuration of health probe settings to understand how they are set up and functioning. This can help in assessing the performance and reliability of your network connections.
 
 ```sql
 select

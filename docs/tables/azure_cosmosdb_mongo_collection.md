@@ -1,12 +1,20 @@
-# Table: azure_cosmosdb_mongo_collection
+---
+title: "Steampipe Table: azure_cosmosdb_mongo_collection - Query Azure Cosmos DB Mongo Collections using SQL"
+description: "Allows users to query Azure Cosmos DB Mongo Collections."
+---
 
-An Azure Cosmos DB container is where data is stored. Unlike most relational databases which scale up with larger VM sizes, Azure Cosmos DB scales out. A collection is a grouping of MongoDB documents.
+# Table: azure_cosmosdb_mongo_collection - Query Azure Cosmos DB Mongo Collections using SQL
 
-**You must specify the CosmosDB Mongo Database Name** in the `where` clause (`where database_name='<cosmosdb_mongo_database_name>'`).
+Azure Cosmos DB is a globally distributed, multi-model database service for managing data at scale. It provides native support for NoSQL and OSS APIs, including MongoDB, Cassandra, Gremlin, et al. Azure Cosmos DB Mongo Collections are part of the MongoDB API, which allows users to build and manage MongoDB applications quickly and efficiently in Azure Cosmos DB.
+
+## Table Usage Guide
+
+The 'azure_cosmosdb_mongo_collection' table provides insights into Mongo Collections within Azure Cosmos DB. As a database administrator, explore collection-specific details through this table, including sharding, indexing, and associated metadata. Utilize it to uncover information about collections, such as their partition key, default time to live, and indexing policy. The schema presents a range of attributes of the Mongo Collection for your analysis, like the resource ID, name, type, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore which Azure CosmosDB MongoDB collections are associated with certain databases. This can help in managing resources, identifying potential bottlenecks, and optimizing database performance.
 
 ```sql
 select
@@ -25,6 +33,7 @@ where
 ```
 
 ### Collection count by cosmos DB database name
+Gain insights into the number of collections associated with each Cosmos DB database in Azure. This can be useful for understanding the distribution of collections across databases.
 
 ```sql
 select
@@ -40,6 +49,7 @@ group by
 ```
 
 ### Get throughput settings for each collection
+Assess the elements within each collection to understand the throughput settings. This allows you to manage resources more efficiently by identifying the maximum and minimum throughput, providing insights into the performance and scalability of your Azure Cosmos DB Mongo Database.
 
 ```sql
 select
@@ -59,6 +69,7 @@ where
 ```
 
 ### Get index keys in each collection
+Explore which index keys are present in each collection within your Azure Cosmos DB MongoDB databases. This can help you optimize your database queries and improve overall performance.
 
 ```sql
 select

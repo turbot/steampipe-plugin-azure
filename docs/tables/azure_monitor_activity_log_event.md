@@ -1,21 +1,20 @@
-# Table: azure_monitor_activity_log_event
+---
+title: "Steampipe Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL"
+description: "Allows users to query Azure Monitor Activity Log Events"
+---
 
-Azure Monitor Activity Log is a service in Microsoft Azure that provides insights into the operations that have been performed on resources in your Azure subscription. It captures a comprehensive set of data about each operation, including who performed the operation, what resources were involved, what operation was performed, and when it occurred. This information is crucial for auditing, compliance, and troubleshooting purposes.
+# Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL
 
-**Important notes:**
+Azure Monitor collects, analyzes, and acts on telemetry data from your Azure and on-premises environments. It helps you understand how your applications are performing and proactively identifies issues affecting them and the resources they depend on. Activity Log Events in Azure Monitor provides insight into subscription-level events that have occurred in Azure.
 
-- This table can provide event details for the previous 90 days.
-- For improved performance, it is advised that you use the optional qual `event_timestamp` to limit the result set to a specific time period.
-- This table supports optional quals. Queries with optional quals are optimized to use Monitor Activity Log filters. Optional quals are supported for the following columns:
-  - `event_timestamp`
-  - `resource_group`
-  - `correlation_id`
-  - `resource_id`
-  - `resource_provider_name`
+## Table Usage Guide
+
+The 'azure_monitor_activity_log_event' table provides insights into activity log events within Azure Monitor. As a DevOps engineer, explore event-specific details through this table, including event categories, event data, and associated metadata. Utilize it to uncover information about events, such as those related to service health, resource management, and security. The schema presents a range of attributes of the activity log event for your analysis, like the event timestamp, resource group, event ID, and associated tags.
 
 ## Examples
 
 ### Basic info
+Explore the Azure Monitor activity log to gain insights into the events occurring in your Azure resources. This query can help you understand the scope and impact of each event, making it easier to manage your resources and respond to issues.
 
 ```sql
 select
@@ -31,6 +30,7 @@ from
 ```
 
 ### List events with event-level critical
+Identify instances where critical events have occurred in your Azure Monitor activity log. This could be useful in troubleshooting and understanding the severity of issues within your Azure environment.
 
 ```sql
 select
@@ -47,6 +47,7 @@ where
 ```
 
 ### List events that occurred over the last five minutes
+This query is used to monitor recent activities within a system, specifically events that have occurred in the last five minutes. It's useful for real-time tracking and immediate response to any critical changes or anomalies in the system.
 
 ```sql
 select
@@ -63,6 +64,7 @@ where
 ```
 
 ### List ordered events that occurred in the past five to ten minutes
+Explore the sequence of events that happened in the recent past to understand any system changes or unusual activity. This allows for real-time monitoring and swift response to any unexpected events.
 
 ```sql
 select
@@ -81,6 +83,7 @@ order by
 ```
 
 ### Get authorization details for events
+Determine the authorization details associated with specific events to gain insights into the actions, roles, and scopes involved. This can be beneficial for understanding the security context of activities within your Azure environment.
 
 ```sql
 select
@@ -93,6 +96,7 @@ from
 ```
 
 ### Get HTTP request details of events
+Analyze the details of HTTP requests associated with specific events to understand their operational patterns and time-stamps. This can help in tracking the client's request ID, IP address, and the methods used, which could be beneficial in enhancing security and monitoring network traffic.
 
 ```sql
 select
@@ -110,6 +114,7 @@ from
 ## Filter examples
 
 ### List evens by resource group
+Explore the activities within a specific resource group in Azure Monitor, helping you understand the operations and status of resources for effective management and troubleshooting.
 
 ```sql
 select
@@ -126,6 +131,7 @@ where
 ```
 
 ### List events for a resource provider
+Determine the areas in which specific events are occurring for a particular resource provider in Azure. This can help in analyzing the operation status and type of resources being used, which can be useful for optimizing resource allocation and troubleshooting issues.
 
 ```sql
 select
@@ -143,6 +149,7 @@ where
 ```
 
 ### List events for a particular resource
+Explore the history of events tied to a specific resource within Azure Monitor. This is useful for tracking changes, troubleshooting issues, and auditing activities related to that resource.
 
 ```sql
 select

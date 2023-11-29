@@ -1,10 +1,20 @@
-# Table: azure_mssql_managed_instance
+---
+title: "Steampipe Table: azure_mssql_managed_instance - Query Azure Managed SQL Server Instances using SQL"
+description: "Allows users to query Azure Managed SQL Server Instances."
+---
 
-Azure SQL Managed Instance is the intelligent, scalable cloud database service that combines the broadest SQL Server database engine compatibility with all the benefits of a fully managed and evergreen platform as a service.
+# Table: azure_mssql_managed_instance - Query Azure Managed SQL Server Instances using SQL
+
+An Azure Managed SQL Server Instance is a fully managed relational database service provided by Microsoft Azure. It offers the broadest SQL Server engine compatibility and automates most of the database management functions such as upgrading, patching, backups, and monitoring. It also provides built-in intelligence that learns app patterns and adapts to maximize performance, reliability, and data protection.
+
+## Table Usage Guide
+
+The 'azure_mssql_managed_instance' table provides insights into Managed SQL Server Instances within Microsoft Azure. As a Database Administrator, explore instance-specific details through this table, including the instance's administrative settings, network settings, and associated metadata. Utilize it to uncover information about instances, such as their current state, the number of vCores, the maximum storage size, and the license type. The schema presents a range of attributes of the Managed SQL Server Instance for your analysis, like the instance's ID, name, type, location, and SKU.
 
 ## Examples
 
 ### Basic info
+Explore the status and security settings of your managed instances in Azure's SQL service. This can be useful in assessing compliance with your organization's security policies.
 
 ```sql
 select
@@ -18,6 +28,7 @@ from
 ```
 
 ### List managed instances with public endpoint enabled
+Discover the segments that have the public data endpoint enabled in your managed instances. This can help identify potential security vulnerabilities, as these instances can be accessed publicly.
 
 ```sql
 select
@@ -33,6 +44,7 @@ where
 ```
 
 ### List security alert policies of the managed instances
+Explore the security alert policies of managed instances to understand their creation time, the alerts that have been disabled, and the email addresses linked to the policies. This can help in assessing the current security measures and making necessary improvements for better data protection.
 
 ```sql
 select
