@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/consumption/mgmt/2019-10-01/consumption"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/consumption/mgmt/consumption"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -145,9 +145,11 @@ func listReservedInstanceRecomendations(ctx context.Context, d *plugin.QueryData
 	reservedInstanceClient := consumption.NewReservationRecommendationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	reservedInstanceClient.Authorizer = session.Authorizer
 
+	// E.g: properties/scope eq 'Single' AND properties/lookBackPeriod eq 'Last7Days' AND properties/resourceType eq 'VirtualMachines'"
 	filter := buildReservationRecomendationFilter(d.Quals)
 
-	result, err := reservedInstanceClient.List(ctx, "subscriptions/"+subscriptionID, filter)
+	recommendationScope := "/subscriptions/"+subscriptionID+"/"
+	result, err := reservedInstanceClient.List(ctx, recommendationScope, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -362,9 +364,9 @@ func buildReservationRecomendationFilter(quals plugin.KeyColumnQualMap) string {
 			for _, q := range quals[columnName].Quals {
 				if q.Operator == "=" {
 					if filter == "" {
-						filter = filterName + " eq " + q.Value.GetStringValue()
+						filter = filterName + " eq " + "'"+q.Value.GetStringValue()+"'"
 					} else {
-						filter += " AND " + filterName + " eq " + q.Value.GetStringValue()
+						filter += " AND " + filterName + " eq " + "'"+q.Value.GetStringValue()+"'"
 					}
 				}
 			}
