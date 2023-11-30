@@ -251,8 +251,6 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	}
 
-	plugin.Logger(ctx).Error("List Key Vaults ====>>> ", "OK")
-
 	return nil, err
 }
 
