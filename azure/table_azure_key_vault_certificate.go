@@ -248,7 +248,6 @@ func listKeyVaultCertificates(ctx context.Context, d *plugin.QueryData, h *plugi
 //// HYDRATE FUNCTIONS
 
 func getKeyVaultCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getKeyVaultCertificate")
 
 	var vaultName, name string
 	if h.Item != nil {
@@ -270,6 +269,7 @@ func getKeyVaultCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.
 	// Create session
 	session, err := GetNewSession(ctx, d, "VAULT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_key_vault_certificate.getKeyVaultCertificate", "session_error", err)
 		return nil, err
 	}
 
@@ -280,6 +280,7 @@ func getKeyVaultCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	op, err := client.GetCertificate(ctx, vaultURI, name, "")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_key_vault_certificate.getKeyVaultCertificate", "api_error", err)
 		return nil, err
 	}
 
