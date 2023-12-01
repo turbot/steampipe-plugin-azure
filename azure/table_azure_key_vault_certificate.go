@@ -197,6 +197,12 @@ func listKeyVaultCertificates(ctx context.Context, d *plugin.QueryData, h *plugi
 	// Get the details of vault
 	vault := h.Item.(keyVaultp1.Resource)
 
+	vaultName := d.EqualsQualString("vault_name")
+
+	if vaultName != "" && vaultName != *vault.Name{
+		return nil, nil
+	}
+
 	// Create session
 	session, err := GetNewSession(ctx, d, "VAULT")
 	if err != nil {
@@ -256,7 +262,6 @@ func getKeyVaultCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.
 		vaultName = strings.Split(splitID[2], ".")[0]
 		name = splitID[4]
 
-		// TODO need to check this condition
 		// Operation get is not allowed on a disabled certificate
 		if !*data.Attributes.Enabled {
 			return nil, nil
