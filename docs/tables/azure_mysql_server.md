@@ -395,11 +395,6 @@ where
 ```
 
 ```sql+sqlite
-The PostgreSQL query provided does not use any PostgreSQL specific functions or data types, nor does it use any JSON functions or joins. Therefore, it can be directly used in SQLite without any modifications.
-
-Here is the SQLite query:
-
-```sql
 select
   name,
   id,
@@ -410,5 +405,4 @@ from
 where
   resource_group = 'demo'
   and name = 'server-test-for-pr';
-```
 ```

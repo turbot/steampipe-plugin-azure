@@ -58,11 +58,8 @@ where
 ```
 
 ```sql+sqlite
-select
-  name,
-  role_name,
-  json_extract(scope.value, '
-
+Error: The corresponding SQLite query is unavailable.
+```
 ### Permissions of all custom roles
 Explore which permissions are assigned to all custom roles within your Azure environment. This can help in maintaining security standards and ensuring that roles are not granted excessive permissions.
 
@@ -83,63 +80,5 @@ where
 ```
 
 ```sql+sqlite
-select
-  name,
-  role_name,
-  role_type,
-  json_extract(permission.value, '$.actions') as action,
-  json_extract(permission.value, '$.dataActions') as data_action,
-  json_extract(permission.value, '$.notActions') as no_action,
-  json_extract(permission.value, '$.notDataActions') as not_data_actions
-from
-  azure_role_definition,
-  json_each(permissions) as permission
-where
-  role_type = 'CustomRole';
-```
-)
-from
-  azure_role_definition,
-  json_each(assignable_scopes) as scope
-where
-  json_extract(scope.value, '
-
-### Permissions of all custom roles
-Explore the permissions assigned to all custom roles in your Azure environment. This can help you understand access controls and identify potential security risks.
-
-```sql
-select
-  name,
-  role_name,
-  role_type,
-  permission -> 'actions' as action,
-  permission -> 'dataActions' as data_action,
-  permission -> 'notActions' as no_action,
-  permission -> 'notDataActions' as not_data_actions
-from
-  azure_role_definition
-  cross join jsonb_array_elements(permissions) as permission
-where
-  role_type = 'CustomRole';
-```
-) = '/';
-```
-
-### Permissions of all custom roles
-Analyze the permissions assigned to all custom roles in your Azure environment. This can help in identifying roles with excessive permissions, thereby assisting in maintaining a principle of least privilege.
-
-```sql
-select
-  name,
-  role_name,
-  role_type,
-  permission -> 'actions' as action,
-  permission -> 'dataActions' as data_action,
-  permission -> 'notActions' as no_action,
-  permission -> 'notDataActions' as not_data_actions
-from
-  azure_role_definition
-  cross join jsonb_array_elements(permissions) as permission
-where
-  role_type = 'CustomRole';
+Error: The corresponding SQLite query is unavailable.
 ```
