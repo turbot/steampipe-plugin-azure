@@ -11,6 +11,9 @@ Azure Kubernetes Service (AKS) is a managed container orchestration service prov
 
 The `azure_kubernetes_service_version` table provides insights into the different versions of Azure Kubernetes Service available. As a DevOps engineer or system administrator, you can use this table to understand the features, improvements, and fixes associated with each version of the service. This can help in making informed decisions when planning for version upgrades or when troubleshooting issues related to specific versions.
 
+**Important notes:**
+- You must specify the `location` in the `where` clause to query this table.
+
 ## Examples
 
 ### Basic info

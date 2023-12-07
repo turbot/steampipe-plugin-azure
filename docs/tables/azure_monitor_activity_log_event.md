@@ -11,6 +11,16 @@ Azure Monitor Activity Log Events is a feature within Microsoft Azure that provi
 
 The `azure_monitor_activity_log_event` table provides insights into the operational activities within Azure Monitor. As a system administrator or a DevOps engineer, explore event-specific details through this table, including event category, event initiation, and associated metadata. Utilize it to uncover information about events, such as those related to service health, resource health, and administrative operations.
 
+**Important notes:**
+- This table can provide event details for the previous 90 days.
+- For improved performance, it is advised that you use the optional qual `event_timestamp` to limit the result set to a specific time period.
+- This table supports optional quals. Queries with optional quals are optimized to use Monitor Activity Log filters. Optional quals are supported for the following columns:
+  - `event_timestamp`
+  - `resource_group`
+  - `correlation_id`
+  - `resource_id`
+  - `resource_provider_name`
+
 ## Examples
 
 ### Basic info

@@ -11,6 +11,9 @@ Azure Cosmos DB is a globally distributed, multi-model database service for any 
 
 The `azure_cosmosdb_mongo_collection` table provides insights into Mongo Collections within Azure Cosmos DB. As a database administrator, explore collection-specific details through this table, including the collection's name, resource group, account name, and more. Utilize it to uncover information about collections, such as their properties, the associated database, and the verification of their configurations.
 
+**Important notes:**
+- You must specify the `database_name = '<cosmosdb_mongo_database_name>'` in the `where` clause to query this table.
+
 ## Examples
 
 ### Basic info

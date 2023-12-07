@@ -1,15 +1,15 @@
 ---
-title: "Steampipe Table: azure_application_gateway - Query OCI Azure Application Gateways using SQL"
+title: "Steampipe Table: azure_application_gateway - Query Azure Application Gateways using SQL"
 description: "Allows users to query Azure Application Gateways, providing detailed information about the configuration and status of each gateway."
 ---
 
-# Table: azure_application_gateway - Query OCI Azure Application Gateways using SQL
+# Table: azure_application_gateway - Query Azure Application Gateways using SQL
 
 Azure Application Gateway is a web traffic load balancer that enables you to manage traffic to your web applications. It operates at the application layer (Layer 7) of the Open Systems Interconnection (OSI) network stack, and can route traffic based on various attributes of an HTTP request. The gateway also provides SSL offloading, which removes the SSL-based encryption from incoming traffic.
 
 ## Table Usage Guide
 
-The `azure_application_gateway` table provides insights into Application Gateways within OCI Azure. As a Network Administrator, explore gateway-specific details through this table, including backend pools, listeners, rules, and associated metadata. Utilize it to uncover information about gateways, such as their health status, configured rules, and the verification of SSL certificates.
+The `azure_application_gateway` table provides insights into Application Gateways within Azure. As a Network Administrator, explore gateway-specific details through this table, including backend pools, listeners, rules, and associated metadata. Utilize it to uncover information about gateways, such as their health status, configured rules, and the verification of SSL certificates.
 
 ## Examples
 
@@ -38,7 +38,7 @@ from
   azure_application_gateway;
 ```
 
-### List web application firewall configurations for application gateway 
+### List web application firewall configurations for application gateway
 Determine the configurations of your web application firewall for an application gateway. This query aids in understanding the firewall's operational settings, such as enabled status, file upload limits, and rule set details, which are crucial for maintaining optimal security and performance.
 
 ```sql+postgres
@@ -75,7 +75,7 @@ from
   azure_application_gateway;
 ```
 
-### List http listeners for application gateway 
+### List http listeners for application gateway
 Explore the configuration of HTTP listeners in an application gateway to understand the protocol requirements and server name indication settings. This can be particularly useful in identifying potential security weak points and optimizing network performance.
 
 ```sql+postgres
@@ -108,7 +108,7 @@ from
   json_each(http_listeners) as listeners;
 ```
 
-### List backend http settings collection for application gateway 
+### List backend http settings collection for application gateway
 Analyze the settings to understand the configuration of your application gateway's backend HTTP settings. This could be useful for assessing aspects like affinity based on cookies, host name selection from backend address, port, protocol, and request timeout.
 
 ```sql+postgres
@@ -143,7 +143,7 @@ from
   json_each(backend_http_settings_collection) as settings;
 ```
 
-### List frontend IP configurations for application gateway 
+### List frontend IP configurations for application gateway
 This query is useful for gaining insights into the IP configurations of your application gateway in Azure. It allows you to understand both the public and private allocation methods, which is critical for managing network access and security.
 
 ```sql+postgres

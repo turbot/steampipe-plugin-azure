@@ -11,6 +11,9 @@ Azure Management Groups offer a level of scope above subscriptions. They provide
 
 The `azure_management_group` table provides insights into Management Groups within Azure. As a system administrator or a DevOps engineer, explore group-specific details through this table, including group hierarchy, subscription associations, and associated metadata. Utilize it to uncover information about groups, such as their structure, the subscriptions they contain, and the policies applied to them.
 
+**Important notes:**
+- You need to have at least read access to the specific management group to query this table.
+
 ## Examples
 
 ### Basic info
