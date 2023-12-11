@@ -327,7 +327,4 @@ connection "azure" {
 }
 ```
 
-## Get involved
 
-- Open source: https://github.com/turbot/steampipe-plugin-azure
-- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
