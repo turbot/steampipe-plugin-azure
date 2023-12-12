@@ -50,7 +50,7 @@ select
 from
   azure_compute_virtual_machine_scale_set
 where
-   sku_tier = 'Standard';
+  sku_tier = 'Standard';
 ```
 
 ```sql+sqlite
@@ -62,5 +62,5 @@ select
 from
   azure_compute_virtual_machine_scale_set
 where
-   sku_tier = 'Standard';
+  sku_tier = 'Standard';
 ```

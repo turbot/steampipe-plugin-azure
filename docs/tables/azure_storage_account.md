@@ -254,7 +254,7 @@ from
 where
   status_of_primary = 'available'
   and status_of_secondary != 'available'
-  and sku_name in ('Standard_GRS', 'Standard_RAGRS')
+  and sku_name in ('Standard_GRS', 'Standard_RAGRS');
 ```
 
 ```sql+sqlite
@@ -268,7 +268,7 @@ from
 where
   status_of_primary = 'available'
   and status_of_secondary != 'available'
-  and sku_name in ('Standard_GRS', 'Standard_RAGRS')
+  and sku_name in ('Standard_GRS', 'Standard_RAGRS');
 ```
 
 ### Get table properties of storage accounts

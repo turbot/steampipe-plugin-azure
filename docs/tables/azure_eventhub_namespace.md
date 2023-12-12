@@ -140,7 +140,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  n.id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.name') as connection_name,
   json_extract(connections.value, '$.privateEndpointPropertyID') as property_private_endpoint_id,
@@ -148,6 +148,6 @@ select
   connections.value as property_private_link_service_connection_state,
   json_extract(connections.value, '$.type') as connection_type
 from
-  azure_eventhub_namespace,
+  azure_eventhub_namespace as n,
   json_each(private_endpoint_connections) as connections;
 ```

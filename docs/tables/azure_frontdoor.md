@@ -119,7 +119,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  f.id,
   json_extract(setting.value, '$.id') as setting_id,
   json_extract(setting.value, '$.name') as setting_name,
   json_extract(setting.value, '$.properties.additionalLatencyMilliseconds') as setting_property_additional_latency_milliseconds,
@@ -127,7 +127,7 @@ select
   json_extract(setting.value, '$.properties.sampleSize') as setting_property_sample_size,
   json_extract(setting.value, '$.properties.resourceState') as setting_property_resource_state
 from
-  azure_frontdoor,
+  azure_frontdoor as f,
   json_each(load_balancing_settings) as setting;
 ```
 
@@ -153,7 +153,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  f.id,
   json_extract(endpoint.value, '$.id') as endpoint_id,
   json_extract(endpoint.value, '$.name') as endpoint_name,
   json_extract(endpoint.value, '$.properties.hostName') as endpoint_property_host_name,
@@ -162,7 +162,7 @@ select
   json_extract(endpoint.value, '$.properties.resourceState') as endpoint_property_resource_state,
   endpoint.value as endpoint_property_web_application_firewall_policy_link
 from
-  azure_frontdoor,
+  azure_frontdoor as f,
   json_each(frontend_endpoints) as endpoint;
 ```
 
@@ -189,7 +189,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  f.id,
   json_extract(setting.value, '$.id') as setting_id,
   json_extract(setting.value, '$.name') as setting_name,
   json_extract(setting.value, '$.properties.intervalInSeconds') as setting_property_interval_in_seconds,
@@ -199,6 +199,6 @@ select
   json_extract(setting.value, '$.properties.protocol') as setting_property_protocol,
   json_extract(setting.value, '$.properties.resourceState') as setting_property_resource_state
 from
-  azure_frontdoor,
+  azure_frontdoor as f,
   json_each(health_probe_settings) as setting;
 ```

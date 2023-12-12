@@ -42,7 +42,7 @@ from
   azure_healthcare_service;
 ```
 
-### List healthcare services of fhir-R4 kind 
+### List healthcare services of fhir-R4 kind
 Determine the areas in which specific healthcare services of 'fhir-R4' kind are utilized within the Azure platform. This can be helpful in assessing the usage and distribution of this particular type of service.
 
 ```sql+postgres
@@ -88,7 +88,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(p.value, '$.PrivateEndpointConnectionId') as private_endpoint_connection_id,
   json_extract(p.value, '$.ProvisioningState') as private_endpoint_provisioning_state,
   json_extract(p.value, '$.PrivateEndpointConnectionName') as private_endpoint_connection_name,
@@ -117,13 +117,13 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(d.value, '$.id') as diagnostic_setting_id,
   json_extract(d.value, '$.name') as diagnostic_setting_name,
   json_extract(d.value, '$.type') as diagnostic_setting_type,
   json_extract(d.value, '$.properties') as diagnostic_setting_properties
 from
-  azure_healthcare_service,
+  azure_healthcare_service as s,
   json_each(diagnostic_settings) as d;
 ```
 

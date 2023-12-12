@@ -32,7 +32,6 @@ from
   azure_location;
 ```
 
-
 ### Latitude and Longitude of the azure locations
 Determine the geographical coordinates of various Azure locations. This is useful for mapping out data centers or planning for geo-redundancy.
 

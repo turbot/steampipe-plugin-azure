@@ -88,11 +88,7 @@ select
   ra.id as restorable_database_account_id
 from
   azure_cosmosdb_restorable_database_account ra
-join
-  azure_cosmosdb_account a
-on
-  ra.account_name = a.name
-  and ra.subscription_id = a.subscription_id;
+  join azure_cosmosdb_account a on ra.account_name = a.name and ra.subscription_id = a.subscription_id;
 ```
 
 ### Get the restorable account count per api type

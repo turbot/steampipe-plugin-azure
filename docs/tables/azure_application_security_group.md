@@ -34,7 +34,6 @@ from
   azure_application_security_group;
 ```
 
-
 ### List of application security group without application tag key
 Identify instances where Azure application security groups lack the 'application' tag key. This can help streamline organization and management of security groups.
 

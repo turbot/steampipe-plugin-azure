@@ -126,7 +126,6 @@ from
 where
   time_range = '7d';
 ```
-```
 
 ### List critical alerts
 Determine the areas in which critical alerts are present in your Azure resources. This is beneficial for prioritizing and addressing issues that have the highest severity level.

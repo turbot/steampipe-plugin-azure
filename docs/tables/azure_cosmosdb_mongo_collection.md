@@ -73,10 +73,7 @@ select
   count(c.name) as collection_count
 from
   azure_cosmosdb_mongo_collection c
-join
-  azure_cosmosdb_mongo_database d
-on
-  c.database_name = d.name
+  join azure_cosmosdb_mongo_database d on c.database_name = d.name
 group by
   c.database_name;
 ```

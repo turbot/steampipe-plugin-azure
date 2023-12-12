@@ -36,7 +36,6 @@ from
   azure_compute_availability_set;
 ```
 
-
 ### List of availability sets which does not use managed disks configuration
 Determine the areas in which Azure availability sets are not utilizing the managed disks configuration. This can be useful in identifying potential opportunities for optimization and cost reduction.
 
@@ -59,7 +58,6 @@ from
 where
   sku_name = 'Classic';
 ```
-
 
 ### List of availability sets without application tag key
 Explore which Azure Compute availability sets are missing an 'application' tag. This is useful for identifying areas in your infrastructure that may lack important metadata, potentially impacting resource management and organization.

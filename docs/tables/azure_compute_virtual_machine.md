@@ -193,7 +193,7 @@ order by
 ```sql+sqlite
 select
   vm.name,
-  count(d) as num_disks,
+  count(d.disk_size_gb) as num_disks,
   sum(d.disk_size_gb) as total_disk_size_gb
 from
   azure_compute_virtual_machine as vm

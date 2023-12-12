@@ -54,10 +54,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
+  a.id,
   type
 from
-  azure_log_alert,
+  azure_log_alert as a,
   json_each(condition, '$.allOf') as l
 where
   json_extract(l.value, '$.equals') = 'Microsoft.Authorization/policyAssignments/write';

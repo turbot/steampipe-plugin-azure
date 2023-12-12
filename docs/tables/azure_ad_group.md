@@ -38,7 +38,6 @@ from
   azure_ad_group;
 ```
 
-
 ### List of AD groups where security is not enabled
 Determine the areas in which the security feature is not enabled in your Azure Active Directory groups. This can be useful for identifying potential vulnerabilities and taking corrective action to enhance your system's security.
 
@@ -63,7 +62,6 @@ from
 where
   security_enabled = 0;
 ```
-
 
 ### List of AD groups where mail is not enabled
 Explore which Azure Active Directory groups do not have mail enabled. This is useful to identify potential communication gaps within your organization.

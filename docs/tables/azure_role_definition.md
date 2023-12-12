@@ -58,10 +58,8 @@ where
 ```
 
 ```sql+sqlite
-select
-  name,
-  role_name,
-  json_extract(scope.value, '
+Error: Runtime error: malformed JSON
+```
 
 ### Permissions of all custom roles
 Explore which permissions are assigned to all custom roles within your Azure environment. This can help in maintaining security standards and ensuring that roles are not granted excessive permissions.
@@ -97,17 +95,11 @@ from
 where
   role_type = 'CustomRole';
 ```
-)
-from
-  azure_role_definition,
-  json_each(assignable_scopes) as scope
-where
-  json_extract(scope.value, '
 
 ### Permissions of all custom roles
 Explore the permissions assigned to all custom roles in your Azure environment. This can help you understand access controls and identify potential security risks.
 
-```sql
+```sql+postgres
 select
   name,
   role_name,
@@ -122,13 +114,27 @@ from
 where
   role_type = 'CustomRole';
 ```
-) = '/';
+
+```sql+sqlite
+select
+  ard.name,
+  ard.role_name,
+  ard.role_type,
+  json_extract(permission.value, '$.actions') as action,
+  json_extract(permission.value, '$.dataActions') as data_action,
+  json_extract(permission.value, '$.notActions') as no_action,
+  json_extract(permission.value, '$.notDataActions') as not_data_actions
+from
+  azure_role_definition ard,
+  json_each(ard.permissions) as permission
+where
+  ard.role_type = 'CustomRole';
 ```
 
 ### Permissions of all custom roles
 Analyze the permissions assigned to all custom roles in your Azure environment. This can help in identifying roles with excessive permissions, thereby assisting in maintaining a principle of least privilege.
 
-```sql
+```sql_postgres
 select
   name,
   role_name,
@@ -142,4 +148,20 @@ from
   cross join jsonb_array_elements(permissions) as permission
 where
   role_type = 'CustomRole';
+```
+
+```sql+sqlite
+select
+  ard.name,
+  ard.role_name,
+  ard.role_type,
+  json_extract(permission.value, '$.actions') as action,
+  json_extract(permission.value, '$.dataActions') as data_action,
+  json_extract(permission.value, '$.notActions') as no_action,
+  json_extract(permission.value, '$.notDataActions') as not_data_actions
+from
+  azure_role_definition ard,
+  json_each(ard.permissions) as permission
+where
+  ard.role_type = 'CustomRole';
 ```

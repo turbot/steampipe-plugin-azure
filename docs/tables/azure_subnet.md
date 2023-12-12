@@ -21,7 +21,6 @@ select
   name,
   virtual_network_name,
   address_prefix,
-  region,
   resource_group
 from
   azure_subnet;
@@ -32,7 +31,6 @@ select
   name,
   virtual_network_name,
   address_prefix,
-  region,
   resource_group
 from
   azure_subnet;

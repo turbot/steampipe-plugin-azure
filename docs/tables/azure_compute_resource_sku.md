@@ -38,7 +38,6 @@ from
   azure_compute_resource_sku;
 ```
 
-
 ### Azure compute resources and their capacity
 Analyze the settings to understand the capacity range of Azure compute resources. This can help in assessing the scalability of your resources and planning for future capacity needs.
 
@@ -61,7 +60,6 @@ select
 from
   azure_compute_resource_sku;
 ```
-
 
 ### List of all premium type disks and location
 Determine the areas in which premium type disks are located to optimize resource management and allocation strategies. This can be particularly useful in identifying potential cost savings or efficiency improvements.

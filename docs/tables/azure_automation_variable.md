@@ -124,11 +124,6 @@ where
 ```
 
 ```sql+sqlite
-The given PostgreSQL query does not use any PostgreSQL specific functions or data types, and it does not use any JSON functions or joins. Therefore, the SQLite equivalent of this query would be exactly the same as the original query.
-
-Here is the SQLite query:
-
-```sql
 select
   id,
   name,
@@ -142,5 +137,4 @@ where
   account_name = 'turbot_account'
   and name = 'turbot'
   and resource_group = 'turbot_rg';
-```
 ```

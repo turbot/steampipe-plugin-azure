@@ -59,7 +59,8 @@ select
   sample_count
 from
   azure_compute_disk_metric_write_ops
-where average > 10
+where
+  average > 10
 order by
   name,
   timestamp;
@@ -75,7 +76,8 @@ select
   sample_count
 from
   azure_compute_disk_metric_write_ops
-where average > 10
+where
+  average > 10
 order by
   name,
   timestamp;

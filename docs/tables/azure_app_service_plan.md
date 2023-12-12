@@ -40,7 +40,6 @@ from
   azure_app_service_plan;
 ```
 
-
 ### List of Hyper-V container app service plan
 Explore which Azure App Service Plans are using Hyper-V containers. This can help determine the areas in which these specific types of containers are being utilized, aiding in resource management and optimization.
 
@@ -67,7 +66,6 @@ from
 where
   hyper_v = 1;
 ```
-
 
 ### List of App service plan that owns spot instances
 Explore which Azure App Service Plans are utilizing spot instances. This is useful for managing costs and understanding the distribution of your resources.

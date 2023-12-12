@@ -31,7 +31,6 @@ from
 Error: SQLite does not support split_part function.
 ```
 
-
 ### Storage profile's OS disk info of each compute image
 Determine the size, type, and status of your operating system disk within each compute image in Azure. This query can help you manage your storage resources more effectively by identifying potential areas for optimization.
 
@@ -59,7 +58,6 @@ from
   azure_compute_image;
 ```
 
-
 ### List of compute images where disk storage type is Premium_LRS
 This example helps you identify the compute images that use Premium_LRS as their disk storage type. Understanding the storage type of your compute images can assist in optimizing performance and cost in your Azure environment.
 
@@ -80,7 +78,6 @@ where
 ```sql+sqlite
 Error: SQLite does not support split or string_to_array functions.
 ```
-
 
 ### List of compute images which do not have owner or app_id tag key
 Explore which Azure compute images lack either an owner or app_id tag, helping to identify potential issues with image management and organization. This can be useful for maintaining a clean and efficient cloud environment.

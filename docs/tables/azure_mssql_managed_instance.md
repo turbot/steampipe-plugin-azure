@@ -93,11 +93,11 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  i.id,
   json_extract(policy.value, '$.creationTime') as policy_creation_time,
-  policy_disabled_alerts,
+  json_extract(policy.value, '$.disabledAlerts') as policy_disabled_alerts,
   json_extract(policy.value, '$.emailAccountAdmins') as policy_email_account_admins,
-  policy_email_addresses,
+  json_extract(policy.value, '$.emailAddresses') as policy_email_addresses,
   json_extract(policy.value, '$.id') as policy_id,
   json_extract(policy.value, '$.name') as policy_name,
   json_extract(policy.value, '$.retentionDays') as policy_retention_days,
@@ -106,6 +106,6 @@ select
   json_extract(policy.value, '$.storageEndpoint') as policy_storage_endpoint,
   json_extract(policy.value, '$.type') as policy_type
 from
-  azure_mssql_managed_instance,
+  azure_mssql_managed_instance as i,
   json_each(security_alert_policies) as policy;
 ```

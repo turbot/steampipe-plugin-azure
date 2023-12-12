@@ -84,13 +84,13 @@ where
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(rule.value, '$.Name') as rule_name,
   json_extract(rule.value, '$.Type') as rule_type,
   json_extract(rule.value, '$.FirewallRuleProperties.endIpAddress') as end_ip_address,
   json_extract(rule.value, '$.FirewallRuleProperties.startIpAddress') as start_ip_address
 from
-  azure_postgresql_server,
+  azure_postgresql_server as s,
   json_each(firewall_rules) as rule
 where
   json_extract(rule.value, '$.Name') = 'AllowAllWindowsAzureIps'
@@ -228,7 +228,7 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.privateEndpointPropertyId') as connection_private_endpoint_property_id,
   json_extract(connections.value, '$.privateLinkServiceConnectionStateActionsRequired') as connection_actions_required,
@@ -236,6 +236,6 @@ select
   json_extract(connections.value, '$.privateLinkServiceConnectionStateStatus') as connection_status,
   json_extract(connections.value, '$.provisioningState') as connection_provisioning_state
 from
-  azure_postgresql_server,
+  azure_postgresql_server as s,
   json_each(private_endpoint_connections) as connections;
 ```

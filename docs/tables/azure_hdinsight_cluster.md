@@ -83,7 +83,7 @@ select
   disk_encryption_properties ->> 'keyName' as key_name,
   disk_encryption_properties ->> 'keyVersion' as key_version,
   disk_encryption_properties ->> 'msiResourceId' as msi_resource_id,
-  disk_encryption_properties ->> 'vaultUri' as vault_uri 
+  disk_encryption_properties ->> 'vaultUri' as vault_uri
 from
   azure_hdinsight_cluster;
 ```
@@ -97,7 +97,7 @@ select
   json_extract(disk_encryption_properties, '$.keyName') as key_name,
   json_extract(disk_encryption_properties, '$.keyVersion') as key_version,
   json_extract(disk_encryption_properties, '$.msiResourceId') as msi_resource_id,
-  json_extract(disk_encryption_properties, '$.vaultUri') as vault_uri 
+  json_extract(disk_encryption_properties, '$.vaultUri') as vault_uri
 from
   azure_hdinsight_cluster;
 ```
@@ -122,13 +122,13 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  c.id,
   json_extract(endpoint.value, '$.location') as endpoint_location,
   json_extract(endpoint.value, '$.name') as endpoint_name,
   json_extract(endpoint.value, '$.port') as endpoint_port,
   json_extract(endpoint.value, '$.protocol') as endpoint_protocol,
   json_extract(endpoint.value, '$.privateIpAddress') as endpoint_private_ip_address
 from
-  azure_hdinsight_cluster,
+  azure_hdinsight_cluster as c,
   json_each(connectivity_endpoints) as endpoint;
 ```

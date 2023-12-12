@@ -188,7 +188,7 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.privateEndpointPropertyId') as connection_private_endpoint_property_id,
   json_extract(connections.value, '$.privateLinkServiceConnectionStateActionsRequired') as connection_actions_required,
@@ -196,7 +196,7 @@ select
   json_extract(connections.value, '$.privateLinkServiceConnectionStateStatus') as connection_status,
   json_extract(connections.value, '$.provisioningState') as connection_provisioning_state
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(private_endpoint_connections) as connections;
 ```
 
@@ -222,7 +222,7 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(keys.value, '$.creationDate') as keys_creation_date,
   json_extract(keys.value, '$.id') as keys_id,
   json_extract(keys.value, '$.kind') as keys_kind,
@@ -231,7 +231,7 @@ select
   json_extract(keys.value, '$.type') as keys_type,
   json_extract(keys.value, '$.uri') as keys_uri
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(server_keys) as keys;
 ```
 
@@ -254,11 +254,11 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(server_configurations) as configurations;
 ```
 
@@ -281,11 +281,11 @@ where
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(server_configurations) as configurations
 where
   json_extract(configurations.value, '$.Name') = 'audit_log_enabled';
@@ -311,11 +311,11 @@ where
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(server_configurations) as configurations
 where
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') = 'ON'
@@ -342,11 +342,11 @@ where
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(server_configurations) as configurations
 where
    json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') = 'FILE'
@@ -370,11 +370,11 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(rules.value, '$.properties.ignoreMissingVnetServiceEndpoint') as ignore_missing_vnet_service_endpoint,
   json_extract(rules.value, '$.properties.virtualNetworkSubnetId') as virtual_network_subnet_id
 from
-  azure_mysql_server,
+  azure_mysql_server as s,
   json_each(vnet_rules) as rules;
 ```
 
@@ -395,11 +395,6 @@ where
 ```
 
 ```sql+sqlite
-The PostgreSQL query provided does not use any PostgreSQL specific functions or data types, nor does it use any JSON functions or joins. Therefore, it can be directly used in SQLite without any modifications.
-
-Here is the SQLite query:
-
-```sql
 select
   name,
   id,
@@ -410,5 +405,4 @@ from
 where
   resource_group = 'demo'
   and name = 'server-test-for-pr';
-```
 ```

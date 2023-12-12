@@ -40,7 +40,6 @@ from
   azure_ad_user;
 ```
 
-
 ### List of guest users in the active directory
 Identify instances where guest users are present in the active directory to maintain security and access control. This query is useful in managing permissions and keeping track of external users in your system.
 
@@ -69,7 +68,6 @@ from
 where
   user_type = 'Guest';
 ```
-
 
 ### Password profile info of each user
 This example helps in understanding the password policies applied to each user within the Azure Active Directory. It aids in determining whether users are required to change their passwords at their next login or if the password change policy is enforced, thereby assisting in maintaining security standards.

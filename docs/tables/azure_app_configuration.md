@@ -113,7 +113,7 @@ from
 ```sql+sqlite
 select
   name as app_config_name,
-  id as app_config_id,
+  c.id as app_config_id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.privateEndpointPropertyId') as connection_private_endpoint_property_id,
   json_extract(connections.value, '$.privateLinkServiceConnectionStateActionsRequired') as connection_actions_required,
@@ -121,7 +121,7 @@ select
   json_extract(connections.value, '$.privateLinkServiceConnectionStateStatus') as connection_status,
   json_extract(connections.value, '$.provisioningState') as connection_provisioning_state
 from
-  azure_app_configuration,
+  azure_app_configuration as c,
   json_each(private_endpoint_connections) as connections;
 ```
 

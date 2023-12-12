@@ -76,7 +76,7 @@ select
   idle_timeout_in_minutes
 from
   azure_lb_outbound_rule
-order by 
+order by
   idle_timeout_in_minutes;
 ```
 
@@ -88,6 +88,6 @@ select
   idle_timeout_in_minutes
 from
   azure_lb_outbound_rule
-order by 
+order by
   idle_timeout_in_minutes;
 ```

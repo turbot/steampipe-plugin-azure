@@ -86,7 +86,14 @@ where
 ```
 
 ```sql+sqlite
-Error: SQLite does not support unnest and regexp_split_to_array functions.
+select
+  id,
+  name,
+  json_extract(identity, '$.type') as identity_type
+from
+  azure_synapse_workspace
+where
+  instr(json_extract(identity, '$.type'), 'UserAssigned') > 0;
 ```
 
 ### List private endpoint connection details for synapse workspaces
@@ -110,7 +117,7 @@ from
 ```sql+sqlite
 select
   name as workspace_name,
-  id as workspace_id,
+  w.id as workspace_id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.privateEndpointPropertyId') as connection_private_endpoint_property_id,
   json_extract(connections.value, '$.privateLinkServiceConnectionStateActionsRequired') as connection_actions_required,
@@ -118,7 +125,7 @@ select
   json_extract(connections.value, '$.privateLinkServiceConnectionStateStatus') as connection_status,
   json_extract(connections.value, '$.provisioningState') as connection_provisioning_state
 from
-  azure_synapse_workspace,
+  azure_synapse_workspace as w,
   json_each(private_endpoint_connections) as connections;
 ```
 

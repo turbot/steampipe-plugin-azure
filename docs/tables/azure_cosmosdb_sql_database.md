@@ -38,7 +38,6 @@ from
   azure_cosmosdb_sql_database;
 ```
 
-
 ### Database count per cosmosdb accounts
 Determine the number of databases associated with each CosmosDB account to better manage resources and plan for scaling needs.
 
@@ -61,7 +60,6 @@ from
 group by
   account_name;
 ```
-
 
 ### List of sql databases without application tag key
 Identify Azure Cosmos DB SQL databases that have not been tagged with an 'application' key. This can be useful in managing and organizing databases, particularly in larger systems where proper tagging can streamline operations and maintenance.

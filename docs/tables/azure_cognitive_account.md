@@ -89,14 +89,14 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  a.id,
   json_extract(connections.value, '$.ID') as connection_id,
   json_extract(connections.value, '$.Name') as connection_name,
   json_extract(connections.value, '$.PrivateEndpointID') as property_private_endpoint_id,
   connections.value as property_private_link_service_connection_state,
   json_extract(connections.value, '$.Type') as connection_type
 from
-  azure_cognitive_account,
+  azure_cognitive_account as a,
   json_each(private_endpoint_connections) as connections;
 ```
 
@@ -121,7 +121,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  a.id,
   json_extract(settings.value, '$.id') as settings_id,
   json_extract(settings.value, '$.name') as settings_name,
   settings.value -> 'properties' -> 'logs' as settings_properties_logs,
@@ -129,6 +129,6 @@ select
   json_extract(settings.value, '$.properties.workspaceId') as settings_properties_workspaceId,
   json_extract(settings.value, '$.type') as settings_type
 from
-  azure_cognitive_account,
+  azure_cognitive_account as a,
   json_each(diagnostic_settings) as settings;
 ```

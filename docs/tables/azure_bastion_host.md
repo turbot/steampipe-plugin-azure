@@ -92,7 +92,7 @@ select
   address_prefix
 from
   azure_bastion_host h,
-  json_each(ip_configurations) ip,
+  json_each(h.ip_configurations) ip,
   azure_subnet s
 where
   s.id = json_extract(ip.value, '$.properties.subnet.id');

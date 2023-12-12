@@ -34,7 +34,6 @@ from
   azure_api_management;
 ```
 
-
 ### API management publisher info
 Explore the publisher details associated with your Azure API management to maintain effective communication and ensure smooth operations. This allows you to identify who is in charge of specific APIs, facilitating efficient management and collaboration.
 
@@ -55,7 +54,6 @@ select
 from
   azure_api_management;
 ```
-
 
 ### List of premium API managements and their computing capacity
 Identify instances where premium API management services are being used and assess their computing capacity. This can be useful in evaluating your resource allocation and optimizing your API management strategy.
@@ -81,7 +79,6 @@ from
 where
   sku_name = 'Premium';
 ```
-
 
 ### List of API management without application tag key
 Determine the areas in which API management in Azure lacks an 'application' tag. This could be useful for managing and organizing your resources, as well as ensuring compliance with tagging policies.

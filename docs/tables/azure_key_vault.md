@@ -40,7 +40,6 @@ where
   soft_delete_enabled = 0;
 ```
 
-
 ### List of key vaults where soft deletion retention period is less than 30 days
 Determine the areas in which the soft deletion retention period of key vaults in Azure is less than 30 days. This query can be used to pinpoint specific locations where data retention policies may need to be strengthened for better security.
 
@@ -68,7 +67,6 @@ where
   soft_delete_retention_in_days < 30;
 ```
 
-
 ### Key vaults access information
 Determine the areas in which your Azure Key Vaults are being utilized by assessing whether they are enabled for deployment, disk encryption, or template deployment. This allows for a comprehensive understanding of your vault usage and can help optimize resource allocation.
 
@@ -93,7 +91,6 @@ select
 from
   azure_key_vault;
 ```
-
 
 ### List of premium category key vaults
 Determine the areas in which premium category key vaults are being used within your Azure environment. This is useful for keeping track of high-security vaults and ensuring they are being used appropriately.
@@ -122,7 +119,6 @@ where
   sku_name = 'Premium';
 ```
 
-
 ### Key vaults access policies details for certificates, keys and secrets
 Determine the access policies for certificates, keys, and secrets within Azure Key Vaults to enhance security and access management. This query is useful in understanding the permissions structure within your Key Vaults, which can aid in identifying potential security vulnerabilities.
 
@@ -147,7 +143,6 @@ from
   azure_key_vault,
   json_each(access_policies) as policy;
 ```
-
 
 ### List vaults with logging enabled
 Determine the areas in which your Azure Key Vaults have logging enabled for auditing purposes. This can be useful to ensure compliance with security policies and regulations by identifying vaults that are actively recording and retaining audit events.

@@ -106,7 +106,7 @@ where
     jsonb_array_length(network_rule_set -> 'properties' -> 'virtualNetworkRules') = 0
     or exists (
       select
-        * 
+        *
       from
         jsonb_array_elements(network_rule_set -> 'properties' -> 'virtualNetworkRules') as t
       where
@@ -128,7 +128,7 @@ where
     json_array_length(json_extract(network_rule_set, '$.properties.virtualNetworkRules')) = 0
     or exists (
       select
-        1 
+        1
       from
         json_each(json_extract(network_rule_set, '$.properties.virtualNetworkRules')) as t
       where
@@ -158,7 +158,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  n.id,
   json_extract(connections.value, '$.id') as connection_id,
   json_extract(connections.value, '$.name') as connection_name,
   json_extract(connections.value, '$.privateEndpointPropertyID') as property_private_endpoint_id,
@@ -166,7 +166,7 @@ select
   connections.value as property_private_link_service_connection_state,
   json_extract(connections.value, '$.type') as connection_type
 from
-  azure_servicebus_namespace,
+  azure_servicebus_namespace as n,
   json_each(private_endpoint_connections) as connections;
 ```
 

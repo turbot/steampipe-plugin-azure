@@ -20,7 +20,7 @@ Explore the status and configuration of your Azure Service Fabric clusters to un
 select
   name,
   id,
-  provisioning_state, 
+  provisioning_state,
   type,
   cluster_code_version,
   management_endpoint,
@@ -34,7 +34,7 @@ from
 select
   name,
   id,
-  provisioning_state, 
+  provisioning_state,
   type,
   cluster_code_version,
   management_endpoint,
@@ -111,11 +111,11 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  c.id,
   json_extract(settings.value, '$.name') as settings_name,
   json_extract(settings.value, '$.parameters') as settings_parameters
 from
-  azure_service_fabric_cluster,
+  azure_service_fabric_cluster as c,
   json_each(fabric_settings) as settings;
 ```
 
@@ -142,7 +142,7 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  c.id,
   json_extract(types.value, '$.clientConnectionEndpointPort') as type_client_connection_endpoint_port,
   json_extract(types.value, '$.durabilityLevel') as type_durability_level,
   json_extract(types.value, '$.httpGatewayEndpointPort') as type_http_gateway_endpoint_port,
@@ -152,6 +152,6 @@ select
   types.value as settings_application_ports,
   types.value as settings_ephemeral_ports
 from
-  azure_service_fabric_cluster,
+  azure_service_fabric_cluster as c,
   json_each(node_types) as types;
 ```

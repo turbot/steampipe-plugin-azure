@@ -85,13 +85,13 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(connections.value, '$.ID') as connection_id,
   json_extract(connections.value, '$.Name') as connection_name,
   json_extract(connections.value, '$.PrivateEndpointPropertyID') as property_private_endpoint_id,
   connections.value as property_private_link_service_connection_state,
   json_extract(connections.value, '$.Type') as connection_type
 from
-  azure_storage_sync,
+  azure_storage_sync as s,
   json_each(private_endpoint_connections) as connections;
 ```

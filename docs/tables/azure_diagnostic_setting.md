@@ -53,10 +53,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
-  type
+  s.id,
+  s.type
 from
-  azure_diagnostic_setting,
+  azure_diagnostic_setting as s,
   json_each(logs) as l
 where
   json_extract(l.value, '$.category') = 'Alert'
@@ -82,10 +82,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
-  type
+  s.id,
+  s.type
 from
-  azure_diagnostic_setting,
+  azure_diagnostic_setting as s,
   json_each(logs) as l
 where
   json_extract(l.value, '$.category') = 'Security'
@@ -111,10 +111,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
-  type
+  s.id,
+  s.type
 from
-  azure_diagnostic_setting,
+  azure_diagnostic_setting as s,
   json_each(logs) as l
 where
   json_extract(l.value, '$.category') = 'Policy'
@@ -140,10 +140,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
-  type
+  s.id,
+  s.type
 from
-  azure_diagnostic_setting,
+  azure_diagnostic_setting as s,
   json_each(logs) as l
 where
   json_extract(l.value, '$.category') = 'Administrative'

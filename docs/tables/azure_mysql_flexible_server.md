@@ -119,7 +119,6 @@ where
 Assess the elements within your Azure MySQL flexible server by understanding the specific server configurations in use. This allows you to identify potential areas for optimization and ensure your server is set up according to your organization's requirements.
 **Note:** `Flexible Server configurations` is the same as `Server parameters` as shown in Azure MySQL Flexible Server console
 
-
 ```sql+postgres
 select
   name as server_name,
@@ -134,11 +133,11 @@ from
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(configurations.value, '$.ConfigurationProperties.value') as value
 from
-  azure_mysql_flexible_server,
+  azure_mysql_flexible_server as s,
   json_each(flexible_server_configurations) as configurations;
 ```
 
@@ -161,11 +160,11 @@ where
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_flexible_server,
+  azure_mysql_flexible_server as s,
   json_each(flexible_server_configurations) as configurations
 where
   json_extract(configurations.value, '$.Name') = 'audit_log_enabled';
@@ -184,22 +183,22 @@ from
   azure_mysql_flexible_server,
   jsonb_array_elements(flexible_server_configurations) as configurations
 where
-   configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
-   and configurations ->> 'Name' = 'slow_query_log';
+  configurations ->'ConfigurationProperties' ->> 'value' = 'ON'
+  and configurations ->> 'Name' = 'slow_query_log';
 ```
 
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_flexible_server,
+  azure_mysql_flexible_server as s,
   json_each(flexible_server_configurations) as configurations
 where
-   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') = 'ON'
-   and json_extract(configurations.value, '$.Name') = 'slow_query_log';
+  json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') = 'ON'
+  and json_extract(configurations.value, '$.Name') = 'slow_query_log';
 ```
 
 ### List servers with log_output parameter set to file
@@ -215,18 +214,18 @@ from
   azure_mysql_flexible_server,
   jsonb_array_elements(flexible_server_configurations) as configurations
 where
-   configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
-   and configurations ->> 'Name' = 'log_output';
+  configurations ->'ConfigurationProperties' ->> 'value' = 'FILE'
+  and configurations ->> 'Name' = 'log_output';
 ```
 
 ```sql+sqlite
 select
   name as server_name,
-  id as server_id,
+  s.id as server_id,
   json_extract(configurations.value, '$.Name') as configuration_name,
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') as value
 from
-  azure_mysql_flexible_server,
+  azure_mysql_flexible_server as s,
   json_each(flexible_server_configurations) as configurations
 where
   json_extract(json_extract(configurations.value, '$.ConfigurationProperties'), '$.value') = 'FILE'

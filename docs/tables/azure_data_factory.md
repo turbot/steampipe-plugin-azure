@@ -38,7 +38,6 @@ from
   azure_data_factory;
 ```
 
-
 ### List system assigned identity type factories
 Discover the segments that use system-assigned identities within your Azure Data Factory resources. This is useful for understanding the distribution of identity types, which can aid in managing access and permissions.
 
@@ -65,7 +64,6 @@ from
 where
   json_extract(identity, '$.type') = 'SystemAssigned';
 ```
-
 
 ### List factories with public network access enabled
 Determine the areas in which factories have public network access enabled. This is useful for identifying potential security vulnerabilities within your Azure data factories.

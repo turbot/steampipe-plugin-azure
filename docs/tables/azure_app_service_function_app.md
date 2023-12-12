@@ -40,7 +40,6 @@ where
   https_only = 0;
 ```
 
-
 ### List of all unreserved app function
 Discover the segments that comprise all unreserved function apps in Azure. This query is useful in managing resources and ensuring optimal performance by identifying potential areas for reallocation.
 
@@ -66,7 +65,6 @@ where
   reserved = 0;
 ```
 
-
 ### Outbound IP addresses and possible outbound IP addresses info of each function app
 Gain insights into the outbound IP addresses associated with each function app, as well as potential outbound IP addresses. This information can be useful for managing network security and understanding your app's communication pathways.
 
@@ -87,7 +85,6 @@ select
 from
   azure_app_service_function_app;
 ```
-
 
 ### List of app functions where client certificate mode is disabled.
 Identify instances where the client certificate mode is disabled in your Azure app functions. This can help enhance security by pinpointing areas where client authentication is not enforced.

@@ -40,7 +40,6 @@ from
   azure_cosmosdb_mongo_database;
 ```
 
-
 ### Database count by cosmosdb account name
 Determine the number of databases linked to each CosmosDB account in Azure. This is useful for understanding the distribution and organization of databases across different accounts in your Azure environment.
 

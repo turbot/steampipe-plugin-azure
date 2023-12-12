@@ -38,7 +38,6 @@ where
   sku_tier = 'Premium';
 ```
 
-
 ### List of unattached disks
 Discover the segments that consist of unused storage resources within your Azure infrastructure. This can aid in optimizing resource allocation and reducing unnecessary costs.
 
@@ -61,7 +60,6 @@ from
 where
   disk_state = 'Unattached';
 ```
-
 
 ### Size and performance info of each disk
 Gain insights into the performance and size of each disk in your Azure Compute service. This helps in optimizing resource allocation and identifying potential performance bottlenecks.
@@ -90,7 +88,6 @@ from
   azure_compute_disk;
 ```
 
-
 ### List of compute disks which are not available in multiple az
 Determine the areas in which Azure Compute Disks are not available across multiple availability zones. This is useful for identifying potential vulnerabilities in your system's redundancy and disaster recovery capabilities.
 
@@ -117,7 +114,6 @@ from
 where
   zones is not null;
 ```
-
 
 ### List of compute disks which are not encrypted with customer key
 Discover the segments that utilize compute disks not encrypted with a customer key, enabling you to identify potential security risks and take necessary actions to enhance data protection.

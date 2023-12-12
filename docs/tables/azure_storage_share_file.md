@@ -87,7 +87,8 @@ select
   enabled_protocols
 from
   azure_storage_share_file
-order by share_quota desc limit 1;
+order by
+  share_quota desc limit 1;
 ```
 
 ```sql+sqlite
@@ -101,5 +102,6 @@ select
   enabled_protocols
 from
   azure_storage_share_file
-order by share_quota desc limit 1;
+order by
+  share_quota desc limit 1;
 ```

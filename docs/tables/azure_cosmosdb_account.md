@@ -218,13 +218,13 @@ from
 
 ```sql+sqlite
 select
-  name,
-  json_extract(restore_parameters, '$.restoreMode') as restore_mode,
-  json_extract(restore_parameters, '$.restoreSource') as restore_source,
+  a.name,
+  json_extract(a.restore_parameters, '$.restoreMode') as restore_mode,
+  json_extract(a.restore_parameters, '$.restoreSource') as restore_source,
   json_extract(d.value, '$.databaseName') as restored_database_name,
-  c as restored_collection_name
+  json_extract(c.value, '$') as restored_collection_name
 from
-  azure_cosmosdb_account,
-  json_each(json_extract(restore_parameters, '$.databasesToRestore')) as d,
+  azure_cosmosdb_account a,
+  json_each(json_extract(a.restore_parameters, '$.databasesToRestore')) as d,
   json_each(json_extract(d.value, '$.collectionNames')) as c;
 ```

@@ -38,7 +38,6 @@ from
   azure_kubernetes_cluster;
 ```
 
-
 ### List clusters with a system assigned identity
 Identify instances where your Azure Kubernetes clusters are using a system assigned identity. This is useful in managing and securing cluster resources, as system assigned identities allow Azure to automatically manage the credentials.
 
@@ -69,7 +68,6 @@ from
 where
   json_extract(identity, '$.type') = 'SystemAssigned';
 ```
-
 
 ### List clusters that have role-based access control (RBAC) disabled
 Determine the areas in your Azure Kubernetes clusters where role-based access control (RBAC) is disabled. This can help enhance your security measures by identifying potential vulnerabilities and ensuring appropriate access controls are in place.
@@ -103,7 +101,6 @@ from
 where
   not enable_rbac;
 ```
-
 
 ### List clusters with an undesirable version (older than 1.20.5)
 Identify instances where your clusters are running on an outdated version (older than 1.20.5) in Azure Kubernetes. This is beneficial for maintaining system security and performance by ensuring your clusters are up-to-date.

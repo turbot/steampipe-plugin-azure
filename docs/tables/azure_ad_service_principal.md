@@ -40,7 +40,6 @@ where
   account_enabled = 0;
 ```
 
-
 ### List of ad service principals where app role assignment is not required
 Identify instances where ad service principals in Azure do not require an app role assignment. This can be useful to streamline access control and reduce unnecessary role assignments.
 
@@ -65,7 +64,6 @@ from
 where
   app_role_assignment_required = 0;
 ```
-
 
 ### Application role info of service principals
 Explore the roles assigned to service principals within your Azure Active Directory. This query helps in understanding the permissions and access controls for each service principal, thereby assisting in maintaining secure and efficient system operations.
@@ -97,7 +95,6 @@ from
   azure_ad_service_principal,
   json_each(app_roles) as approle;
 ```
-
 
 ### Oauth 2.0 permission info of ad service principal
 This query is useful for gaining insights into the permissions associated with your Azure advertising service principal. It allows you to assess whether certain permissions are enabled and understand their specific descriptions and display names, helping to maintain proper access control in your Azure environment.

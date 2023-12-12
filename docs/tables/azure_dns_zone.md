@@ -83,5 +83,4 @@ from
 where
   zone_type = 'Public'
   and ns.value not like '%.azure-dns.%.';
-
 ```

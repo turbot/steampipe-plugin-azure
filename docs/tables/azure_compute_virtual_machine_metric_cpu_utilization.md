@@ -59,7 +59,8 @@ select
   sample_count
 from
   azure_compute_virtual_machine_metric_cpu_utilization
-where average > 80
+where
+  average > 80
 order by
   name,
   timestamp;
@@ -75,7 +76,8 @@ select
   sample_count
 from
   azure_compute_virtual_machine_metric_cpu_utilization
-where average > 80
+where
+  average > 80
 order by
   name,
   timestamp;

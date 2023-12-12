@@ -95,7 +95,7 @@ from
 
 ```sql+sqlite
 select
-  id,
+  g.id,
   name,
   json_extract(listeners.value, '$.id') as listener_id,
   json_extract(listeners.value, '$.name') as listener_name,
@@ -104,7 +104,7 @@ select
   json_extract(listeners.value, '$.properties.protocol') as listener_protocol,
   json_extract(listeners.value, '$.properties.requireServerNameIndication') as listener_require_server_name_indication
 from
-  azure_application_gateway,
+  azure_application_gateway as g,
   json_each(http_listeners) as listeners;
 ```
 
@@ -129,7 +129,7 @@ from
 
 ```sql+sqlite
 select
-  id,
+  g.id,
   name,
   json_extract(settings.value, '$.id') as settings_id,
   json_extract(settings.value, '$.name') as settings_name,
@@ -139,7 +139,7 @@ select
   json_extract(settings.value, '$.properties.protocol') as settings_protocol,
   json_extract(settings.value, '$.properties.requestTimeout') as settings_request_timeout
 from
-  azure_application_gateway,
+  azure_application_gateway as g,
   json_each(backend_http_settings_collection) as settings;
 ```
 
@@ -161,13 +161,13 @@ from
 
 ```sql+sqlite
 select
-  id,
+  g.id,
   name,
   json_extract(config.value, '$.id') as config_id,
   json_extract(config.value, '$.name') as config_name,
   json_extract(config.value, '$.properties.publicIPAddress') as config_public_ip_address,
   json_extract(config.value, '$.properties.privateIPAllocationMethod') as config_private_ip_allocation_method
 from
-  azure_application_gateway,
+  azure_application_gateway as g,
   json_each(frontend_ip_configurations) as config;
 ```

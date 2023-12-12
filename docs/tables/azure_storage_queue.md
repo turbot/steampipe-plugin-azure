@@ -34,7 +34,6 @@ from
   azure_storage_queue;
 ```
 
-
 ### List of storage queues without owner tag key
 Determine the areas in which Azure application security groups lack an 'owner' tag key. This helps to identify resources that may not be properly managed or tracked.
 

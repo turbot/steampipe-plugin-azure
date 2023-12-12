@@ -145,10 +145,10 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  p.id,
   i.value as whitelist_ip_address
 from
-  azure_firewall_policy,
+  azure_firewall_policy as p,
   json_each(threat_intel_whitelist_ip_addresses) as i;
 ```
 
@@ -168,9 +168,9 @@ from
 ```sql+sqlite
 select
   name,
-  id,
+  p.id,
   f.value as whitelist_fqdn
 from
-  azure_firewall_policy,
+  azure_firewall_policy as p,
   json_each(threat_intel_whitelist_fqdns) as f;
 ```

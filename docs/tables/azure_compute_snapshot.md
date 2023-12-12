@@ -31,7 +31,6 @@ from
 Error: SQLite does not support split_part function.
 ```
 
-
 ### List of snapshots which are publicly accessible
 Determine the areas in which snapshots are set to be publicly accessible. This is useful for identifying potential security risks and ensuring appropriate access controls are in place.
 
@@ -54,7 +53,6 @@ from
 where
   network_access_policy = 'AllowAll';
 ```
-
 
 ### List of all incremental type snapshots
 Explore which snapshots in your Azure Compute resources are of the incremental type. This can help manage storage efficiently and reduce costs by identifying and focusing on snapshots that only capture changes since the last snapshot.

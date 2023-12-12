@@ -51,7 +51,7 @@ select
 from
   azure_virtual_network_gateway
 where
-   gateway_connections is null;
+  gateway_connections is null;
 ```
 
 ```sql+sqlite
@@ -64,5 +64,5 @@ select
 from
   azure_virtual_network_gateway
 where
-   gateway_connections is null;
+  gateway_connections is null;
 ```

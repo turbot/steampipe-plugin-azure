@@ -13,7 +13,7 @@ The `azure_security_center_automation` table provides insights into the automati
 
 ## Examples
 
-### Basic info 
+### Basic info
 This example showcases how to determine the types and categories of automations within the Azure Security Center. This information can be useful in understanding the range of automated processes in place and their respective functions.
 
 ```sql+postgres
@@ -47,7 +47,7 @@ select
   is_enabled
 from
   azure_security_center_automation
-where 
+where
   is_enabled;
 ```
 
@@ -59,7 +59,7 @@ select
   is_enabled
 from
   azure_security_center_automation
-where 
+where
   is_enabled;
 ```
 
@@ -85,14 +85,14 @@ from
 ```sql+sqlite
 select
   name,
-  type,
+  a.type,
   json_extract(s.value, '$.eventSource') as event_source,
   json_extract(r.value, '$.operator') as operator,
   json_extract(r.value, '$.propertyType') as property_type,
   json_extract(r.value, '$.expectedValue') as expected_value,
   json_extract(r.value, '$.propertyJPath') as property_jpath
 from
-  azure_security_center_automation,
+  azure_security_center_automation as a,
   json_each(sources) as s,
   json_each(json_extract(s.value, '$.ruleSets')) as rs,
   json_each(json_extract(rs.value, '$.rules')) as r ;

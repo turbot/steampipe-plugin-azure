@@ -64,5 +64,5 @@ select
 from
   azure_key_vault_deleted_vault
 where
-  scheduled_purge_date > date('now','-1 day');
+  date(scheduled_purge_date) > date('now','-1 day');
 ```

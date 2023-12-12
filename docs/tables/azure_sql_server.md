@@ -58,10 +58,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(audit.value, '$.properties.retentionDays') as audit_policy_retention_days
 from
-  azure_sql_server,
+  azure_sql_server as s,
   json_each(server_audit_policy) as audit
 where
   json_extract(audit.value, '$.properties.retentionDays') < 90;
@@ -85,10 +85,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(security.value, '$.properties.state') as security_alert_policy_state
 from
-  azure_sql_server,
+  azure_sql_server as s,
   json_each(server_security_alert_policy) as security
 where
   json_extract(security.value, '$.properties.state') = 'Disabled';
@@ -115,10 +115,10 @@ where
 ```sql+sqlite
 select
   name,
-  id,
+  s.id,
   json_extract(security.value, '$.properties.disabledAlerts') as security_alert_policy_state
 from
-  azure_sql_server,
+  azure_sql_server as s,
   json_each(server_security_alert_policy) as security,
   json_each(json_extract(security.value, '$.properties.disabledAlerts')) as disabled_alerts
 where
