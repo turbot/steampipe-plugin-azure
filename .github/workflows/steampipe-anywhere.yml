@@ -4,9 +4,11 @@ on:
   push:
     tags:
       - 'v*'
-        
+
 
 jobs:
   anywhere_publish_workflow:
     uses: turbot/steampipe-workflows/.github/workflows/steampipe-anywhere.yml@main
     secrets: inherit
+    runs-on:
+      labels: ubuntu_4_core
