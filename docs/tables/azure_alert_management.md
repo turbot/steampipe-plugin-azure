@@ -111,9 +111,6 @@ where
 ```
 
 ```sql+sqlite
-The given PostgreSQL query does not contain any PostgreSQL-specific functions, data types, or syntax that needs to be converted to SQLite. Therefore, the SQLite query is the same as the PostgreSQL query:
-
-```sql
 select
   name,
   id,

@@ -58,9 +58,8 @@ where
 ```
 
 ```sql+sqlite
-Error: Runtime error: malformed JSON
+Error: The corresponding SQLite query is unavailable.
 ```
-
 ### Permissions of all custom roles
 Explore which permissions are assigned to all custom roles within your Azure environment. This can help in maintaining security standards and ensuring that roles are not granted excessive permissions.
 
