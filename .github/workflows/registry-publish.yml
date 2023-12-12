@@ -24,7 +24,7 @@ jobs:
   build:
     name: Build
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
     steps:
       - name: Checkout
         uses: actions/checkout@v2
