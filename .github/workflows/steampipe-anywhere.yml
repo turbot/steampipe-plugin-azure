@@ -10,7 +10,7 @@ jobs:
   build-postgres-14-fdw-linux-amd64:
     name: Build Postgres 14 FDW for Linux - AMD64
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
 
     steps:
       - name: Set environment variables
