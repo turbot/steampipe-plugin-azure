@@ -8,6 +8,7 @@ name: "azure"
 description: "Steampipe plugin for querying resource groups, virtual machines, storage accounts and more from Azure."
 og_description: "Query Azure with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/azure-social-graphic.png"
+engines: ["steampipe", "sqlite", "postgres", "export"]
 ---
 
 # Azure + Steampipe
@@ -326,7 +327,4 @@ connection "azure" {
 }
 ```
 
-## Get involved
 
-- Open source: https://github.com/turbot/steampipe-plugin-azure
-- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)

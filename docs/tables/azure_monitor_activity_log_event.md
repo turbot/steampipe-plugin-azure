@@ -1,9 +1,17 @@
-# Table: azure_monitor_activity_log_event
+---
+title: "Steampipe Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL"
+description: "Allows users to query Activity Log Events in Azure Monitor, providing insights into the operation logs and changes made in Azure resources."
+---
 
-Azure Monitor Activity Log is a service in Microsoft Azure that provides insights into the operations that have been performed on resources in your Azure subscription. It captures a comprehensive set of data about each operation, including who performed the operation, what resources were involved, what operation was performed, and when it occurred. This information is crucial for auditing, compliance, and troubleshooting purposes.
+# Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL
+
+Azure Monitor Activity Log Events is a feature within Microsoft Azure that provides insights into the operational activities within your Azure resources. It enables you to categorize and analyze data about the status, event severity, and operations of your Azure resources. Azure Monitor Activity Log Events helps you stay informed about the activities and operations happening in your Azure environment.
+
+## Table Usage Guide
+
+The `azure_monitor_activity_log_event` table provides insights into the operational activities within Azure Monitor. As a system administrator or a DevOps engineer, explore event-specific details through this table, including event category, event initiation, and associated metadata. Utilize it to uncover information about events, such as those related to service health, resource health, and administrative operations.
 
 **Important notes:**
-
 - This table can provide event details for the previous 90 days.
 - For improved performance, it is advised that you use the optional qual `event_timestamp` to limit the result set to a specific time period.
 - This table supports optional quals. Queries with optional quals are optimized to use Monitor Activity Log filters. Optional quals are supported for the following columns:
@@ -16,8 +24,22 @@ Azure Monitor Activity Log is a service in Microsoft Azure that provides insight
 ## Examples
 
 ### Basic info
+Explore the sequence and timing of events in your Azure Monitor Activity Log. This query can be used to gain insights into patterns of activity, identify potential issues, and track changes over time.
 
-```sql
+```sql+postgres
+select
+  event_name,
+  event_data_id,
+  id,
+  correlation_id,
+  level,
+  resource_id,
+  event_timestamp
+from
+  azure_monitor_activity_log_event;
+```
+
+```sql+sqlite
 select
   event_name,
   event_data_id,
@@ -31,8 +53,23 @@ from
 ```
 
 ### List events with event-level critical
+This example helps identify critical events in your Azure activity log. By doing so, it allows you to promptly respond to potential issues or security threats.
 
-```sql
+```sql+postgres
+select
+  event_name,
+  id,
+  operation_name,
+  event_timestamp,
+  level,
+  caller
+from
+  azure_monitor_activity_log_event
+where
+  level = 'EventLevelCritical';
+```
+
+```sql+sqlite
 select
   event_name,
   id,
@@ -47,8 +84,9 @@ where
 ```
 
 ### List events that occurred over the last five minutes
+Track recent activities in your Azure environment by identifying events that have taken place within the last five minutes. This is useful for real-time monitoring and immediate response to changes or incidents.
 
-```sql
+```sql+postgres
 select
   event_name,
   event_timestamp,
@@ -62,9 +100,24 @@ where
   event_timestamp >= now() - interval '5 minutes';
 ```
 
-### List ordered events that occurred in the past five to ten minutes
+```sql+sqlite
+select
+  event_name,
+  event_timestamp,
+  operation_name,
+  resource_id,
+  resource_type,
+  status
+from
+  azure_monitor_activity_log_event
+where
+  event_timestamp >= datetime('now', '-5 minutes');
+```
 
-```sql
+### List ordered events that occurred in the past five to ten minutes
+Determine the sequence of events that transpired in the recent past. This can be useful to track and analyze real-time activities, helping to identify patterns or anomalies for prompt action.
+
+```sql+postgres
 select
   event_name,
   id,
@@ -80,9 +133,26 @@ order by
   event_timestamp asc;
 ```
 
-### Get authorization details for events
+```sql+sqlite
+select
+  event_name,
+  id,
+  submission_timestamp,
+  event_timestamp,
+  category,
+  sub_status
+from
+  azure_monitor_activity_log_event
+where
+  event_timestamp between (datetime('now', '-10 minutes')) and (datetime('now', '-5 minutes'))
+order by
+  event_timestamp asc;
+```
 
-```sql
+### Get authorization details for events
+Determine the authorization details associated with various events to help manage permissions and access control in your Azure environment. This can help in identifying any unauthorized activities or potential security risks.
+
+```sql+postgres
 select
   event_name,
   authorization_info ->> 'Action' as authorization_action,
@@ -92,9 +162,20 @@ from
   azure_monitor_activity_log_event;
 ```
 
-### Get HTTP request details of events
+```sql+sqlite
+select
+  event_name,
+  json_extract(authorization_info, '$.Action') as authorization_action,
+  json_extract(authorization_info, '$.Role') as authorization_role,
+  json_extract(authorization_info, '$.Scope') as authorization_scope
+from
+  azure_monitor_activity_log_event;
+```
 
-```sql
+### Get HTTP request details of events
+Explore the specifics of HTTP requests in event logs to identify potential security threats or unusual activity. This could be useful in troubleshooting, security audits, or monitoring network traffic.
+
+```sql+postgres
 select
   event_name,
   operation_name,
@@ -107,11 +188,39 @@ from
   azure_monitor_activity_log_event;
 ```
 
+```sql+sqlite
+select
+  event_name,
+  operation_name,
+  event_timestamp,
+  json_extract(http_request, '$.ClientRequestID') as client_request_id,
+  json_extract(http_request, '$.ClientIPAddress') as ClientIPAddress,
+  json_extract(http_request, '$.Method') as method,
+  json_extract(http_request, '$.URI') as uri
+from
+  azure_monitor_activity_log_event;
+```
+
 ## Filter examples
 
 ### List evens by resource group
+Discover the segments that are active within a specific resource group in Azure Monitor's activity log. This can be particularly useful for tracking and managing operations, resources, and statuses associated with specific events.
 
-```sql
+```sql+postgres
+select
+  event_name,
+  id,
+  resource_id,
+  operation_name,
+  resource_type,
+  status
+from
+  azure_monitor_activity_log_event
+where
+  resource_group = 'my_rg';
+```
+
+```sql+sqlite
 select
   event_name,
   id,
@@ -126,8 +235,24 @@ where
 ```
 
 ### List events for a resource provider
+Explore the activities associated with a specific resource provider on Azure. This query is useful for tracking operations, event names, and statuses related to a particular network resource provider, helping you understand its activity and performance.
 
-```sql
+```sql+postgres
+select
+  event_name,
+  id,
+  resource_id,
+  operation_name,
+  resource_provider_name,
+  resource_type,
+  status
+from
+  azure_monitor_activity_log_event
+where
+  resource_provider_name = 'Microsoft.Network';
+```
+
+```sql+sqlite
 select
   event_name,
   id,
@@ -143,8 +268,23 @@ where
 ```
 
 ### List events for a particular resource
+Discover the segments that have undergone recent changes in a specific resource within your Azure environment. This is particularly useful for tracking changes and maintaining security compliance.
 
-```sql
+```sql+postgres
+select
+  event_name,
+  id,
+  resource_id,
+  event_timestamp,
+  correlation_id,
+  resource_provider_name
+from
+  azure_monitor_activity_log_event
+where
+  resource_id = '/subscriptions/hsjekr16-f95f-4771-bbb5-8237jsa349sl/resourceGroups/my_rg/providers/Microsoft.Network/publicIPAddresses/test-backup-ip';
+```
+
+```sql+sqlite
 select
   event_name,
   id,
