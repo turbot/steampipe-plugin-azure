@@ -287,7 +287,7 @@ jobs:
   build-postgres-15-fdw-linux-amd64:
     name: Build Postgres 15 FDW for Linux - AMD64
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
 
     steps:
       - name: Set environment variables
@@ -566,7 +566,7 @@ jobs:
   build-sqlite-extension-linux-amd64:
     name: Build SQLite Extension for Linux - AMD64
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
 
     steps:
       - name: Set environment variables
@@ -736,7 +736,7 @@ jobs:
   build-export-tool:
     name: Build Export Tool
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
 
     steps:
       - name: Set environment variables
@@ -810,7 +810,7 @@ jobs:
   build-draft-release:
     name: Build Draft Release
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
     needs:
       # Postgres 14
       - build-postgres-14-fdw-linux-amd64
