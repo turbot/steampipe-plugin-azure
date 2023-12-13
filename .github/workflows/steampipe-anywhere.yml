@@ -764,6 +764,15 @@ jobs:
           ls -ltr
           go mod tidy
 
+      - name: Increase swapfile
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 15G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          sudo swapon --show
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:

@@ -126,7 +126,7 @@ jobs:
   publish-deploy:
     name: Publish and Deploy
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
     needs:
       - build
 
@@ -262,7 +262,7 @@ jobs:
   tag-versions:
     name: Set Version tags
     runs-on:
-      labels: ubuntu_4_core
+      group: large-runners
     needs:
       - publish-deploy
 
