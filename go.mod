@@ -13,7 +13,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/tombuildsstuff/giovanni v0.15.1
-	github.com/turbot/go-kit v0.9.0-rc.1
+	github.com/turbot/go-kit v0.9.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.8.0
 )
 
@@ -53,7 +53,7 @@ require (
 	github.com/eko/gocache/store/ristretto/v4 v4.2.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
