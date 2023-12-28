@@ -61,6 +61,33 @@ from
   azure_container_registry;
 ```
 
+### Get webhook details of registries
+Webhooks in Azure Container Registry provide a way to trigger custom actions in response to events happening within the registry. These events can include the completion of Docker image pushes, or deletions in the container registry. When such an event occurs, Azure Container Registry sends an HTTP POST payload to the webhook's configured URL.
+
+```sql+postgres
+select
+  name,
+  w ->> 'location' as webhook_location,
+  w -> 'properties' -> 'actions' as actions,
+  w -> 'properties' ->> 'scope' as scope,
+  w -> 'properties' ->> 'status' as status
+from
+  azure_container_registry,
+  jsonb_array_elements(webhooks) as w;
+```
+
+```sql+sqlite
+select
+  name,
+  json_extract(w.value, '$.location') as webhook_location,
+  json_extract(w.value, '$.properties.actions') as actions,
+  json_extract(w.value, '$.properties.scope') as scope,
+  json_extract(w.value, '$.properties.status') as status
+from
+  azure_container_registry,
+  json_each(webhooks) as w;
+```
+
 ### List registries not configured with virtual network service endpoint
 Determine the areas in which registries are not configured with a virtual network service endpoint. This is useful in identifying potential security risks where network access is allowed without restrictions.
 
