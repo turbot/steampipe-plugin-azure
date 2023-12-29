@@ -259,6 +259,13 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Hydrate:     listSqlDatabaseVulnerabilityAssessmentScans,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "audit_policy",
+				Description: "The database blob auditing policy..",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSqlDatabaseBlobPolicies,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -427,6 +434,130 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	}
 
 	return res[0], nil
+}
+
+func getSqlDatabaseBlobPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(sql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	databaseName := *database.Name
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := sqlV5.NewDatabaseBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	if err != nil {
+		return nil, err
+	}
+
+	var blobPolicies []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Kind != nil {
+			objectMap["kind"] = i.Kind
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.DatabaseBlobAuditingPolicyProperties != nil {
+			obMap := make(map[string]interface{})
+			if i.DatabaseBlobAuditingPolicyProperties.RetentionDays != nil {
+				obMap["retentionDays"] = i.DatabaseBlobAuditingPolicyProperties.RetentionDays
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
+				obMap["AuditActionsAndGroups"] = i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
+				obMap["isAzureMonitorTargetEnabled"] = i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
+				obMap["isStorageSecondaryKeyInUse"] = i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs != nil {
+				obMap["queueDelayMs"] = i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.State != "" {
+				obMap["state"] = i.DatabaseBlobAuditingPolicyProperties.State
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint != nil {
+				obMap["storageEndpoint"] = i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
+				obMap["storageAccountAccessKey"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey
+			}
+			if i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
+				obMap["storageAccountSubscriptionID"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID
+			}
+			objectMap["databaseBlobAuditingPolicyProperties"] = obMap
+		}
+
+		blobPolicies = append(blobPolicies, objectMap)
+	}
+
+	if op.NotDone() {
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Kind != nil {
+				objectMap["kind"] = i.Kind
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.DatabaseBlobAuditingPolicyProperties != nil {
+				obMap := make(map[string]interface{})
+				if i.DatabaseBlobAuditingPolicyProperties.RetentionDays != nil {
+					obMap["retentionDays"] = i.DatabaseBlobAuditingPolicyProperties.RetentionDays
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
+					obMap["AuditActionsAndGroups"] = i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
+					obMap["isAzureMonitorTargetEnabled"] = i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
+					obMap["isStorageSecondaryKeyInUse"] = i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs != nil {
+					obMap["queueDelayMs"] = i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.State != "" {
+					obMap["state"] = i.DatabaseBlobAuditingPolicyProperties.State
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint != nil {
+					obMap["storageEndpoint"] = i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
+					obMap["storageAccountAccessKey"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey
+				}
+				if i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
+					obMap["storageAccountSubscriptionID"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID
+				}
+				objectMap["databaseBlobAuditingPolicyProperties"] = obMap
+			}
+
+			blobPolicies = append(blobPolicies, objectMap)
+		}
+	}
+
+	return blobPolicies, nil
 }
 
 func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
