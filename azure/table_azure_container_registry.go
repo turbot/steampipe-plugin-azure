@@ -181,6 +181,13 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 				Hydrate:     listContainerRegistryUsages,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "webhooks",
+				Description: "Webhooks in Azure Container Registry provide a way to trigger custom actions in response to events happening within the registry.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listContainerRegistryWebhooks,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -319,6 +326,40 @@ func listContainerRegistryLoginCredentials(ctx context.Context, d *plugin.QueryD
 	}
 
 	return op, nil
+}
+
+func listContainerRegistryWebhooks(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := containerregistry.NewWebhooksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	data := h.Item.(containerregistry.Registry)
+	resourceGroup := strings.Split(*data.ID, "/")[4]
+
+	op, err := client.List(ctx, resourceGroup, *data.Name)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_container_registry.listContainerRegistryWebhooks", "api_error", err)
+		return nil, err
+	}
+
+	webhooks := op.Values()
+
+	if op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_container_registry.listContainerRegistryWebhooks", "api_paging_error", err)
+			return nil, err
+		}
+
+		webhooks = append(webhooks, op.Values()...)
+	}
+
+	return webhooks, nil
 }
 
 func listContainerRegistryUsages(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
