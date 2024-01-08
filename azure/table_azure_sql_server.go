@@ -410,7 +410,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	return securityAlertPolicies, nil
 }
 
-func getSQLServerBlobPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getSQLServerBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
 	server := h.Item.(sqlv3.Server)
 
