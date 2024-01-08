@@ -263,7 +263,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "audit_policy",
 				Description: "The database blob auditing policy.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getSqlDatabaseBlobPolicies,
+				Hydrate:     getSqlDatabaseBlobAuditingPolicies,
 				Transform:   transform.FromValue(),
 			},
 
