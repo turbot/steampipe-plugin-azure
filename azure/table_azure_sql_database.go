@@ -436,7 +436,7 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	return res[0], nil
 }
 
-func getSqlDatabaseBlobPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	database := h.Item.(sql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	databaseName := *database.Name
