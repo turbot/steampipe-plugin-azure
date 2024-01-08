@@ -161,7 +161,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "audit_policy",
-				Description: "The SQL server blob auditing policy..",
+				Description: "The SQL server blob auditing policy.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSQLServerBlobAuditingPolicies,
 				Transform:   transform.FromValue(),
