@@ -176,6 +176,7 @@ func tableAzureSpringCloudApp(_ context.Context) *plugin.Table {
 func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudApps", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -206,7 +207,7 @@ func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	result, err := client.List(ctx, resourGroup, *service.Name)
 	if err != nil {
-		plugin.Logger(ctx).Error("listSpringCloudApps", "list", err)
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudApps", "api_error", err)
 		return nil, err
 	}
 
@@ -222,7 +223,7 @@ func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listSpringCloudServices", "list_paging", err)
+			plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServices", "list_paging", err)
 			return nil, err
 		}
 		for _, app := range result.Values() {
@@ -248,6 +249,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -257,7 +259,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listSpringCloudServicesBySubscription", "list", err)
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "api_error", err)
 		return nil, err
 	}
 	for _, service := range result.Values() {
@@ -267,7 +269,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listSpringCloudServicesBySubscription", "list_paging", err)
+			plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "paging_error", err)
 			return nil, err
 		}
 		for _, service := range result.Values() {
@@ -293,6 +295,7 @@ func getSpringCloudApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.getSpringCloudApp", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -302,7 +305,7 @@ func getSpringCloudApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	app, err := client.Get(ctx, resourceGroup, serviceName, name, "")
 	if err != nil {
-		plugin.Logger(ctx).Error("getSpringCloudService", "get", err)
+		plugin.Logger(ctx).Error("lazure_spring_cloud_app.getSpringCloudApp", "api_error", err)
 		return nil, err
 	}
 
@@ -314,37 +317,3 @@ func getSpringCloudApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	return nil, nil
 }
-
-// //// TRANSFORM FUNCTION
-
-// // If we return the API response directly, the output does not provide
-// // all the properties of NetworkProfile
-// func extractSpringCloudServiceNetworkProfile(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-// 	workspace := d.HydrateItem.(appplatform.ServiceResource)
-// 	var properties SpringCloudServiceNetworkProfile
-
-// 	if workspace.Properties.NetworkProfile != nil {
-// 		if workspace.Properties.NetworkProfile.ServiceRuntimeSubnetID != nil {
-// 			properties.ServiceRuntimeSubnetID = workspace.Properties.NetworkProfile.ServiceRuntimeSubnetID
-// 		}
-// 		if workspace.Properties.NetworkProfile.AppSubnetID != nil {
-// 			properties.AppSubnetID = workspace.Properties.NetworkProfile.AppSubnetID
-// 		}
-// 		if workspace.Properties.NetworkProfile.ServiceCidr != nil {
-// 			properties.ServiceCidr = workspace.Properties.NetworkProfile.ServiceCidr
-// 		}
-// 		if workspace.Properties.NetworkProfile.ServiceRuntimeNetworkResourceGroup != nil {
-// 			properties.ServiceRuntimeNetworkResourceGroup = workspace.Properties.NetworkProfile.ServiceRuntimeNetworkResourceGroup
-// 		}
-// 		if workspace.Properties.NetworkProfile.AppNetworkResourceGroup != nil {
-// 			properties.AppNetworkResourceGroup = workspace.Properties.NetworkProfile.AppNetworkResourceGroup
-// 		}
-// 		if workspace.Properties.NetworkProfile.OutboundIPs != nil {
-// 			if workspace.Properties.NetworkProfile.OutboundIPs.PublicIPs != nil {
-// 				properties.OutboundPublicIPs = workspace.Properties.NetworkProfile.OutboundIPs.PublicIPs
-// 			}
-// 		}
-// 	}
-
-// 	return properties, nil
-// }
