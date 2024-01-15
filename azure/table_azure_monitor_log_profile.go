@@ -91,8 +91,6 @@ func tableAzureMonitorLogProfile(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionTags,
 				Type:        proto.ColumnType_JSON,
 			},
-
-			// Azure standard columns
 			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
