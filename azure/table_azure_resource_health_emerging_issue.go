@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/resourcehealth/mgmt/2017-07-01/resourcehealth"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcehealth/armresourcehealth"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -43,19 +43,19 @@ func tableAzureResourceHealthEmergingIssue(ctx context.Context) *plugin.Table {
 				Name:        "refresh_timestamp",
 				Description: "Timestamp for when last time refreshed for ongoing emerging issue.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("EmergingIssue.RefreshTimestamp").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.RefreshTimestamp").Transform(convertDateToTime).Transform(transform.NullIfZeroValue),
 			},
 			{
 				Name:        "status_banners",
 				Description: "The list of emerging issues of banner type.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("EmergingIssue.StatusBanners"),
+				Transform:   transform.FromField("Properties.StatusBanners"),
 			},
 			{
 				Name:        "status_active_events",
 				Description: "The list of emerging issues of active event type.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("EmergingIssue.StatusActiveEvents"),
+				Transform:   transform.FromField("Properties.StatusActiveEvents"),
 			},
 
 			// Steampipe standard columns
@@ -85,31 +85,20 @@ func listResourceHealthEmergingIssues(ctx context.Context, d *plugin.QueryData, 
 	}
 	subscriptionID := session.SubscriptionID
 
-	emergingClient := resourcehealth.NewEmergingIssuesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	emergingClient.Authorizer = session.Authorizer
-	result, err := emergingClient.List(ctx)
+	clientFactory, err := armresourcehealth.NewClientFactory(subscriptionID, session.Creds, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "api_error", err)
-		return nil, err
-	}
-	for _, item := range result.Values() {
-		d.StreamListItem(ctx, item)
-
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
+		plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "NewClientFactory", err)
 	}
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := clientFactory.NewEmergingIssuesClient().NewListPager(nil)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "api_paging_error", err)
-			return nil, err
 		}
-		for _, item := range result.Values() {
-			d.StreamListItem(ctx, item)
+		for _, v := range page.Value {
+			d.StreamListItem(ctx, v)
 
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -117,7 +106,9 @@ func listResourceHealthEmergingIssues(ctx context.Context, d *plugin.QueryData, 
 				return nil, nil
 			}
 		}
+		if page.NextLink == nil {
+			break
+		}
 	}
-
 	return nil, err
 }

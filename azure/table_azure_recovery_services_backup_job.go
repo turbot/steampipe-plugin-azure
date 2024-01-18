@@ -135,8 +135,6 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 
 	vault := h.Item.(recoveryservices.Vault)
 
-	plugin.Logger(ctx).Error("Parameter ====>>", vault.Name, strings.Split(*vault.ID, "/")[4])
-
 	vaultName := d.EqualsQualString("vault_name")
 	rgName := d.EqualsQualString("resource_group")
 

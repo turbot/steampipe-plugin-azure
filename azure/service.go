@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -23,6 +25,7 @@ import (
 // Session info
 type Session struct {
 	Authorizer              autorest.Authorizer
+	Creds                   azcore.TokenCredential
 	CloudEnvironment        string
 	Expires                 *time.Time
 	GraphEndpoint           string
@@ -147,6 +150,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	settings.Values[auth.Resource] = resource
 
 	var authorizer autorest.Authorizer
+	var creds azcore.TokenCredential
 	var expiresOn *time.Time
 
 	// so if it was not in cache - create session
@@ -158,6 +162,11 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			logger.Error("GetNewSession", "NewAuthorizerFromEnvironmentWithResource error", err)
 			return nil, err
 		}
+		creds, err = azidentity.NewEnvironmentCredential(nil)
+		if err != nil {
+			logger.Error("GetNewSession.NewEnvironmentCredential", "get_token_from_cli_error", err)
+			return nil, err
+		}
 
 	// Get the subscription ID and tenant ID for "GRAPH" token audience
 	case "CLI":
@@ -165,6 +174,12 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		token, err := cli.GetTokenFromCLI(resource)
 		if err != nil {
 			logger.Error("GetNewSession", "get_token_from_cli_error", err)
+			return nil, err
+		}
+
+		creds, err = azidentity.NewAzureCLICredential(nil)
+		if err != nil {
+			logger.Error("GetNewSession.NewAzureCLICredential", "get_token_from_cli_error", err)
 			return nil, err
 		}
 
@@ -181,6 +196,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
+
 	default:
 		return nil, fmt.Errorf("invalid Azure authentication method: %s", authMethod)
 	}
@@ -206,6 +222,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	sess := &Session{
 		Authorizer:              authorizer,
+		Creds:                   creds,
 		CloudEnvironment:        settings.Environment.Name,
 		Expires:                 expiresOn,
 		GraphEndpoint:           settings.Environment.GraphEndpoint,
