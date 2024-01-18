@@ -272,7 +272,10 @@ func getTurbotData(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 
 	var vaultID, location string
 	for _, i := range op.Values() {
-		if *i.Name == vaultName {
+		// The secret ID contains the Vault Name in lowercase, and here we are extracting the vault name by splitting the secret ID.
+		// However, if the vault name is in camel case, the current condition will not match, leading to a runtime error: index out of range [4].
+		// To address this issue, we should include a ToLower() check to ensure consistency and prevent potential errors.
+		if strings.ToLower(*i.Name) == vaultName {
 			vaultID = *i.ID
 			location = *i.Location
 		}

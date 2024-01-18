@@ -63,6 +63,12 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SBNamespaceProperties.CreatedAt").Transform(convertDateToTime),
 			},
 			{
+				Name:        "disable_local_auth",
+				Description: "This property disables SAS authentication for the Service Bus namespace.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("SBNamespaceProperties.DisableLocalAuth"),
+			},
+			{
 				Name:        "metric_id",
 				Description: "The identifier for Azure insights metrics.",
 				Type:        proto.ColumnType_STRING,
@@ -91,6 +97,12 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Description: "The billing tier of this particular SKU. Valid values are: 'Basic', 'Standard', 'Premium'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier"),
+			},
+			{
+				Name:        "status",
+				Description: "Status of the namespace.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SBNamespaceProperties.Status"),
 			},
 			{
 				Name:        "updated_at",

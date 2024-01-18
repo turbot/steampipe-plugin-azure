@@ -1,3 +1,25 @@
+## v0.52.0 [2023-12-12]
+
+_What's new?_
+
+- The plugin can now be downloaded and used with the [Steampipe CLI](https://steampipe.io/install/steampipe.sh), as a [Postgres FDW](https://steampipe.io/install/postgres.sh), as a [SQLite extension](https://steampipe.io/install/sqlite.sh) and as a standalone [exporter](https://steampipe.io/install/export.sh).
+- The table docs have been updated to provide corresponding example queries for Postgres FDW and SQLite extension.
+- Docs license updated to match Steampipe [CC BY-NC-ND license](https://github.com/turbot/steampipe-plugin-azure/blob/main/docs/LICENSE).
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.8.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v580-2023-12-11) that includes plugin server enacapsulation for in-process and GRPC usage, adding Steampipe Plugin SDK version to `_ctx` column, and fixing connection and potential divide-by-zero bugs. ([#699](https://github.com/turbot/steampipe-plugin-azure/pull/699))
+
+## v0.51.0 [2023-11-02]
+
+_What's new?_
+
+- New tables added
+  - [azure_alert_management](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_alert_management) ([#685](https://github.com/turbot/steampipe-plugin-azure/pull/685))
+  - [azure_databricks_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_databricks_workspace) ([#692](https://github.com/turbot/steampipe-plugin-azure/pull/692))
+  - [azure_monitor_activity_log_event](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_monitor_activity_log_event) ([#684](https://github.com/turbot/steampipe-plugin-azure/pull/684))
+  - [azure_recovery_services_backup_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_backup_job) ([#681](https://github.com/turbot/steampipe-plugin-azure/pull/681))
+
 ## v0.50.1 [2023-10-04]
 
 _Dependencies_
