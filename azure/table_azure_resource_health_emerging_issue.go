@@ -25,8 +25,8 @@ func tableAzureResourceHealthEmergingIssue(ctx context.Context) *plugin.Table {
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
-				Type:        proto.ColumnType_STRING,
 				Description: "The name of the resource.",
+				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "id",
@@ -71,14 +71,6 @@ func tableAzureResourceHealthEmergingIssue(ctx context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
-
-			// Azure standard columns
-			{
-				Name:        "resource_group",
-				Description: ColumnDescriptionResourceGroup,
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID).Transform(toLower),
-			},
 		}),
 	}
 }
@@ -88,6 +80,7 @@ func tableAzureResourceHealthEmergingIssue(ctx context.Context) *plugin.Table {
 func listResourceHealthEmergingIssues(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -96,6 +89,7 @@ func listResourceHealthEmergingIssues(ctx context.Context, d *plugin.QueryData, 
 	emergingClient.Authorizer = session.Authorizer
 	result, err := emergingClient.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "api_error", err)
 		return nil, err
 	}
 	for _, item := range result.Values() {
@@ -111,6 +105,7 @@ func listResourceHealthEmergingIssues(ctx context.Context, d *plugin.QueryData, 
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_resource_health_emerging_issue.listResourceHealthEmergingIssues", "api_paging_error", err)
 			return nil, err
 		}
 		for _, item := range result.Values() {
