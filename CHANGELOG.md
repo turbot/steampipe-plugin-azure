@@ -1,3 +1,15 @@
+## v0.53.0 [2024-01-22]
+
+_Enhancements_
+
+- Added the `audit_policy` column to `azure_sql_database` and `azure_sql_server` tables. ([#711](https://github.com/turbot/steampipe-plugin-azure/pull/711))
+- Added the `webhooks` column to `azure_container_registry` table. ([#710](https://github.com/turbot/steampipe-plugin-azure/pull/710))
+- Added the `disable_local_auth` and `status` columns to `azure_servicebus_namespace` table. ([#715](https://github.com/turbot/steampipe-plugin-azure/pull/715))
+
+_Bug fixes_
+
+- Fixed the `azure_key_vault_secret` table to correctly return data when keyvault name is in camel-case. ([#638](https://github.com/turbot/steampipe-plugin-azure/pull/638))
+
 ## v0.52.0 [2023-12-12]
 
 _What's new?_
