@@ -144,6 +144,7 @@ type UsageDetails struct {
 func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "sessin_error", err)
 		return nil, err
 	}
 
@@ -170,8 +171,6 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 
 	filter := getConsumptionFilter(d.Quals)
 	skiptoken := ""
-	// top := int32(0)
-	// metric := consumption.MetrictypeUsageMetricType
 	var metric consumption.Metrictype
 	if d.EqualsQualString("metric") != "" {
 		switch d.EqualsQualString("metric") {
@@ -185,6 +184,7 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	result, err := consumptionClient.List(ctx, scope, expand, filter, skiptoken, nil, metric)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "api_error", err)
 		return nil, err
 	}
 
@@ -205,6 +205,7 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "paging_error", err)
 			return nil, err
 		}
 
@@ -227,7 +228,7 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 
 //// UTILITY FUNCTION
 
-// Get ussage details for all type(madern, legacy, basic) of consumption usage.
+// Get usage details for all type(madern, legacy, basic) of consumption usage.
 func getUsageDetailsByUsageDetailKind(res consumption.BasicUsageDetail, scope string) *UsageDetails {
 	result := &UsageDetails{}
 	modernUsageDetails, isModern := res.AsModernUsageDetail()
@@ -266,6 +267,9 @@ func getUsageDetailsByUsageDetailKind(res consumption.BasicUsageDetail, scope st
 	return result
 }
 
+
+// When directly accessing an inner attribute using the "FromField()" function, the value is being populated as null even though the response contains a value.
+// Therefore, it's necessary to extract the value of the nested attributes from the response.
 func extractUsageDetailProperties(value interface{}) map[string]interface{} {
 	data := make(map[string]interface{})
 
@@ -307,6 +311,7 @@ func structToMap(val reflect.Value) map[string]interface{} {
 	return result
 }
 
+// Construct the filter query parameter in accordance with the API's behavior.
 func getConsumptionFilter(quals plugin.KeyColumnQualMap) (filter string) {
 	filter = ""
 	if quals["filter"] != nil {
