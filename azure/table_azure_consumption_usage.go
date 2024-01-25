@@ -15,12 +15,12 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureConsuptionUsage(_ context.Context) *plugin.Table {
+func tableAzureConsumptionUsage(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_consumption_usage",
-		Description: "Azure Consuption Usage",
+		Description: "Azure Consumption Usage",
 		List: &plugin.ListConfig{
-			Hydrate: listConsuptionUsage,
+			Hydrate: listConsumptionUsage,
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "filter",
@@ -141,10 +141,10 @@ type UsageDetails struct {
 
 //// LIST FUNCTION
 
-func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listConsumptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "sessin_error", err)
+		plugin.Logger(ctx).Error("azure_consumption_usage.listConsumptionUsage", "sessin_error", err)
 		return nil, err
 	}
 
@@ -184,7 +184,7 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 	result, err := consumptionClient.List(ctx, scope, expand, filter, skiptoken, nil, metric)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "api_error", err)
+		plugin.Logger(ctx).Error("azure_consumption_usage.listConsumptionUsage", "api_error", err)
 		return nil, err
 	}
 
@@ -205,7 +205,7 @@ func listConsuptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_consumption_usage.listConsuptionUsage", "paging_error", err)
+			plugin.Logger(ctx).Error("azure_consumption_usage.listConsumptionUsage", "paging_error", err)
 			return nil, err
 		}
 

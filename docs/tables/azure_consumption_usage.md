@@ -3,7 +3,7 @@ title: "Steampipe Table: azure_consumption_usage - Query Azure Cost Management u
 description: "Allows users to query Azure Cost Management usage details for the defined scope."
 ---
 
-# Table: azure_consumption_usage - Query Azure Container Groups using SQL
+# Table: azure_consumption_usage - Query Azure Consumption Usage using SQL
 
 Azure Consumption Usage provide the ability to explore cost and usage data via multidimensional analysis, where creating customized filters and expressions allow you to answer consumption-related questions for your Azure resources.
 
@@ -102,7 +102,7 @@ select
   legacy_usage_detail ->> 'IsAzureCreditEligible' as is_azure_credit_eligible,
   legacy_usage_detail ->> 'ResourceID' as resource_id
 from
-  azure_consumption_usage;
+  azure_consumption_usage
 where
   kind = 'legacy'
   and metric = 'actualcost';
@@ -125,7 +125,8 @@ select
   json_extract(legacy_usage_detail, '$.ChargeType') as charge_type,
   json_extract(legacy_usage_detail, '$.IsAzureCreditEligible') as is_azure_credit_eligible,
   json_extract(legacy_usage_detail, '$.ResourceID') as resource_id
-from azure_consumption_usage
+from
+  azure_consumption_usage
 where
   kind = 'legacy'
   and metric = 'actualcost';
