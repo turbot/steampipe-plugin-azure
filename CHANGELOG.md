@@ -1,3 +1,93 @@
+## v0.53.0 [2024-01-22]
+
+_Enhancements_
+
+- Added the `audit_policy` column to `azure_sql_database` and `azure_sql_server` tables. ([#711](https://github.com/turbot/steampipe-plugin-azure/pull/711))
+- Added the `webhooks` column to `azure_container_registry` table. ([#710](https://github.com/turbot/steampipe-plugin-azure/pull/710))
+- Added the `disable_local_auth` and `status` columns to `azure_servicebus_namespace` table. ([#715](https://github.com/turbot/steampipe-plugin-azure/pull/715))
+
+_Bug fixes_
+
+- Fixed the `azure_key_vault_secret` table to correctly return data when keyvault name is in camel-case. ([#638](https://github.com/turbot/steampipe-plugin-azure/pull/638))
+
+## v0.52.0 [2023-12-12]
+
+_What's new?_
+
+- The plugin can now be downloaded and used with the [Steampipe CLI](https://steampipe.io/install/steampipe.sh), as a [Postgres FDW](https://steampipe.io/install/postgres.sh), as a [SQLite extension](https://steampipe.io/install/sqlite.sh) and as a standalone [exporter](https://steampipe.io/install/export.sh).
+- The table docs have been updated to provide corresponding example queries for Postgres FDW and SQLite extension.
+- Docs license updated to match Steampipe [CC BY-NC-ND license](https://github.com/turbot/steampipe-plugin-azure/blob/main/docs/LICENSE).
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.8.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v580-2023-12-11) that includes plugin server enacapsulation for in-process and GRPC usage, adding Steampipe Plugin SDK version to `_ctx` column, and fixing connection and potential divide-by-zero bugs. ([#699](https://github.com/turbot/steampipe-plugin-azure/pull/699))
+
+## v0.51.0 [2023-11-02]
+
+_What's new?_
+
+- New tables added
+  - [azure_alert_management](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_alert_management) ([#685](https://github.com/turbot/steampipe-plugin-azure/pull/685))
+  - [azure_databricks_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_databricks_workspace) ([#692](https://github.com/turbot/steampipe-plugin-azure/pull/692))
+  - [azure_monitor_activity_log_event](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_monitor_activity_log_event) ([#684](https://github.com/turbot/steampipe-plugin-azure/pull/684))
+  - [azure_recovery_services_backup_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_recovery_services_backup_job) ([#681](https://github.com/turbot/steampipe-plugin-azure/pull/681))
+
+## v0.50.1 [2023-10-04]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.6.2](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v562-2023-10-03) which prevents nil pointer reference errors for implicit hydrate configs. ([#679](https://github.com/turbot/steampipe-plugin-azure/pull/679))
+
+## v0.50.0 [2023-10-02]
+
+_Dependencies_
+
+- Upgraded to [steampipe-plugin-sdk v5.6.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v561-2023-09-29) with support for rate limiters. ([#676](https://github.com/turbot/steampipe-plugin-azure/pull/676))
+- Recompiled plugin with Go version `1.21`. ([#676](https://github.com/turbot/steampipe-plugin-azure/pull/676))
+
+## v0.49.0 [2023-08-31]
+
+_What's new?_
+
+- New tables added
+  - [azure_postgresql_flexible_server](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_postgresql_flexible_server) ([#659](https://github.com/turbot/steampipe-plugin-azure/pull/659))
+
+## v0.48.0 [2023-08-24]
+
+_Enhancements_
+
+- Added the `server_security_alert_policy` column to `azure_mysql_server` table. ([#656](https://github.com/turbot/steampipe-plugin-azure/pull/656))
+- Added the `storage_info_value` column to `azure_app_service_web_app` table. ([#657](https://github.com/turbot/steampipe-plugin-azure/pull/657))
+
+_Bug fixes_
+
+- Fixed the `disable_local_auth` column in `azure_eventgrid_domain` table to correctly return data instead of `null`. ([#658](https://github.com/turbot/steampipe-plugin-azure/pull/658))
+
+## v0.47.0 [2023-08-17]
+
+_Enhancements_
+
+- Added the `server_security_alert_policy` column to `azure_postgresql_server` table. ([#651](https://github.com/turbot/steampipe-plugin-azure/pull/651))
+- Added the `identity` column to `azure_kusto_cluster` table. ([#652](https://github.com/turbot/steampipe-plugin-azure/pull/652))
+- Added the `site_config_resource` column to `azure_app_service_web_app_slot` table. ([#653](https://github.com/turbot/steampipe-plugin-azure/pull/653))
+
+_Bug fixes_
+
+- Fixed the `GetConfig` of `azure_app_service_web_app_slot` table to correctly return data instead of an empty row. ([#654](https://github.com/turbot/steampipe-plugin-azure/pull/654))
+
+## v0.46.0 [2023-07-19]
+
+_What's new?_
+
+- New tables added
+  - [azure_container_group](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_container_group) ([#634](https://github.com/turbot/steampipe-plugin-azure/pull/634))
+
+## v0.45.1 [2023-07-14]
+
+_Bug fixes_
+
+- Fixed the `private_endpoint_connections` column of the `azure_mariadb_server` table to correctly return data instead of null. ([#631](https://github.com/turbot/steampipe-plugin-azure/pull/631))
+
 ## v0.45.0 [2023-07-06]
 
 _What's new?_

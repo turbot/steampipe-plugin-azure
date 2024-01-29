@@ -83,6 +83,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "disable_local_auth",
 				Description: "This boolean is used to enable or disable local auth. Default value is false. When the property is set to true, only AAD token will be used to authenticate if user is allowed to publish to the domain.",
 				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DomainProperties.DisableLocalAuth"),
 			},
 			{
 				Name:        "endpoint",

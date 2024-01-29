@@ -63,6 +63,12 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SBNamespaceProperties.CreatedAt").Transform(convertDateToTime),
 			},
 			{
+				Name:        "disable_local_auth",
+				Description: "This property disables SAS authentication for the Service Bus namespace.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("SBNamespaceProperties.DisableLocalAuth"),
+			},
+			{
 				Name:        "metric_id",
 				Description: "The identifier for Azure insights metrics.",
 				Type:        proto.ColumnType_STRING,
@@ -91,6 +97,12 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Description: "The billing tier of this particular SKU. Valid values are: 'Basic', 'Standard', 'Premium'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Sku.Tier"),
+			},
+			{
+				Name:        "status",
+				Description: "Status of the namespace.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SBNamespaceProperties.Status"),
 			},
 			{
 				Name:        "updated_at",
@@ -123,6 +135,13 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				Description: "The private endpoint connections of the namespace.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listServiceBusNamespacePrivateEndpointConnections,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "authorization_rules",
+				Description: "The authorization rules for a namespace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listServiceBusNamespaceAuthorizationRules,
 				Transform:   transform.FromValue(),
 			},
 
@@ -345,6 +364,72 @@ func listServiceBusNamespacePrivateEndpointConnections(ctx context.Context, d *p
 	}
 
 	return serviceBusNamespacePrivateEndpointConnections, nil
+}
+
+func listServiceBusNamespaceAuthorizationRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+
+	namespace := h.Item.(servicebus.SBNamespace)
+	resourceGroup := strings.Split(string(*namespace.ID), "/")[4]
+	namespaceName := *namespace.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := servicebus.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListAuthorizationRules(ctx, resourceGroup, namespaceName)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_servicebus_namespace.listServiceBusNamespaceAuthorizationRules", "api_error", err)
+		return nil, err
+	}
+
+	var serviceBusNamespaceAuthorizationRules []map[string]interface{}
+
+	for _, r := range op.Values() {
+		serviceBusNamespaceAuthorizationRules = append(serviceBusNamespaceAuthorizationRules, extractServiceBusNamespacAuthRule(r))
+	}
+
+	for op.NotDone() {
+		err = op.NextWithContext(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_servicebus_namespace.listServiceBusNamespaceAuthorizationRules", "paging_error", err)
+			return nil, err
+		}
+		for _, r := range op.Values() {
+			serviceBusNamespaceAuthorizationRules = append(serviceBusNamespaceAuthorizationRules, extractServiceBusNamespacAuthRule(r))
+		}
+	}
+
+	return serviceBusNamespaceAuthorizationRules, nil
+}
+
+// If we return the API response directly, the output will not provide the properties of AuthorizationRuleProperties
+func extractServiceBusNamespacAuthRule(i servicebus.SBAuthorizationRule) map[string]interface{} {
+	serviceBusNamespaceAuthRule := make(map[string]interface{})
+	if i.ID != nil {
+		serviceBusNamespaceAuthRule["id"] = *i.ID
+	}
+	if i.Name != nil {
+		serviceBusNamespaceAuthRule["name"] = *i.Name
+	}
+	if i.Type != nil {
+		serviceBusNamespaceAuthRule["type"] = *i.Type
+	}
+	if i.SystemData != nil {
+		serviceBusNamespaceAuthRule["systemData"] = *i.SystemData
+	}
+	if i.SBAuthorizationRuleProperties != nil {
+		if len(*i.SBAuthorizationRuleProperties.Rights) > 0 {
+			serviceBusNamespaceAuthRule["properties"] = map[string]interface{}{
+				"rights": *i.SBAuthorizationRuleProperties.Rights,
+			}
+		}
+	}
+	return serviceBusNamespaceAuthRule
 }
 
 // If we return the API response directly, the output will not provide the properties of PrivateEndpointConnections

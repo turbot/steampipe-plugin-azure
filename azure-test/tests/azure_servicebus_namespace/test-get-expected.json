@@ -8,6 +8,7 @@
         "defaultAction": "Allow",
         "ipRules": [],
         "publicNetworkAccess": "Enabled",
+        "trustedServiceAccessEnabled": false,
         "virtualNetworkRules": []
       }
     },

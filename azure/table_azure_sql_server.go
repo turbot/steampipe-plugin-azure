@@ -159,6 +159,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Hydrate:     listSQLServerVirtualNetworkRules,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "audit_policy",
+				Description: "The SQL server blob auditing policy.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSQLServerBlobAuditingPolicies,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -401,6 +408,123 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 		securityAlertPolicies = append(securityAlertPolicies, objectMap)
 	}
 	return securityAlertPolicies, nil
+}
+
+func getSQLServerBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+
+	server := h.Item.(sqlv3.Server)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	client := sql.NewServerBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	var blobPolicies []map[string]interface{}
+	for _, i := range op.Values() {
+		objectMap := make(map[string]interface{})
+		if i.ID != nil {
+			objectMap["id"] = i.ID
+		}
+		if i.Name != nil {
+			objectMap["name"] = i.Name
+		}
+		if i.Type != nil {
+			objectMap["type"] = i.Type
+		}
+		if i.ServerBlobAuditingPolicyProperties != nil {
+			obMap := make(map[string]interface{})
+			if i.ServerBlobAuditingPolicyProperties.RetentionDays != nil {
+				obMap["retentionDays"] = i.ServerBlobAuditingPolicyProperties.RetentionDays
+			}
+			if i.ServerBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
+				obMap["AuditActionsAndGroups"] = i.ServerBlobAuditingPolicyProperties.AuditActionsAndGroups
+			}
+			if i.ServerBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
+				obMap["isAzureMonitorTargetEnabled"] = i.ServerBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
+			}
+			if i.ServerBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
+				obMap["isStorageSecondaryKeyInUse"] = i.ServerBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
+			}
+			if i.ServerBlobAuditingPolicyProperties.QueueDelayMs != nil {
+				obMap["queueDelayMs"] = i.ServerBlobAuditingPolicyProperties.QueueDelayMs
+			}
+			if i.ServerBlobAuditingPolicyProperties.State != "" {
+				obMap["state"] = i.ServerBlobAuditingPolicyProperties.State
+			}
+			if i.ServerBlobAuditingPolicyProperties.StorageEndpoint != nil {
+				obMap["storageEndpoint"] = i.ServerBlobAuditingPolicyProperties.StorageEndpoint
+			}
+			if i.ServerBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
+				obMap["storageAccountAccessKey"] = i.ServerBlobAuditingPolicyProperties.StorageAccountAccessKey
+			}
+			if i.ServerBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
+				obMap["storageAccountSubscriptionID"] = i.ServerBlobAuditingPolicyProperties.StorageAccountSubscriptionID
+			}
+			objectMap["serverBlobAuditingPolicyProperties"] = obMap
+		}
+
+		blobPolicies = append(blobPolicies, objectMap)
+	}
+
+	if op.NotDone() {
+		for _, i := range op.Values() {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.ServerBlobAuditingPolicyProperties != nil {
+				obMap := make(map[string]interface{})
+				if i.ServerBlobAuditingPolicyProperties.RetentionDays != nil {
+					obMap["retentionDays"] = i.ServerBlobAuditingPolicyProperties.RetentionDays
+				}
+				if i.ServerBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
+					obMap["AuditActionsAndGroups"] = i.ServerBlobAuditingPolicyProperties.AuditActionsAndGroups
+				}
+				if i.ServerBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
+					obMap["isAzureMonitorTargetEnabled"] = i.ServerBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
+				}
+				if i.ServerBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
+					obMap["isStorageSecondaryKeyInUse"] = i.ServerBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
+				}
+				if i.ServerBlobAuditingPolicyProperties.QueueDelayMs != nil {
+					obMap["queueDelayMs"] = i.ServerBlobAuditingPolicyProperties.QueueDelayMs
+				}
+				if i.ServerBlobAuditingPolicyProperties.State != "" {
+					obMap["state"] = i.ServerBlobAuditingPolicyProperties.State
+				}
+				if i.ServerBlobAuditingPolicyProperties.StorageEndpoint != nil {
+					obMap["storageEndpoint"] = i.ServerBlobAuditingPolicyProperties.StorageEndpoint
+				}
+				if i.ServerBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
+					obMap["storageAccountAccessKey"] = i.ServerBlobAuditingPolicyProperties.StorageAccountAccessKey
+				}
+				if i.ServerBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
+					obMap["storageAccountSubscriptionID"] = i.ServerBlobAuditingPolicyProperties.StorageAccountSubscriptionID
+				}
+				objectMap["serverBlobAuditingPolicyProperties"] = obMap
+			}
+
+			blobPolicies = append(blobPolicies, objectMap)
+		}
+	}
+
+	return blobPolicies, nil
 }
 
 func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {

@@ -155,6 +155,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SiteProperties.SiteConfig"),
 			},
 			{
+				Name:        "storage_info_value",
+				Description: "AzureStorageInfoValue azure Files or Blob Storage access information value for dictionary storage.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getWebAppStorageAccount,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "vnet_connection",
 				Description: "Describes the virtual network connection for the app.",
 				Type:        proto.ColumnType_JSON,
@@ -250,7 +257,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 //// HYDRATE FUNCTIONS
 
 func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAppServiceWebApp")
+	plugin.Logger(ctx).Debug("getAppServiceWebApp")
 
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
@@ -284,8 +291,30 @@ func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	return nil, nil
 }
 
+func getWebAppStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Debug("getWebAppStorageAccount")
+
+	data := h.Item.(web.Site)
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	webClient.Authorizer = session.Authorizer
+
+	op, err := webClient.ListAzureStorageAccounts(ctx, *data.SiteProperties.ResourceGroup, *data.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
 func getAppServiceWebAppSiteConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAppServiceWebAppSiteConfiguration")
+	plugin.Logger(ctx).Debug("getAppServiceWebAppSiteConfiguration")
 
 	data := h.Item.(web.Site)
 
@@ -307,7 +336,7 @@ func getAppServiceWebAppSiteConfiguration(ctx context.Context, d *plugin.QueryDa
 }
 
 func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAppServiceWebAppSiteAuthSetting")
+	plugin.Logger(ctx).Debug("getAppServiceWebAppSiteAuthSetting")
 
 	data := h.Item.(web.Site)
 
@@ -329,7 +358,7 @@ func getAppServiceWebAppSiteAuthSetting(ctx context.Context, d *plugin.QueryData
 }
 
 func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getAppServiceWebAppVnetConnection")
+	plugin.Logger(ctx).Debug("getAppServiceWebAppVnetConnection")
 
 	data := h.Item.(web.Site)
 
