@@ -194,3 +194,30 @@ select
 from
   azure_servicebus_namespace;
 ```
+
+### Get authorization rules of namespaces
+An Azure Service Bus Authorization Rule is a security feature that defines the set of permissions assigned to a user or application for accessing and performing operations within a Service Bus namespace or on specific entities like queues, topics, and subscriptions. These rules manage who can send, receive, and manage messages. They play a crucial role in controlling access and ensuring secure operations within the Azure Service Bus environment. Each rule can grant different levels of access, ranging from listening to messages, sending messages, or managing the entity.
+
+```sql+postgres
+select
+  name,
+  r ->> 'name' as rule_name,
+  r ->> 'id' as rule_id,
+  r ->> 'type' as rule_type,
+  r ->> 'properties' as rule_properties
+from
+  azure_servicebus_namespace as n,
+  jsonb_array_elements(authorization_rules) as r;
+```
+
+```sql+sqlite
+select
+  name,
+  json_extract(r.value, '$.name') as rule_name,
+  json_extract(r.value, '$.id') as rule_id,
+  json_extract(r.value, '$.type') as rule_type,
+  json_extract(r.value, '$.properties') as rule_properties
+from
+  azure_servicebus_namespace as n,
+  json_each(n.authorization_rules) as r;
+```
