@@ -83,13 +83,13 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 				Name:        "not_before",
 				Description: "Not before date in UTC.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "NotBefore").Transform(transform.UnixMsToTimestamp),
+				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "NotBefore").Transform(transform.UnixMsToTimestamp).NullIfZero(),
 			},
 			{
 				Name:        "expires",
 				Description: "Expiry date in UTC.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "Expires").Transform(transform.UnixMsToTimestamp),
+				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "Expires").Transform(transform.UnixMsToTimestamp).NullIfZero(),
 			},
 			{
 				Name:        "created",
@@ -101,7 +101,7 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 				Name:        "updated",
 				Description: "Last updated time in UTC.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "Updated").Transform(transform.UnixMsToTimestamp),
+				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "Updated").Transform(transform.UnixMsToTimestamp).NullIfZero(),
 			},
 			{
 				Name:        "key_id.",
