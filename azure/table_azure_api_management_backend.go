@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/apimanagement/mgmt/2020-12-01/apimanagement"
@@ -27,6 +28,28 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAPIManagements,
 			Hydrate:       listAPIManagementBackends,
+			KeyColumns: plugin.KeyColumnSlice{
+				{
+					Name:      "service_name",
+					Require:   plugin.Optional,
+					Operators: []string{"="},
+				},
+				{
+					Name:      "name",
+					Require:   plugin.Optional,
+					Operators: []string{"=", "<>"},
+				},
+				{
+					Name:      "url",
+					Require:   plugin.Optional,
+					Operators: []string{"=", "<>"},
+				},
+				{
+					Name:      "resource_group",
+					Require:   plugin.Optional,
+					Operators: []string{"="},
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -42,7 +65,7 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "url",
-				Description: "Runtime Url of the Backend.",
+				Description: "Runtime Url of the API management backend.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("BackendContractProperties.URL"),
 			},
@@ -53,43 +76,43 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "protocol",
-				Description: "Backend communication protocol. Possible values include: 'BackendProtocolHTTP', 'BackendProtocolSoap'.",
+				Description: "API management backend communication protocol. Possible values include: 'BackendProtocolHTTP', 'BackendProtocolSoap'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("BackendContractProperties.Protocol"),
 			},
 			{
 				Name:        "description",
-				Description: "Backend Description.",
+				Description: "The API management backend Description.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("BackendContractProperties.Description"),
 			},
 			{
 				Name:        "resource_id",
-				Description: "Backend Description.",
+				Description: "Management Uri of the Resource in External System. This url can be the Arm Resource Id of Logic Apps, Function Apps or Api Apps.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("BackendContractProperties.ResourceID"),
 			},
 			{
 				Name:        "properties",
-				Description: "Backend Properties contract.",
+				Description: "The API management backend Properties contract.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendContractProperties.Properties"),
 			},
 			{
 				Name:        "credentials",
-				Description: "Backend Credentials Contract Properties.",
+				Description: "The API management backend credentials contract properties.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendContractProperties.Credentials"),
 			},
 			{
 				Name:        "proxy",
-				Description: "Backend Proxy Contract Properties.",
+				Description: "The API management backend proxy contract properties.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendContractProperties.Proxy"),
 			},
 			{
 				Name:        "tls",
-				Description: "Backend TLS Properties.",
+				Description: "The API management backend TLS properties.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("BackendContractProperties.TLS"),
 			},
@@ -117,7 +140,7 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ID").Transform(idToAkas),
+				Transform:   transform.FromField("ID").Transform(transform.EnsureStringArray),
 			},
 
 			// Azure standard columns
@@ -143,8 +166,18 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	serviceName := *serviceInfo.Name
 	resourceGroup := strings.Split(*serviceInfo.ID, "/")[4]
 
+	if d.EqualsQualString("service_name") != "" || d.EqualsQualString("resource_group") != "" {
+		if d.EqualsQualString("service_name") != "" && d.EqualsQualString("service_name") != serviceName {
+			return nil, nil
+		}
+		if d.EqualsQualString("resource_group") != "" && d.EqualsQualString("resource_group") != resourceGroup {
+			return nil, nil
+		}
+	}
+
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -152,9 +185,36 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	apiManagementBackendClient := apimanagement.NewBackendClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementBackendClient.Authorizer = session.Authorizer
 
-	result, err := apiManagementBackendClient.ListByService(ctx, resourceGroup, serviceName, "", nil, nil)
+	// Build filter string
+	filter := ""
+	if d.EqualsQualString("name") != "" || d.EqualsQualString("url") != "" {
+		filterQuals := []string{"name", "url"}
+		for _, columnName := range filterQuals {
+			if d.Quals[columnName] != nil {
+				quals := d.Quals[columnName].Quals
+				for _, q := range quals {
+					switch q.Operator {
+					case "=":
+						if filter == "" {
+							filter = fmt.Sprintf(columnName+" eq '%s' ", q.Value.GetStringValue())
+						} else {
+							filter = filter + " and " + fmt.Sprintf(columnName+" eq '%s' ", q.Value.GetStringValue())
+						}
+					case "<>":
+						if filter == "" {
+							filter = fmt.Sprintf(columnName+" ne '%s' ", q.Value.GetStringValue())
+						} else {
+							filter = filter + " and " + fmt.Sprintf(columnName+" ne '%s' ", q.Value.GetStringValue())
+						}
+					}
+				}
+			}
+		}
+	}
+
+	result, err := apiManagementBackendClient.ListByService(ctx, resourceGroup, serviceName, filter, nil, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("listAPIManagementBackends", "list", err)
+		plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "api_error", err)
 		return nil, err
 	}
 	for _, apiManagementBackend := range result.Values() {
@@ -173,7 +233,7 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listAPIManagementBackends", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "list_paging", err)
 			return nil, err
 		}
 
@@ -193,7 +253,6 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 //// HYDRATE FUNCTIONS
 
 func getAPIManagementBackend(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Debug("getAPIManagementBackend")
 
 	backendID := d.EqualsQualString("backend_id")
 	serviceName := d.EqualsQualString("service_name")
@@ -208,6 +267,7 @@ func getAPIManagementBackend(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -217,7 +277,7 @@ func getAPIManagementBackend(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	op, err := apiManagementBackendClient.Get(ctx, resourceGroup, serviceName, backendID)
 	if err != nil {
-		plugin.Logger(ctx).Error("getAPIManagementBackend", "get", err)
+		plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "api_error", err)
 		return nil, err
 	}
 
