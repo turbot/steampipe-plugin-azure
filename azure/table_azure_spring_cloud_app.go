@@ -207,7 +207,7 @@ func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	result, err := client.List(ctx, resourGroup, *service.Name)
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudApps", "api_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudApps", "api_error", err)
 		return nil, err
 	}
 
