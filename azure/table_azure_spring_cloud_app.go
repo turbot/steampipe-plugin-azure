@@ -176,7 +176,7 @@ func tableAzureSpringCloudApp(_ context.Context) *plugin.Table {
 func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudApps", "session_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudApps", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
