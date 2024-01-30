@@ -214,6 +214,11 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 
 	result, err := apiManagementBackendClient.ListByService(ctx, resourceGroup, serviceName, filter, nil, nil)
 	if err != nil {
+		// API throws error during the resource creation with status code 400.
+		// azure: apimanagement.BackendClient#ListByService: Failure responding to request: StatusCode=400 -- Original Error: autorest/azure: Service returned an error. Status=400 Code="InvalidOperation" Message="API Management service is activating" (SQLSTATE HV000)
+		if strings.Contains(err.Error(), "API Management service is activating") {
+			return nil, nil
+		}
 		plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "api_error", err)
 		return nil, err
 	}
