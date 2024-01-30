@@ -223,7 +223,7 @@ func listSpringCloudApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServices", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudServices", "list_paging", err)
 			return nil, err
 		}
 		for _, app := range result.Values() {
@@ -249,7 +249,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "session_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudServicesBySubscription", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -259,7 +259,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "api_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudServicesBySubscription", "api_error", err)
 		return nil, err
 	}
 	for _, service := range result.Values() {
@@ -269,7 +269,7 @@ func listSpringCloudServicesBySubscription(ctx context.Context, d *plugin.QueryD
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("lazure_spring_cloud_app.listSpringCloudServicesBySubscription", "paging_error", err)
+			plugin.Logger(ctx).Error("azure_spring_cloud_app.listSpringCloudServicesBySubscription", "paging_error", err)
 			return nil, err
 		}
 		for _, service := range result.Values() {
@@ -295,7 +295,7 @@ func getSpringCloudApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.getSpringCloudApp", "session_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.getSpringCloudApp", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -305,7 +305,7 @@ func getSpringCloudApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	app, err := client.Get(ctx, resourceGroup, serviceName, name, "")
 	if err != nil {
-		plugin.Logger(ctx).Error("lazure_spring_cloud_app.getSpringCloudApp", "api_error", err)
+		plugin.Logger(ctx).Error("azure_spring_cloud_app.getSpringCloudApp", "api_error", err)
 		return nil, err
 	}
 
