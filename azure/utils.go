@@ -50,6 +50,15 @@ func getLastPathElement(path string) string {
 	return pathItems[len(pathItems)-1]
 }
 
+func extractPropertyByIndexSplitByBackSlash(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	index := d.Param.(int)
+	id := types.SafeString(d.Value)
+	// Common resource properties
+	splitID := strings.Split(id, "/")
+
+	return splitID[index], nil
+}
+
 func convertDateToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	if d.Value == nil {
 		return nil, nil
