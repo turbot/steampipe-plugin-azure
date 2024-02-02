@@ -1,3 +1,16 @@
+## v0.54.0 [2024-02-02]
+
+_What's new?_
+
+- New tables added
+  - [azure_api_management_backend](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_api_management_backend) ([#689](https://github.com/turbot/steampipe-plugin-azure/pull/689))
+  - [azure_consumption_usage](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_consumption_usage) ([#721](https://github.com/turbot/steampipe-plugin-azure/pull/721))
+  - [azure_monitor_log_profile](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_monitor_log_profile) ([#717](https://github.com/turbot/steampipe-plugin-azure/pull/717))
+
+_Enhancements_
+
+- Added the `authorization_rules` column to `azure_servicebus_namespace` table. ([#719](https://github.com/turbot/steampipe-plugin-azure/pull/719))
+
 ## v0.53.0 [2024-01-22]
 
 _Enhancements_
