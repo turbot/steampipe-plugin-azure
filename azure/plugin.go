@@ -32,6 +32,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_ad_user":                                               tableAzureAdUser(ctx),
 			"azure_alert_management":                                      tableAzureAlertMangement(ctx),
 			"azure_api_management":                                        tableAzureAPIManagement(ctx),
+			"azure_api_management_backend":                                tableAzureAPIManagementBackend(ctx),
 			"azure_app_configuration":                                     tableAzureAppConfiguration(ctx),
 			"azure_app_service_environment":                               tableAzureAppServiceEnvironment(ctx),
 			"azure_app_service_function_app":                              tableAzureAppServiceFunctionApp(ctx),
