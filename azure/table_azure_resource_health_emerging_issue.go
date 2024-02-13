@@ -43,7 +43,7 @@ func tableAzureResourceHealthEmergingIssue(ctx context.Context) *plugin.Table {
 				Name:        "refresh_timestamp",
 				Description: "Timestamp for when last time refreshed for ongoing emerging issue.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.RefreshTimestamp").Transform(convertDateToTime).Transform(transform.NullIfZeroValue),
+				Transform:   transform.FromField("Properties.RefreshTimestamp").Transform(transform.NullIfZeroValue),
 			},
 			{
 				Name:        "status_banners",
