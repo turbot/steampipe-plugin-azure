@@ -111,7 +111,7 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Kid"),
 			},
 			{
-				Name:        "secret_id.",
+				Name:        "secret_id",
 				Description: "The secret id.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getKeyVaultCertificate,
