@@ -104,7 +104,7 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 				Transform:   transform.FromP(convertPointerUnixTimestampToTimestamp, "Updated").Transform(transform.UnixMsToTimestamp).NullIfZero(),
 			},
 			{
-				Name:        "key_id.",
+				Name:        "key_id",
 				Description: "The key id.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getKeyVaultCertificate,
