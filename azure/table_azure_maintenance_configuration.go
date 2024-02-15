@@ -21,7 +21,7 @@ func tableAzureMaintenanceConfiguration(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"resource_group", "name"}),
 			Hydrate:    getMaintenanceConfiguration,
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "InvalidApiVersionParameter", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound",  "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
@@ -198,7 +198,7 @@ func getMaintenanceConfiguration(ctx context.Context, d *plugin.QueryData, h *pl
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_maintenance_configuration.listMaintenanceConfigurations", "session_error", err)
+		plugin.Logger(ctx).Error("azure_maintenance_configuration.getMaintenanceConfiguration", "session_error", err)
 		return nil, err
 	}
 
@@ -209,7 +209,7 @@ func getMaintenanceConfiguration(ctx context.Context, d *plugin.QueryData, h *pl
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_maintenance_configuration.listMaintenanceConfigurations", "api_error", err)
+		plugin.Logger(ctx).Error("azure_maintenance_configuration.getMaintenanceConfiguration", "api_error", err)
 		return nil, err
 	}
 
