@@ -119,6 +119,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_log_profile":                                           tableAzureLogProfile(ctx),
 			"azure_logic_app_workflow":                                    tableAzureLogicAppWorkflow(ctx),
 			"azure_machine_learning_workspace":                            tableAzureMachineLearningWorkspace(ctx),
+			"azure_maintenance_configuration":                             tableAzureMaintenanceConfiguration(ctx),
 			"azure_management_group":                                      tableAzureManagementGroup(ctx),
 			"azure_management_lock":                                       tableAzureManagementLock(ctx),
 			"azure_mariadb_server":                                        tableAzureMariaDBServer(ctx),
