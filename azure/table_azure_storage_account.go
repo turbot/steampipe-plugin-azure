@@ -437,6 +437,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromValue(),
 			},
 			{
+				Name:        "access_keys",
+				Description: "The list of access keys or Kerberos keys (if active directory enabled) for the specified storage account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listAzureStorageAccountAccessKeys,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "virtual_network_rules",
 				Description: "A list of virtual network rules.",
 				Type:        proto.ColumnType_JSON,
@@ -702,6 +709,45 @@ func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.Query
 	}
 
 	return encryptionScopes, nil
+}
+
+func listAzureStorageAccountAccessKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	// Create session
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listAzureStorageAccountAccessKeys", "session_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	storageClient.Authorizer = session.Authorizer
+
+	keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listAzureStorageAccountAccessKeys", "api_error", err)
+		return nil, err
+	}
+	var keysMap []map[string]interface{}
+	if len(*keys.Keys) > 0 {
+		for _, key := range *keys.Keys {
+			keyMap := make(map[string]interface{})
+			if key.KeyName != nil {
+				keyMap["KeyName"] = *key.KeyName
+			}
+			if key.Value != nil {
+				keyMap["Value"] = *key.Value
+			}
+			if key.Permissions != "" {
+				keyMap["Permissions"] = key.Permissions
+			}
+			keysMap = append(keysMap, keyMap)
+		}
+	}
+
+	return keysMap, nil
 }
 
 func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
