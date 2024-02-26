@@ -11,13 +11,13 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureComputeVirtualMachineMetricMemoryAvailableUtilization(_ context.Context) *plugin.Table {
+func tableAzureComputeVirtualMachineMetricAvailableMemoryHourly(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_compute_virtual_machine_metric_memory_available_utilization",
-		Description: "Azure Compute Virtual Machine Metrics - Memory Available Utilization",
+		Name:        "azure_compute_virtual_machine_metric_available_memory_hourly",
+		Description: "Azure Compute Virtual Machine Metrics - Memory Available Utilization (Hourly)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listComputeVirtualMachines,
-			Hydrate:       listComputeVirtualMachineMetricAvailableCpuUtilization,
+			Hydrate:       listComputeVirtualMachineMetricAvailableMemoryHourly,
 		},
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{
@@ -32,8 +32,8 @@ func tableAzureComputeVirtualMachineMetricMemoryAvailableUtilization(_ context.C
 
 //// LIST FUNCTION
 
-func listComputeVirtualMachineMetricAvailableCpuUtilization(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listComputeVirtualMachineMetricAvailableMemoryHourly(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	vmInfo := h.Item.(compute.VirtualMachine)
 
-	return listAzureMonitorMetricStatistics(ctx, d, "FIVE_MINUTES", "Microsoft.Compute/virtualMachines", "Available Memory Bytes", *vmInfo.ID)
+	return listAzureMonitorMetricStatistics(ctx, d, "HOURLY", "Microsoft.Compute/virtualMachines", "Available Memory Bytes", *vmInfo.ID)
 }

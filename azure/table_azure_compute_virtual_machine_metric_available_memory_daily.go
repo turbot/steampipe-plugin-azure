@@ -11,13 +11,13 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureComputeVirtualMachineMetricMemoryAvailableUtilizationDaily(_ context.Context) *plugin.Table {
+func tableAzureComputeVirtualMachineMetricAvailableMemoryDaily(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_compute_virtual_machine_metric_memory_available_utilization_daily",
+		Name:        "azure_compute_virtual_machine_metric_available_memory_daily",
 		Description: "Azure Compute Virtual Machine Metrics - Memory Available Utilization (Daily)",
 		List: &plugin.ListConfig{
 			ParentHydrate: listComputeVirtualMachines,
-			Hydrate:       listComputeVirtualMachineMetricAvailableCpuUtilizationDaily,
+			Hydrate:       listComputeVirtualMachineMetricAvailableMemoryDaily,
 		},
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{
@@ -32,7 +32,7 @@ func tableAzureComputeVirtualMachineMetricMemoryAvailableUtilizationDaily(_ cont
 
 //// LIST FUNCTION
 
-func listComputeVirtualMachineMetricAvailableCpuUtilizationDaily(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listComputeVirtualMachineMetricAvailableMemoryDaily(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	vmInfo := h.Item.(compute.VirtualMachine)
 
 	return listAzureMonitorMetricStatistics(ctx, d, "DAILY", "Microsoft.Compute/virtualMachines", "Available Memory Bytes", *vmInfo.ID)
