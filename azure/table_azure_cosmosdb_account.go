@@ -3,8 +3,7 @@ package azure
 import (
 	"context"
 	"strings"
-
-	"github.com/Azure/azure-sdk-for-go/services/preview/cosmos-db/mgmt/2021-04-01-preview/documentdb"
+	"github.com/Azure/azure-sdk-for-go/services/cosmos-db/mgmt/2021-06-15/documentdb"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -140,6 +139,13 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 				Description: "Specifies whether to enable/disable Virtual Network ACL rules.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.IsVirtualNetworkFilterEnabled"),
+				Default:     false,
+			},
+			{
+				Name:        "disable_local_auth",
+				Description: "Specifies whether CosmosDB account is using AAD and RBAC.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("DatabaseAccount.DatabaseAccountGetProperties.DisableLocalAuth"),
 				Default:     false,
 			},
 			{
