@@ -1,3 +1,17 @@
+## v0.55.0 [2024-03-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_metric_available_memory](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_available_memory) ([#729](https://github.com/turbot/steampipe-plugin-azure/pull/729))
+  - [azure_compute_virtual_machine_metric_available_memory_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_available_memory_daily) ([#729](https://github.com/turbot/steampipe-plugin-azure/pull/729))
+  - [azure_compute_virtual_machine_metric_available_memory_hourly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_metric_available_memory_hourly) ([#729](https://github.com/turbot/steampipe-plugin-azure/pull/729))
+
+_Enhancements_
+
+- Added the `access_keys` column to `azure_storage_account` table. ([#730](https://github.com/turbot/steampipe-plugin-azure/pull/730))
+- Added the `disable_local_auth` column to `azure_cosmosdb_account` table. ([#736](https://github.com/turbot/steampipe-plugin-azure/pull/736))
+
 ## v0.54.0 [2024-02-02]
 
 _What's new?_
