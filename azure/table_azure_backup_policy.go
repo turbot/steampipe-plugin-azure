@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	// "fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
