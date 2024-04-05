@@ -19,8 +19,8 @@ Analyze the settings to understand the backup schedule and retention policy of y
 
 ```sql+postgres
 select
-  id,
   name,
+  id,
   resource_group,
   vault_name,
   type
@@ -30,8 +30,8 @@ from
 
 ```sql+sqlite
 select
-  id,
   name,
+  id,
   resource_group,
   vault_name,
   type
@@ -39,3 +39,121 @@ from
   azure_backup_policy;
 ```
 
+### Count the number of policies per vault
+
+Identify the number of policies associated with each backup vault to understand the distribution of policies across your Azure Backup environment.
+
+```sql+postgres
+select
+  vault_name,
+  count(*) as policy_count
+from
+  azure_backup_policy
+group by
+  vault_name;
+```
+
+```sql+sqlite
+select
+  vault_name,
+  count(*) as policy_count
+from
+  azure_backup_policy
+group by
+  vault_name;
+```
+
+### List policies with Azure IAAS VM Protection backup configuration
+
+Retrieve the policies that are associated with Azure VM backup configurations to understand the backup settings for your virtual machines.
+
+```sql+postgres
+select
+  name,
+  id,
+  resource_group,
+  vault_name,
+  azure_iaas_vm_protection_policy_property,
+  type
+from
+  azure_backup_policy
+where
+  azure_iaas_vm_protection_policy_property is not null;
+```
+
+```sql+sqlite
+select
+  name,
+  id,
+  resource_group,
+  vault_name,
+  azure_iaas_vm_protection_policy_property,
+  type
+from
+  azure_backup_policy
+where
+  azure_iaas_vm_protection_policy_property is not null;
+```
+
+### Find Azure IAAS VM Protection policies with retention duration less than 30 days
+
+Identify the Azure VM backup policies with a retention duration of less than 30 days to ensure that the backup data is retained for a sufficient period.
+
+```sql+postgres
+select
+  name,
+  id,
+  resource_group,
+  vault_name,
+  azure_iaas_vm_protection_policy_property->'retentionPolicy'->'dailySchedule'->>'retentionDuration' as retention_duration_days
+from
+  azure_backup_policy
+where
+  azure_iaas_vm_protection_policy_property is not null
+  and cast(azure_iaas_vm_protection_policy_property->'retentionPolicy'->'dailySchedule'->'retentionDuration' ->> 'count' as integer) < 30;
+```
+
+```sql+sqlite
+select
+  name,
+  id,
+  resource_group,
+  vault_name,
+  azure_iaas_vm_protection_policy_property->'retentionPolicy'->'dailySchedule'->'retentionDuration'->'count' as retention_duration_days
+from
+  azure_backup_policy
+where
+  azure_iaas_vm_protection_policy_property is not null
+  and cast(azure_iaas_vm_protection_policy_property->'retentionPolicy'->'dailySchedule'->'retentionDuration'->'count' as integer) > 30;
+```
+
+
+### Detailed View of Azure VM Workload Backup Policies
+
+Gain insights into the specific configurations of backup policies tailored for Azure VM workloads. This query highlights the intricacies of these policies, including backup management type, protection coverage, and the nature of the backup (such as full, incremental, or log backups), along with their scheduling and retention details.
+
+```sql+postgres
+ select
+  name as policy_name,
+  vault_name,
+  azure_vm_workload_protection_policy_property->>'backupManagementType' as management_type,
+  jsonb_array_length(azure_vm_workload_protection_policy_property->'subProtectionPolicy') as number_of_sub_policies,
+  jsonb_pretty(azure_vm_workload_protection_policy_property->'subProtectionPolicy') as sub_protection_policies
+from
+  azure_backup_policy
+where
+  azure_vm_workload_protection_policy_property is not null;
+```
+
+```sql+sqlite
+select
+  name as policy_name,
+  vault_name,
+  json_extract(azure_vm_workload_protection_policy_property, '$.backupManagementType') as management_type,
+  json_array_length(json_extract(azure_vm_workload_protection_policy_property, '$.subProtectionPolicy')) as number_of_sub_policies,
+  json_pretty(json_extract(azure_vm_workload_protection_policy_property, '$.subProtectionPolicy')) as sub_protection_policies
+from
+  azure_backup_policy
+where
+  azure_vm_workload_protection_policy_property is not null;
+```
