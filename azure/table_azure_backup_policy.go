@@ -16,7 +16,7 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureBckupPolicy(_ context.Context) *plugin.Table {
+func tableAzureBackupPolicy(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_backup_policy",
 		Description: "Azure Backup Policy",
