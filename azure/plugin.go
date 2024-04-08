@@ -23,6 +23,12 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		DefaultIgnoreConfig: &plugin.IgnoreConfig{
 			ShouldIgnoreErrorFunc: shouldIgnoreErrorPluginDefault(),
 		},
+		ConnectionKeyColumns: []plugin.ConnectionKeyColumn{
+			{
+				Name:    "account_id",
+				Hydrate: getSubscriptionIdForConnection,
+			},
+		},
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
 		},
@@ -187,4 +193,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 	}
 
 	return p
+}
+
+func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (any, error) {
+	subscriptionID, err := getSubscriptionID(ctx, d, h)
+	if err != nil {
+		return nil, err
+	}
+
+	return subscriptionID, nil
 }
