@@ -25,7 +25,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		ConnectionKeyColumns: []plugin.ConnectionKeyColumn{
 			{
-				Name:    "account_id",
+				Name:    "subscription_id",
 				Hydrate: getSubscriptionIdForConnection,
 			},
 		},
