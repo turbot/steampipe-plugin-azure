@@ -43,7 +43,14 @@ resource "azurerm_recovery_services_vault" "named_test_resource" {
   sku                 = "Standard"
 }
 
+resource "null_resource" "delay" {
+  provisioner "local-exec" {
+    command = "sleep 700"
+  }
+}
+
 resource "azurerm_backup_policy_vm" "example" {
+  depends_on    = [null_resource.delay]
   name                = var.resource_name
   resource_group_name = azurerm_resource_group.named_test_resource.name
   recovery_vault_name = azurerm_recovery_services_vault.named_test_resource.name
