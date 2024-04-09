@@ -95,7 +95,7 @@ where
   azure_iaas_vm_protection_policy_property is not null;
 ```
 
-### Find Azure IAAS VM Protection policies with retention duration less than 30 days
+### List Azure IAAS VM Protection policies with retention duration less than 30 days
 
 Identify the Azure VM backup policies with a retention duration of less than 30 days to ensure that the backup data is retained for a sufficient period.
 
@@ -128,7 +128,7 @@ where
 ```
 
 
-### Detailed View of Azure VM Workload Backup Policies
+### Detailed view of Azure VM Workload backup policies
 
 Gain insights into the specific configurations of backup policies tailored for Azure VM workloads. This query highlights the intricacies of these policies, including backup management type, protection coverage, and the nature of the backup (such as full, incremental, or log backups), along with their scheduling and retention details.
 
