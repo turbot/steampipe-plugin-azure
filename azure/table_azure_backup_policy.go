@@ -147,6 +147,7 @@ func tableAzureBackupPolicy(_ context.Context) *plugin.Table {
 type ProtectionPolicyResource struct {
 	backup.ProtectionPolicyResource
 	VaultName                       string
+	Location                        string
 	AzureVMWorkloadProtectionPolicy *backup.AzureVMWorkloadProtectionPolicy
 	AzureFileShareProtectionPolicy  *backup.AzureFileShareProtectionPolicy
 	AzureIaaSVMProtectionPolicy     *backup.AzureIaaSVMProtectionPolicy
@@ -158,6 +159,7 @@ type ProtectionPolicyResource struct {
 
 func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	vaultname := *h.Item.(recoveryservices.Vault).Name
+	location := *h.Item.(recoveryservices.Vault).Location
 	splitID := *h.Item.(recoveryservices.Vault).ID
 	resourceGroupName := strings.Split(splitID, "/")[4]
 	resourceGroupName = strings.ToLower(resourceGroupName)
@@ -192,6 +194,7 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		backupPolicyOutput := ProtectionPolicyResource{
 			policy,
 			vaultname,
+			location,
 			azureVMWorkloadProtectionPolicy,
 			azureFileShareProtectionPolicy,
 			azureIaaSVMProtectionPolicy,
@@ -225,6 +228,7 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 			backupPolicyOutput := ProtectionPolicyResource{
 				policy,
 				vaultname,
+				location,
 				azureVMWorkloadProtectionPolicy,
 				azureFileShareProtectionPolicy,
 				azureIaaSVMProtectionPolicy,
