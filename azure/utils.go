@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"reflect"
 	"strings"
 	"time"
 
@@ -64,6 +65,26 @@ func convertDateToTime(ctx context.Context, d *transform.TransformData) (interfa
 	}
 
 	return nil, nil
+}
+
+func structToMap(val reflect.Value) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Type().Field(i)
+		fieldValue := val.Field(i)
+
+		// Check if field is a struct and not a zero value
+		if fieldValue.Kind() == reflect.Struct && !fieldValue.IsZero() {
+			result[field.Name] = structToMap(fieldValue)
+		} else if !fieldValue.IsZero() {
+			result[field.Name] = fieldValue.Interface()
+		} else {
+			result[field.Name] = nil
+		}
+	}
+
+	return result
 }
 
 func convertDateUnixToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {

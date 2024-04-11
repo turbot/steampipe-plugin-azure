@@ -5,6 +5,12 @@ on:
     tags:
       - 'v*'
 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to release (must be prefixed with 'v')"
+        required: true
+        
 
 jobs:
   build-postgres-14-fdw-linux-amd64:
@@ -81,49 +87,41 @@ jobs:
           path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_amd64.tar.gz
           if-no-files-found: error
 
-  # build-postgres-14-fdw-linux-arm64:
-  #   name: Build Postgres 14 FDW for Linux - ARM64
-  #   runs-on: macos-latest-xlarge
+  build-postgres-14-fdw-linux-arm64:
+    name: Build Postgres 14 FDW for Linux - ARM64
+    runs-on: 
+      group: steampipe-darwin-arm-runners
 
-  #   steps:
-  #     - name: Check out steampipe-postgres-fdw
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: "turbot/steampipe-postgres-fdw"
-  #         ref: main
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
 
-  #     - name: Install Homebrew (if not installed)
-  #       run: |
-  #         which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Check out steampipe-postgres-fdw-anywhere
+        uses: actions/checkout@v3
+        with:
+          repository: "turbot/steampipe-postgres-fdw"
+          ref: main
 
-  #     - name: Install Docker
-  #       run: |
-  #         brew install --cask docker
-  #         which docker
-  #         docker --version
+      - name: Check docker images available in runner
+        run: docker images
 
-  #     - name: Build docker image
-  #       run: |-
-  #         docker build --pull -f anywhere.Dockerfile -t steampipe_fdw_builder --build-arg="pg_version=14" ${{ github.action_path }}../
+      - name: Run build script
+        run: |
+          chmod +x ./scripts/build-linux-arm-pg14.sh
+          bash ./scripts/build-linux-arm-pg14.sh ${{ env.PLUGIN_NAME }}
+      
+      - name: Check if binaries are available
+        run: ls -l $GITHUB_WORKSPACE
 
-  #     - name: Build steampipe-postgres-fdw - ${{ env.PLUGIN_NAME }}
-  #       run: |
-  #         pwd
-  #         ls -ltr
-  #         docker run -it --rm --name sp_fdw_builder  -v $(pwd):/tmp/ext steampipe_fdw_builder make standalone plugin=${{ env.PLUGIN_NAME }}
-  #         ls -ltr
-
-  #     - name: Rename and zip the build-Linux folder
-  #       run: |-
-  #         mv build-Linux steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64
-  #         tar -czvf steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64
-
-  #     - name: Save Linux Build Artifact - ARM64
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
-  #         path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
-  #         if-no-files-found: error
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
+          path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
+          if-no-files-found: error
 
   build-postgres-14-fdw-osx-amd64:
     name: Build Postgres 14 FDW for Darwin - AMD64
@@ -205,7 +203,7 @@ jobs:
 
   build-postgres-14-fdw-osx-arm64:
     name: Build Postgres 14 FDW for Darwin - ARM64
-    runs-on: macos-latest-xlarge
+    runs-on: macos-14
     steps:
       - name: Set environment variables
         run: |
@@ -358,49 +356,41 @@ jobs:
           path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
           if-no-files-found: error
 
-  # build-postgres-15-fdw-linux-arm64:
-  #   name: Build Postgres 15 FDW for Linux - ARM64
-  #   runs-on: macos-latest-xlarge
+  build-postgres-15-fdw-linux-arm64:
+    name: Build Postgres 15 FDW for Linux - ARM64
+    runs-on: 
+      group: steampipe-darwin-arm-runners
 
-  #   steps:
-  #     - name: Check out steampipe-postgres-fdw
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: "turbot/steampipe-postgres-fdw"
-  #         ref: main
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
 
-  #     - name: Install Homebrew (if not installed)
-  #       run: |
-  #         which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Check out steampipe-postgres-fdw-anywhere
+        uses: actions/checkout@v3
+        with:
+          repository: "turbot/steampipe-postgres-fdw"
+          ref: main
 
-  #     - name: Install Docker
-  #       run: |
-  #         brew install --cask docker
-  #         which docker
-  #         docker --version
+      - name: Check docker images available in runner
+        run: docker images
 
-  #     - name: Build docker image
-  #       run: |-
-  #         docker build --pull -f anywhere.Dockerfile -t steampipe_fdw_builder --build-arg="pg_version=15" ${{ github.action_path }}../
+      - name: Run build script
+        run: |
+          chmod +x ./scripts/build-linux-arm-pg15.sh
+          bash ./scripts/build-linux-arm-pg15.sh ${{ env.PLUGIN_NAME }}
+      
+      - name: Check if binaries are available
+        run: ls -l $GITHUB_WORKSPACE
 
-  #     - name: Build steampipe-postgres-fdw - ${{ env.PLUGIN_NAME }}
-  #       run: |
-  #         pwd
-  #         ls -ltr
-  #         docker run -it --rm --name sp_fdw_builder  -v $(pwd):/tmp/ext steampipe_fdw_builder make standalone plugin=${{ env.PLUGIN_NAME }}
-  #         ls -ltr
-
-  #     - name: Rename and zip the build-Linux folder
-  #       run: |-
-  #         mv build-Linux steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64
-  #         tar -czvf steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64
-
-  #     - name: Save Linux Build Artifact - ARM64
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
-  #         path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
-  #         if-no-files-found: error
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
+          path: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
+          if-no-files-found: error
 
   build-postgres-15-fdw-osx-amd64:
     name: Build Postgres 15 FDW for Darwin - AMD64
@@ -482,7 +472,7 @@ jobs:
 
   build-postgres-15-fdw-osx-arm64:
     name: Build Postgres 15 FDW for Darwin - ARM64
-    runs-on: macos-latest-xlarge
+    runs-on: macos-14
     steps:
       - name: Set environment variables
         run: |
@@ -495,9 +485,12 @@ jobs:
 
       - name: Install PostgreSQL@15
         run: brew install postgresql@15
+      
+      - name: Get the installation directory of the postgresql@15 formula
+        run: brew --prefix postgresql@15
 
       - name: Configure PATH for PostgreSQL
-        run: echo "/opt/homebrew/Cellar/postgresql@15/15.5_1/bin" >> $GITHUB_PATH
+        run: echo $(brew --prefix postgresql@15)/bin >> $GITHUB_PATH
         
       - name: PGConfig
         run: |-
@@ -578,7 +571,7 @@ jobs:
       - name: Check out steampipe-sqlite-extension
         uses: actions/checkout@v2
         with:
-          repository: "turbot/steampipe-sqlite-extension"
+          repository: "turbot/steampipe-sqlite"
           ref: main
 
       - name: Setup GoLang
@@ -604,51 +597,41 @@ jobs:
           path: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
           if-no-files-found: error
 
-  # build-sqlite-extension-linux-arm64:
-  #   name: Build SQLite Extension for Linux - ARM64
-  #   runs-on: macos-latest-xlarge
+  build-sqlite-extension-linux-arm64:
+    name: Build SQLite Extension for Linux - ARM64
+    runs-on: 
+      group: steampipe-darwin-arm-runners
 
-  #   steps:
-  #     - name: Check architecture
-  #       run: uname -a
+    steps:
+      - name: Set environment variables
+        run: |
+          plugin_name=$(echo $GITHUB_REPOSITORY | cut -d'-' -f 3)
+          echo $plugin_name
+          echo "PLUGIN_NAME=${plugin_name}" >> $GITHUB_ENV
 
-  #     - name: Check out steampipe-sqlite-extension
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: "turbot/steampipe-sqlite-extension"
-  #         ref: main
+      - name: Check out steampipe-sqlite-extension
+        uses: actions/checkout@v3
+        with:
+          repository: "turbot/steampipe-sqlite"
+          ref: main
+
+      - name: Check docker images available in runner
+        run: docker images
+
+      - name: Run build script
+        run: |
+          chmod +x ./scripts/build-linux-arm-sqlite.sh
+          bash ./scripts/build-linux-arm-sqlite.sh ${{ env.PLUGIN_NAME }}
       
-  #     - name: Install Homebrew (if not installed)
-  #       run: |
-  #         which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Check if binaries are available
+        run: ls -l $GITHUB_WORKSPACE
 
-  #     - name: Install Docker
-  #       run: |
-  #         brew install --cask docker
-  #         which docker
-  #         docker --version
-
-  #     - name: Build docker image
-  #       run: |-
-  #         docker build --pull -f anywhere.Dockerfile -t steampipe_sqlite_builder ${{ github.action_path }}../
-
-  #     - name: Build steampipe-sqlite-extension - ${{ env.PLUGIN_NAME }}
-  #       run: |
-  #         pwd
-  #         ls -ltr
-  #         docker run -it --rm --name sp_sqlite_builder  -v $(pwd):/tmp/ext steampipe_sqlite_builder make build plugin=${{ env.PLUGIN_NAME }}
-  #         ls -ltr
-
-  #     - name: Zip and rename the steampipe_sqlite_${{ env.PLUGIN_NAME }}.so
-  #       run: |-
-  #         tar -czvf steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz steampipe_sqlite_${{ env.PLUGIN_NAME }}.so
-
-  #     - name: Save Linux Build Artifact - ARM64
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
-  #         path: steampipe_sqlite_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
-  #         if-no-files-found: error
+      - name: Save Linux Build Artifact - AMD64
+        uses: actions/upload-artifact@v3
+        with:
+          name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+          path: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+          if-no-files-found: error
 
   build-sqlite-extension-osx-amd64:
     name: Build SQLite Extension for Darwin - AMD64
@@ -692,7 +675,7 @@ jobs:
 
   build-sqlite-extension-osx-arm64:
     name: Build SQLite Extension for Darwin - ARM64
-    runs-on: macos-latest-xlarge
+    runs-on: macos-14
 
     steps:
       - name: Set environment variables
@@ -763,7 +746,6 @@ jobs:
           make build plugin=${{ env.PLUGIN_NAME }}
           ls -ltr
           go mod tidy
-
       - name: Increase swapfile
         run: |
           sudo swapoff -a
@@ -772,7 +754,6 @@ jobs:
           sudo mkswap /swapfile
           sudo swapon /swapfile
           sudo swapon --show
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
@@ -823,17 +804,17 @@ jobs:
     needs:
       # Postgres 14
       - build-postgres-14-fdw-linux-amd64
-      # - build-postgres-14-fdw-linux-arm64
+      - build-postgres-14-fdw-linux-arm64
       - build-postgres-14-fdw-osx-amd64
       - build-postgres-14-fdw-osx-arm64
       # Postgres 15
       - build-postgres-15-fdw-linux-amd64
-      # - build-postgres-15-fdw-linux-arm64
+      - build-postgres-15-fdw-linux-arm64
       - build-postgres-15-fdw-osx-amd64
       - build-postgres-15-fdw-osx-arm64
       # SQLite
       - build-sqlite-extension-linux-amd64
-      # - build-sqlite-extension-linux-arm64
+      - build-sqlite-extension-linux-arm64
       - build-sqlite-extension-osx-amd64
       - build-sqlite-extension-osx-arm64
       # Export
@@ -851,11 +832,11 @@ jobs:
         with:
           name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_amd64.tar.gz
 
-      # - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
-      #   id: download_pg14_linux_arm64
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
+      - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
+        id: download_pg14_linux_arm64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
 
       - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.darwin_amd64.tar.gz
         id: download_pg14_darwin_amd64
@@ -875,11 +856,11 @@ jobs:
         with:
           name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
 
-      # - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
-      #   id: download_pg15_linux_arm64
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
+      - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
+        id: download_pg15_linux_arm64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
 
       - name: Download steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.darwin_amd64.tar.gz
         id: download_pg15_darwin_amd64
@@ -899,11 +880,11 @@ jobs:
         with:
           name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
 
-      # - name: Download steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
-      #   id: download_sqlite_linux_arm64
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm.tar.gz
+      - name: Download steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
+        id: download_sqlite_linux_arm64
+        uses: actions/download-artifact@v3
+        with:
+          name: steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
 
       - name: Download steampipe_sqlite_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
         id: download_sqlite_darwin_amd64
@@ -956,7 +937,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         id: create_draft_release
         with:
-          draft: true
+          draft: false
+          prerelease: false
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           repository: ${{ github.repository }}
@@ -964,14 +946,17 @@ jobs:
             ${{ steps.download_pg14_darwin_amd64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.darwin_amd64.tar.gz
             ${{ steps.download_pg14_darwin_arm64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.darwin_arm64.tar.gz
             ${{ steps.download_pg14_linux_amd64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_amd64.tar.gz
+            ${{ steps.download_pg14_linux_arm64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg14.linux_arm64.tar.gz
 
             ${{ steps.download_pg15_darwin_amd64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.darwin_amd64.tar.gz
             ${{ steps.download_pg15_darwin_arm64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.darwin_arm64.tar.gz
             ${{ steps.download_pg15_linux_amd64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_amd64.tar.gz
+            ${{ steps.download_pg15_linux_arm64.outputs.download-path }}/steampipe_postgres_${{ env.PLUGIN_NAME }}.pg15.linux_arm64.tar.gz
 
             ${{ steps.download_sqlite_darwin_amd64.outputs.download-path }}/steampipe_sqlite_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
             ${{ steps.download_sqlite_darwin_arm64.outputs.download-path }}/steampipe_sqlite_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
             ${{ steps.download_sqlite_linux_amd64.outputs.download-path }}/steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_amd64.tar.gz
+            ${{ steps.download_sqlite_linux_arm64.outputs.download-path }}/steampipe_sqlite_${{ env.PLUGIN_NAME }}.linux_arm64.tar.gz
 
             ${{ steps.download_export_darwin_amd64.outputs.download-path }}/steampipe_export_${{ env.PLUGIN_NAME }}.darwin_amd64.tar.gz
             ${{ steps.download_export_darwin_arm64.outputs.download-path }}/steampipe_export_${{ env.PLUGIN_NAME }}.darwin_arm64.tar.gz
