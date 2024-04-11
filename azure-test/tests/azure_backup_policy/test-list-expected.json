@@ -1,0 +1,7 @@
+[
+  {
+    "id": "{{ output.id.value }}",
+    "name": "{{ output.resource_name.value }}",
+    "vault_name": "{{ output.recovery_vault_name.value }}"
+  }
+]
