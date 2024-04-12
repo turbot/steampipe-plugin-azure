@@ -1,3 +1,14 @@
+## v0.56.0 [2024-04-12]
+
+_What's new?_
+
+- New tables added
+  - [azure_backup_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_backup_policy) ([#739](https://github.com/turbot/steampipe-plugin-azure/pull/739))
+
+_Bug fixes_
+
+- Fixed the plugin's Postgres FDW Extension crash [issue](https://github.com/turbot/steampipe-postgres-fdw/issues/434).
+
 ## v0.55.0 [2024-03-22]
 
 _What's new?_
