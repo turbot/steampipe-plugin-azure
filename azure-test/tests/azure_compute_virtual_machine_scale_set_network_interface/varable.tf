@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -75,8 +75,8 @@ resource "azurerm_lb" "named_test_resource" {
 }
 
 resource "azurerm_lb_backend_address_pool" "named_test_resource" {
-  loadbalancer_id     = azurerm_lb.named_test_resource.id
-  name                = var.resource_name
+  loadbalancer_id = azurerm_lb.named_test_resource.id
+  name            = var.resource_name
 }
 
 resource "azurerm_lb_nat_pool" "named_test_resource" {
@@ -95,7 +95,7 @@ resource "azurerm_virtual_machine_scale_set" "named_test_resource" {
   location            = azurerm_resource_group.named_test_resource.location
   resource_group_name = azurerm_resource_group.named_test_resource.name
 
-  upgrade_policy_mode  = "Manual"
+  upgrade_policy_mode = "Manual"
 
   sku {
     name     = "Standard_F2"
@@ -153,11 +153,11 @@ resource "azurerm_virtual_machine_scale_set" "named_test_resource" {
 }
 
 output "resource_aka_0" {
-  value = "azure:///subscriptions/${ var.azure_subscription }/resourceGroups/${ var.resource_name }/providers/Microsoft.Compute/virtualMachineScaleSets/${ var.resource_name }/virtualMachines/0/networkInterfaces/${ var.resource_name }"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Compute/virtualMachineScaleSets/${var.resource_name}/virtualMachines/0/networkInterfaces/${var.resource_name}"
 }
 
 output "resource_aka_lower_0" {
-  value = "azure:///subscriptions/${ var.azure_subscription }/resourcegroups/${ var.resource_name }/providers/microsoft.compute/virtualmachinescalesets/${ var.resource_name }/virtualmachines/0/networkinterfaces/${ var.resource_name }"
+  value = "azure:///subscriptions/${var.azure_subscription}/resourcegroups/${var.resource_name}/providers/microsoft.compute/virtualmachinescalesets/${var.resource_name}/virtualmachines/0/networkinterfaces/${var.resource_name}"
 }
 
 output "resource_name" {
@@ -165,5 +165,5 @@ output "resource_name" {
 }
 
 output "resource_id" {
-  value = "/subscriptions/${ var.azure_subscription }/resourceGroups/${ var.resource_name }/providers/Microsoft.Compute/virtualMachineScaleSets/${ var.resource_name }/virtualMachines/0/networkInterfaces/${ var.resource_name }"
+  value = "/subscriptions/${var.azure_subscription}/resourceGroups/${var.resource_name}/providers/Microsoft.Compute/virtualMachineScaleSets/${var.resource_name}/virtualMachines/0/networkInterfaces/${var.resource_name}"
 }

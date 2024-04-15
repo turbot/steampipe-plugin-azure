@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53c0616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure environment used for the test."
 }
 
@@ -39,10 +39,10 @@ resource "azurerm_public_ip" "named_test_resource" {
 }
 
 resource "azurerm_lb" "named_test_resource" {
-  name                   = var.resource_name
-  location               = azurerm_resource_group.named_test_resource.location
-  resource_group_name    = azurerm_resource_group.named_test_resource.name
-  sku                    = "Standard"
+  name                = var.resource_name
+  location            = azurerm_resource_group.named_test_resource.location
+  resource_group_name = azurerm_resource_group.named_test_resource.name
+  sku                 = "Standard"
 
   frontend_ip_configuration {
     name                 = var.resource_name
@@ -51,8 +51,8 @@ resource "azurerm_lb" "named_test_resource" {
 }
 
 resource "azurerm_lb_backend_address_pool" "named_test_resource" {
-  loadbalancer_id     = azurerm_lb.named_test_resource.id
-  name                = var.resource_name
+  loadbalancer_id = azurerm_lb.named_test_resource.id
+  name            = var.resource_name
 }
 
 resource "azurerm_lb_nat_rule" "named_test_resource" {
@@ -66,7 +66,7 @@ resource "azurerm_lb_nat_rule" "named_test_resource" {
 }
 
 output "resource_aka" {
-  value      = "azure://${azurerm_lb_nat_rule.named_test_resource.id}"
+  value = "azure://${azurerm_lb_nat_rule.named_test_resource.id}"
 }
 
 output "resource_aka_lower" {

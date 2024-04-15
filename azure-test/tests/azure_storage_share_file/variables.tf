@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -21,7 +21,7 @@ provider "azurerm" {
   # Cannot be passed as a variable
   environment     = var.azure_environment
   subscription_id = var.azure_subscription
-  features{}
+  features {}
 }
 
 data "azurerm_client_config" "current" {}

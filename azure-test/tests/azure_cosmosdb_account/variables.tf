@@ -13,7 +13,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure subscription used for the test."
 }
 
@@ -38,24 +38,24 @@ resource "azurerm_resource_group" "named_test_resource" {
 }
 
 resource "azurerm_cosmosdb_account" "named_test_resource" {
-  name = var.resource_name
-  location            = azurerm_resource_group.named_test_resource.location
-  resource_group_name = azurerm_resource_group.named_test_resource.name
-  offer_type = "Standard"
-  kind = "GlobalDocumentDB"
+  name                      = var.resource_name
+  location                  = azurerm_resource_group.named_test_resource.location
+  resource_group_name       = azurerm_resource_group.named_test_resource.name
+  offer_type                = "Standard"
+  kind                      = "GlobalDocumentDB"
   enable_automatic_failover = true
-  
+
   consistency_policy {
-    consistency_level = "BoundedStaleness"
+    consistency_level       = "BoundedStaleness"
     max_interval_in_seconds = 600
-    max_staleness_prefix = 200000
+    max_staleness_prefix    = 200000
   }
 
   geo_location {
-    location = azurerm_resource_group.named_test_resource.location
+    location          = azurerm_resource_group.named_test_resource.location
     failover_priority = 0
   }
-  
+
   tags = {
     name = var.resource_name
   }
