@@ -293,7 +293,7 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 
 	client := kubernetesconfiguration.NewExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
-	extensions := []kubernetesconfiguration.ExtensionInstance{}
+	extensions := []kubernetesconfiguration.Extension{}
 	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list", err)

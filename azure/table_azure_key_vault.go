@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -203,7 +203,7 @@ type PrivateEndpointConnectionInfo struct {
 	PrivateEndpointId                               string
 	PrivateLinkServiceConnectionStateStatus         string
 	PrivateLinkServiceConnectionStateDescription    string
-	PrivateLinkServiceConnectionStateActionRequired string
+	PrivateLinkServiceConnectionStateActionRequired keyvault.ActionsRequired
 	ProvisioningState                               string
 }
 
@@ -349,8 +349,8 @@ func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform
 					privateEndpoint.PrivateEndpointId = *connection.PrivateEndpoint.ID
 				}
 				if connection.PrivateLinkServiceConnectionState != nil {
-					if connection.PrivateLinkServiceConnectionState.ActionRequired != nil {
-						privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *connection.PrivateLinkServiceConnectionState.ActionRequired
+					if connection.PrivateLinkServiceConnectionState.ActionsRequired != "" {
+						privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = *&connection.PrivateLinkServiceConnectionState.ActionsRequired
 					}
 					if connection.PrivateLinkServiceConnectionState.Description != nil {
 						privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description

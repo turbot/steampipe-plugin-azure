@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/Azure/azure-sdk-for-go/services/logic/mgmt/2019-05-01/logic"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/logic/mgmt/logic"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 

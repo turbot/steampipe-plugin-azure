@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/backup"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3"
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -112,7 +112,7 @@ type JobInfo struct {
 	VaultName  *string
 	ETag       *string
 	Location   *string
-	Properties armrecoveryservicesbackup.JobClassification
+	Properties backup.BasicJob
 	Tags       map[string]*string
 	ID         *string
 	Name       *string
@@ -127,48 +127,30 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 		return nil, err
 	}
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_backup_job.listAzureBackupJobs", "NewDefaultAzureCredential", err)
-		return nil, err
-	}
-
 	vault := h.Item.(recoveryservices.Vault)
 
-	plugin.Logger(ctx).Error("Parameter ====>>", vault.Name, strings.Split(*vault.ID, "/")[4])
-
-	vaultName := d.EqualsQualString("vault_name")
-	rgName := d.EqualsQualString("resource_group")
-
-	if vaultName != "" {
-		if vaultName != *vault.Name {
-			return nil, nil
-		}
-	}
-
-	if rgName != "" {
-		if rgName != strings.Split(*vault.ID, "/")[4] {
-			return nil, nil
-		}
-	}
-
 	subscriptionID := session.SubscriptionID
-	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(subscriptionID, cred, nil)
+	backupClient := backup.NewJobsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	backupClient.Authorizer = session.Authorizer
+	result, err := backupClient.List(ctx, *vault.Name, strings.Split(*vault.ID, "/")[4], "", "")
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "client_error", err)
-		return nil, nil
+		return nil, err
 	}
-	pager := clientFactory.NewListPager(*vault.Name, strings.Split(*vault.ID, "/")[4], &armrecoveryservicesbackup.BackupJobsClientListOptions{Filter: nil,
-		SkipToken: nil,
-	})
-	for pager.More() {
-		page, err := pager.NextPage(ctx)
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "api_error", err)
+	for _, vault := range result.Values() {
+		d.StreamListItem(ctx, vault)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
+	}
 
-		for _, v := range page.Value {
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range result.Values() {
 			d.StreamListItem(ctx, JobInfo{
 				ETag:       v.ETag,
 				Location:   v.Location,
@@ -179,7 +161,6 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 				Type:       v.Type,
 				VaultName:  vault.Name,
 			})
-
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -187,8 +168,7 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 			}
 		}
 	}
-
-	return nil, nil
+	return nil, err
 }
 
 //// TRANSFORM FUNCTION
@@ -199,30 +179,27 @@ func backupJobProperties(ctx context.Context, d *transform.TransformData) (inter
 	output := make(map[string]interface{})
 
 	if data.Properties != nil {
-		if data.Properties.GetJob() != nil {
-			if data.Properties.GetJob().ActivityID != nil {
-				output["ActivityID"] = data.Properties.GetJob().ActivityID
+		job, flag := data.Properties.AsJob()
+		if flag {
+			if job.ActivityID != nil {
+				output["ActivityID"] = job.ActivityID
 			}
-			if data.Properties.GetJob().BackupManagementType != nil {
-				output["BackupManagementType"] = data.Properties.GetJob().BackupManagementType
+			output["BackupManagementType"] = job.BackupManagementType
+			output["JobType"] = job.JobType
+			if job.EndTime != nil {
+				output["EndTime"] = job.EndTime
 			}
-			if data.Properties.GetJob().JobType != nil {
-				output["JobType"] = data.Properties.GetJob().JobType
+			if job.EntityFriendlyName != nil {
+				output["EntityFriendlyName"] = job.EntityFriendlyName
 			}
-			if data.Properties.GetJob().EndTime != nil {
-				output["EndTime"] = data.Properties.GetJob().EndTime
+			if job.Operation != nil {
+				output["Operation"] = job.Operation
 			}
-			if data.Properties.GetJob().EntityFriendlyName != nil {
-				output["EntityFriendlyName"] = data.Properties.GetJob().EntityFriendlyName
+			if job.StartTime != nil {
+				output["StartTime"] = job.StartTime
 			}
-			if data.Properties.GetJob().Operation != nil {
-				output["Operation"] = data.Properties.GetJob().Operation
-			}
-			if data.Properties.GetJob().StartTime != nil {
-				output["StartTime"] = data.Properties.GetJob().StartTime
-			}
-			if data.Properties.GetJob().Status != nil {
-				output["Status"] = data.Properties.GetJob().Status
+			if job.Status != nil {
+				output["Status"] = job.Status
 			}
 		}
 	}

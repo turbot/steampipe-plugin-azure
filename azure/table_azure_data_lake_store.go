@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/monitor/mgmt/insights"
-	"github.com/Azure/azure-sdk-for-go/services/datalake/store/mgmt/2016-11-01/account"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/datalake/analytics/mgmt/account"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -275,7 +275,7 @@ func getDataLakeStore(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	var name, resourceGroup string
 	if h.Item != nil {
-		data := h.Item.(account.DataLakeStoreAccountBasic)
+		data := h.Item.(account.DataLakeAnalyticsAccountBasic)
 		splitID := strings.Split(*data.ID, "/")
 		name = *data.Name
 		resourceGroup = splitID[4]
@@ -340,9 +340,9 @@ func listDataLakeStoreDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 
 func getLakeStoreID(item interface{}) string {
 	switch item := item.(type) {
-	case account.DataLakeStoreAccountBasic:
+	case account.DataLakeAnalyticsAccountBasic:
 		return *item.ID
-	case account.DataLakeStoreAccount:
+	case account.DataLakeAnalyticsAccount:
 		return *item.ID
 	}
 	return ""

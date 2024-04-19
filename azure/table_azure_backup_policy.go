@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/backup"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
-	"github.com/Azure/azure-sdk-for-go/services/recoveryservices/mgmt/2021-01-01/backup"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"

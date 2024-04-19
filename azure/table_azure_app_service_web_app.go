@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2020-06-01/web"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -388,7 +388,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 
-	if op.VnetInfoProperties != nil {
+	if op.VnetInfo != nil {
 		appVnetConnection := make(map[string]interface{})
 		if op.Name != nil {
 			appVnetConnection["name"] = op.Name
@@ -399,7 +399,7 @@ func getAppServiceWebAppVnetConnection(ctx context.Context, d *plugin.QueryData,
 		if op.Type != nil {
 			appVnetConnection["type"] = op.Type
 		}
-		appVnetConnection["properties"] = op.VnetInfoProperties
+		appVnetConnection["properties"] = op.VnetInfo
 
 		return appVnetConnection, nil
 	}

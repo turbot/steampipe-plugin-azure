@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-09-01/skus"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/skus"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 

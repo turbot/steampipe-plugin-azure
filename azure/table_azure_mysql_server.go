@@ -8,7 +8,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/mysql/mgmt/2020-01-01/mysql"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/mysql/mgmt/mysql"
 )
 
 //// TABLE DEFINITION
@@ -450,7 +450,7 @@ func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	
+
 
 	client := mysql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer

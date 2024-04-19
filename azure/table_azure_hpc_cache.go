@@ -3,7 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/storagecache/mgmt/2021-05-01/storagecache"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/storagecache/mgmt/storagecache"
+
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"

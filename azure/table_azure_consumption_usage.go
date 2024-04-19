@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/consumption/mgmt/2019-10-01/consumption"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/consumption/mgmt/consumption"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-09-01/locks"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/locks"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 

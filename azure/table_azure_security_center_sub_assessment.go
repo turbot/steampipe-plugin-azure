@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -156,7 +156,7 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	subscriptionID := session.SubscriptionID
-	subAssessmentClient := security.NewSubAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	subAssessmentClient := security.NewSubAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subAssessmentClient.Authorizer = session.Authorizer
 
 	result, err := subAssessmentClient.ListAll(ctx, "subscriptions/"+subscriptionID)
