@@ -433,8 +433,10 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 			return nil, err
 		}
 
-		// We can add only one retention policy per SQL Database.
-		return result.Value[0], nil
+		if len(result.Value) > 0 {
+			// Return the first retention policy found
+			return result.Value[0], nil
+		}
 	}
 
 	return nil, nil
