@@ -1,3 +1,23 @@
+## v0.56.0 [2024-04-30]
+
+_What's new?_
+
+- New tables added
+  - [azure_backup_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_backup_policy) ([#739](https://github.com/turbot/steampipe-plugin-azure/pull/739))
+
+_Enhancements_
+
+- The `subscription_id` column has now been assigned as a connection key column across all the tables which facilitates more precise and efficient querying across multiple Azure subscriptions. ([#740](https://github.com/turbot/steampipe-plugin-azure/pull/740))
+- Added the `version` flag to the plugin's Export tool. ([#65](https://github.com/turbot/steampipe-export/pull/65))
+
+_Bug fixes_
+
+- Fixed the plugin's Postgres FDW Extension crash [issue](https://github.com/turbot/steampipe-postgres-fdw/issues/434).
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.10.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v5100-2024-04-10) that adds support for connection key columns. ([#745](https://github.com/turbot/steampipe-plugin-azure/pull/745))
+
 ## v0.55.0 [2024-03-22]
 
 _What's new?_
@@ -253,7 +273,7 @@ _Bug fixes_
 
 _Dependencies_
 
-- Recompiled plugin with [steampipe-plugin-sdk v4.1.8](https://github.com/turbot/steampipe-plugin-aws/pull/1384) which increases the default open file limit. ([#543](https://github.com/turbot/steampipe-plugin-azure/pull/543))
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.8](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v418-2022-09-08) which increases the default open file limit. ([#543](https://github.com/turbot/steampipe-plugin-azure/pull/543))
 
 ## v0.34.0 [2022-11-07]
 
