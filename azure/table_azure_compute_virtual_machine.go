@@ -391,7 +391,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 
 func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +428,7 @@ func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugi
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -458,7 +458,7 @@ func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryDa
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
 	name := *virtualMachine.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +484,7 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 
 	var ipConfigs []*armnetwork.InterfaceIPConfiguration
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -522,7 +522,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	ipConfigs := h.HydrateResults["getVMNics"].([]*armnetwork.InterfaceIPConfiguration)
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +572,7 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
 	name := *virtualMachine.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -620,7 +620,7 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
 	name := *virtualMachine.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}

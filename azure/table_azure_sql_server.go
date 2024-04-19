@@ -209,7 +209,7 @@ type PrivateConnectionInfo struct {
 //// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +275,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +322,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +350,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +378,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +406,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +434,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +462,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	serverName := *server.Name
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +498,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 		}
 	}
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}

@@ -311,7 +311,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +359,7 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		resourceGroupName = d.EqualsQuals["resource_group"].GetStringValue()
 	}
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +389,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 	databaseName := *database.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -417,7 +417,7 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 	databaseName := *database.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +446,7 @@ func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 	databaseName := *database.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -524,7 +524,7 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 	databaseName := *database.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -578,7 +578,7 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
 	databaseName := *database.Name
 
-	session, err := GetNewSessionNew(ctx, d)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}

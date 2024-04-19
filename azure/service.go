@@ -53,7 +53,7 @@ type Session struct {
 4. Managed identity
 5. CLI
 */
-func GetNewSessionNew(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
+func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
 	logger := plugin.Logger(ctx)
 
 	// cacheKey := "GetNewSession" + tokenAudience
