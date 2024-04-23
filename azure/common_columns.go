@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/memoize"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
@@ -33,7 +34,22 @@ func azureColumns(columns []*plugin.Column) []*plugin.Column {
 	return append(columns, commonColumns()...)
 }
 
+// if the caching is required other than per connection, build a cache key for the call and use it in Memoize.
+var getSubscriptionIDMemoized = plugin.HydrateFunc(getSubscriptionIDUncached).Memoize(memoize.WithCacheKeyFunction(getSubscriptionIDCacheKey))
+
+// declare a wrapper hydrate function to call the memoized function
+// - this is required when a memoized function is used for a column definition
 func getSubscriptionID(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	return getSubscriptionIDMemoized(ctx, d, h)
+}
+
+// Build a cache key for the call to getSubscriptionIDCacheKey.
+func getSubscriptionIDCacheKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	key := "getSubscriptionID"
+	return key, nil
+}
+
+func getSubscriptionIDUncached(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSubscriptionID")
 	cacheKey := "getSubscriptionID"
 
@@ -52,7 +68,22 @@ func getSubscriptionID(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	return session.SubscriptionID, nil
 }
 
+// if the caching is required other than per connection, build a cache key for the call and use it in Memoize.
+var getCloudEnvironmentMemoized = plugin.HydrateFunc(getCloudEnvironmentUncached).Memoize(memoize.WithCacheKeyFunction(getCloudEnvironmentCacheKey))
+
+// declare a wrapper hydrate function to call the memoized function
+// - this is required when a memoized function is used for a column definition
 func getCloudEnvironment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	return getCloudEnvironmentMemoized(ctx, d, h)
+}
+
+// Build a cache key for the call to getCloudEnvironment.
+func getCloudEnvironmentCacheKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	key := "getCloudEnvironment"
+	return key, nil
+}
+
+func getCloudEnvironmentUncached(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getCloudEnvironment")
 	cacheKey := "getCloudEnvironment"
 
