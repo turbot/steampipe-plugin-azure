@@ -85,7 +85,7 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 				Name:        "cloud_environment",
 				Description: ColumnDescriptionCloudEnvironment,
 				Type:        proto.ColumnType_STRING,
-				Hydrate:     plugin.HydrateFunc(getCloudEnvironment).WithCache(),
+				Hydrate:     getCloudEnvironment,
 				Transform:   transform.FromValue(),
 			},
 		},
