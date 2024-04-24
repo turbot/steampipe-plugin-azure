@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/guestconfiguration/armguestconfiguration"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/guestconfiguration/mgmt/guestconfiguration"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -370,6 +371,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ID").Transform(idToAkas),
 			},
 
+			// Standard azure columns
 			// Azure standard columns
 			{
 				Name:        "region",
@@ -391,24 +393,36 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 
 func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := armcompute.NewVirtualMachinesClient(session.SubscriptionID, session.Cred, nil)
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+	result, err := client.ListAll(ctx, "", "")
 	if err != nil {
 		return nil, err
 	}
 
-	pager := client.NewListAllPager(nil)
-	for pager.More() {
-		result, err := pager.NextPage(ctx)
+	for _, virtualMachine := range result.Values() {
+		d.StreamListItem(ctx, virtualMachine)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		if d.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
+	}
+
+	for result.NotDone() {
+		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-		for _, virtualMachine := range result.Value {
-			d.StreamListItem(ctx, *virtualMachine)
+
+		for _, virtualMachine := range result.Values() {
+			d.StreamListItem(ctx, virtualMachine)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -428,16 +442,15 @@ func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugi
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-	client, err := armcompute.NewVirtualMachinesClient(session.SubscriptionID, session.Cred, nil)
-	if err != nil {
-		return nil, err
-	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroup, name, nil)
+	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -445,7 +458,7 @@ func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugi
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op.VirtualMachine, nil
+		return op, nil
 	}
 
 	return nil, nil
@@ -454,20 +467,18 @@ func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugi
 func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getComputeVirtualMachineInstanceView")
 
-	virtualMachine := h.Item.(armcompute.VirtualMachine)
+	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
-	name := *virtualMachine.Name
 
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-	client, err := armcompute.NewVirtualMachinesClient(session.SubscriptionID, session.Cred, nil)
-	if err != nil {
-		return nil, err
-	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	op, err := client.InstanceView(ctx, resourceGroupName, name, nil)
+	op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -479,32 +490,28 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	logger := plugin.Logger(ctx)
 	logger.Trace("getVMNics")
 
-	virtualMachine := h.Item.(armcompute.VirtualMachine)
-	networkInterfaces := virtualMachine.Properties.NetworkProfile.NetworkInterfaces
+	vm := h.Item.(compute.VirtualMachine)
+	var ipConfigs []network.InterfaceIPConfiguration
 
-	var ipConfigs []*armnetwork.InterfaceIPConfiguration
-
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
+	subscriptionID := session.SubscriptionID
+	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	networkClient.Authorizer = session.Authorizer
 
-	networkClient, err := armnetwork.NewInterfacesClient(session.SubscriptionID, session.Cred, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, nicRef := range networkInterfaces {
+	for _, nicRef := range *vm.NetworkProfile.NetworkInterfaces {
 		pathParts := strings.Split(string(*nicRef.ID), "/")
 		resourceGroupName := pathParts[4]
 		nicName := pathParts[len(pathParts)-1]
 
-		nic, err := networkClient.Get(ctx, resourceGroupName, nicName, nil)
+		nic, err := networkClient.Get(ctx, resourceGroupName, nicName, "")
 		if err != nil {
 			return nil, err
 		}
 
-		ipConfigs = append(ipConfigs, nic.Properties.IPConfigurations...)
+		ipConfigs = append(ipConfigs, *nic.IPConfigurations...)
 	}
 
 	return ipConfigs, nil
@@ -520,23 +527,23 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 		return nil, nil
 	}
 
-	ipConfigs := h.HydrateResults["getVMNics"].([]*armnetwork.InterfaceIPConfiguration)
+	ipConfigs := h.HydrateResults["getVMNics"].([]network.InterfaceIPConfiguration)
 
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
 
 	var publicIPs []string
 	for _, ipConfig := range ipConfigs {
-		if ipConfig.Properties.PublicIPAddress != nil && ipConfig.Properties.PublicIPAddress.ID != nil {
-			publicIP, err := getNicPublicIP(ctx, session, *ipConfig.Properties.PublicIPAddress.ID)
+		if ipConfig.PublicIPAddress != nil && ipConfig.PublicIPAddress.ID != nil {
+			publicIP, err := getNicPublicIP(ctx, session, *ipConfig.PublicIPAddress.ID)
+
 			if err != nil {
 				return nil, err
 			}
-
-			if publicIP.Properties.IPAddress != nil {
-				publicIPs = append(publicIPs, *publicIP.Properties.IPAddress)
+			if publicIP.IPAddress != nil {
+				publicIPs = append(publicIPs, *publicIP.IPAddress)
 			}
 		}
 	}
@@ -544,7 +551,7 @@ func getNicPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	return publicIPs, nil
 }
 
-func getNicPublicIP(ctx context.Context, session *SessionNew, id string) (armnetwork.PublicIPAddress, error) {
+func getNicPublicIP(ctx context.Context, session *Session, id string) (network.PublicIPAddress, error) {
 	logger := plugin.Logger(ctx)
 	logger.Trace("getNicPublicIPs")
 
@@ -552,146 +559,130 @@ func getNicPublicIP(ctx context.Context, session *SessionNew, id string) (armnet
 	resourceGroup := pathParts[4]
 	name := pathParts[len(pathParts)-1]
 
-	networkClient, err := armnetwork.NewPublicIPAddressesClient(session.SubscriptionID, session.Cred, nil)
-	if err != nil {
-		return armnetwork.PublicIPAddress{}, err
-	}
+	subscriptionID := session.SubscriptionID
+	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	networkClient.Authorizer = session.Authorizer
 
-	publicIPAddresses, err := networkClient.Get(ctx, resourceGroup, name, nil)
-	if err != nil {
-		return armnetwork.PublicIPAddress{}, err
-	}
-
-	return publicIPAddresses.PublicIPAddress, nil
+	return networkClient.Get(ctx, resourceGroup, name, "")
 }
 
 func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineExtensions")
 
-	virtualMachine := h.Item.(armcompute.VirtualMachine)
+	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
-	name := *virtualMachine.Name
 
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachineExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name, "")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := armcompute.NewVirtualMachineExtensionsClient(session.SubscriptionID, session.Cred, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	op, err := client.List(ctx, resourceGroupName, name, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return op, nil
 	// If we return the API response directly, the output only gives the contents of VirtualMachineExtensionsListResult
-	// var extensions []map[string]interface{}
+	var extensions []map[string]interface{}
 
-	// for _, extension := range op.Value {
-	// 	extensionMap := make(map[string]interface{})
-	// 	extensionMap["Id"] = extension.ID
-	// 	extensionMap["Name"] = extension.Name
-	// 	extensionMap["Type"] = extension.Type
-	// 	extensionMap["Location"] = extension.Location
-	// 	extensionMap["Publisher"] = extension.VirtualMachineExtensionProperties.Publisher
-	// 	extensionMap["ExtensionType"] = extension.VirtualMachineExtensionProperties.Type
-	// 	extensionMap["TypeHandlerVersion"] = extension.VirtualMachineExtensionProperties.TypeHandlerVersion
-	// 	extensionMap["AutoUpgradeMinorVersion"] = extension.VirtualMachineExtensionProperties.AutoUpgradeMinorVersion
-	// 	extensionMap["EnableAutomaticUpgrade"] = extension.VirtualMachineExtensionProperties.EnableAutomaticUpgrade
-	// 	extensionMap["ForceUpdateTag"] = extension.VirtualMachineExtensionProperties.ForceUpdateTag
-	// 	extensionMap["Settings"] = extension.VirtualMachineExtensionProperties.Settings
-	// 	extensionMap["ProtectedSettings"] = extension.VirtualMachineExtensionProperties.ProtectedSettings
-	// 	extensionMap["ProvisioningState"] = extension.VirtualMachineExtensionProperties.ProvisioningState
-	// 	extensionMap["InstanceView"] = extension.VirtualMachineExtensionProperties.InstanceView
-	// 	extensionMap["Tags"] = extension.Tags
-	// 	extensions = append(extensions, extensionMap)
-	// }
-	// return extensions, nil
+	for _, extension := range *op.Value {
+		extensionMap := make(map[string]interface{})
+		extensionMap["Id"] = extension.ID
+		extensionMap["Name"] = extension.Name
+		extensionMap["Type"] = extension.Type
+		extensionMap["Location"] = extension.Location
+		extensionMap["Publisher"] = extension.VirtualMachineExtensionProperties.Publisher
+		extensionMap["ExtensionType"] = extension.VirtualMachineExtensionProperties.Type
+		extensionMap["TypeHandlerVersion"] = extension.VirtualMachineExtensionProperties.TypeHandlerVersion
+		extensionMap["AutoUpgradeMinorVersion"] = extension.VirtualMachineExtensionProperties.AutoUpgradeMinorVersion
+		extensionMap["EnableAutomaticUpgrade"] = extension.VirtualMachineExtensionProperties.EnableAutomaticUpgrade
+		extensionMap["ForceUpdateTag"] = extension.VirtualMachineExtensionProperties.ForceUpdateTag
+		extensionMap["Settings"] = extension.VirtualMachineExtensionProperties.Settings
+		extensionMap["ProtectedSettings"] = extension.VirtualMachineExtensionProperties.ProtectedSettings
+		extensionMap["ProvisioningState"] = extension.VirtualMachineExtensionProperties.ProvisioningState
+		extensionMap["InstanceView"] = extension.VirtualMachineExtensionProperties.InstanceView
+		extensionMap["Tags"] = extension.Tags
+		extensions = append(extensions, extensionMap)
+	}
+	return extensions, nil
 }
 
 func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listComputeVirtualMachineGuestConfigurationAssignments")
 
-	virtualMachine := h.Item.(armcompute.VirtualMachine)
+	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
-	name := *virtualMachine.Name
 
-	session, err := GetNewSessionUpdated(ctx, d)
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
+	subscriptionID := session.SubscriptionID
+	client := guestconfiguration.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
 
-	client, err := armguestconfiguration.NewAssignmentsClient(session.SubscriptionID, session.Cred, nil)
+	// SDK does not support pagination yet
+	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name)
 	if err != nil {
-		return nil, err
-	}
-
-	var assignments []*armguestconfiguration.Assignment
-	pager := client.NewListPager(resourceGroupName, name, nil)
-
-	for pager.More() {
-		result, err := pager.NextPage(ctx)
-		if err != nil {
-			if strings.Contains(err.Error(), "NotFound") {
-				return nil, nil
-			}
-			return nil, err
+		// API throws 404 error if vm does not have any guest configuration assignments
+		if strings.Contains(err.Error(), "404") {
+			return nil, nil
 		}
-		assignments = append(assignments, result.Value...)
+		plugin.Logger(ctx).Error("listComputeVirtualMachineGuestConfigurationAssignments", "get", err)
+		return nil, err
 	}
 
-	// var assignments []map[string]interface{}
+	var assignments []map[string]interface{}
 
-	// // If we return the API response directly, the output will not provide all the data for Guest Configuration Assignment
-	// for _, configAssignment := range *op.Value {
-	// 	objectMap := make(map[string]interface{})
-	// 	if configAssignment.ID != nil {
-	// 		objectMap["id"] = configAssignment.ID
-	// 	}
-	// 	if configAssignment.Name != nil {
-	// 		objectMap["name"] = configAssignment.Name
-	// 	}
-	// 	if configAssignment.Location != nil {
-	// 		objectMap["location"] = configAssignment.Location
-	// 	}
-	// 	if configAssignment.Type != nil {
-	// 		objectMap["type"] = configAssignment.Type
-	// 	}
-	// 	if configAssignment.Properties != nil {
-	// 		if configAssignment.Properties.TargetResourceID != nil {
-	// 			objectMap["targetResourceID"] = configAssignment.Properties.TargetResourceID
-	// 		}
-	// 		if configAssignment.Properties.TargetResourceID != nil {
-	// 			objectMap["lastComplianceStatusChecked"] = configAssignment.Properties.LastComplianceStatusChecked
-	// 		}
-	// 		if configAssignment.Properties.ComplianceStatus != "" {
-	// 			objectMap["complianceStatus"] = configAssignment.Properties.ComplianceStatus
-	// 		}
-	// 		if configAssignment.Properties.LatestReportID != nil {
-	// 			objectMap["latestReportID"] = configAssignment.Properties.LatestReportID
-	// 		}
-	// 		if configAssignment.Properties.Context != nil {
-	// 			objectMap["context"] = configAssignment.Properties.Context
-	// 		}
-	// 		if configAssignment.Properties.AssignmentHash != nil {
-	// 			objectMap["assignmentHash"] = configAssignment.Properties.AssignmentHash
-	// 		}
-	// 		if configAssignment.Properties.ProvisioningState != "" {
-	// 			objectMap["provisioningState"] = configAssignment.Properties.ProvisioningState
-	// 		}
-	// 		if configAssignment.Properties.GuestConfiguration != nil {
-	// 			objectMap["guestConfiguration"] = configAssignment.Properties.GuestConfiguration
-	// 		}
-	// 		if configAssignment.Properties.LatestAssignmentReport != nil {
-	// 			objectMap["latestAssignmentReport"] = configAssignment.Properties.LatestAssignmentReport
-	// 		}
-	// 	}
-	// 	assignments = append(assignments, objectMap)
-	// }
+	// If we return the API response directly, the output will not provide all the data for Guest Configuration Assignment
+	for _, configAssignment := range *op.Value {
+		objectMap := make(map[string]interface{})
+		if configAssignment.ID != nil {
+			objectMap["id"] = configAssignment.ID
+		}
+		if configAssignment.Name != nil {
+			objectMap["name"] = configAssignment.Name
+		}
+		if configAssignment.Location != nil {
+			objectMap["location"] = configAssignment.Location
+		}
+		if configAssignment.Type != nil {
+			objectMap["type"] = configAssignment.Type
+		}
+		if configAssignment.Properties != nil {
+			if configAssignment.Properties.TargetResourceID != nil {
+				objectMap["targetResourceID"] = configAssignment.Properties.TargetResourceID
+			}
+			if configAssignment.Properties.TargetResourceID != nil {
+				objectMap["lastComplianceStatusChecked"] = configAssignment.Properties.LastComplianceStatusChecked
+			}
+			if configAssignment.Properties.ComplianceStatus != "" {
+				objectMap["complianceStatus"] = configAssignment.Properties.ComplianceStatus
+			}
+			if configAssignment.Properties.LatestReportID != nil {
+				objectMap["latestReportID"] = configAssignment.Properties.LatestReportID
+			}
+			if configAssignment.Properties.Context != nil {
+				objectMap["context"] = configAssignment.Properties.Context
+			}
+			if configAssignment.Properties.AssignmentHash != nil {
+				objectMap["assignmentHash"] = configAssignment.Properties.AssignmentHash
+			}
+			if configAssignment.Properties.ProvisioningState != "" {
+				objectMap["provisioningState"] = configAssignment.Properties.ProvisioningState
+			}
+			if configAssignment.Properties.GuestConfiguration != nil {
+				objectMap["guestConfiguration"] = configAssignment.Properties.GuestConfiguration
+			}
+			if configAssignment.Properties.LatestAssignmentReport != nil {
+				objectMap["latestAssignmentReport"] = configAssignment.Properties.LatestAssignmentReport
+			}
+		}
+		assignments = append(assignments, objectMap)
+	}
 
 	return assignments, nil
 }
@@ -699,12 +690,15 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 // TRANSFORM FUNCTIONS
 
 func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	plugin.Logger(ctx).Error("getPowerState", "d.Value", d.Value)
+	plugin.Logger(ctx).Trace("getPowerState", "d.Value", d.Value)
 
 	if d.Value == nil {
 		return nil, nil
 	}
-	statuses := d.Value.([]*armcompute.InstanceViewStatus)
+	statuses, ok := d.Value.(*[]compute.InstanceViewStatus)
+	if !ok {
+		return nil, fmt.Errorf("Conversion failed for virtual machine statuses")
+	}
 
 	return getStatusFromCode(statuses, "PowerState"), nil
 }
@@ -716,21 +710,21 @@ func getPrivateIpsFromIpconfig(ctx context.Context, d *transform.TransformData) 
 	}
 
 	var ips []string
-	ipConfigs, ok := d.Value.([]*armnetwork.InterfaceIPConfiguration)
+	ipConfigs, ok := d.Value.([]network.InterfaceIPConfiguration)
 	if !ok {
 		return nil, fmt.Errorf("Conversion failed for virtual machine ip configs")
 	}
 	for _, ipConfig := range ipConfigs {
-		ips = append(ips, *ipConfig.Properties.PrivateIPAddress)
+		ips = append(ips, *ipConfig.PrivateIPAddress)
 	}
 
 	return ips, nil
 }
 
 // UTILITY FUNCTIONS
-func getStatusFromCode(statuses []*armcompute.InstanceViewStatus, codeType string) string {
-	for _, status := range statuses {
-		statusCode := types.SafeString(*status.Code)
+func getStatusFromCode(statuses *[]compute.InstanceViewStatus, codeType string) string {
+	for _, status := range *statuses {
+		statusCode := types.SafeString(status.Code)
 
 		if strings.HasPrefix(statusCode, codeType+"/") {
 			return strings.SplitN(statusCode, "/", 2)[1]
