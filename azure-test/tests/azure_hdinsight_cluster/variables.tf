@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure environment used for the test."
 }
 
@@ -63,7 +63,7 @@ resource "azurerm_hdinsight_hadoop_cluster" "named_test_resource" {
   }
 
   gateway {
-    enabled  = true
+    # enabled  = true
     username = "acctestusrgw"
     password = "TerrAform123!"
   }

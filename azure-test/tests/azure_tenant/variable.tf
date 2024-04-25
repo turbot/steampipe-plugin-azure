@@ -12,7 +12,7 @@ variable "azure_environment" {
 
 variable "azure_subscription" {
   type        = string
-  default     = "3510ae4d-530b-497d-8f30-53b9616fc6c1"
+  default     = "d46d7416-f95f-4771-bbb5-529d4c76659c"
   description = "Azure environment used for the test."
 }
 
@@ -26,7 +26,7 @@ provider "azuread" {
   # Cannot be passed as a variable
   # version         = "=0.10.0"
   environment     = var.azure_environment
-  subscription_id = var.azure_subscription
+  # subscription_id = var.azure_subscription
   tenant_id       = var.azure_tenant
 }
 
