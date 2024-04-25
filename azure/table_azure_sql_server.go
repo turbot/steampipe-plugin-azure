@@ -200,10 +200,12 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "client_error", err)
 		return nil, err
 	}
 
@@ -211,6 +213,7 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "api_error", err)
 			return nil, err
 		}
 		for _, server := range result.Value {
@@ -232,20 +235,28 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getSQLServer")
 
-	name := d.EqualsQuals["name"].GetStringValue()
-	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	name := d.EqualsQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
+
+	// check if name or resourceGroup is nil
+	if name == "" || resourceGroup == "" {
+		return nil, nil
+	}
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "client_error", err)
 		return nil, err
 	}
 
 	op, err := client.Get(ctx, resourceGroup, name, nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServer", "api_error", err)
 		return nil, err
 	}
 
@@ -267,10 +278,12 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServerBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "client_error", err)
 		return nil, err
 	}
 
@@ -279,6 +292,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAuditPolicy", "api_error", err)
 			return nil, err
 		}
 		auditPolicies = append(auditPolicies, result.Value...)
@@ -295,10 +309,12 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerPrivateEndpointConnections", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewPrivateEndpointConnectionsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerPrivateEndpointConnections", "client_error", err)
 		return nil, err
 	}
 
@@ -307,6 +323,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerPrivateEndpointConnections", "api_error", err)
 			return nil, err
 		}
 		privateEndpointConnections = append(privateEndpointConnections, result.Value...)
@@ -323,10 +340,12 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServerSecurityAlertPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "client_error", err)
 		return nil, err
 	}
 
@@ -335,6 +354,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerSecurityAlertPolicy", "api_error", err)
 			return nil, err
 		}
 		securityAlertPolicies = append(securityAlertPolicies, result.Value...)
@@ -351,10 +371,12 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServerAzureADAdministratorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "client_error", err)
 		return nil, err
 	}
 
@@ -363,6 +385,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerAzureADAdministrator", "api_error", err)
 			return nil, err
 		}
 		serverAdministrators = append(serverAdministrators, result.Value...)
@@ -379,10 +402,12 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewEncryptionProtectorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "client_error", err)
 		return nil, err
 	}
 
@@ -391,6 +416,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerEncryptionProtector", "api_error", err)
 			return nil, err
 		}
 		encryptionProtectors = append(encryptionProtectors, result.Value...)
@@ -407,10 +433,12 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewServerVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "client_error", err)
 		return nil, err
 	}
 
@@ -419,6 +447,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.getSQLServerVulnerabilityAssessment", "api_error", err)
 			return nil, err
 		}
 		vulnerabilityAssessments = append(vulnerabilityAssessments, result.Value...)
@@ -435,10 +464,12 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewFirewallRulesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "client_error", err)
 		return nil, err
 	}
 
@@ -447,6 +478,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerFirewallRules", "api_error", err)
 			return nil, err
 		}
 		firewallRules = append(firewallRules, result.Value...)
@@ -463,10 +495,12 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewVirtualNetworkRulesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "client_error", err)
 		return nil, err
 	}
 
@@ -475,6 +509,7 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerVirtualNetworkRules", "api_error", err)
 			return nil, err
 		}
 		networkRules = append(networkRules, result.Value...)

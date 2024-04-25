@@ -268,7 +268,7 @@ func getAzureComputeVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryD
 	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, resourceGroup, name, compute.UserData)
+	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}

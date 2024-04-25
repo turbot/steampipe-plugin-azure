@@ -203,7 +203,7 @@ type PrivateEndpointConnectionInfo struct {
 	PrivateEndpointId                               string
 	PrivateLinkServiceConnectionStateStatus         string
 	PrivateLinkServiceConnectionStateDescription    string
-	PrivateLinkServiceConnectionStateActionRequired keyvault.ActionsRequired
+	PrivateLinkServiceConnectionStateActionRequired string
 	ProvisioningState                               string
 }
 
@@ -350,7 +350,7 @@ func extractKeyVaultPrivateEndpointConnections(ctx context.Context, d *transform
 				}
 				if connection.PrivateLinkServiceConnectionState != nil {
 					if connection.PrivateLinkServiceConnectionState.ActionsRequired != "" {
-						privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = connection.PrivateLinkServiceConnectionState.ActionsRequired
+						privateEndpoint.PrivateLinkServiceConnectionStateActionRequired = string(connection.PrivateLinkServiceConnectionState.ActionsRequired)
 					}
 					if connection.PrivateLinkServiceConnectionState.Description != nil {
 						privateEndpoint.PrivateLinkServiceConnectionStateDescription = *connection.PrivateLinkServiceConnectionState.Description

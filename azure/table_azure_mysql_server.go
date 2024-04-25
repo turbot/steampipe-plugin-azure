@@ -451,7 +451,6 @@ func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData,
 	}
 	subscriptionID := session.SubscriptionID
 
-
 	client := mysql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 

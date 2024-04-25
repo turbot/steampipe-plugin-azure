@@ -313,10 +313,12 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "client_error", err)
 		return nil, err
 	}
 
@@ -327,6 +329,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "api_error", err)
 			return nil, err
 		}
 		for _, database := range result.Value {
@@ -354,22 +357,30 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 		databaseName = *database.Name
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
 	} else {
-		serverName = d.EqualsQuals["server_name"].GetStringValue()
-		databaseName = d.EqualsQuals["name"].GetStringValue()
-		resourceGroupName = d.EqualsQuals["resource_group"].GetStringValue()
+		serverName = d.EqualsQualString("server_name")
+		databaseName = d.EqualsQualString("name")
+		resourceGroupName = d.EqualsQualString("resource_group")
+	}
+
+	// check if server_name, name or resource_group is nil
+	if serverName == "" || databaseName == "" || resourceGroupName == "" {
+		return nil, nil
 	}
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "client_error", err)
 		return nil, err
 	}
 
 	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "api_error", err)
 		return nil, err
 	}
 
@@ -390,10 +401,12 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewTransparentDataEncryptionsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "client_error", err)
 		return nil, err
 	}
 
@@ -402,6 +415,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "api_error", err)
 			return nil, err
 		}
 		tdes = append(tdes, result.Value...)
@@ -418,10 +432,12 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewLongTermRetentionPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "client_error", err)
 		return nil, err
 	}
 
@@ -429,6 +445,7 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "api_error", err)
 			return nil, err
 		}
 
@@ -449,10 +466,12 @@ func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewDatabaseBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "client_error", err)
 		return nil, err
 	}
 
@@ -461,6 +480,7 @@ func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "api_error", err)
 			return nil, err
 		}
 		blobPolicies = append(blobPolicies, result.Value...)
@@ -477,10 +497,12 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewDatabaseVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "client_error", err)
 		return nil, err
 	}
 
@@ -489,6 +511,7 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "api_error", err)
 			return nil, err
 		}
 		vulnerabilityAssessments = append(vulnerabilityAssessments, result.Value...)
@@ -505,10 +528,12 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewDatabaseVulnerabilityAssessmentScansClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "client_error", err)
 		return nil, err
 	}
 	vulnerabilityAssessments := h.HydrateResults["listSqlDatabaseVulnerabilityAssessments"].([]*armsql.DatabaseVulnerabilityAssessment)
@@ -519,11 +544,11 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 		for pager.More() {
 			result, err := pager.NextPage(ctx)
 			if err != nil {
-
 				// check if Vulnerability Assessment is invalid
 				if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
 					return nil, nil
 				}
+				plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "api_error", err)
 				return nil, err
 			}
 			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, result.Value...)

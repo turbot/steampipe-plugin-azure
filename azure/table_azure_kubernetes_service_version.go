@@ -78,7 +78,7 @@ func listAKSVersions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_kubernetes_service_version.listAKSOrchestractors", "session_error", err)
+		plugin.Logger(ctx).Error("azure_kubernetes_service_version.listAKSVersions", "session_error", err)
 		return nil, err
 	}
 

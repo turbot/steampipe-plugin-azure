@@ -237,11 +237,13 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "session_error", err)
 		return nil, err
 	}
 
 	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "client_error", err)
 		return nil, err
 	}
 
@@ -249,6 +251,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "api_error", err)
 			return nil, err
 		}
 		for _, managedInstance := range result.Value {
@@ -269,8 +272,8 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMSSQLManagedInstance")
 
-	name := d.EqualsQuals["name"].GetStringValue()
-	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	name := d.EqualsQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
 
 	// Return nil, of no input provided
 	if name == "" || resourceGroup == "" {
@@ -279,16 +282,18 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "client_error", err)
 		return nil, err
 	}
 
 	op, err := client.Get(ctx, resourceGroup, name, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("getMSSQLManagedInstance", "get", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "api_error", err)
 		return nil, err
 	}
 
@@ -310,10 +315,12 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewManagedInstanceEncryptionProtectorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "client_error", err)
 		return nil, err
 	}
 
@@ -322,6 +329,7 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "api_error", err)
 			return nil, err
 		}
 		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, result.Value...)
@@ -339,10 +347,12 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewManagedInstanceVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "client_error", err)
 		return nil, err
 	}
 
@@ -351,6 +361,7 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "api_error", err)
 			return nil, err
 		}
 		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, result.Value...)
@@ -368,10 +379,12 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "session_error", err)
 		return nil, err
 	}
 	client, err := armsql.NewManagedServerSecurityAlertPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "client_error", err)
 		return nil, err
 	}
 
@@ -380,6 +393,7 @@ func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugi
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "api_error", err)
 			return nil, err
 		}
 		managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, result.Value...)

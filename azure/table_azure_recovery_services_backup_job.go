@@ -123,6 +123,7 @@ type JobInfo struct {
 func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "session_error", err)
 		return nil, err
 	}
 	vault := h.Item.(recoveryservices.Vault)
