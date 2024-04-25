@@ -277,6 +277,18 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 	}
 }
 
+
+type PrivateConnectionInfo struct {
+	PrivateEndpointConnectionId                      string
+	PrivateEndpointId                                string
+	PrivateEndpointConnectionName                    string
+	PrivateEndpointConnectionType                    string
+	PrivateLinkServiceConnectionStateStatus          string
+	PrivateLinkServiceConnectionStateDescription     string
+	PrivateLinkServiceConnectionStateActionsRequired string
+	ProvisioningState                                string
+}
+
 //// LIST FUNCTION
 
 func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {

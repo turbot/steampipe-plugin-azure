@@ -48,7 +48,7 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Name:        "state",
 				Description: "The state of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.State"),
+				Transform:   transform.FromField("Properties.State"),
 			},
 			{
 				Name:        "kind",
@@ -64,37 +64,37 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Name:        "administrator_login",
 				Description: "Specifies the username of the administrator for this server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.AdministratorLogin"),
+				Transform:   transform.FromField("Properties.AdministratorLogin"),
 			},
 			{
 				Name:        "administrator_login_password",
 				Description: "The administrator login password.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.AdministratorLoginPassword"),
+				Transform:   transform.FromField("Properties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "minimal_tls_version",
 				Description: "Minimal TLS version. Allowed values: '1.0', '1.1', '1.2'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.MinimalTLSVersion"),
+				Transform:   transform.FromField("Properties.MinimalTLSVersion"),
 			},
 			{
 				Name:        "public_network_access",
 				Description: "Whether or not public endpoint access is allowed for this server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.PublicNetworkAccess"),
+				Transform:   transform.FromField("Properties.PublicNetworkAccess"),
 			},
 			{
 				Name:        "version",
 				Description: "The version of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.Version"),
+				Transform:   transform.FromField("Properties.Version"),
 			},
 			{
 				Name:        "fully_qualified_domain_name",
 				Description: "The fully qualified domain name of the server.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ServerProperties.FullyQualifiedDomainName"),
+				Transform:   transform.FromField("Properties.FullyQualifiedDomainName"),
 			},
 			{
 				Name:        "server_audit_policy",
@@ -195,17 +195,6 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 	}
 }
 
-type PrivateConnectionInfo struct {
-	PrivateEndpointConnectionId                      string
-	PrivateEndpointId                                string
-	PrivateEndpointConnectionName                    string
-	PrivateEndpointConnectionType                    string
-	PrivateLinkServiceConnectionStateStatus          string
-	PrivateLinkServiceConnectionStateDescription     string
-	PrivateLinkServiceConnectionStateActionsRequired string
-	ProvisioningState                                string
-}
-
 //// LIST FUNCTION
 
 func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -213,7 +202,7 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +215,7 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 		}
 		for _, server := range result.Value {
 			d.StreamListItem(ctx, *server)
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -249,7 +239,7 @@ func getSQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServersClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +269,7 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServerBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServerBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -294,25 +284,6 @@ func getSQLServerAuditPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 		auditPolicies = append(auditPolicies, result.Value...)
 	}
 
-	// // If we return the API response directly, the output only gives
-	// // the contents of ServerBlobAuditingPolicyProperties
-	// var auditPolicies []map[string]interface{}
-	// for _, i := range op.Values() {
-	// 	objectMap := make(map[string]interface{})
-	// 	if i.ID != nil {
-	// 		objectMap["id"] = i.ID
-	// 	}
-	// 	if i.Name != nil {
-	// 		objectMap["name"] = i.Name
-	// 	}
-	// 	if i.Type != nil {
-	// 		objectMap["type"] = i.Type
-	// 	}
-	// 	if i.ServerBlobAuditingPolicyProperties != nil {
-	// 		objectMap["properties"] = i.ServerBlobAuditingPolicyProperties
-	// 	}
-	// 	auditPolicies = append(auditPolicies, objectMap)
-	// }
 	return auditPolicies, nil
 }
 
@@ -326,7 +297,7 @@ func listSQLServerPrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewPrivateEndpointConnectionsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewPrivateEndpointConnectionsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +325,7 @@ func getSQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServerSecurityAlertPoliciesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServerSecurityAlertPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +353,7 @@ func getSQLServerAzureADAdministrator(ctx context.Context, d *plugin.QueryData, 
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServerAzureADAdministratorsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServerAzureADAdministratorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -410,7 +381,7 @@ func getSQLServerEncryptionProtector(ctx context.Context, d *plugin.QueryData, h
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewEncryptionProtectorsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewEncryptionProtectorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +409,7 @@ func getSQLServerVulnerabilityAssessment(ctx context.Context, d *plugin.QueryDat
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewServerVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewServerVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +437,7 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewFirewallRulesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewFirewallRulesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -486,23 +457,15 @@ func listSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plu
 
 func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerVirtualNetworkRules")
-	var resourceGroupName, serverName string
-	if h.Item != nil {
-		switch item := h.Item.(type) {
-		case *armsql.Server:
-			serverName = *item.Name
-			resourceGroupName = strings.Split(string(*item.ID), "/")[4]
-		case armsql.ServersClientGetResponse:
-			serverName = *item.Name
-			resourceGroupName = strings.Split(string(*item.ID), "/")[4]
-		}
-	}
+	server := h.Item.(armsql.Server)
+	serverName := *server.Name
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewVirtualNetworkRulesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewVirtualNetworkRulesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -519,58 +482,3 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 
 	return networkRules, nil
 }
-
-// func networkRuleMap(rule sql.VirtualNetworkRule) map[string]interface{} {
-// 	objectMap := make(map[string]interface{})
-// 	if rule.ID != nil {
-// 		objectMap["id"] = rule.ID
-// 	}
-// 	if rule.Name != nil {
-// 		objectMap["name"] = rule.Name
-// 	}
-// 	if rule.Type != nil {
-// 		objectMap["type"] = rule.Type
-// 	}
-// 	if rule.VirtualNetworkRuleProperties != nil {
-// 		objectMap["properties"] = rule.VirtualNetworkRuleProperties
-// 	}
-// 	return objectMap
-// }
-
-// If we return the API response directly, the output will not give
-// all the contents of PrivateEndpointConnection
-// func privateEndpointConnectionMap(conn sql.PrivateEndpointConnection) PrivateConnectionInfo {
-// 	var connection PrivateConnectionInfo
-// 	if conn.ID != nil {
-// 		connection.PrivateEndpointConnectionId = *conn.ID
-// 	}
-// 	if conn.Name != nil {
-// 		connection.PrivateEndpointConnectionName = *conn.Name
-// 	}
-// 	if conn.Type != nil {
-// 		connection.PrivateEndpointConnectionType = *conn.Type
-// 	}
-// 	if conn.PrivateEndpointConnectionProperties != nil {
-// 		if conn.PrivateEndpoint != nil {
-// 			if conn.PrivateEndpoint.ID != nil {
-// 				connection.PrivateEndpointId = *conn.PrivateEndpoint.ID
-// 			}
-// 		}
-// 		if conn.PrivateLinkServiceConnectionState != nil {
-// 			if conn.PrivateLinkServiceConnectionState.ActionsRequired != "" {
-// 				connection.PrivateLinkServiceConnectionStateActionsRequired = string(conn.PrivateLinkServiceConnectionState.ActionsRequired)
-// 			}
-// 			if conn.PrivateLinkServiceConnectionState.Status != "" {
-// 				connection.PrivateLinkServiceConnectionStateStatus = string(conn.PrivateLinkServiceConnectionState.Status)
-// 			}
-// 			if conn.PrivateLinkServiceConnectionState.Description != nil {
-// 				connection.PrivateLinkServiceConnectionStateDescription = *conn.PrivateLinkServiceConnectionState.Description
-// 			}
-// 		}
-// 		if conn.ProvisioningState != "" {
-// 			connection.ProvisioningState = string(conn.ProvisioningState)
-// 		}
-// 	}
-
-// 	return connection
-// }

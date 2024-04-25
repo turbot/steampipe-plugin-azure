@@ -15,8 +15,9 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	cloudPolicy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -31,6 +32,7 @@ type SessionNew struct {
 	Cred           azcore.TokenCredential
 	SubscriptionID string
 	TenantID       string
+	ClientOptions  *policy.ClientOptions
 }
 
 type Session struct {
@@ -45,7 +47,7 @@ type Session struct {
 }
 
 /*
-	GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
+	GetNewSessionUpdated creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
 
 1. Client secret
 2. Client certificate
@@ -56,16 +58,10 @@ type Session struct {
 func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
 	logger := plugin.Logger(ctx)
 
-	// cacheKey := "GetNewSession" + tokenAudience
-	// if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-	// 	session = cachedData.(*Session)
-	// 	if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
-	// 		logger.Trace("GetNewSession", "cache expired", "delete cache and obtain new session token")
-	// 		d.ConnectionManager.Cache.Delete(cacheKey)
-	// 	} else {
-	// 		return cachedData.(*Session), nil
-	// 	}
-	// }
+	cacheKey := "GetNewSessionUpdated"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*SessionNew), nil
+	}
 
 	logger.Debug("Auth session not found in cache, creating new session")
 
@@ -130,20 +126,17 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 	default:
 		cloudConfiguration = cloud.AzurePublic
 	}
+	clientOptions := policy.ClientOptions{ClientOptions: cloudPolicy.ClientOptions{Cloud: cloudConfiguration}}
 
 	if tenantID != "" && subscriptionID != "" && clientID != "" && clientSecret != "" { // Client secret authentication
 		cred, err = azidentity.NewClientSecretCredential(
 			tenantID,
 			clientID,
 			clientSecret,
-			&azidentity.ClientSecretCredentialOptions{
-				ClientOptions: policy.ClientOptions{
-					Cloud: cloudConfiguration,
-				},
-			},
+			nil,
 		)
 		if err != nil {
-			logger.Error("GetNewSession", "client_secret_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "client_secret_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" && certificatePath != "" { // Client certificate authentication
@@ -171,14 +164,10 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			clientID,
 			certs,
 			key,
-			&azidentity.ClientCertificateCredentialOptions{
-				ClientOptions: policy.ClientOptions{
-					Cloud: cloudConfiguration,
-				},
-			},
+			nil,
 		)
 		if err != nil {
-			logger.Error("GetNewSession", "client_certificate_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "client_certificate_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" && username != "" && password != "" { // Username password authentication
@@ -187,39 +176,26 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			clientID,
 			username,
 			password,
-			&azidentity.UsernamePasswordCredentialOptions{
-				ClientOptions: policy.ClientOptions{
-					Cloud: cloudConfiguration,
-				},
-			},
+			nil,
 		)
 		if err != nil {
-			logger.Error("GetNewSession", "username_password_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "username_password_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" { // Managed identity authentication
 		cred, err = azidentity.NewManagedIdentityCredential(
 			&azidentity.ManagedIdentityCredentialOptions{
-				ClientOptions: policy.ClientOptions{
-					Cloud: cloudConfiguration,
-				},
 				ID: azidentity.ClientID(clientID),
 			},
 		)
 		if err != nil {
-			logger.Error("GetNewSession", "managed_identity_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "managed_identity_credential_error", err)
 			return nil, err
 		}
 	} else { // CLI Authentication
-		cred, err = azidentity.NewDefaultAzureCredential(
-			&azidentity.DefaultAzureCredentialOptions{
-				ClientOptions: policy.ClientOptions{
-					Cloud: cloudConfiguration,
-				},
-			},
-		)
+		cred, err = azidentity.NewAzureCLICredential(nil)
 		if err != nil {
-			logger.Error("GetNewSession", "cli_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "cli_credential_error", err)
 			return nil, err
 		}
 		subscriptionId, err := getSubscriptionIDFromCLINew()
@@ -232,12 +208,13 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		Cred:           cred,
 		SubscriptionID: subscriptionID,
 		TenantID:       tenantID,
+		ClientOptions:  &clientOptions,
 	}
 
 	return sess, err
 }
 
-// getSubscriptionIDFromCLI executes Azure CLI to get the subscription ID.
+// getSubscriptionIDFromCLINew executes Azure CLI to get the subscription ID.
 func getSubscriptionIDFromCLINew() (string, error) {
 	const azureCLIPath = "AzureCLIPath"
 

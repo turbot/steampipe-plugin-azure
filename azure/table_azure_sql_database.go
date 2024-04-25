@@ -53,7 +53,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "status",
 				Description: "The status of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Status"),
+				Transform:   transform.FromField("Properties.Status"),
 			},
 			{
 				Name:        "type",
@@ -64,61 +64,61 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "collation",
 				Description: "The collation of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Collation"),
+				Transform:   transform.FromField("Properties.Collation"),
 			},
 			{
 				Name:        "containment_state",
 				Description: "The containment state of the database.",
 				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("DatabaseProperties.ContainmentState"),
+				Transform:   transform.FromField("Properties.ContainmentState"),
 			},
 			{
 				Name:        "creation_date",
 				Description: "The creation date of the database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.CreationDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.CreationDate"),
 			},
 			{
 				Name:        "current_service_objective_id",
 				Description: "The current service level objective ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.CurrentServiceObjectiveID"),
+				Transform:   transform.FromField("Properties.CurrentServiceObjectiveID"),
 			},
 			{
 				Name:        "database_id",
 				Description: "The ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.DatabaseID"),
+				Transform:   transform.FromField("Properties.DatabaseID"),
 			},
 			{
 				Name:        "default_secondary_location",
 				Description: "The default secondary region for this database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.DefaultSecondaryLocation"),
+				Transform:   transform.FromField("Properties.DefaultSecondaryLocation"),
 			},
 			{
 				Name:        "earliest_restore_date",
 				Description: "This records the earliest start date and time that restore is available for this database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.EarliestRestoreDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.EarliestRestoreDate"),
 			},
 			{
 				Name:        "edition",
 				Description: "The edition of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Edition"),
+				Transform:   transform.FromField("Properties.Edition"),
 			},
 			{
 				Name:        "elastic_pool_name",
 				Description: "The name of the elastic pool the database is in.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.ElasticPoolName"),
+				Transform:   transform.FromField("Properties.ElasticPoolName"),
 			},
 			{
 				Name:        "failover_group_id",
 				Description: "The resource identifier of the failover group containing this database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.FailoverGroupID"),
+				Transform:   transform.FromField("Properties.FailoverGroupID"),
 			},
 			{
 				Name:        "kind",
@@ -134,31 +134,31 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "max_size_bytes",
 				Description: "The max size of the database expressed in bytes.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.MaxSizeBytes"),
+				Transform:   transform.FromField("Properties.MaxSizeBytes"),
 			},
 			{
 				Name:        "recovery_services_recovery_point_resource_id",
 				Description: "Specifies the resource ID of the recovery point to restore from if createMode is RestoreLongTermRetentionBackup.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RecoveryServicesRecoveryPointResourceID"),
+				Transform:   transform.FromField("Properties.RecoveryServicesRecoveryPointResourceID"),
 			},
 			{
 				Name:        "requested_service_objective_id",
 				Description: "The configured service level objective ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveID"),
+				Transform:   transform.FromField("Properties.RequestedServiceObjectiveID"),
 			},
 			{
 				Name:        "restore_point_in_time",
 				Description: "Specifies the point in time of the source database that will be restored to create the new database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.RestorePointInTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.RestorePointInTime"),
 			},
 			{
 				Name:        "requested_service_objective_name",
 				Description: "The name of the configured service level objective of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveName"),
+				Transform:   transform.FromField("Properties.RequestedServiceObjectiveName"),
 			},
 			{
 				Name:        "retention_policy_id",
@@ -185,37 +185,37 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "source_database_deletion_date",
 				Description: "Specifies the time that the database was deleted when createMode is Restore and sourceDatabaseId is the deleted database's original resource id.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseDeletionDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.SourceDatabaseDeletionDate"),
 			},
 			{
 				Name:        "source_database_id",
 				Description: "Specifies the resource ID of the source database if createMode is Copy, NonReadableSecondary, OnlineSecondary, PointInTimeRestore, Recovery, or Restore.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseID"),
+				Transform:   transform.FromField("Properties.SourceDatabaseID"),
 			},
 			{
 				Name:        "zone_redundant",
 				Description: "Indicates if the database is zone redundant or not.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("DatabaseProperties.ZoneRedundant"),
+				Transform:   transform.FromField("Properties.ZoneRedundant"),
 			},
 			{
 				Name:        "create_mode",
 				Description: "Specifies the mode of database creation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.CreateMode"),
+				Transform:   transform.FromField("Properties.CreateMode"),
 			},
 			{
 				Name:        "read_scale",
 				Description: "ReadScale indicates whether read-only connections are allowed to this database or not if the database is a geo-secondary.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.ReadScale"),
+				Transform:   transform.FromField("Properties.ReadScale"),
 			},
 			{
 				Name:        "recommended_index",
 				Description: "The recommended indices for this database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.RecommendedIndex"),
+				Transform:   transform.FromField("Properties.RecommendedIndex"),
 			},
 			{
 				Name:        "retention_policy_property",
@@ -234,13 +234,13 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "service_level_objective",
 				Description: "The current service level objective of the database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.ServiceLevelObjective"),
+				Transform:   transform.FromField("Properties.ServiceLevelObjective"),
 			},
 			{
 				Name:        "service_tier_advisors",
 				Description: "The list of service tier advisors for this database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.ServiceTierAdvisors"),
+				Transform:   transform.FromField("Properties.ServiceTierAdvisors"),
 			},
 			{
 				Name:        "transparent_data_encryption",
@@ -315,7 +315,7 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -349,7 +349,7 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 
 	var serverName, databaseName, resourceGroupName string
 	if h.Item != nil {
-		database := h.Item.(*armsql.Database)
+		database := h.Item.(armsql.Database)
 		serverName = strings.Split(*database.ID, "/")[8]
 		databaseName = *database.Name
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
@@ -363,7 +363,7 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -383,7 +383,6 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 }
 
 func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-
 	database := h.Item.(armsql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
@@ -393,7 +392,7 @@ func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.Quer
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewTransparentDataEncryptionsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewTransparentDataEncryptionsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -421,7 +420,7 @@ func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.Quer
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewLongTermRetentionPoliciesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewLongTermRetentionPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -452,7 +451,7 @@ func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewDatabaseBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewDatabaseBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -467,56 +466,6 @@ func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData
 		blobPolicies = append(blobPolicies, result.Value...)
 	}
 
-	// var blobPolicies []map[string]interface{}
-	// for _, i := range op.Values() {
-	// 	objectMap := make(map[string]interface{})
-	// 	if i.ID != nil {
-	// 		objectMap["id"] = i.ID
-	// 	}
-	// 	if i.Name != nil {
-	// 		objectMap["name"] = i.Name
-	// 	}
-	// 	if i.Kind != nil {
-	// 		objectMap["kind"] = i.Kind
-	// 	}
-	// 	if i.Type != nil {
-	// 		objectMap["type"] = i.Type
-	// 	}
-	// 	if i.DatabaseBlobAuditingPolicyProperties != nil {
-	// 		obMap := make(map[string]interface{})
-	// 		if i.DatabaseBlobAuditingPolicyProperties.RetentionDays != nil {
-	// 			obMap["retentionDays"] = i.DatabaseBlobAuditingPolicyProperties.RetentionDays
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
-	// 			obMap["AuditActionsAndGroups"] = i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
-	// 			obMap["isAzureMonitorTargetEnabled"] = i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
-	// 			obMap["isStorageSecondaryKeyInUse"] = i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs != nil {
-	// 			obMap["queueDelayMs"] = i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.State != "" {
-	// 			obMap["state"] = i.DatabaseBlobAuditingPolicyProperties.State
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint != nil {
-	// 			obMap["storageEndpoint"] = i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
-	// 			obMap["storageAccountAccessKey"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey
-	// 		}
-	// 		if i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
-	// 			obMap["storageAccountSubscriptionID"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID
-	// 		}
-	// 		objectMap["databaseBlobAuditingPolicyProperties"] = obMap
-	// 	}
-
-	// 	blobPolicies = append(blobPolicies, objectMap)
-	// }
-
 	return blobPolicies, nil
 }
 
@@ -530,7 +479,7 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewDatabaseVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewDatabaseVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -545,32 +494,6 @@ func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.Quer
 		vulnerabilityAssessments = append(vulnerabilityAssessments, result.Value...)
 	}
 
-	// for _, i := range op.Values() {
-	// 	objectMap := make(map[string]interface{})
-	// 	if i.ID != nil {
-	// 		objectMap["id"] = i.ID
-	// 	}
-	// 	if i.Name != nil {
-	// 		objectMap["name"] = i.Name
-	// 	}
-	// 	if i.Type != nil {
-	// 		objectMap["type"] = i.Type
-	// 	}
-	// 	if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
-	// 		objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
-	// 	}
-	// 	if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-	// 		objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
-	// 	}
-	// 	if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-	// 		objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
-	// 	}
-	// 	if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-	// 		objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
-	// 	}
-	// 	vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
-	// }
-
 	return vulnerabilityAssessments, nil
 }
 
@@ -584,7 +507,7 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 	if err != nil {
 		return nil, err
 	}
-	client, err := armsql.NewDatabaseVulnerabilityAssessmentScansClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armsql.NewDatabaseVulnerabilityAssessmentScansClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -596,49 +519,16 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 		for pager.More() {
 			result, err := pager.NextPage(ctx)
 			if err != nil {
+
+				// check if Vulnerability Assessment is invalid
+				if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+					return nil, nil
+				}
 				return nil, err
 			}
 			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, result.Value...)
 		}
 	}
-
-	// for _, i := range op.Values() {
-	// 	objectMap := make(map[string]interface{})
-	// 	if i.ID != nil {
-	// 		objectMap["id"] = i.ID
-	// 	}
-	// 	if i.Name != nil {
-	// 		objectMap["name"] = i.Name
-	// 	}
-	// 	if i.Type != nil {
-	// 		objectMap["type"] = i.Type
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
-	// 		objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
-	// 	}
-	// 	if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
-	// 		objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
-	// 	}
-	// 	if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
-	// 		objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
-	// 		objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
-	// 		objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
-	// 		objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
-	// 		objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
-	// 	}
-	// 	if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
-	// 		objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
-	// 	}
-	// 	vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
-	// }
 
 	return vulnerabilityAssessmentScanRecords, nil
 }
@@ -647,12 +537,8 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 
 func idToServerName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	if d.HydrateItem != nil {
-		switch item := d.HydrateItem.(type) {
-		case *armsql.Database:
-			return strings.Split(*item.ID, "/")[8], nil
-		case armsql.DatabasesClientGetResponse:
-			return strings.Split(*item.ID, "/")[8], nil
-		}
+		item := d.HydrateItem.(armsql.Database)
+		return strings.Split(*item.ID, "/")[8], nil
 	}
 	return nil, nil
 }

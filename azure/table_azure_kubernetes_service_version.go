@@ -82,7 +82,7 @@ func listAKSVersions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		return nil, err
 	}
 
-	client, err := armcontainerservice.NewManagedClustersClient(session.SubscriptionID, session.Cred, nil)
+	client, err := armcontainerservice.NewManagedClustersClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		return nil, err
 	}

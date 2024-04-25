@@ -142,7 +142,7 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 		}
 	}
 
-	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(session.SubscriptionID, session.Cred, nil)
+	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "client_error", err)
 		return nil, nil
