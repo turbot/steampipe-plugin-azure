@@ -8,6 +8,7 @@ _What's new?_
 _Enhancements_
 
 - The `subscription_id` column has now been assigned as a connection key column across all the tables which facilitates more precise and efficient querying across multiple Azure subscriptions. ([#740](https://github.com/turbot/steampipe-plugin-azure/pull/740))
+- Added the `version` flag to the plugin's Export tool. ([#65](https://github.com/turbot/steampipe-export/pull/65))
 
 _Bug fixes_
 
