@@ -197,10 +197,9 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 }
 
 func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (any, error) {
-	subscriptionID, err := getSubscriptionID(ctx, d, h)
+	subscriptionID, err := getSubscriptionIDMemoized(ctx, d, h)
 	if err != nil {
 		return nil, err
 	}
-
 	return subscriptionID, nil
 }
