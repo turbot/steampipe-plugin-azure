@@ -50,21 +50,10 @@ func getSubscriptionIDCacheKey(ctx context.Context, d *plugin.QueryData, h *plug
 }
 
 func getSubscriptionIDUncached(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getSubscriptionID")
-	cacheKey := "getSubscriptionID"
-
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(string), nil
-	}
-
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
-	// cache subscription id for the session
-	d.ConnectionManager.Cache.Set(cacheKey, session.SubscriptionID)
-
 	return session.SubscriptionID, nil
 }
 
@@ -85,19 +74,10 @@ func getCloudEnvironmentCacheKey(ctx context.Context, d *plugin.QueryData, h *pl
 
 func getCloudEnvironmentUncached(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getCloudEnvironment")
-	cacheKey := "getCloudEnvironment"
-
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(string), nil
-	}
-
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
-	// cache environment name for the session
-	d.ConnectionManager.Cache.Set(cacheKey, session.CloudEnvironment)
 
 	return session.CloudEnvironment, nil
 }
