@@ -2,7 +2,7 @@
 
 _Enhancements_
 
-- Updated: `azure-sdk-for-go` to `v68.0.0+incompatible` ([#747](https://github.com/turbot/steampipe-plugin-azure/pull/747))
+- The Plugin and the Steampipe Anywhere binaries are now built with the `netgo` package. ([#756](https://github.com/turbot/steampipe-plugin-azure/pull/756))
 
 _Bug fixes_
 
@@ -10,6 +10,7 @@ _Bug fixes_
 
 _Dependencies_
 
+- Updated: `azure-sdk-for-go` to `v68.0.0+incompatible` ([#747](https://github.com/turbot/steampipe-plugin-azure/pull/747))
 - Recompiled plugin with [steampipe-plugin-sdk v5.10.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v5101-2024-05-09) which ensures that `QueryData` passed to `ConnectionKeyColumns` value callback is populated with `ConnectionManager`. ([#755](https://github.com/turbot/steampipe-plugin-azure/pull/755))
 
 ## v0.56.0 [2024-04-30]
