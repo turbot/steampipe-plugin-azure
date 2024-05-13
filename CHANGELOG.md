@@ -10,7 +10,7 @@ _Bug fixes_
 
 _Dependencies_
 
-- Recompiled plugin with [azure-sdk-for-go v68.0.0+incompatible](https://github.com/Azure/azure-sdk-for-go/releases/tag/v68.0.0) ([#747](https://github.com/turbot/steampipe-plugin-azure/pull/747))
+- Recompiled plugin with [azure-sdk-for-go v68.0.0+incompatible](https://github.com/Azure/azure-sdk-for-go/releases/tag/v68.0.0). ([#747](https://github.com/turbot/steampipe-plugin-azure/pull/747))
 - Recompiled plugin with [steampipe-plugin-sdk v5.10.1](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v5101-2024-05-09) which ensures that `QueryData` passed to `ConnectionKeyColumns` value callback is populated with `ConnectionManager`. ([#755](https://github.com/turbot/steampipe-plugin-azure/pull/755))
 
 ## v0.56.0 [2024-04-30]
