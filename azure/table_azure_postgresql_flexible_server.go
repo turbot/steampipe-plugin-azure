@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/services/postgresql/mgmt/2021-06-01/postgresqlflexibleservers"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/postgresql/mgmt/postgresqlflexibleservers"
 )
 
 //// TABLE DEFINITION

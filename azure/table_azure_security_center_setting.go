@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v3.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -37,9 +37,8 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "enabled",
-				Description: "Data export setting status.",
+				Description: "Check if the setting is enabled.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("DataExportSettingProperties.Enabled"),
 			},
 			{
 				Name:        "type",
@@ -48,7 +47,7 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "kind",
-				Description: "The kind of the settings string (DataExportSettings).",
+				Description: "The kind of the setting.",
 				Type:        proto.ColumnType_STRING,
 			},
 
@@ -69,6 +68,14 @@ func tableAzureSecurityCenterSetting(_ context.Context) *plugin.Table {
 	}
 }
 
+type SecurityCenterSettings struct {
+	ID      *string
+	Name    *string
+	Enabled *bool
+	Type    *string
+	Kind    security.KindEnum2
+}
+
 //// LIST FUNCTION
 
 func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -78,7 +85,7 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
 	result, err := settingClient.List(ctx)
@@ -87,7 +94,34 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for _, setting := range result.Values() {
-		d.StreamListItem(ctx, setting)
+
+		// Check if dataExportSettings
+		if dataExportSettings, ok := setting.AsDataExportSettings(); ok {
+			d.StreamListItem(ctx, SecurityCenterSettings{
+				ID:      dataExportSettings.ID,
+				Name:    dataExportSettings.Name,
+				Enabled: dataExportSettings.Enabled,
+				Type:    dataExportSettings.Type,
+				Kind:    dataExportSettings.Kind,
+			})
+		} else if alertSyncSettings, ok := setting.AsAlertSyncSettings(); ok { // Check if alertSyncSettings
+			d.StreamListItem(ctx, SecurityCenterSettings{
+				ID:      alertSyncSettings.ID,
+				Name:    alertSyncSettings.Name,
+				Enabled: alertSyncSettings.Enabled,
+				Type:    alertSyncSettings.Type,
+				Kind:    alertSyncSettings.Kind,
+			})
+		} else {
+			setting, _ := setting.AsSetting() // Basic settings
+			d.StreamListItem(ctx, SecurityCenterSettings{
+				ID:   setting.ID,
+				Name: setting.Name,
+				Type: setting.Type,
+				Kind: setting.Kind,
+			})
+		}
+
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
@@ -101,9 +135,35 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 			return err, nil
 		}
 		for _, setting := range result.Values() {
-			d.StreamListItem(ctx, setting)
+
+			// Check if dataExportSettings
+			if dataExportSettings, ok := setting.AsDataExportSettings(); ok {
+				d.StreamListItem(ctx, SecurityCenterSettings{
+					ID:      dataExportSettings.ID,
+					Name:    dataExportSettings.Name,
+					Enabled: dataExportSettings.Enabled,
+					Type:    dataExportSettings.Type,
+					Kind:    dataExportSettings.Kind,
+				})
+			} else if alertSyncSettings, ok := setting.AsAlertSyncSettings(); ok { // Check if alertSyncSettings
+				d.StreamListItem(ctx, SecurityCenterSettings{
+					ID:      alertSyncSettings.ID,
+					Name:    alertSyncSettings.Name,
+					Enabled: alertSyncSettings.Enabled,
+					Type:    alertSyncSettings.Type,
+					Kind:    alertSyncSettings.Kind,
+				})
+			} else {
+				setting, _ := setting.AsSetting() // Basic settings
+				d.StreamListItem(ctx, SecurityCenterSettings{
+					ID:   setting.ID,
+					Name: setting.Name,
+					Type: setting.Type,
+					Kind: setting.Kind,
+				})
+			}
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
-			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
@@ -123,13 +183,20 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.EqualsQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
-	setting, err := settingClient.Get(ctx, name)
+	setting, err := settingClient.Get(ctx, security.SettingName4(name))
 	if err != nil {
 		return err, nil
 	}
 
-	return setting.Value, nil
+	if dataExportSettings, ok := setting.Value.AsDataExportSettings(); ok {
+		return dataExportSettings, nil
+	} else if alertSyncSettings, ok := setting.Value.AsAlertSyncSettings(); ok {
+		return alertSyncSettings, nil
+	} else {
+		settings, _ := setting.Value.AsSetting()
+		return settings, nil
+	}
 }

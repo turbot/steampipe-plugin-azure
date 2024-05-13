@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v3.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -81,7 +81,7 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
 	result, err := settingClient.List(ctx)
@@ -116,7 +116,7 @@ func getSecurityCenterPricing(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	subscriptionID := session.SubscriptionID
-	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, name)
+	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
 	setting, err := settingClient.Get(ctx, name)

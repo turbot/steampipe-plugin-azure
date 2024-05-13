@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -268,7 +268,7 @@ func getAzureComputeVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryD
 	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(context.Background(), resourceGroup, name)
+	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}

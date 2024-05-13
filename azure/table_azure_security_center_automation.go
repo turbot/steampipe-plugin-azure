@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v3.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -126,7 +126,7 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	subscriptionID := session.SubscriptionID
-	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
 
 	result, err := automationClient.List(ctx)
@@ -173,7 +173,7 @@ func getSecurityCenterAutomation(ctx context.Context, d *plugin.QueryData, _ *pl
 	name := d.EqualsQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
 
 	automation, err := automationClient.Get(ctx, resourceGroup, name)

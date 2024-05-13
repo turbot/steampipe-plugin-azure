@@ -3,11 +3,10 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/sqlvirtualmachine/mgmt/sqlvirtualmachine"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
-	"github.com/Azure/azure-sdk-for-go/services/preview/sqlvirtualmachine/mgmt/2017-03-01-preview/sqlvirtualmachine"
 )
 
 //// TABLE DEFINITION

@@ -4,9 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
-	sqlV5 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -26,6 +24,12 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
 			Hydrate:       listSqlDatabases,
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func:    listSqlDatabaseVulnerabilityAssessmentScans,
+				Depends: []plugin.HydrateFunc{listSqlDatabaseVulnerabilityAssessments},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -49,7 +53,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "status",
 				Description: "The status of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Status"),
+				Transform:   transform.FromField("Properties.Status"),
 			},
 			{
 				Name:        "type",
@@ -60,61 +64,61 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "collation",
 				Description: "The collation of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Collation"),
+				Transform:   transform.FromField("Properties.Collation"),
 			},
 			{
 				Name:        "containment_state",
 				Description: "The containment state of the database.",
 				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("DatabaseProperties.ContainmentState"),
+				Transform:   transform.FromField("Properties.ContainmentState"),
 			},
 			{
 				Name:        "creation_date",
 				Description: "The creation date of the database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.CreationDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.CreationDate"),
 			},
 			{
 				Name:        "current_service_objective_id",
 				Description: "The current service level objective ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.CurrentServiceObjectiveID"),
+				Transform:   transform.FromField("Properties.CurrentServiceObjectiveID"),
 			},
 			{
 				Name:        "database_id",
 				Description: "The ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.DatabaseID"),
+				Transform:   transform.FromField("Properties.DatabaseID"),
 			},
 			{
 				Name:        "default_secondary_location",
 				Description: "The default secondary region for this database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.DefaultSecondaryLocation"),
+				Transform:   transform.FromField("Properties.DefaultSecondaryLocation"),
 			},
 			{
 				Name:        "earliest_restore_date",
 				Description: "This records the earliest start date and time that restore is available for this database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.EarliestRestoreDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.EarliestRestoreDate"),
 			},
 			{
 				Name:        "edition",
 				Description: "The edition of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.Edition"),
+				Transform:   transform.FromField("Properties.Edition"),
 			},
 			{
 				Name:        "elastic_pool_name",
 				Description: "The name of the elastic pool the database is in.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.ElasticPoolName"),
+				Transform:   transform.FromField("Properties.ElasticPoolName"),
 			},
 			{
 				Name:        "failover_group_id",
 				Description: "The resource identifier of the failover group containing this database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.FailoverGroupID"),
+				Transform:   transform.FromField("Properties.FailoverGroupID"),
 			},
 			{
 				Name:        "kind",
@@ -130,31 +134,31 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "max_size_bytes",
 				Description: "The max size of the database expressed in bytes.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.MaxSizeBytes"),
+				Transform:   transform.FromField("Properties.MaxSizeBytes"),
 			},
 			{
 				Name:        "recovery_services_recovery_point_resource_id",
 				Description: "Specifies the resource ID of the recovery point to restore from if createMode is RestoreLongTermRetentionBackup.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RecoveryServicesRecoveryPointResourceID"),
+				Transform:   transform.FromField("Properties.RecoveryServicesRecoveryPointResourceID"),
 			},
 			{
 				Name:        "requested_service_objective_id",
 				Description: "The configured service level objective ID of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveID"),
+				Transform:   transform.FromField("Properties.RequestedServiceObjectiveID"),
 			},
 			{
 				Name:        "restore_point_in_time",
 				Description: "Specifies the point in time of the source database that will be restored to create the new database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.RestorePointInTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.RestorePointInTime"),
 			},
 			{
 				Name:        "requested_service_objective_name",
 				Description: "The name of the configured service level objective of the database.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.RequestedServiceObjectiveName"),
+				Transform:   transform.FromField("Properties.RequestedServiceObjectiveName"),
 			},
 			{
 				Name:        "retention_policy_id",
@@ -181,37 +185,37 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "source_database_deletion_date",
 				Description: "Specifies the time that the database was deleted when createMode is Restore and sourceDatabaseId is the deleted database's original resource id.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseDeletionDate").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.SourceDatabaseDeletionDate"),
 			},
 			{
 				Name:        "source_database_id",
 				Description: "Specifies the resource ID of the source database if createMode is Copy, NonReadableSecondary, OnlineSecondary, PointInTimeRestore, Recovery, or Restore.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.SourceDatabaseID"),
+				Transform:   transform.FromField("Properties.SourceDatabaseID"),
 			},
 			{
 				Name:        "zone_redundant",
 				Description: "Indicates if the database is zone redundant or not.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("DatabaseProperties.ZoneRedundant"),
+				Transform:   transform.FromField("Properties.ZoneRedundant"),
 			},
 			{
 				Name:        "create_mode",
 				Description: "Specifies the mode of database creation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.CreateMode"),
+				Transform:   transform.FromField("Properties.CreateMode"),
 			},
 			{
 				Name:        "read_scale",
 				Description: "ReadScale indicates whether read-only connections are allowed to this database or not if the database is a geo-secondary.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("DatabaseProperties.ReadScale"),
+				Transform:   transform.FromField("Properties.ReadScale"),
 			},
 			{
 				Name:        "recommended_index",
 				Description: "The recommended indices for this database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.RecommendedIndex"),
+				Transform:   transform.FromField("Properties.RecommendedIndex"),
 			},
 			{
 				Name:        "retention_policy_property",
@@ -230,13 +234,13 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Name:        "service_level_objective",
 				Description: "The current service level objective of the database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.ServiceLevelObjective"),
+				Transform:   transform.FromField("Properties.ServiceLevelObjective"),
 			},
 			{
 				Name:        "service_tier_advisors",
 				Description: "The list of service tier advisors for this database.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("DatabaseProperties.ServiceTierAdvisors"),
+				Transform:   transform.FromField("Properties.ServiceTierAdvisors"),
 			},
 			{
 				Name:        "transparent_data_encryption",
@@ -307,29 +311,34 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
+	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "client_error", err)
+		return nil, err
+	}
 
-	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	server := h.Item.(sqlv3.Server)
+	server := h.Item.(armsql.Server)
 	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
 
-	result, err := client.ListByServer(ctx, resourceGroupName, *server.Name, "", "")
-	if err != nil {
-		return nil, err
-	}
-
-	for _, database := range *result.Value {
-		d.StreamLeafListItem(ctx, database)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
+	pager := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "api_error", err)
+			return nil, err
+		}
+		for _, database := range result.Value {
+			d.StreamListItem(ctx, *database)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 
@@ -343,411 +352,206 @@ func getSqlDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 
 	var serverName, databaseName, resourceGroupName string
 	if h.Item != nil {
-		database := h.Item.(sql.Database)
+		database := h.Item.(armsql.Database)
 		serverName = strings.Split(*database.ID, "/")[8]
 		databaseName = *database.Name
 		resourceGroupName = strings.Split(string(*database.ID), "/")[4]
 	} else {
-		serverName = d.EqualsQuals["server_name"].GetStringValue()
-		databaseName = d.EqualsQuals["name"].GetStringValue()
-		resourceGroupName = d.EqualsQuals["resource_group"].GetStringValue()
+		serverName = d.EqualsQualString("server_name")
+		databaseName = d.EqualsQualString("name")
+		resourceGroupName = d.EqualsQualString("resource_group")
 	}
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	// check if server_name, name or resource_group is nil
+	if serverName == "" || databaseName == "" || resourceGroupName == "" {
+		return nil, nil
+	}
+
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewDatabasesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, "")
+	client, err := armsql.NewDatabasesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "client_error", err)
+		return nil, err
+	}
+
+	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabase", "api_error", err)
 		return nil, err
 	}
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return op.Database, nil
 	}
 
 	return nil, nil
 }
 
 func getSqlDatabaseTransparentDataEncryption(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(armsql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
-	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+	databaseName := *database.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewTransparentDataEncryptionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroupName, serverName, databaseName)
+	client, err := armsql.NewTransparentDataEncryptionsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "client_error", err)
 		return nil, err
 	}
 
-	// In some cases resource does not give any notFound error
-	// instead of notFound error, it returns empty data
-	if op.ID != nil {
-		return op, nil
+	var tdes []*armsql.LogicalDatabaseTransparentDataEncryption
+	pager := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseTransparentDataEncryption", "api_error", err)
+			return nil, err
+		}
+		tdes = append(tdes, result.Value...)
+	}
+
+	return tdes, nil
+}
+
+func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	database := h.Item.(armsql.Database)
+	serverName := strings.Split(*database.ID, "/")[8]
+	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+	databaseName := *database.Name
+
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "session_error", err)
+		return nil, err
+	}
+	client, err := armsql.NewLongTermRetentionPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "client_error", err)
+		return nil, err
+	}
+
+	pager := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseLongTermRetentionPolicies", "api_error", err)
+			return nil, err
+		}
+
+		if len(result.Value) > 0 {
+			// Return the first retention policy found
+			return result.Value[0], nil
+		}
 	}
 
 	return nil, nil
 }
 
-func getSqlDatabaseLongTermRetentionPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
-	serverName := strings.Split(*database.ID, "/")[8]
-	databaseName := *database.Name
-	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
-
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
-	client := sqlV5.NewLongTermRetentionPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
-	if err != nil {
-		return nil, err
-	}
-
-	// We can add only one retention policy per SQL Database.
-	res := op.Values()
-
-	// For master database we are getting the response as empty array
-	if len(res) == 0 {
-		return nil, nil
-	}
-
-	return res[0], nil
-}
-
 func getSqlDatabaseBlobAuditingPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(armsql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
-	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+	databaseName := *database.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sqlV5.NewDatabaseBlobAuditingPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	client, err := armsql.NewDatabaseBlobAuditingPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "client_error", err)
 		return nil, err
 	}
 
-	var blobPolicies []map[string]interface{}
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+	var blobPolicies []*armsql.DatabaseBlobAuditingPolicy
+	pager := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.getSqlDatabaseBlobAuditingPolicies", "api_error", err)
+			return nil, err
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Kind != nil {
-			objectMap["kind"] = i.Kind
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.DatabaseBlobAuditingPolicyProperties != nil {
-			obMap := make(map[string]interface{})
-			if i.DatabaseBlobAuditingPolicyProperties.RetentionDays != nil {
-				obMap["retentionDays"] = i.DatabaseBlobAuditingPolicyProperties.RetentionDays
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
-				obMap["AuditActionsAndGroups"] = i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
-				obMap["isAzureMonitorTargetEnabled"] = i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
-				obMap["isStorageSecondaryKeyInUse"] = i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs != nil {
-				obMap["queueDelayMs"] = i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.State != "" {
-				obMap["state"] = i.DatabaseBlobAuditingPolicyProperties.State
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint != nil {
-				obMap["storageEndpoint"] = i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
-				obMap["storageAccountAccessKey"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey
-			}
-			if i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
-				obMap["storageAccountSubscriptionID"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID
-			}
-			objectMap["databaseBlobAuditingPolicyProperties"] = obMap
-		}
-
-		blobPolicies = append(blobPolicies, objectMap)
-	}
-
-	if op.NotDone() {
-		for _, i := range op.Values() {
-			objectMap := make(map[string]interface{})
-			if i.ID != nil {
-				objectMap["id"] = i.ID
-			}
-			if i.Name != nil {
-				objectMap["name"] = i.Name
-			}
-			if i.Kind != nil {
-				objectMap["kind"] = i.Kind
-			}
-			if i.Type != nil {
-				objectMap["type"] = i.Type
-			}
-			if i.DatabaseBlobAuditingPolicyProperties != nil {
-				obMap := make(map[string]interface{})
-				if i.DatabaseBlobAuditingPolicyProperties.RetentionDays != nil {
-					obMap["retentionDays"] = i.DatabaseBlobAuditingPolicyProperties.RetentionDays
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups != nil {
-					obMap["AuditActionsAndGroups"] = i.DatabaseBlobAuditingPolicyProperties.AuditActionsAndGroups
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled != nil {
-					obMap["isAzureMonitorTargetEnabled"] = i.DatabaseBlobAuditingPolicyProperties.IsAzureMonitorTargetEnabled
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse != nil {
-					obMap["isStorageSecondaryKeyInUse"] = i.DatabaseBlobAuditingPolicyProperties.IsStorageSecondaryKeyInUse
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs != nil {
-					obMap["queueDelayMs"] = i.DatabaseBlobAuditingPolicyProperties.QueueDelayMs
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.State != "" {
-					obMap["state"] = i.DatabaseBlobAuditingPolicyProperties.State
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint != nil {
-					obMap["storageEndpoint"] = i.DatabaseBlobAuditingPolicyProperties.StorageEndpoint
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey != nil {
-					obMap["storageAccountAccessKey"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountAccessKey
-				}
-				if i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID != nil {
-					obMap["storageAccountSubscriptionID"] = i.DatabaseBlobAuditingPolicyProperties.StorageAccountSubscriptionID
-				}
-				objectMap["databaseBlobAuditingPolicyProperties"] = obMap
-			}
-
-			blobPolicies = append(blobPolicies, objectMap)
-		}
+		blobPolicies = append(blobPolicies, result.Value...)
 	}
 
 	return blobPolicies, nil
 }
 
 func listSqlDatabaseVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(armsql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
-	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+	databaseName := *database.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	client, err := armsql.NewDatabaseVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "client_error", err)
 		return nil, err
 	}
 
-	var vulnerabilityAssessments []map[string]interface{}
-
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
-		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
-			objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-			objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-			objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
-		}
-		if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-			objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
-		}
-		vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	var vulnerabilityAssessments []*armsql.DatabaseVulnerabilityAssessment
+	pager := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessments", "api_error", err)
 			return nil, err
 		}
-		for _, i := range op.Values() {
-			objectMap := make(map[string]interface{})
-			if i.ID != nil {
-				objectMap["id"] = i.ID
-			}
-			if i.Name != nil {
-				objectMap["name"] = i.Name
-			}
-			if i.Type != nil {
-				objectMap["type"] = i.Type
-			}
-			if i.DatabaseVulnerabilityAssessmentProperties.RecurringScans != nil {
-				objectMap["recurringScans"] = i.DatabaseVulnerabilityAssessmentProperties.RecurringScans
-			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-				objectMap["storageAccountAccessKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageAccountAccessKey
-			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-				objectMap["storageContainerPath"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerPath
-			}
-			if i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-				objectMap["storageContainerSasKey"] = *i.DatabaseVulnerabilityAssessmentProperties.StorageContainerSasKey
-			}
-			vulnerabilityAssessments = append(vulnerabilityAssessments, objectMap)
-		}
+		vulnerabilityAssessments = append(vulnerabilityAssessments, result.Value...)
 	}
 
 	return vulnerabilityAssessments, nil
 }
 
 func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	database := h.Item.(sql.Database)
+	database := h.Item.(armsql.Database)
 	serverName := strings.Split(*database.ID, "/")[8]
-	databaseName := *database.Name
 	resourceGroupName := strings.Split(string(*database.ID), "/")[4]
+	databaseName := *database.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sqlV5.NewDatabaseVulnerabilityAssessmentScansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-	var vulnerabilityAssessmentScanRecords []map[string]interface{}
-
-	op, err := client.ListByDatabase(ctx, resourceGroupName, serverName, databaseName)
+	client, err := armsql.NewDatabaseVulnerabilityAssessmentScansClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		// API throws "VulnerabilityAssessmentInvalidPolicy" error if Vulnerability Assessment settings don't exist or invalid storage specified in settings.
-		// https://learn.microsoft.com/en-us/rest/api/sql/2022-05-01-preview/database-vulnerability-assessment-scans/list-by-database?tabs=HTTP
-		if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
-			return vulnerabilityAssessmentScanRecords, nil
-		}
+		plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "client_error", err)
 		return nil, err
 	}
+	vulnerabilityAssessments := h.HydrateResults["listSqlDatabaseVulnerabilityAssessments"].([]*armsql.DatabaseVulnerabilityAssessment)
+	var vulnerabilityAssessmentScanRecords []*armsql.VulnerabilityAssessmentScanRecord
 
-	for _, i := range op.Values() {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
-		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
-			objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
-		}
-		if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
-			objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
-		}
-		if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
-			objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
-			objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
-			objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
-			objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
-			objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
-		}
-		if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
-			objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
-		}
-		vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, i := range op.Values() {
-			objectMap := make(map[string]interface{})
-			if i.ID != nil {
-				objectMap["id"] = i.ID
+	for _, vulnerabilityAssessment := range vulnerabilityAssessments {
+		pager := client.NewListByDatabasePager(resourceGroupName, serverName, databaseName, armsql.VulnerabilityAssessmentName(*vulnerabilityAssessment.Name), nil)
+		for pager.More() {
+			result, err := pager.NextPage(ctx)
+			if err != nil {
+				// check if Vulnerability Assessment is invalid
+				if strings.Contains(err.Error(), "VulnerabilityAssessmentInvalidPolicy") {
+					return nil, nil
+				}
+				plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabaseVulnerabilityAssessmentScans", "api_error", err)
+				return nil, err
 			}
-			if i.Name != nil {
-				objectMap["name"] = i.Name
-			}
-			if i.Type != nil {
-				objectMap["type"] = i.Type
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.ScanID != nil {
-				objectMap["scanID"] = *i.VulnerabilityAssessmentScanRecordProperties.ScanID
-			}
-			if len(i.VulnerabilityAssessmentScanRecordProperties.TriggerType) > 0 {
-				objectMap["triggerType"] = i.VulnerabilityAssessmentScanRecordProperties.TriggerType
-			}
-			if len(i.VulnerabilityAssessmentScanRecordProperties.State) > 0 {
-				objectMap["state"] = i.VulnerabilityAssessmentScanRecordProperties.State
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.StartTime != nil {
-				objectMap["startTime"] = i.VulnerabilityAssessmentScanRecordProperties.StartTime
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.EndTime != nil {
-				objectMap["endTime"] = i.VulnerabilityAssessmentScanRecordProperties.EndTime
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.Errors != nil {
-				objectMap["errors"] = i.VulnerabilityAssessmentScanRecordProperties.Errors
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath != nil {
-				objectMap["storageContainerPath"] = i.VulnerabilityAssessmentScanRecordProperties.StorageContainerPath
-			}
-			if i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks != nil {
-				objectMap["numberOfFailedSecurityChecks"] = *i.VulnerabilityAssessmentScanRecordProperties.NumberOfFailedSecurityChecks
-			}
-			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, objectMap)
+			vulnerabilityAssessmentScanRecords = append(vulnerabilityAssessmentScanRecords, result.Value...)
 		}
 	}
 
@@ -757,7 +561,9 @@ func listSqlDatabaseVulnerabilityAssessmentScans(ctx context.Context, d *plugin.
 //// TRANSFORM FUNCTION
 
 func idToServerName(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	data := d.HydrateItem.(sql.Database)
-	serverName := strings.Split(string(*data.ID), "/")[8]
-	return serverName, nil
+	if d.HydrateItem != nil {
+		item := d.HydrateItem.(armsql.Database)
+		return strings.Split(*item.ID, "/")[8], nil
+	}
+	return nil, nil
 }

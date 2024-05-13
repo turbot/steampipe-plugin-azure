@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/sql/mgmt/sql"
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2017-03-01-preview/sql"
-	sqlv3 "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -153,7 +153,7 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	server := h.Item.(sqlv3.Server)
+	server := h.Item.(armsql.Server)
 	serverName := *server.Name
 	resourceGroup := strings.Split(*server.ID, "/")[4]
 

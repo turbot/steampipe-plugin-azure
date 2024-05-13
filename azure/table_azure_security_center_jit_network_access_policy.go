@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -80,7 +80,7 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 	}
 
 	subscriptionID := session.SubscriptionID
-	client := security.NewJitNetworkAccessPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	client := security.NewJitNetworkAccessPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	result, err := client.List(ctx)

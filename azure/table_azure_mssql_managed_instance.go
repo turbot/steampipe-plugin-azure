@@ -8,7 +8,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v5.0/sql"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -48,121 +48,121 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 				Name:        "state",
 				Description: "The state of the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.State"),
+				Transform:   transform.FromField("Properties.State"),
 			},
 			{
 				Name:        "administrator_login",
 				Description: "Administrator username for the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.AdministratorLogin"),
+				Transform:   transform.FromField("Properties.AdministratorLogin"),
 			},
 			{
 				Name:        "administrator_login_password",
 				Description: "Administrator password for the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.AdministratorLoginPassword"),
+				Transform:   transform.FromField("Properties.AdministratorLoginPassword"),
 			},
 			{
 				Name:        "collation",
 				Description: "Collation of the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.Collation"),
+				Transform:   transform.FromField("Properties.Collation"),
 			},
 			{
 				Name:        "dns_zone",
 				Description: "The Dns zone that the managed instance is in.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.DNSZone"),
+				Transform:   transform.FromField("Properties.DNSZone"),
 			},
 			{
 				Name:        "dns_zone_partner",
 				Description: "The resource id of another managed instance whose DNS zone this managed instance will share after creation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.DNSZonePartner"),
+				Transform:   transform.FromField("Properties.DNSZonePartner"),
 			},
 			{
 				Name:        "fully_qualified_domain_name",
 				Description: "The fully qualified domain name of the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.FullyQualifiedDomainName"),
+				Transform:   transform.FromField("Properties.FullyQualifiedDomainName"),
 			},
 			{
 				Name:        "instance_pool_id",
 				Description: "The Id of the instance pool this managed server belongs to.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.InstancePoolID"),
+				Transform:   transform.FromField("Properties.InstancePoolID"),
 			},
 			{
 				Name:        "license_type",
 				Description: "The license type of the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.LicenseType"),
+				Transform:   transform.FromField("Properties.LicenseType"),
 			},
 			{
 				Name:        "maintenance_configuration_id",
 				Description: "Specifies maintenance configuration id to apply to this managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.MaintenanceConfigurationID"),
+				Transform:   transform.FromField("Properties.MaintenanceConfigurationID"),
 			},
 			{
 				Name:        "managed_instance_create_mode",
 				Description: "Specifies the mode of database creation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.ManagedInstanceCreateMode"),
+				Transform:   transform.FromField("Properties.ManagedInstanceCreateMode"),
 			},
 			{
 				Name:        "minimal_tls_version",
 				Description: "Minimal TLS version of the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.MinimalTLSVersion"),
+				Transform:   transform.FromField("Properties.MinimalTLSVersion"),
 			},
 			{
 				Name:        "proxy_override",
 				Description: "Connection type used for connecting to the instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.ProxyOverride"),
+				Transform:   transform.FromField("Properties.ProxyOverride"),
 			},
 			{
 				Name:        "public_data_endpoint_enabled",
 				Description: "Whether or not the public data endpoint is enabled.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("ManagedInstanceProperties.PublicDataEndpointEnabled"),
+				Transform:   transform.FromField("Properties.PublicDataEndpointEnabled"),
 			},
 			{
 				Name:        "restore_point_in_time",
 				Description: "Specifies the point in time of the source database that will be restored to create the new database.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("ManagedInstanceProperties.RestorePointInTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.RestorePointInTime"),
 			},
 			{
 				Name:        "source_managed_instance_id",
 				Description: "The resource identifier of the source managed instance associated with create operation of this instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.SourceManagedInstanceID"),
+				Transform:   transform.FromField("Properties.SourceManagedInstanceID"),
 			},
 			{
 				Name:        "storage_size_in_gb",
 				Description: "The managed instance storage size in GB.",
 				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("ManagedInstanceProperties.StorageSizeInGB"),
+				Transform:   transform.FromField("Properties.StorageSizeInGB"),
 			},
 			{
 				Name:        "subnet_id",
 				Description: "Subnet resource ID for the managed instance.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.SubnetID"),
+				Transform:   transform.FromField("Properties.SubnetID"),
 			},
 			{
 				Name:        "timezone_id",
 				Description: "Id of the timezone.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ManagedInstanceProperties.TimezoneID"),
+				Transform:   transform.FromField("Properties.TimezoneID"),
 			},
 			{
 				Name:        "v_cores",
 				Description: "The number of vcores of the managed instance.",
 				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("ManagedInstanceProperties.VCores"),
+				Transform:   transform.FromField("Properties.VCores"),
 			},
 			{
 				Name:        "encryption_protectors",
@@ -235,36 +235,27 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	result, err := client.List(ctx, "")
+	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstances", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "client_error", err)
 		return nil, err
 	}
-	for _, managedInstance := range result.Values() {
-		d.StreamListItem(ctx, managedInstance)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
-	}
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstances", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "api_error", err)
 			return nil, err
 		}
-		for _, managedInstance := range result.Values() {
-			d.StreamListItem(ctx, managedInstance)
+		for _, managedInstance := range result.Value {
+			d.StreamListItem(ctx, *managedInstance)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -272,6 +263,7 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 			}
 		}
 	}
+
 	return nil, err
 }
 
@@ -280,33 +272,35 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getMSSQLManagedInstance")
 
-	name := d.EqualsQuals["name"].GetStringValue()
-	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	name := d.EqualsQualString("name")
+	resourceGroup := d.EqualsQualString("resource_group")
 
 	// Return nil, of no input provided
 	if name == "" || resourceGroup == "" {
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewManagedInstancesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroup, name, "")
+	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("getMSSQLManagedInstance", "get", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "client_error", err)
+		return nil, err
+	}
+
+	op, err := client.Get(ctx, resourceGroup, name, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.getMSSQLManagedInstance", "api_error", err)
 		return nil, err
 	}
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
 	if op.ID != nil {
-		return op, nil
+		return op.ManagedInstance, nil
 	}
 
 	return nil, nil
@@ -315,40 +309,30 @@ func getMSSQLManagedInstance(ctx context.Context, d *plugin.QueryData, h *plugin
 func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceEncryptionProtectors")
 
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(armsql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewManagedInstanceEncryptionProtectorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := armsql.NewManagedInstanceEncryptionProtectorsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceEncryptionProtectors", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "client_error", err)
 		return nil, err
 	}
 
-	var managedInstanceEncryptionProtectors []map[string]interface{}
-
-	for _, i := range op.Values() {
-		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, extractMSSQLManagedInstanceEncryptionProtector(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	pager := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
+	var managedInstanceEncryptionProtectors []*armsql.ManagedInstanceEncryptionProtector
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceEncryptionProtectors", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceEncryptionProtectors", "api_error", err)
 			return nil, err
 		}
-		for _, i := range op.Values() {
-			managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, extractMSSQLManagedInstanceEncryptionProtector(i))
-		}
+		managedInstanceEncryptionProtectors = append(managedInstanceEncryptionProtectors, result.Value...)
 	}
 
 	return managedInstanceEncryptionProtectors, nil
@@ -357,40 +341,30 @@ func listMSSQLManagedInstanceEncryptionProtectors(ctx context.Context, d *plugin
 func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceVulnerabilityAssessments")
 
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(armsql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewManagedInstanceVulnerabilityAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := armsql.NewManagedInstanceVulnerabilityAssessmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceVulnerabilityAssessments", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "client_error", err)
 		return nil, err
 	}
 
-	var managedInstanceVulnerabilityAssessments []map[string]interface{}
-
-	for _, i := range op.Values() {
-		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, extractMSSQLManagedInstanceVulnerabilityAssessment(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	pager := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
+	var managedInstanceVulnerabilityAssessments []*armsql.ManagedInstanceVulnerabilityAssessment
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceVulnerabilityAssessments", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceVulnerabilityAssessments", "api_error", err)
 			return nil, err
 		}
-		for _, i := range op.Values() {
-			managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, extractMSSQLManagedInstanceVulnerabilityAssessment(i))
-		}
+		managedInstanceVulnerabilityAssessments = append(managedInstanceVulnerabilityAssessments, result.Value...)
 	}
 
 	return managedInstanceVulnerabilityAssessments, nil
@@ -399,148 +373,31 @@ func listMSSQLManagedInstanceVulnerabilityAssessments(ctx context.Context, d *pl
 func listMSSQLManagedInstanceSecurityAlertPolicies(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listMSSQLManagedInstanceSecurityAlertPolicies")
 
-	managedInstance := h.Item.(sql.ManagedInstance)
+	managedInstance := h.Item.(armsql.ManagedInstance)
 	resourceGroup := strings.Split(string(*managedInstance.ID), "/")[4]
 	managedInstanceName := *managedInstance.Name
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-
-	client := sql.NewManagedServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.ListByInstance(ctx, resourceGroup, managedInstanceName)
+	client, err := armsql.NewManagedServerSecurityAlertPoliciesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list", err)
+		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "client_error", err)
 		return nil, err
 	}
 
-	var managedInstanceSecurityAlertPolicies []map[string]interface{}
-
-	for _, i := range op.Values() {
-		managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, extractMSSQLManagedInstanceSecurityAlertPolicy(i))
-	}
-
-	for op.NotDone() {
-		err = op.NextWithContext(ctx)
+	pager := client.NewListByInstancePager(resourceGroup, managedInstanceName, nil)
+	var managedInstanceSecurityAlertPolicies []*armsql.ManagedServerSecurityAlertPolicy
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listMSSQLManagedInstanceSecurityAlertPolicies", "list_paging", err)
+			plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstanceSecurityAlertPolicies", "api_error", err)
 			return nil, err
 		}
-		for _, i := range op.Values() {
-			managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, extractMSSQLManagedInstanceSecurityAlertPolicy(i))
-		}
+		managedInstanceSecurityAlertPolicies = append(managedInstanceSecurityAlertPolicies, result.Value...)
 	}
 
 	return managedInstanceSecurityAlertPolicies, nil
-}
-
-// If we return the API response directly, the output will not provide
-// all the properties of SecurityAlertPolicies
-func extractMSSQLManagedInstanceSecurityAlertPolicy(i sql.ManagedServerSecurityAlertPolicy) map[string]interface{} {
-	managedInstanceSecurityAlertPolicy := make(map[string]interface{})
-	if i.ID != nil {
-		managedInstanceSecurityAlertPolicy["id"] = *i.ID
-	}
-	if i.Name != nil {
-		managedInstanceSecurityAlertPolicy["name"] = *i.Name
-	}
-	if i.Type != nil {
-		managedInstanceSecurityAlertPolicy["type"] = *i.Type
-	}
-	if i.SystemData != nil {
-		managedInstanceSecurityAlertPolicy["systemData"] = i.SystemData
-	}
-	if i.SecurityAlertsPolicyProperties != nil {
-		if len(i.SecurityAlertsPolicyProperties.State) > 0 {
-			managedInstanceSecurityAlertPolicy["state"] = i.SecurityAlertsPolicyProperties.State
-		}
-		if i.SecurityAlertsPolicyProperties.DisabledAlerts != nil {
-			managedInstanceSecurityAlertPolicy["disabledAlerts"] = i.SecurityAlertsPolicyProperties.DisabledAlerts
-		}
-		if i.SecurityAlertsPolicyProperties.EmailAddresses != nil {
-			managedInstanceSecurityAlertPolicy["emailAddresses"] = i.SecurityAlertsPolicyProperties.EmailAddresses
-		}
-		if i.SecurityAlertsPolicyProperties.EmailAccountAdmins != nil {
-			managedInstanceSecurityAlertPolicy["emailAccountAdmins"] = i.SecurityAlertsPolicyProperties.EmailAccountAdmins
-		}
-		if i.SecurityAlertsPolicyProperties.StorageEndpoint != nil {
-			managedInstanceSecurityAlertPolicy["storageEndpoint"] = i.SecurityAlertsPolicyProperties.StorageEndpoint
-		}
-		if i.SecurityAlertsPolicyProperties.StorageAccountAccessKey != nil {
-			managedInstanceSecurityAlertPolicy["storageAccountAccessKey"] = i.SecurityAlertsPolicyProperties.StorageAccountAccessKey
-		}
-		if i.SecurityAlertsPolicyProperties.RetentionDays != nil {
-			managedInstanceSecurityAlertPolicy["retentionDays"] = i.SecurityAlertsPolicyProperties.RetentionDays
-		}
-		if i.SecurityAlertsPolicyProperties.CreationTime != nil {
-			managedInstanceSecurityAlertPolicy["creationTime"] = i.SecurityAlertsPolicyProperties.CreationTime
-		}
-	}
-	return managedInstanceSecurityAlertPolicy
-}
-
-// If we return the API response directly, the output will not provide
-// all the properties of ManagedInstanceVulnerabilityAssessment
-func extractMSSQLManagedInstanceVulnerabilityAssessment(i sql.ManagedInstanceVulnerabilityAssessment) map[string]interface{} {
-	managedInstanceVulnerabilityAssessment := make(map[string]interface{})
-	if i.ID != nil {
-		managedInstanceVulnerabilityAssessment["id"] = *i.ID
-	}
-	if i.Name != nil {
-		managedInstanceVulnerabilityAssessment["name"] = *i.Name
-	}
-	if i.Type != nil {
-		managedInstanceVulnerabilityAssessment["type"] = *i.Type
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans != nil {
-		managedInstanceVulnerabilityAssessment["recurringScans"] = i.ManagedInstanceVulnerabilityAssessmentProperties.RecurringScans
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey != nil {
-		managedInstanceVulnerabilityAssessment["storageAccountAccessKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageAccountAccessKey
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath != nil {
-		managedInstanceVulnerabilityAssessment["storageContainerPath"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerPath
-	}
-	if i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey != nil {
-		managedInstanceVulnerabilityAssessment["storageContainerSasKey"] = *i.ManagedInstanceVulnerabilityAssessmentProperties.StorageContainerSasKey
-	}
-	return managedInstanceVulnerabilityAssessment
-}
-
-// If we return the API response directly, the output will not provide
-// all the properties of ManagedInstanceEncryptionProtector
-func extractMSSQLManagedInstanceEncryptionProtector(i sql.ManagedInstanceEncryptionProtector) map[string]interface{} {
-	managedInstanceEncryptionProtector := make(map[string]interface{})
-	if i.ID != nil {
-		managedInstanceEncryptionProtector["id"] = *i.ID
-	}
-	if i.Name != nil {
-		managedInstanceEncryptionProtector["name"] = *i.Name
-	}
-	if i.Type != nil {
-		managedInstanceEncryptionProtector["type"] = *i.Type
-	}
-	if i.Kind != nil {
-		managedInstanceEncryptionProtector["kind"] = *i.Kind
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled != nil {
-		managedInstanceEncryptionProtector["autoRotationEnabled"] = i.ManagedInstanceEncryptionProtectorProperties.AutoRotationEnabled
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName != nil {
-		managedInstanceEncryptionProtector["serverKeyName"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyName
-	}
-	if len(i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType) > 0 {
-		managedInstanceEncryptionProtector["serverKeyType"] = i.ManagedInstanceEncryptionProtectorProperties.ServerKeyType
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.Thumbprint != nil {
-		managedInstanceEncryptionProtector["thumbprint"] = i.ManagedInstanceEncryptionProtectorProperties.Thumbprint
-	}
-	if i.ManagedInstanceEncryptionProtectorProperties.URI != nil {
-		managedInstanceEncryptionProtector["uri"] = i.ManagedInstanceEncryptionProtectorProperties.URI
-	}
-	return managedInstanceEncryptionProtector
 }

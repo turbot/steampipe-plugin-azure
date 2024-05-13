@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/recoveryservices"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -122,20 +121,12 @@ type JobInfo struct {
 //// LIST FUNCTION ////
 
 func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "session_error", err)
 		return nil, err
 	}
-
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_backup_job.listAzureBackupJobs", "NewDefaultAzureCredential", err)
-		return nil, err
-	}
-
 	vault := h.Item.(recoveryservices.Vault)
-
-	plugin.Logger(ctx).Error("Parameter ====>>", vault.Name, strings.Split(*vault.ID, "/")[4])
 
 	vaultName := d.EqualsQualString("vault_name")
 	rgName := d.EqualsQualString("resource_group")
@@ -152,8 +143,7 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 		}
 	}
 
-	subscriptionID := session.SubscriptionID
-	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(subscriptionID, cred, nil)
+	clientFactory, err := armrecoveryservicesbackup.NewBackupJobsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "client_error", err)
 		return nil, nil

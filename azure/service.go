@@ -3,6 +3,8 @@ package azure
 import (
 	"bytes"
 	"context"
+	"crypto"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +14,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	cloudPolicy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -21,6 +28,13 @@ import (
 )
 
 // Session info
+type SessionNew struct {
+	Cred           azcore.TokenCredential
+	SubscriptionID string
+	TenantID       string
+	ClientOptions  *policy.ClientOptions
+}
+
 type Session struct {
 	Authorizer              autorest.Authorizer
 	CloudEnvironment        string
@@ -33,14 +47,279 @@ type Session struct {
 }
 
 /*
-	GetNewSession creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
+	GetNewSessionUpdated creates an session configured from (~/.steampipe/config, environment variables and CLI) in the order:
 
 1. Client secret
 2. Client certificate
 3. Username and password
-4. MSI
+4. Managed identity
 5. CLI
 */
+func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
+	logger := plugin.Logger(ctx)
+
+	cacheKey := "GetNewSessionUpdated"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*SessionNew), nil
+	}
+
+	logger.Debug("Auth session not found in cache, creating new session")
+
+	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment string
+	azureConfig := GetConfig(d.Connection)
+
+	if azureConfig.Environment != nil {
+		environment = *azureConfig.Environment
+	} else {
+		environment = os.Getenv("AZURE_ENVIRONMENT")
+	}
+
+	if azureConfig.TenantID != nil {
+		tenantID = *azureConfig.TenantID
+	} else {
+		tenantID = os.Getenv(auth.TenantID)
+	}
+
+	if azureConfig.SubscriptionID != nil {
+		subscriptionID = *azureConfig.SubscriptionID
+	} else {
+		subscriptionID = os.Getenv(auth.SubscriptionID)
+	}
+
+	if azureConfig.ClientID != nil {
+		clientID = *azureConfig.ClientID
+	} else {
+		clientID = os.Getenv(auth.ClientID)
+	}
+
+	if azureConfig.ClientSecret != nil {
+		clientSecret = *azureConfig.ClientSecret
+	} else {
+		clientSecret = os.Getenv(auth.ClientSecret)
+	}
+
+	if azureConfig.CertificatePath != nil {
+		certificatePath = *azureConfig.CertificatePath
+	} else {
+		certificatePath = os.Getenv(auth.CertificatePath)
+	}
+
+	if azureConfig.Username != nil {
+		username = *azureConfig.Username
+	} else {
+		username = os.Getenv(auth.Username)
+	}
+
+	if azureConfig.Password != nil {
+		password = *azureConfig.Password
+	} else {
+		password = os.Getenv(auth.Password)
+	}
+
+	var cred azcore.TokenCredential
+	var cloudConfiguration cloud.Configuration
+	switch environment {
+	case "AZURECHINACLOUD":
+		cloudConfiguration = cloud.AzureChina
+	case "AZUREUSGOVERNMENTCLOUD":
+		cloudConfiguration = cloud.AzureGovernment
+	default:
+		cloudConfiguration = cloud.AzurePublic
+	}
+	clientOptions := policy.ClientOptions{ClientOptions: cloudPolicy.ClientOptions{Cloud: cloudConfiguration}}
+
+	if tenantID != "" && subscriptionID != "" && clientID != "" && clientSecret != "" { // Client secret authentication
+		cred, err = azidentity.NewClientSecretCredential(
+			tenantID,
+			clientID,
+			clientSecret,
+			nil,
+		)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "client_secret_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && certificatePath != "" { // Client certificate authentication
+
+		// Load certificate from given path
+		loadFile, err := os.ReadFile(certificatePath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading certificate from %s: %v", certificatePath, err)
+		}
+
+		var certs []*x509.Certificate
+		var key crypto.PrivateKey
+		if certificatePassword == "" {
+			certs, key, err = azidentity.ParseCertificates(loadFile, nil)
+		} else {
+			certs, key, err = azidentity.ParseCertificates(loadFile, []byte(certificatePassword))
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("error parsing certificate from %s: %v", certificatePath, err)
+		}
+
+		cred, err = azidentity.NewClientCertificateCredential(
+			tenantID,
+			clientID,
+			certs,
+			key,
+			nil,
+		)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "client_certificate_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && username != "" && password != "" { // Username password authentication
+		cred, err = azidentity.NewUsernamePasswordCredential(
+			tenantID,
+			clientID,
+			username,
+			password,
+			nil,
+		)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "username_password_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" { // Managed identity authentication
+		cred, err = azidentity.NewManagedIdentityCredential(
+			&azidentity.ManagedIdentityCredentialOptions{
+				ID: azidentity.ClientID(clientID),
+			},
+		)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "managed_identity_credential_error", err)
+			return nil, err
+		}
+	} else { // CLI Authentication
+		cred, err = azidentity.NewAzureCLICredential(nil)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "cli_credential_error", err)
+			return nil, err
+		}
+		subscriptionId, err := getSubscriptionIDFromCLINew()
+		if err != nil {
+			return nil, err
+		}
+		subscriptionID = subscriptionId
+	}
+	sess := &SessionNew{
+		Cred:           cred,
+		SubscriptionID: subscriptionID,
+		TenantID:       tenantID,
+		ClientOptions:  &clientOptions,
+	}
+
+	return sess, err
+}
+
+// getSubscriptionIDFromCLINew executes Azure CLI to get the subscription ID.
+func getSubscriptionIDFromCLINew() (string, error) {
+	const azureCLIPath = "AzureCLIPath"
+
+	azureCLIDefaultPathWindows := fmt.Sprintf("%s\\Microsoft SDKs\\Azure\\CLI2\\wbin; %s\\Microsoft SDKs\\Azure\\CLI2\\wbin", os.Getenv("ProgramFiles(x86)"), os.Getenv("ProgramFiles"))
+	const azureCLIDefaultPath = "/bin:/sbin:/usr/bin:/usr/local/bin"
+
+	var cliCmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cliCmd = exec.Command(fmt.Sprintf("%s\\system32\\cmd.exe", os.Getenv("windir")))
+		cliCmd.Env = os.Environ()
+		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s;%s", os.Getenv(azureCLIPath), azureCLIDefaultPathWindows))
+		cliCmd.Args = append(cliCmd.Args, "/c", "az")
+	} else {
+		cliCmd = exec.Command("az")
+		cliCmd.Env = os.Environ()
+		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s:%s", os.Getenv(azureCLIPath), azureCLIDefaultPath))
+	}
+	cliCmd.Args = append(cliCmd.Args, "account", "show", "-o", "json")
+
+	var stderr bytes.Buffer
+	cliCmd.Stderr = &stderr
+
+	output, err := cliCmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("invoking Azure CLI failed with the following error: %v", err)
+	}
+
+	var accountResponse struct {
+		SubscriptionID string `json:"id"`
+	}
+	err = json.Unmarshal(output, &accountResponse)
+	if err != nil {
+		return "", fmt.Errorf("error parsing JSON output: %v", err)
+	}
+
+	return accountResponse.SubscriptionID, nil
+}
+
+type subscription struct {
+	SubscriptionID string `json:"subscriptionID,omitempty"`
+	TenantID       string `json:"tenantID,omitempty"`
+}
+
+// https://github.com/Azure/go-autorest/blob/3fb5326fea196cd5af02cf105ca246a0fba59021/autorest/azure/cli/token.go#L126
+// NewAuthorizerFromCLIWithResource creates an Authorizer configured from Azure CLI 2.0 for local development scenarios.
+func getSubscriptionFromCLI(resource string) (*subscription, error) {
+	// This is the path that a developer can set to tell this class what the install path for Azure CLI is.
+	const azureCLIPath = "AzureCLIPath"
+
+	// The default install paths are used to find Azure CLI. This is for security, so that any path in the calling program's Path environment is not used to execute Azure CLI.
+	azureCLIDefaultPathWindows := fmt.Sprintf("%s\\Microsoft SDKs\\Azure\\CLI2\\wbin; %s\\Microsoft SDKs\\Azure\\CLI2\\wbin", os.Getenv("ProgramFiles(x86)"), os.Getenv("ProgramFiles"))
+
+	// Default path for non-Windows.
+	const azureCLIDefaultPath = "/bin:/sbin:/usr/bin:/usr/local/bin"
+
+	// Validate resource, since it gets sent as a command line argument to Azure CLI
+	const invalidResourceErrorTemplate = "Resource %s is not in expected format. Only alphanumeric characters, [dot], [colon], [hyphen], and [forward slash] are allowed."
+	match, err := regexp.MatchString("^[0-9a-zA-Z-.:/]+$", resource)
+	if err != nil {
+		return nil, err
+	}
+	if !match {
+		return nil, fmt.Errorf(invalidResourceErrorTemplate, resource)
+	}
+
+	// Execute Azure CLI to get token
+	var cliCmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cliCmd = exec.Command(fmt.Sprintf("%s\\system32\\cmd.exe", os.Getenv("windir")))
+		cliCmd.Env = os.Environ()
+		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s;%s", os.Getenv(azureCLIPath), azureCLIDefaultPathWindows))
+		cliCmd.Args = append(cliCmd.Args, "/c", "az")
+	} else {
+		cliCmd = exec.Command("az")
+		cliCmd.Env = os.Environ()
+		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s:%s", os.Getenv(azureCLIPath), azureCLIDefaultPath))
+	}
+	cliCmd.Args = append(cliCmd.Args, "account", "get-access-token", "-o", "json", "--resource", resource)
+
+	var stderr bytes.Buffer
+	cliCmd.Stderr = &stderr
+
+	output, err := cliCmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("Invoking Azure CLI failed with the following error: %v", err)
+	}
+
+	var tokenResponse map[string]interface{}
+	err = json.Unmarshal(output, &tokenResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &subscription{
+		SubscriptionID: tokenResponse["subscription"].(string),
+		TenantID:       tokenResponse["tenant"].(string),
+	}, nil
+}
+
+// WillExpireIn returns true if the Token will expire after the passed time.Duration interval
+// from now, false otherwise.
+func WillExpireIn(t time.Time, d time.Duration) bool {
+	return !t.After(time.Now().Add(d))
+}
+
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
 
@@ -277,71 +556,4 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	logger.Debug("getApplicableAuthorizationDetails", "resource", resource)
 
 	return
-}
-
-type subscription struct {
-	SubscriptionID string `json:"subscriptionID,omitempty"`
-	TenantID       string `json:"tenantID,omitempty"`
-}
-
-// https://github.com/Azure/go-autorest/blob/3fb5326fea196cd5af02cf105ca246a0fba59021/autorest/azure/cli/token.go#L126
-// NewAuthorizerFromCLIWithResource creates an Authorizer configured from Azure CLI 2.0 for local development scenarios.
-func getSubscriptionFromCLI(resource string) (*subscription, error) {
-	// This is the path that a developer can set to tell this class what the install path for Azure CLI is.
-	const azureCLIPath = "AzureCLIPath"
-
-	// The default install paths are used to find Azure CLI. This is for security, so that any path in the calling program's Path environment is not used to execute Azure CLI.
-	azureCLIDefaultPathWindows := fmt.Sprintf("%s\\Microsoft SDKs\\Azure\\CLI2\\wbin; %s\\Microsoft SDKs\\Azure\\CLI2\\wbin", os.Getenv("ProgramFiles(x86)"), os.Getenv("ProgramFiles"))
-
-	// Default path for non-Windows.
-	const azureCLIDefaultPath = "/bin:/sbin:/usr/bin:/usr/local/bin"
-
-	// Validate resource, since it gets sent as a command line argument to Azure CLI
-	const invalidResourceErrorTemplate = "Resource %s is not in expected format. Only alphanumeric characters, [dot], [colon], [hyphen], and [forward slash] are allowed."
-	match, err := regexp.MatchString("^[0-9a-zA-Z-.:/]+$", resource)
-	if err != nil {
-		return nil, err
-	}
-	if !match {
-		return nil, fmt.Errorf(invalidResourceErrorTemplate, resource)
-	}
-
-	// Execute Azure CLI to get token
-	var cliCmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cliCmd = exec.Command(fmt.Sprintf("%s\\system32\\cmd.exe", os.Getenv("windir")))
-		cliCmd.Env = os.Environ()
-		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s;%s", os.Getenv(azureCLIPath), azureCLIDefaultPathWindows))
-		cliCmd.Args = append(cliCmd.Args, "/c", "az")
-	} else {
-		cliCmd = exec.Command("az")
-		cliCmd.Env = os.Environ()
-		cliCmd.Env = append(cliCmd.Env, fmt.Sprintf("PATH=%s:%s", os.Getenv(azureCLIPath), azureCLIDefaultPath))
-	}
-	cliCmd.Args = append(cliCmd.Args, "account", "get-access-token", "-o", "json", "--resource", resource)
-
-	var stderr bytes.Buffer
-	cliCmd.Stderr = &stderr
-
-	output, err := cliCmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("Invoking Azure CLI failed with the following error: %v", err)
-	}
-
-	var tokenResponse map[string]interface{}
-	err = json.Unmarshal(output, &tokenResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &subscription{
-		SubscriptionID: tokenResponse["subscription"].(string),
-		TenantID:       tokenResponse["tenant"].(string),
-	}, nil
-}
-
-// WillExpireIn returns true if the Token will expire after the passed time.Duration interval
-// from now, false otherwise.
-func WillExpireIn(t time.Time, d time.Duration) bool {
-	return !t.After(time.Now().Add(d))
 }

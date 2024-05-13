@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/security/mgmt/v1.0/security"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -91,7 +91,7 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	contactClient.Authorizer = session.Authorizer
 
 	result, err := contactClient.List(ctx)
@@ -136,7 +136,7 @@ func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugi
 	name := d.EqualsQuals["name"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID, "")
+	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	contactClient.Authorizer = session.Authorizer
 
 	contact, err := contactClient.Get(ctx, name)
