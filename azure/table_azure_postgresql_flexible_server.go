@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -66,6 +67,7 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Name:        "server_properties",
 				Description: "Properties of the server.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("ServerProperties").Transform(extractPostgresFlexibleServerProperties),
 			},
 			{
 				Name:        "flexible_server_configurations",
@@ -244,4 +246,12 @@ func extractpostgreSQLFlexibleServersconfiguration(i postgresqlflexibleservers.C
 	}
 
 	return postgreSQLFlexibleServersconfiguration
+}
+
+func extractPostgresFlexibleServerProperties(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	conf := d.HydrateItem.(postgresqlflexibleservers.Server)
+	if conf.ServerProperties != nil {
+		return structToMap(reflect.ValueOf(*conf.ServerProperties)), nil
+	}
+	return nil, nil
 }
