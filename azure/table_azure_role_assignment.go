@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/authorization/mgmt/authorization"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -50,7 +50,7 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				Name:        "scope",
 				Description: "Current state of the role assignment.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.Scope"),
+				Transform:   transform.FromField("Properties.Scope"),
 			},
 			{
 				Name:        "type",
@@ -61,19 +61,31 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 				Name:        "principal_id",
 				Description: "Contains the principal id.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.PrincipalID"),
+				Transform:   transform.FromField("Properties.PrincipalID"),
 			},
 			{
 				Name:        "principal_type",
 				Description: "Principal type of the assigned principal ID.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.PrincipalType").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.PrincipalType"),
+			},
+			{
+				Name:        "created_on",
+				Description: "Time it was created.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("Properties.CreatedOn"),
+			},
+			{
+				Name:        "updated_on",
+				Description: "Time it was updated.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("Properties.UpdatedOn"),
 			},
 			{
 				Name:        "role_definition_id",
 				Description: "Name of the assigned role definition.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("RoleAssignmentPropertiesWithScope.RoleDefinitionID"),
+				Transform:   transform.FromField("Properties.RoleDefinitionID"),
 			},
 			{
 				Name:        "title",
@@ -94,39 +106,41 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "session_error", err)
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
+	// subscriptionID := session.SubscriptionID
 
-	authorizationClient := authorization.NewRoleAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	authorizationClient.Authorizer = session.Authorizer
+	authorizationClient, err := armauthorization.NewRoleAssignmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "client_error", err)
+		return nil, err
+	}
+
+	option := &armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
+		TenantID: &session.TenantID,
+	}
 
 	var filter string
 	if d.EqualsQuals["principal_id"] != nil {
 		filter = fmt.Sprintf("principalId eq '%s'", d.EqualsQuals["principal_id"].GetStringValue())
 	}
 
-	result, err := authorizationClient.List(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	for _, roleAssignment := range result.Values() {
-		d.StreamListItem(ctx, roleAssignment)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
+	if filter != "" {
+		option.Filter = &filter
 	}
 
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	result := authorizationClient.NewListForSubscriptionPager(option)
+
+	for result.More() {
+		res, err := result.NextPage(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "api_error", err)
 			return nil, err
 		}
-		for _, roleAssignment := range result.Values() {
+		for _, roleAssignment := range res.Value {
 			d.StreamListItem(ctx, roleAssignment)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -142,20 +156,24 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 //// HYDRATE FUNCTIONS
 
 func getIamRoleAssignment(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getIamRoleAssignment")
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_role_assignment.getIamRoleAssignment", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 	roleAssignmentID := d.EqualsQuals["id"].GetStringValue()
 
-	authorizationClient := authorization.NewRoleAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	authorizationClient.Authorizer = session.Authorizer
-
-	op, err := authorizationClient.GetByID(ctx, roleAssignmentID)
+	authorizationClient, err := armauthorization.NewRoleAssignmentsClient(subscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_role_assignment.getIamRoleAssignment", "client_error", err)
+		return nil, err
+	}
+
+	op, err := authorizationClient.GetByID(ctx, roleAssignmentID, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_role_assignment.getIamRoleAssignment", "api_error", err)
 		return nil, err
 	}
 
