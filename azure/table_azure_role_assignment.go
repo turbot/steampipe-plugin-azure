@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v2"
 
@@ -27,12 +26,23 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleAssignments,
-			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "principal_id",
-					Require: plugin.Optional,
-				},
-			},
+			// For the time being, the optional qualifiers have been commented out
+			// due to an issue with the Azure REST API that generates the following error:
+			// 	{
+			//   "error": {
+			//     "code": "UnsupportedQuery",
+			//     "message": "The filter 'principalId' is not supported. Supported filters are either 'atScope()' or 'principalId eq '{value}' or assignedTo('{value}')'."
+			//   }
+			// }
+			// Ref: https://github.com/Azure/azure-rest-api-specs/issues/28255
+			// We will uncomment it once the issue is resolved.
+
+			// KeyColumns: []*plugin.KeyColumn{
+			// 	{
+			// 		Name:    "principal_id",
+			// 		Require: plugin.Optional,
+			// 	},
+			// },
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -119,20 +129,34 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		return nil, err
 	}
 
-	option := &armauthorization.RoleAssignmentsClientListForSubscriptionOptions{
+	defaultFilter := "atScope()" // filter all result
+
+	option := &armauthorization.RoleAssignmentsClientListForScopeOptions{
 		TenantID: &session.TenantID,
+		Filter:   &defaultFilter,
 	}
 
-	var filter string
-	if d.EqualsQuals["principal_id"] != nil {
-		filter = fmt.Sprintf("principalId eq '%s'", d.EqualsQuals["principal_id"].GetStringValue())
-	}
+	// For the time being, the optional qualifiers have been commented out
+	// due to an issue with the Azure REST API that generates the following error:
+	// 	{
+	//   "error": {
+	//     "code": "UnsupportedQuery",
+	//     "message": "The filter 'principalId' is not supported. Supported filters are either 'atScope()' or 'principalId eq '{value}' or assignedTo('{value}')'."
+	//   }
+	// }
+	// Ref: https://github.com/Azure/azure-rest-api-specs/issues/28255
+	// We will uncomment it once the issue is resolved.
 
-	if filter != "" {
-		option.Filter = &filter
-	}
+	// var filter string
+	// if d.EqualsQuals["principal_id"] != nil {
+	// 	filter = fmt.Sprintf("principalId eq '%s'", d.EqualsQuals["principal_id"].GetStringValue())
+	// }
 
-	result := authorizationClient.NewListForSubscriptionPager(option)
+	// if filter != "" {
+	// 	option.Filter = &filter
+	// }
+
+	result := authorizationClient.NewListForScopePager("/subscriptions/"+session.SubscriptionID, option)
 
 	for result.More() {
 		res, err := result.NextPage(ctx)
