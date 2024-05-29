@@ -18,7 +18,7 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.KeyColumnSlice{
 				{
-					Name:    "id",
+					Name:    "registration_definition_id",
 					Require: plugin.Required,
 				},
 				{
@@ -44,6 +44,12 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Description: "Fully qualified path of the registration definition.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("ID"),
+			},
+			{
+				Name:        "registration_definition_id",
+				Description: "The ID of the registration definition.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromQual("registration_definition_id"),
 			},
 			{
 				Name:        "type",
@@ -130,6 +136,7 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "session_error", err)
 		return nil, err
 	}
 	client := managedservices.NewRegistrationDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint)
@@ -142,6 +149,7 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 
 	result, err := client.List(ctx, scope)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_error", err)
 		return nil, err
 	}
 	for _, definition := range result.Values() {
@@ -154,6 +162,7 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_paging_error", err)
 			return nil, err
 		}
 		for _, defn := range result.Values() {
@@ -171,10 +180,11 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 //// HYDRATE FUNCTION
 
 func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	id := d.EqualsQualString("id")
+	id := d.EqualsQualString("registration_definition_id")
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.getAzureLighthouseDefinition", "session_error", err)
 		return nil, err
 	}
 	scope := d.EqualsQualString("scope")
@@ -187,6 +197,7 @@ func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *p
 
 	result, err := client.Get(ctx, scope, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.getAzureLighthouseDefinition", "api_error", err)
 		return nil, err
 	}
 	return result, nil
