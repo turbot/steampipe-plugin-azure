@@ -144,7 +144,7 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 
 	scope := d.EqualsQualString("scope")
 	if scope == "" {
-		scope = "subscription/" + session.SubscriptionID
+		scope = "subscriptions/" + session.SubscriptionID
 	}
 
 	result, err := client.List(ctx, scope)
@@ -189,7 +189,7 @@ func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *p
 	}
 	scope := d.EqualsQualString("scope")
 	if scope == "" {
-		scope = "subscription/" + session.SubscriptionID
+		scope = "subscriptions/" + session.SubscriptionID
 	}
 
 	client := managedservices.NewRegistrationDefinitionsClientWithBaseURI(session.SubscriptionID)
