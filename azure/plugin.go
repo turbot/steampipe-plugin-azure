@@ -126,6 +126,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_lb_rule":                                                tableAzureLoadBalancerRule(ctx),
 			"azure_location":                                               tableAzureLocation(ctx),
 			"azure_log_alert":                                              tableAzureLogAlert(ctx),
+			"azure_log_analytics_workspace":                                tableAzureLogAnalyticsWorkspace(ctx),
 			"azure_log_profile":                                            tableAzureLogProfile(ctx),
 			"azure_logic_app_workflow":                                     tableAzureLogicAppWorkflow(ctx),
 			"azure_machine_learning_workspace":                             tableAzureMachineLearningWorkspace(ctx),
@@ -194,6 +195,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 	}
 
 	return p
+}
+
+func tableAzureAKSOrchestractor(ctx context.Context) {
+	panic("unimplemented")
 }
 
 func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (any, error) {
