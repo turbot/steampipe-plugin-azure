@@ -138,6 +138,18 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "public_network_access_for_ingestion",
+				Description: "The network access type for accessing Application Insights ingestion.",
+				Transform:   transform.FromField("ApplicationInsightsComponentProperties.PublicNetworkAccessForIngestion"),
+				Type:        proto.ColumnType_STRING,
+			},
+			{
+				Name:        "public_network_access_for_query",
+				Description: "The network access type for accessing Application Insights query.",
+				Transform:   transform.FromField("ApplicationInsightsComponentProperties.PublicNetworkAccessForQuery"),
+				Type:        proto.ColumnType_STRING,
+			},
+			{
 				Name:        "application_type",
 				Description: "Type of application being monitored.",
 				Transform:   transform.FromField("ApplicationInsightsComponentProperties.ApplicationType"),
@@ -159,18 +171,6 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 				Name:        "private_link_scoped_resources",
 				Description: "List of linked private link scope resources.",
 				Transform:   transform.FromField("ApplicationInsightsComponentProperties.PrivateLinkScopedResources"),
-				Type:        proto.ColumnType_JSON,
-			},
-			{
-				Name:        "public_network_access_for_ingestion",
-				Description: "The network access type for accessing Application Insights ingestion.",
-				Transform:   transform.FromField("ApplicationInsightsComponentProperties.PublicNetworkAccessForIngestion"),
-				Type:        proto.ColumnType_JSON,
-			},
-			{
-				Name:        "public_network_access_for_query",
-				Description: "The network access type for accessing Application Insights query.",
-				Transform:   transform.FromField("ApplicationInsightsComponentProperties.PublicNetworkAccessForQuery"),
 				Type:        proto.ColumnType_JSON,
 			},
 
