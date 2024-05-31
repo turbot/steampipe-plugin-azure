@@ -197,10 +197,6 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 	return p
 }
 
-func tableAzureAKSOrchestractor(ctx context.Context) {
-	panic("unimplemented")
-}
-
 func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (any, error) {
 	subscriptionID, err := getSubscriptionIDMemoized(ctx, d, h)
 	if err != nil {
