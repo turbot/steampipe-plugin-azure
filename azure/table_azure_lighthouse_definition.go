@@ -27,15 +27,15 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				},
 			},
 			Hydrate: getAzureLighthouseDefinition,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			},
+			// IgnoreConfig: &plugin.IgnoreConfig{
+			// 	ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+			// },
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureLighthouseDefinitions,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			},
+			// IgnoreConfig: &plugin.IgnoreConfig{
+			// 	ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+			// },
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
 		},
 		Columns: []*plugin.Column{
