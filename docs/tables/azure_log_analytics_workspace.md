@@ -15,9 +15,18 @@ The `azure_log_analytics_workspace` table provides insights into the properties 
 
 ### Basic Info
 
-Retrieve basic information about your Log Analytics Workspaces, including their names, IDs, and locations.
+Retrieve basic information about your Log Analytics Workspaces, including their names, IDs, and locations. This helps in keeping track of all available workspaces within your Azure environment.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  location
+from
+  azure_log_analytics_workspace;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -28,9 +37,20 @@ from
 
 ### List Workspaces with Retention Period Greater than 30 Days
 
-Identify workspaces where the log retention period exceeds 30 days.
+Identify workspaces where the log retention period exceeds 30 days. This can be useful for compliance and data retention policy enforcement.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  retention_in_days
+from
+  azure_log_analytics_workspace
+where
+  retention_in_days > 30;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -43,9 +63,9 @@ where
 
 ### Get Workspaces with Specific Features Enabled
 
-Find workspaces that have data export enabled.
+Find workspaces that have data export enabled. This is essential for monitoring data export activities and ensuring that important data is being transferred as expected.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -56,11 +76,7 @@ where
   enable_data_export = true;
 ```
 
-### Get Workspaces with Data Export Enabled
-
-Find workspaces that have data export enabled.
-
-```sql
+```sql+sqlite
 select
   name,
   id,
@@ -73,9 +89,20 @@ where
 
 ### Identify Workspaces with Disabled Local Auth
 
-List workspaces where non-AAD based authentication is disabled.
+List workspaces where non-AAD based authentication is disabled. This information is crucial for maintaining secure access controls and adhering to organizational security policies.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  disable_local_auth
+from
+  azure_log_analytics_workspace
+where
+  disable_local_auth = true;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -88,9 +115,20 @@ where
 
 ### Workspaces with Private Link Scoped Resources
 
-Retrieve workspaces that have linked private link scope resources.
+Retrieve workspaces that have linked private link scope resources. This helps in understanding the private network configurations and ensuring secure communication within your Azure environment.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  private_link_scoped_resources
+from
+  azure_log_analytics_workspace
+where
+  private_link_scoped_resources is not null;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -103,9 +141,20 @@ where
 
 ### Workspaces with Force CMK for Query Enabled
 
-Find workspaces where customer-managed keys are mandatory for query management.
+Find workspaces where customer-managed keys are mandatory for query management. This is important for organizations that require additional security measures for data encryption and query operations.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  force_cmk_for_query
+from
+  azure_log_analytics_workspace
+where
+  force_cmk_for_query = true;
+```
+
+```sql+sqlite
 select
   name,
   id,

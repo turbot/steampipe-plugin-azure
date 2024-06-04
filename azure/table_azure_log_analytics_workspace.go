@@ -40,13 +40,11 @@ func tableAzureLogAnalyticsWorkspace(_ context.Context) *plugin.Table {
 			{
 				Name:        "location",
 				Description: "The location of the Log Analytics workspace.",
-				Transform:   transform.FromField("Location"),
 				Type:        proto.ColumnType_STRING,
 			},
 			{
 				Name:        "type",
 				Description: "The type of the Log Analytics workspace.",
-				Transform:   transform.FromField("Type"),
 				Type:        proto.ColumnType_STRING,
 			},
 			{
