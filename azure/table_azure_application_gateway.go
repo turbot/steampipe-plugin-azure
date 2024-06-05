@@ -420,7 +420,7 @@ func getWebApplicationFirewallConfiguration(ctx context.Context, d *plugin.Query
 		return nil, nil
 	}
 	policyId := firewallPolicy.ID
-	rgName := strings.Split(*policyId, "/")[4]
+	resourceGroup := strings.Split(*policyId, "/")[4]
 	policyname := strings.Split(*policyId, "/")[len(strings.Split(*policyId, "/"))-1]
 
 	// Create session
@@ -433,7 +433,7 @@ func getWebApplicationFirewallConfiguration(ctx context.Context, d *plugin.Query
 	client := network.NewWebApplicationFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
-	op, err := client.Get(ctx, rgName, policyname)
+	op, err := client.Get(ctx, resourceGroup, policyname)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_application_gateway.getWebApplicationFirewallConfiguration", "api_error", err)
 		return nil, err
