@@ -129,13 +129,6 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("BlobServicePropertiesProperties.RestorePolicy.Enabled"),
 			},
 			{
-				Name:        "blob_service_logging",
-				Description: "Specifies the blob service properties for logging access.",
-				Type:        proto.ColumnType_JSON,
-				Hydrate:     getAzureStorageAccountBlobServiceLogging,
-				Transform:   transform.FromValue(),
-			},
-			{
 				Name:        "blob_soft_delete_enabled",
 				Description: "Specifies whether DeleteRetentionPolicy is enabled.",
 				Type:        proto.ColumnType_BOOL,
@@ -295,13 +288,6 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Logging.Version"),
 			},
 			{
-				Name:        "table_logging_retention_policy",
-				Description: "The retention policy.",
-				Type:        proto.ColumnType_JSON,
-				Hydrate:     getAzureStorageAccountTableProperties,
-				Transform:   transform.FromField("Logging.RetentionPolicy"),
-			},
-			{
 				Name:        "minimum_tls_version",
 				Description: "Contains the minimum TLS version to be permitted on requests to storage.",
 				Type:        proto.ColumnType_STRING,
@@ -390,6 +376,20 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "The status indicating whether the secondary location of the storage account is available or unavailable. Only available if the SKU name is Standard_GRS or Standard_RAGRS. Possible values include: 'available', 'unavailable'.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Account.AccountProperties.StatusOfSecondary"),
+			},
+			{
+				Name:        "blob_service_logging",
+				Description: "Specifies the blob service properties for logging access.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountBlobServiceLogging,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "table_logging_retention_policy",
+				Description: "The retention policy.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountTableProperties,
+				Transform:   transform.FromField("Logging.RetentionPolicy"),
 			},
 			{
 				Name:        "diagnostic_settings",
