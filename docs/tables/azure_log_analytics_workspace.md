@@ -35,7 +35,7 @@ from
   azure_log_analytics_workspace;
 ```
 
-### List Workspaces with Retention Period Greater than 30 Days
+### List workspaces with retention period greater than 30 days
 
 Identify workspaces where the log retention period exceeds 30 days. This can be useful for compliance and data retention policy enforcement.
 
@@ -61,7 +61,7 @@ where
   retention_in_days > 30;
 ```
 
-### Get Workspaces with Specific Features Enabled
+### Get workspaces that have data export enabled
 
 Find workspaces that have data export enabled. This is essential for monitoring data export activities and ensuring that important data is being transferred as expected.
 
@@ -87,7 +87,7 @@ where
   enable_data_export = true;
 ```
 
-### Identify Workspaces with Disabled Local Auth
+### Identify workspaces with local auth disabled
 
 List workspaces where non-AAD based authentication is disabled. This information is crucial for maintaining secure access controls and adhering to organizational security policies.
 
@@ -113,7 +113,7 @@ where
   disable_local_auth = true;
 ```
 
-### Workspaces with Private Link Scoped Resources
+### Workspaces with private link scoped resources
 
 Retrieve workspaces that have linked private link scope resources. This helps in understanding the private network configurations and ensuring secure communication within your Azure environment.
 
@@ -139,7 +139,7 @@ where
   private_link_scoped_resources is not null;
 ```
 
-### Workspaces with Force CMK for Query Enabled
+### Workspaces with force CMK for query enabled
 
 Find workspaces where customer-managed keys are mandatory for query management. This is important for organizations that require additional security measures for data encryption and query operations.
 
