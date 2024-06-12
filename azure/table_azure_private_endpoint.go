@@ -154,6 +154,7 @@ func tableAzurePrivateEndpoint(_ context.Context) *plugin.Table {
 func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_private_endpoint.listPrivateEndpoints", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -169,6 +170,7 @@ func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	result, err := client.List(ctx, *resourceGroupName)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_private_endpoint.listPrivateEndpoints", "api_error", err)
 		return nil, err
 	}
 
@@ -182,6 +184,7 @@ func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	for result.NotDone() {
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("azure_private_endpoint.listPrivateEndpoints", "api_error_paging", err)
 			return nil, err
 		}
 
@@ -201,6 +204,7 @@ func getPrivateEndpoint(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_private_endpoint.getPrivateEndpoint", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -210,6 +214,7 @@ func getPrivateEndpoint(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_private_endpoint.getPrivateEndpoint", "api_error", err)
 		return nil, err
 	}
 
