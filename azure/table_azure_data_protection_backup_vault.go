@@ -124,6 +124,8 @@ func tableAzureDataProtectionBackupVault(_ context.Context) *plugin.Table {
 	}
 }
 
+//// LIST FUNCTION
+
 func listAzureDataProtectionBackupVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listAzureDataProtectionBackupVaults")
 	session, err := GetNewSessionUpdated(ctx, d)
@@ -159,6 +161,8 @@ func listAzureDataProtectionBackupVaults(ctx context.Context, d *plugin.QueryDat
 
 	return nil, nil
 }
+
+//// HYDRATE FUNCTION
 
 func getAzureDataProtectionBackupVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
