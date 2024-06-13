@@ -13,7 +13,7 @@ The `azure_data_protection_backup_vault` table provides insights into Backup Vau
 
 ## Examples
 
-### Basic Backup Vault Information
+### Basic backup vault information
 Retrieve basic information about your Azure Backup Vaults, including their names, locations, and provisioning states.
 
 ```sql+postgres
@@ -34,7 +34,7 @@ from
   azure_data_protection_backup_vault;
 ```
 
-### Backup Vault Storage Settings
+### Backup vault storage settings
 Explore the storage settings of your Azure Backup Vaults. This can help you understand the storage configuration and optimize your backup storage strategies.
 
 ```sql+postgres
@@ -57,7 +57,7 @@ from
   json_each(storage_settings) as s;
 ```
 
-### Managed Identity Details
+### Managed identity details
 List the managed identity details for each Backup Vault, which can be useful for managing access and security configurations.
 
 ```sql+postgres
@@ -78,7 +78,7 @@ from
   azure_data_protection_backup_vault;
 ```
 
-### Backup Vault Tags
+### Backup vault tags
 Retrieve tags associated with each Backup Vault to help with resource organization and management.
 
 ```sql+postgres
