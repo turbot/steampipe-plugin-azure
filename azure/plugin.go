@@ -91,6 +91,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_data_factory_pipeline":                                  tableAzureDataFactoryPipeline(ctx),
 			"azure_data_lake_analytics_account":                            tableAzureDataLakeAnalyticsAccount(ctx),
 			"azure_data_lake_store":                                        tableAzureDataLakeStore(ctx),
+			"azure_data_protection_backup_vault":                           tableAzureDataProtectionBackupVault(ctx),
 			"azure_databox_edge_device":                                    tableAzureDataBoxEdgeDevice(ctx),
 			"azure_databricks_workspace":                                   tableAzureDatabricksWorkspace(ctx),
 			"azure_diagnostic_setting":                                     tableAzureDiagnosticSetting(ctx),
