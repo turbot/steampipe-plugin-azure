@@ -35,6 +35,18 @@ func tableAzureCosmosDBSQLContainer(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Description: "The name of the ARM resource.",
 			},
+			{
+				Name:        "account_name",
+				Type:        proto.ColumnType_STRING,
+				Description: "The name of the database account.",
+				Transform:   transform.FromP(extractParentPropertiesForContainer, "AccountName"),
+			},
+			{
+				Name:        "database_name",
+				Type:        proto.ColumnType_STRING,
+				Description: "The name of the database.",
+				Transform:   transform.FromP(extractParentPropertiesForContainer, "DatabaseName"),
+			},
 			// {
 			// 	Name:        "account_name",
 			// 	Type:        proto.ColumnType_STRING,
@@ -97,7 +109,7 @@ func tableAzureCosmosDBSQLContainer(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ResourceGroup").Transform(toLower),
+				Transform:   transform.FromP(extractParentPropertiesForContainer, "ResourceGroup"),
 			},
 		}),
 	}
@@ -210,6 +222,26 @@ func getCosmosDBSQLContainerThroughput(ctx context.Context, d *plugin.QueryData,
 
 	return resultMap, err
 }
+
+//// TRANSFORM FUNCTION
+
+func extractParentPropertiesForContainer(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	param := d.Param.(string)
+	data := d.HydrateItem.(documentdb.SQLContainerGetResults)
+	p := extractContainerParentProperty(data)
+	switch param {
+		case "AccountName":
+			return p.AccountName, nil
+		case "DatabaseName":
+			return p.DatabaseName, nil
+		case "ResourceGroup":
+			return p.ResourceGroup, nil
+	}
+
+	return nil, nil
+}
+
+//// UTILITY FUNCTION
 
 type containerParenteInfo struct {
 	ResourceGroup string
