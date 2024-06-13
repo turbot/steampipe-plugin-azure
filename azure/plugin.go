@@ -85,6 +85,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_cosmosdb_mongo_collection":                              tableAzureCosmosDBMongoCollection(ctx),
 			"azure_cosmosdb_mongo_database":                                tableAzureCosmosDBMongoDatabase(ctx),
 			"azure_cosmosdb_restorable_database_account":                   tableAzureCosmosDBRestorableDatabaseAccount(ctx),
+			"azure_cosmosdb_sql_container":                                 tableAzureCosmosDBSQLContainer(ctx),
 			"azure_cosmosdb_sql_database":                                  tableAzureCosmosDBSQLDatabase(ctx),
 			"azure_data_factory":                                           tableAzureDataFactory(ctx),
 			"azure_data_factory_dataset":                                   tableAzureDataFactoryDataset(ctx),
