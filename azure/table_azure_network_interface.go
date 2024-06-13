@@ -115,6 +115,42 @@ func tableAzureNetworkInterface(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("InterfacePropertiesFormat.VirtualMachine.ID"),
 			},
 			{
+				Name:        "vnet_encryption_supported",
+				Description: "Whether the virtual machine this NIC is attached to supports encryption",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("InterfacePropertiesFormat.VnetEncryptionSupported"),
+			},
+			{
+				Name:        "disable_tcp_state_tracking",
+				Description: "Indicates whether to disable TCP state tracking",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("InterfacePropertiesFormat.DisableTCPStateTracking"),
+			},
+			{
+				Name:        "workload_type",
+				Description: "Workload type of the network interface for BareMetal resources",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("InterfacePropertiesFormat.WorkloadType"),
+			},
+			{
+				Name:        "nic_type",
+				Description: "Type of network interface resource (e.g., Standard, Elastic)",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("InterfacePropertiesFormat.NicType"),
+			},
+			{
+				Name:        "migration_phase",
+				Description: "Migration phase of network interface resource",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("InterfacePropertiesFormat.MigrationPhase"),
+			},
+			{
+				Name:        "auxiliary_mode",
+				Description: "Auxiliary mode of network interface resource",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("InterfacePropertiesFormat.AuxiliaryMode"),
+			},
+			{
 				Name:        "applied_dns_servers",
 				Description: "A list of applied dns servers",
 				Type:        proto.ColumnType_JSON,
@@ -143,6 +179,24 @@ func tableAzureNetworkInterface(_ context.Context) *plugin.Table {
 				Description: "A collection of TapConfigurations of the network interface",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("InterfacePropertiesFormat.TapConfigurations"),
+			},
+			{
+				Name:        "dscp_configuration",
+				Description: "A reference to the DSCP configuration to which the network interface is linked",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("InterfacePropertiesFormat.DscpConfiguration"),
+			},
+			{
+				Name:        "private_link_service",
+				Description: "Private link service of the network interface resource",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("InterfacePropertiesFormat.PrivateLinkService"),
+			},
+			{
+				Name:        "private_endpoint",
+				Description: "A reference to the private endpoint to which the network interface is linked",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("InterfacePropertiesFormat.PrivateEndpoint"),
 			},
 
 			// Steampipe standard columns
