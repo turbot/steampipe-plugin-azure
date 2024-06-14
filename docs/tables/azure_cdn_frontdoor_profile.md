@@ -55,7 +55,7 @@ from
   azure_cdn_frontdoor_profile;
 ```
 
-### Profiles with failed provisioning state
+### Profiles in failed provisioning state
 Retrieve information about front door profiles that are in a failed provisioning state. This can help in identifying and troubleshooting issues with profile deployment.
 
 ```sql+postgres
