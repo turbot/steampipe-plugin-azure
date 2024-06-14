@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/managedservices/mgmt/managedservices"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/managedservices/armmanagedservices"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -27,18 +27,23 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				},
 			},
 			Hydrate: getAzureLighthouseDefinition,
-			// IgnoreConfig: &plugin.IgnoreConfig{
-			// 	ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			// },
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureLighthouseDefinitions,
-			// IgnoreConfig: &plugin.IgnoreConfig{
-			// 	ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			// },
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+			},
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
 		},
 		Columns: []*plugin.Column{
+			{
+				Name:        "name",
+				Description: "Name of the registration definition.",
+				Type:        proto.ColumnType_STRING,
+			},
 			{
 				Name:        "id",
 				Description: "Fully qualified path of the registration definition.",
@@ -49,25 +54,18 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Name:        "registration_definition_id",
 				Description: "The ID of the registration definition.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromQual("registration_definition_id"),
+				Transform:   transform.FromField("ID").Transform(lastPathElement),
 			},
 			{
 				Name:        "type",
 				Description: "Type of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Type"),
 			},
 			{
 				Name:        "scope",
 				Description: "The scope of the resource.",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromQual("scope"),
-			},
-			{
-				Name:        "name",
-				Description: "Name of the registration definition.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Name"),
 			},
 			{
 				Name:        "description",
@@ -88,10 +86,16 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.ManagedByTenantID"),
 			},
 			{
-				Name:        "provisioning_state",
-				Description: "Current state of the registration definition.",
+				Name:        "managed_by_tenant_name",
+				Description: "The name of the managedBy tenant.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.ProvisioningState"),
+				Transform:   transform.FromField("Properties.ManagedByTenantName"),
+			},
+			{
+				Name:        "managed_tenant_name",
+				Description: "The name of the managed tenant.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.ManageeTenantName"),
 			},
 			{
 				Name:        "authorizations",
@@ -100,10 +104,15 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.Authorizations"),
 			},
 			{
+				Name:        "eligible_authorizations",
+				Description: "The collection of eligible authorization objects describing the just-in-time access Azure Active Directory principals in the managedBy tenant will receive on the delegated resource in the managed tenant.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.EligibleAuthorizations"),
+			},
+			{
 				Name:        "plan",
 				Description: "Plan details for the managed services.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Plan"),
 			},
 
 			// Steampipe standard columns
@@ -134,41 +143,27 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "session_error", err)
 		return nil, err
 	}
-	client := managedservices.NewRegistrationDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint)
-	client.Authorizer = session.Authorizer
+	clientFactory, err := armmanagedservices.NewRegistrationDefinitionsClient(session.Cred, session.ClientOptions)
 
 	scope := d.EqualsQualString("scope")
 	if scope == "" {
 		scope = "subscriptions/" + session.SubscriptionID
 	}
 
-	result, err := client.List(ctx, scope)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_error", err)
-		return nil, err
-	}
-	for _, definition := range result.Values() {
-		d.StreamListItem(ctx, definition)
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
-	}
-
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := clientFactory.NewListPager(scope, &armmanagedservices.RegistrationDefinitionsClientListOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_paging_error", err)
+			plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_error", err)
 			return nil, err
 		}
-		for _, defn := range result.Values() {
-			d.StreamListItem(ctx, defn)
-			// Check if context has been cancelled or if the limit has been hit (if specified)
-			// if there is a limit, it will return the number of rows required to reach this limit
+		for _, definition := range page.Value {
+			d.StreamListItem(ctx, definition)
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
@@ -182,7 +177,7 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	id := d.EqualsQualString("registration_definition_id")
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_lighthouse_definition.getAzureLighthouseDefinition", "session_error", err)
 		return nil, err
@@ -192,10 +187,14 @@ func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *p
 		scope = "subscriptions/" + session.SubscriptionID
 	}
 
-	client := managedservices.NewRegistrationDefinitionsClientWithBaseURI(session.SubscriptionID)
-	client.Authorizer = session.Authorizer
+	clientFactory, err := armmanagedservices.NewRegistrationDefinitionsClient(session.Cred, session.ClientOptions)
 
-	result, err := client.Get(ctx, scope, id)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.getAzureLighthouseDefinition", "client_error", err)
+		return nil, err
+	}
+
+	result, err := clientFactory.Get(ctx, scope, id, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_lighthouse_definition.getAzureLighthouseDefinition", "api_error", err)
 		return nil, err
