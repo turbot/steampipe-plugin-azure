@@ -97,7 +97,7 @@ from
   azure_data_protection_backup_vault;
 ```
 
-### Backup vaults with failed provisioning state
+### Backup vaults in failed provisioning state
 Retrieve information about backup vaults that are in a failed provisioning state. This can help in identifying and troubleshooting issues with backup vault deployment.
 
 ```sql+postgres
