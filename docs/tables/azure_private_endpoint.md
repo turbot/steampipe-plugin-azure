@@ -110,7 +110,7 @@ from
   json_each(custom_dns_configs) as dns_config;
 ```
 
-### Extended Location Information
+### Extended location information
 Retrieve the extended location information for each private endpoint.
 
 ```sql+postgres
