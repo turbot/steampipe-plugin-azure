@@ -1,3 +1,19 @@
+## v0.58.0 [2024-06-15]
+
+_What's new?_
+
+- New tables added
+  - [azure_cdn_frontdoor_profile](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cdn_frontdoor_profile) ([#777](https://github.com/turbot/steampipe-plugin-azure/pull/777))
+  - [azure_data_protection_backup_vault](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_protection_backup_vault) ([#776](https://github.com/turbot/steampipe-plugin-azure/pull/776))
+  - [azure_log_analytics_workspace](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_log_analytics_workspace) ([#767](https://github.com/turbot/steampipe-plugin-azure/pull/767))
+  - [azure_private_endpoint](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_private_endpoint) ([#775](https://github.com/turbot/steampipe-plugin-azure/pull/775))
+
+_Bug fixes_
+
+- Fixed the `public_network_access_for_ingestion` and the `public_network_access_for_query` columns of `azure_application_insight` table to be of `String` data type instead of `JSON` data type. ([#769](https://github.com/turbot/steampipe-plugin-azure/pull/769))
+- Fixed the `azure_role_assignment` table to correctly return values for `principal_id` and `principal_type` columns instead of `null`. ([#763](https://github.com/turbot/steampipe-plugin-azure/pull/763))
+- Fixed the `web_application_firewall_configuration` of `azure_application_gateway` table to correctly return data instead of `null`. ([#770](https://github.com/turbot/steampipe-plugin-azure/pull/770))
+
 ## v0.57.0 [2024-05-13]
 
 _Enhancements_
