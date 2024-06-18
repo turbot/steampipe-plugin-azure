@@ -24,6 +24,7 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				{
 					Name:    "scope",
 					Require: plugin.Optional,
+					Operators: []string{"="},
 				},
 			},
 			Hydrate: getAzureLighthouseAssignment,
@@ -65,7 +66,8 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				Name:        "scope",
 				Description: "The scope of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromQual("scope"),
+				Hydrate:     getLighthouseScopeValue,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "registration_definition_id",

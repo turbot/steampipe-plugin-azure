@@ -22,8 +22,9 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 					Require: plugin.Required,
 				},
 				{
-					Name:    "scope",
-					Require: plugin.Optional,
+					Name:      "scope",
+					Require:   plugin.Optional,
+					Operators: []string{"="},
 				},
 			},
 			Hydrate: getAzureLighthouseDefinition,
@@ -65,7 +66,8 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Name:        "scope",
 				Description: "The scope of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromQual("scope"),
+				Hydrate:     getLighthouseScopeValue,
+				Transform:   transform.FromValue(),
 			},
 			{
 				Name:        "description",
@@ -200,4 +202,18 @@ func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *p
 		return nil, err
 	}
 	return result, nil
+}
+
+func getLighthouseScopeValue(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	scope := d.EqualsQualString("scope")
+	if scope != "" {
+		return scope, nil
+	}
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_lighthouse_definition.getLighthouseScopeValue", "session_error", err)
+		return nil, err
+	}
+	scope = "subscriptions/" + session.SubscriptionID
+	return scope, nil
 }
