@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/managedservices/armmanagedservices"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -66,8 +67,7 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Name:        "scope",
 				Description: "The scope of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Hydrate:     getLighthouseScopeValue,
-				Transform:   transform.FromValue(),
+				Transform:   transform.FromQual("scope"),
 			},
 			{
 				Name:        "description",
@@ -136,7 +136,8 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
+				Hydrate:     getLighthouseDefinitionResourceGroup,
+				Transform:   transform.FromValue(),
 			},
 		},
 	}
@@ -204,16 +205,33 @@ func getAzureLighthouseDefinition(ctx context.Context, d *plugin.QueryData, h *p
 	return result, nil
 }
 
-func getLighthouseScopeValue(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	scope := d.EqualsQualString("scope")
-	if scope != "" {
-		return scope, nil
+// We can have Definition/Assignments in different scopes:
+// Subscription: /subscriptions/{subscription-id}
+// Resource Groups: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
+// Management Groups: /providers/Microsoft.Management/managementGroups/{management-group-id}
+// Individual Resources: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}
+func getLighthouseDefinitionResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	if h.Item == nil {
+		return nil, nil
 	}
-	session, err := GetNewSessionUpdated(ctx, d)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_lighthouse_definition.getLighthouseScopeValue", "session_error", err)
-		return nil, err
+
+	var id string
+	switch item := h.Item.(type) {
+	case *armmanagedservices.RegistrationDefinition:
+		id = *item.ID
+	case armmanagedservices.RegistrationDefinitionsClientGetResponse:
+		id = *item.ID
+	default:
+		id = ""
 	}
-	scope = "subscriptions/" + session.SubscriptionID
-	return scope, nil
+
+	if id == "" {
+		return nil, nil
+	}
+
+	if strings.Contains(strings.ToLower(id), "/resourcegroups/") {
+		return strings.Split(id, "/")[4], nil
+	}
+
+	return nil, nil
 }

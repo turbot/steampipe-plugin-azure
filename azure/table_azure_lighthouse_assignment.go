@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/managedservices/armmanagedservices"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -22,8 +23,8 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 					Require: plugin.Required,
 				},
 				{
-					Name:    "scope",
-					Require: plugin.Optional,
+					Name:      "scope",
+					Require:   plugin.Optional,
 					Operators: []string{"="},
 				},
 			},
@@ -66,8 +67,7 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				Name:        "scope",
 				Description: "The scope of the resource.",
 				Type:        proto.ColumnType_STRING,
-				Hydrate:     getLighthouseScopeValue,
-				Transform:   transform.FromValue(),
+				Transform:   transform.FromQual("scope"),
 			},
 			{
 				Name:        "registration_definition_id",
@@ -101,7 +101,8 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Description: ColumnDescriptionResourceGroup,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ID").Transform(extractResourceGroupFromID),
+				Hydrate:     getLighthouseAssignmentResourceGroup,
+				Transform:   transform.FromValue(),
 			},
 		},
 	}
@@ -167,4 +168,35 @@ func getAzureLighthouseAssignment(ctx context.Context, d *plugin.QueryData, h *p
 		return nil, err
 	}
 	return result, nil
+}
+
+// We can have Definition/Assignments in different scopes:
+// Subscription: /subscriptions/{subscription-id}
+// Resource Groups: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
+// Management Groups: /providers/Microsoft.Management/managementGroups/{management-group-id}
+// Individual Resources: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}
+func getLighthouseAssignmentResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	if h.Item == nil {
+		return nil, nil
+	}
+
+	var id string
+	switch item := h.Item.(type) {
+	case *armmanagedservices.RegistrationAssignment:
+		id = *item.ID
+	case armmanagedservices.RegistrationAssignmentsClientGetResponse:
+		id = *item.ID
+	default:
+		id = ""
+	}
+
+	if id == "" {
+		return nil, nil
+	}
+
+	if strings.Contains(strings.ToLower(id), "/resourcegroups/") {
+		return strings.Split(id, "/")[4], nil
+	}
+
+	return nil, nil
 }
