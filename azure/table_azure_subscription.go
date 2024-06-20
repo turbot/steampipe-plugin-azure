@@ -74,6 +74,11 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DisplayName"),
 			},
 			{
+				Name:        "tags",
+				Description: ColumnDescriptionTags,
+				Type:        proto.ColumnType_JSON,
+			},
+			{
 				Name:        "akas",
 				Description: ColumnDescriptionAkas,
 				Type:        proto.ColumnType_JSON,
