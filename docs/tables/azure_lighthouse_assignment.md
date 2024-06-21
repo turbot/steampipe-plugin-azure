@@ -128,3 +128,46 @@ from
 where
   scope = '/subscriptions/your_subscription_id';
 ```
+
+### Determine the scope for assignments
+This query is highly useful for normalizing, analyzing, and reporting on Azure resource scopes in an environment managed by Azure Lighthouse.
+
+```sql+postgres
+select
+  case
+    when id like '/subscriptions/%/resourceGroups/%/providers/%/%/%' then
+      substring(id from '/subscriptions/[^/]+/resourceGroups/[^/]+/providers/[^/]+/[^/]+/[^/]+')
+    when id like '/subscriptions/%/resourceGroups/%' then
+      substring(id from '/subscriptions/[^/]+/resourceGroups/[^/]+')
+    when id like '/subscriptions/%' then
+      substring(id from '/subscriptions/[^/]+')
+    when id like '/providers/Microsoft.Management/managementGroups/%' then
+      substring(id from '/providers/Microsoft.Management/managementGroups/[^/]+')
+    else
+      null
+  end as scope_id,
+  registration_definition_id,
+  id
+from
+  azure_lighthouse_assignment;
+```
+
+```sql+sqlite
+select
+  case
+    when id like '/subscriptions/%/resourceGroups/%/providers/%/%/%' then
+      substr(id, 1, instr(id, '/', 3, 5) + length('/providers') - 1)
+    when id like '/subscriptions/%/resourceGroups/%' then
+      substr(id, 1, instr(id, '/', 3, 4) + length('/resourceGroups') - 1)
+    when id like '/subscriptions/%' then
+      substr(id, 1, instr(id, '/', 3, 2) - 1)
+    when id like '/providers/Microsoft.Management/managementGroups/%' then
+      substr(id, 1, instr(id, '/', 3, 4) + length('/managementGroups') - 1)
+    else
+      null
+  end as scope_id,
+  registration_definition_id,
+  id
+from
+  azure_lighthouse_assignment;
+```
