@@ -16,6 +16,9 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_lighthouse_definition",
 		Description: "Azure Lighthouse Definition",
+		DefaultIgnoreConfig: &plugin.IgnoreConfig{
+			ShouldIgnoreErrorFunc: isNotFoundError([]string{"SubscriptionNotFound"}),
+		},
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.KeyColumnSlice{
 				{
@@ -30,14 +33,11 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 			},
 			Hydrate: getAzureLighthouseDefinition,
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"RegistrationDefinitionNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureLighthouseDefinitions,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			},
+			Hydrate:    listAzureLighthouseDefinitions,
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
 		},
 		Columns: []*plugin.Column{

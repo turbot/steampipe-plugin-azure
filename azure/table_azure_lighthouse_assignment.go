@@ -16,6 +16,9 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_lighthouse_assignment",
 		Description: "Azure Lighthouse Assignment",
+		DefaultIgnoreConfig: &plugin.IgnoreConfig{
+			ShouldIgnoreErrorFunc: isNotFoundError([]string{"SubscriptionNotFound"}),
+		},
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.KeyColumnSlice{
 				{
@@ -30,14 +33,11 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 			},
 			Hydrate: getAzureLighthouseAssignment,
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"RegistrationAssignmentNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureLighthouseAssignments,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"404"}),
-			},
+			Hydrate:    listAzureLighthouseAssignments,
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
 		},
 		Columns: []*plugin.Column{
