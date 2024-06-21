@@ -1,8 +1,6 @@
 ---
-
 title: "Steampipe Table: azure_lighthouse_assignment - Query Azure Lighthouse Assignments using SQL"
 description: "Allows users to query Azure Lighthouse assignments, providing insights into the management and governance of resources across multiple tenants."
-
 ---
 
 # Table: azure_lighthouse_assignment - Query Azure Lighthouse Assignments using SQL
