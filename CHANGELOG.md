@@ -1,3 +1,26 @@
+## v0.59.0 [2024-06-21]
+
+_What's new?_
+
+- New tables added
+  - [azure_data_protection_backup_job](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_data_protection_backup_job) ([#786](https://github.com/turbot/steampipe-plugin-azure/pull/786))
+  - [azure_lighthouse_assignment](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lighthouse_assignment) ([#785](https://github.com/turbot/steampipe-plugin-azure/pull/785))
+  - [azure_lighthouse_definition](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_lighthouse_definition) ([#785](https://github.com/turbot/steampipe-plugin-azure/pull/785))
+
+_Enhancements_
+
+- Added column `tags` to the `azure_subscription` table. ([#784](https://github.com/turbot/steampipe-plugin-azure/pull/784))
+- Added the following columns to the `azure_network_interface` table: ([#779](https://github.com/turbot/steampipe-plugin-azure/pull/779))
+  - `auxiliary_mode`
+  - `disable_tcp_state_tracking`
+  - `dscp_configuration`
+  - `migration_phase`
+  - `nic_type`
+  - `private_endpoint`
+  - `private_link_service`
+  - `vnet_encryption_supported`
+  - `workload_type`
+
 ## v0.58.0 [2024-06-15]
 
 _What's new?_
