@@ -127,6 +127,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_lb_outbound_rule":                                       tableAzureLoadBalancerOutboundRule(ctx),
 			"azure_lb_probe":                                               tableAzureLoadBalancerProbe(ctx),
 			"azure_lb_rule":                                                tableAzureLoadBalancerRule(ctx),
+			"azure_lighthouse_assignment":                                  tableAzureLighthouseAssignment(ctx),
+			"azure_lighthouse_definition":                                  tableAzureLighthouseDefinition(ctx),
 			"azure_location":                                               tableAzureLocation(ctx),
 			"azure_log_alert":                                              tableAzureLogAlert(ctx),
 			"azure_log_analytics_workspace":                                tableAzureLogAnalyticsWorkspace(ctx),
