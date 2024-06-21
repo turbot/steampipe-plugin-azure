@@ -215,21 +215,15 @@ func getLighthouseDefinitionResourceGroup(ctx context.Context, d *plugin.QueryDa
 		return nil, nil
 	}
 
-	var id string
+	id := ""
 	switch item := h.Item.(type) {
 	case *armmanagedservices.RegistrationDefinition:
 		id = *item.ID
 	case armmanagedservices.RegistrationDefinitionsClientGetResponse:
 		id = *item.ID
-	default:
-		id = ""
 	}
 
-	if id == "" {
-		return nil, nil
-	}
-
-	if strings.Contains(strings.ToLower(id), "/resourcegroups/") {
+	if id != "" && strings.Contains(strings.ToLower(id), "/resourcegroups/") {
 		return strings.Split(id, "/")[4], nil
 	}
 
