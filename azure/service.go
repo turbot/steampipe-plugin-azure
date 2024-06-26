@@ -547,6 +547,8 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 		resource = settings.Environment.GraphEndpoint
 	case "VAULT":
 		resource = strings.TrimSuffix(settings.Environment.KeyVaultEndpoint, "/")
+	case "STORAGE":
+		resource = strings.TrimSuffix(settings.Environment.ResourceIdentifiers.Storage, "/")
 	case "MANAGEMENT":
 		resource = settings.Environment.ResourceManagerEndpoint
 	default:

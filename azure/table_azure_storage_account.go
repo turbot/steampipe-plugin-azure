@@ -2,15 +2,19 @@ package azure
 
 import (
 	"context"
+	"encoding/xml"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
-
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
-	"github.com/tombuildsstuff/giovanni/storage/2019-12-12/blob/accounts"
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -533,7 +537,6 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 			}
 		}
 	}
-
 	return nil, err
 }
 
@@ -575,6 +578,7 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 
 	op, err := storageClient.Get(ctx, *accountData.ResourceGroup, *accountData.Name)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountLifecycleManagementPolicy", "api_error", err)
 		if strings.Contains(err.Error(), "ManagementPolicyNotFound") {
 			return nil, nil
 		}
@@ -631,46 +635,45 @@ func getAzureStorageAccountTableProperties(ctx context.Context, d *plugin.QueryD
 		return nil, nil
 	}
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
+	// subscriptionID := session.SubscriptionID
 
-	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	storageClient.Authorizer = session.Authorizer
+	// storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	// storageClient.Authorizer = session.Authorizer
 
-	// List Storage account keys
-	keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties.ListKeys", "api_error", err)
-		return nil, err
-	}
+	// // List Storage account keys
+	// keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+	// if err != nil {
+	// 	plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties.ListKeys", "api_error", err)
+	// 	return nil, err
+	// }
 
 	// Get table properties
-	var tableProperties aztables.ServiceProperties
-	for _, key := range *keys.Keys {
-		serviceUrl := "https://" + *accountData.Name + ".table.core.windows.net/"
+	// var tableProperties aztables.ServiceProperties
+	// for _, key := range *keys.Keys {
+	serviceUrl := "https://" + *accountData.Name + ".table.core.windows.net/"
 
-		auth, err := aztables.NewSharedKeyCredential(*accountData.Name, *key.Value)
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "credential_error", err)
-			return nil, err
-		}
+	// 	auth, err := aztables.NewSharedKeyCredential(*accountData.Name, *key.Value)
+	// 	if err != nil {
+	// 		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "credential_error", err)
+	// 		return nil, err
+	// 	}
 
-		client, _ := aztables.NewServiceClientWithSharedKey(serviceUrl, auth, nil)
+	client, _ := aztables.NewServiceClient(serviceUrl, session.Cred, nil)
 
-		op, err := client.GetProperties(ctx, &aztables.GetPropertiesOptions{})
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "api_error", err)
-			return nil, err
-		} else {
-			tableProperties = op.ServiceProperties
-			break
-		}
+	op, err := client.GetProperties(ctx, &aztables.GetPropertiesOptions{})
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountTableProperties", "api_error", err)
+		return nil, err
 	}
+	return op.ServiceProperties, nil
+	// break
 
-	return tableProperties, nil
+	// }
+
 }
 
 func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -747,8 +750,26 @@ func listAzureStorageAccountAccessKeys(ctx context.Context, d *plugin.QueryData,
 			keysMap = append(keysMap, keyMap)
 		}
 	}
-
 	return keysMap, nil
+}
+
+// Define the structure for logging properties
+type DeleteRetentionPolicy struct {
+	Enabled bool `xml:"Enabled"`
+	Days    int  `xml:"Days"`
+}
+
+type Logging struct {
+	Version         string                `xml:"Version"`
+	Delete          bool                  `xml:"Delete"`
+	Read            bool                  `xml:"Read"`
+	Write           bool                  `xml:"Write"`
+	RetentionPolicy DeleteRetentionPolicy `xml:"RetentionPolicy"`
+}
+
+type ServiceProperties struct {
+	XMLName xml.Name `xml:"StorageServiceProperties"`
+	Logging Logging  `xml:"Logging"`
 }
 
 func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -760,48 +781,80 @@ func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.Que
 	}
 
 	// Create session
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSession(ctx, d, "STORAGE")
 	if err != nil {
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
+	serviceUrl := "https://" + *accountData.Name + ".blob.core.windows.net"
+	// serviceClient, err := accounts.NewWithBaseUri(serviceUrl)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	storageClient.Authorizer = session.Authorizer
-
-	accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+	// Construct the URL with query parameters
+	u, err := url.Parse(serviceUrl)
 	if err != nil {
-		// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
-		// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
-		// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
-		// Please remove the lock and try again."
-		if strings.Contains(err.Error(), "ScopeLocked") {
+		log.Fatalf("failed to parse URL: %v", err)
+	}
+	q := u.Query()
+	q.Set("restype", "service")
+	q.Set("comp", "properties")
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("failed to create request", err)
+
+		return nil, err
+	}
+
+	// Add the authorization header using the autorest authorizer
+	preparer := autorest.CreatePreparer(
+		session.Authorizer.WithAuthorization(),
+	)
+	req, err = preparer.Prepare(req)
+	if err != nil {
+		log.Fatalf("failed to authorize request: %v", err)
+	}
+
+	// Add required headers
+	// Add required headers
+	req.Header.Add("x-ms-version", "2019-12-12")
+	req.Header.Add("x-ms-date", time.Now().UTC().Format(http.TimeFormat))
+
+	// Make the HTTP request
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("failed to make request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("received non-200 response: %d", resp.StatusCode)
+	}
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("failed to read response body: %v", err)
+	}
+
+	// Unmarshal the XML response
+	var properties ServiceProperties
+	err = xml.Unmarshal(body, &properties)
+	if err != nil {
+		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	if *accountKeys.Keys != nil || len(*accountKeys.Keys) > 0 {
-		key := (*accountKeys.Keys)[0]
-		storageAuth, err := autorest.NewSharedKeyAuthorizer(*accountData.Name, *key.Value, autorest.SharedKeyLite)
-		if err != nil {
-			return nil, err
-		}
-
-		client := accounts.New()
-		client.Client.Authorizer = storageAuth
-		client.BaseURI = session.StorageEndpointSuffix
-
-		resp, err := client.GetServiceProperties(ctx, *accountData.Name)
-		if err != nil {
-			if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
-				return nil, nil
-			}
-			return nil, err
-		}
-		return resp.StorageServiceProperties.Logging, nil
-	}
-	return nil, nil
+	return properties.Logging, nil
+	// }
+	// return nil, nil
 }
 
 func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -829,7 +882,6 @@ func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryDa
 		}
 		return nil, err
 	}
-
 	return op.FileServicePropertiesProperties, nil
 }
 
@@ -840,51 +892,80 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 	// Original Error: autorest/azure: Service returned an error. Status=400 Code="FeatureNotSupportedForAccount" Message="File is not supported for the account."
 	if accountData.Account.Sku.Tier == "Standard" && (accountData.Account.Kind == "Storage" || accountData.Account.Kind == "StorageV2") {
 		// Create session
-		session, err := GetNewSession(ctx, d, "MANAGEMENT")
+		// Create session
+		session, err := GetNewSession(ctx, d, "STORAGE")
 		if err != nil {
 			return nil, err
 		}
-		subscriptionID := session.SubscriptionID
+		serviceUrl := "https://" + *accountData.Name + ".queue.core.windows.net"
+		// serviceClient, err := accounts.NewWithBaseUri(serviceUrl)
+		// if err != nil {
+		// 	return nil, err
+		// }
 
-		storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-		storageClient.Authorizer = session.Authorizer
-
-		accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
+		// Construct the URL with query parameters
+		u, err := url.Parse(serviceUrl)
 		if err != nil {
-			// storage.AccountsClient#ListKeys: Failure sending request: StatusCode=409 -- Original Error: autorest/azure: Service returned an error. Status=<nil> Code="ScopeLocked"
-			// Message="The scope '/subscriptions/********-****-****-****-************/resourceGroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'
-			// cannot perform write operation because following scope(s) are locked: '/subscriptions/********-****-****-****-************/resourcegroups/turbot_rg/providers/Microsoft.Storage/storageAccounts/delmett'.
-			// Please remove the lock and try again."
-			if strings.Contains(err.Error(), "ScopeLocked") {
+			log.Fatalf("failed to parse URL: %v", err)
+		}
+		q := u.Query()
+		q.Set("restype", "service")
+		q.Set("comp", "properties")
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			plugin.Logger(ctx).Error("failed to create request", err)
+
+			return nil, err
+		}
+
+		// Add the authorization header using the autorest authorizer
+		preparer := autorest.CreatePreparer(
+			session.Authorizer.WithAuthorization(),
+		)
+		req, err = preparer.Prepare(req)
+		if err != nil {
+			log.Fatalf("failed to authorize request: %v", err)
+		}
+
+		// Add required headers
+		// Add required headers
+		req.Header.Add("x-ms-version", "2019-12-12")
+		req.Header.Add("x-ms-date", time.Now().UTC().Format(http.TimeFormat))
+
+		// Make the HTTP request
+		client := &http.Client{
+			Timeout: 30 * time.Second,
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatalf("failed to make request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		// Check the response status
+		if resp.StatusCode != http.StatusOK {
+			log.Fatalf("received non-200 response: %d", resp.StatusCode)
+		}
+
+		// Read the response body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("failed to read response body: %v", err)
+		}
+
+		// Unmarshal the XML response
+		var properties ServiceProperties
+		err = xml.Unmarshal(body, &properties)
+		if err != nil {
+			if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
 				return nil, nil
 			}
 			return nil, err
 		}
-
-		if *accountKeys.Keys != nil || len(*accountKeys.Keys) > 0 {
-			key := (*accountKeys.Keys)[0]
-			storageAuth, err := autorest.NewSharedKeyAuthorizer(*accountData.Name, *key.Value, autorest.SharedKeyLite)
-			if err != nil {
-				return nil, err
-			}
-
-			queuesClient := queues.New()
-			queuesClient.Client.Authorizer = storageAuth
-			queuesClient.BaseURI = session.StorageEndpointSuffix
-
-			// using 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues" to logging details
-			// https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage#QueueServicePropertiesProperties
-			// In azure SDK for GO, we still don't have logging properties in its output
-			resp, err := queuesClient.GetServiceProperties(ctx, *accountData.Name)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
-					return nil, nil
-				}
-				return nil, err
-			}
-			return resp.StorageServiceProperties, nil
-		}
+		return properties.Logging, nil
+		// }
 	}
 	return nil, nil
 }
