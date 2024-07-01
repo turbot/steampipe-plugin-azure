@@ -362,6 +362,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.PrimaryEndpoints.Web"),
 			},
 			{
+				Name:        "public_network_access",
+				Description: "Allow or disallow public network access to Storage Account. Value is optional but if passed in, must be Enabled or Disabled.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.PublicNetworkAccess"),
+			},
+			{
 				Name:        "status_of_primary",
 				Description: "The status indicating whether the primary location of the storage account is available or unavailable. Possible values include: 'available', 'unavailable'.",
 				Type:        proto.ColumnType_STRING,
