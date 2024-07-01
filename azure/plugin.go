@@ -113,6 +113,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_iothub":                                                 tableAzureIotHub(ctx),
 			"azure_iothub_dps":                                             tableAzureIotHubDps(ctx),
 			"azure_key_vault":                                              tableAzureKeyVault(ctx),
+			"azure_key_vault_certificate":                                  tableAzureKeyVaultCertificate(ctx),
 			"azure_key_vault_deleted_vault":                                tableAzureKeyVaultDeletedVault(ctx),
 			"azure_key_vault_key":                                          tableAzureKeyVaultKey(ctx),
 			"azure_key_vault_key_version":                                  tableAzureKeyVaultKeyVersion(ctx),
