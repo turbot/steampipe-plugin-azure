@@ -1,3 +1,13 @@
+## v0.61.0 [2024-07-04]
+
+_Enhancements_
+
+- Added column `public_network_access` to the `azure_storage_account` table. ([#794](https://github.com/turbot/steampipe-plugin-azure/pull/794))
+
+_Bug fixes_
+
+- Fixed the export tool of the plugin to return a non-zero error code instead of 0 whenever an error occurred. ([#79](https://github.com/turbot/steampipe-export/pull/79))
+
 ## v0.60.0 [2024-07-01]
 
 _Bug fixes_
