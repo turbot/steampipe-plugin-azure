@@ -47,13 +47,13 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 				Name:        "enabled",
 				Description: "Indicates whether this activity log alert is enabled.",
 				Type:        proto.ColumnType_BOOL,
-				Transform:   transform.FromField("ActivityLogAlert.Enabled"),
+				Transform:   transform.FromField("AlertRuleProperties.Enabled"),
 			},
 			{
 				Name:        "description",
 				Description: "A description of this activity log alert.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ActivityLogAlert.Description"),
+				Transform:   transform.FromField("AlertRuleProperties.Description"),
 			},
 			{
 				Name:        "location",
@@ -64,19 +64,19 @@ func tableAzureLogAlert(_ context.Context) *plugin.Table {
 				Name:        "scopes",
 				Description: "A list of resourceIds that will be used as prefixes.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ActivityLogAlert.Scopes"),
+				Transform:   transform.FromField("AlertRuleProperties.Scopes"),
 			},
 			{
 				Name:        "condition",
 				Description: "The condition that will cause this alert to activate.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("ActivityLogAlert.Condition"),
+				Transform:   transform.FromField("AlertRuleProperties.Condition"),
 			},
 			{
 				Name:        "actions",
 				Description: "The actions that will activate when the condition is met.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ActivityLogAlert.Actions"),
+				Transform:   transform.FromField("AlertRuleProperties.Actions"),
 			},
 
 			// Steampipe standard columns
