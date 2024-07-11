@@ -57,6 +57,13 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 				Transform:   transform.FromField("VirtualMachineScaleSetVMProperties.LatestModelApplied"),
 			},
 			{
+				Name:        "power_state",
+				Description: "Specifies the power state of the vm.",
+				Type:        proto.ColumnType_STRING,
+				Hydrate:     getAzureComputeVirtualMachineScaleSetVmInstanceView,
+				Transform:   transform.FromField("Statuses").Transform(getPowerState),
+			},
+			{
 				Name:        "provisioning_state",
 				Description: "The provisioning state.",
 				Type:        proto.ColumnType_STRING,
@@ -307,4 +314,27 @@ func getAzureComputeVirtualMachineScaleSetVm(ctx context.Context, d *plugin.Quer
 	}
 
 	return nil, nil
+}
+
+func getAzureComputeVirtualMachineScaleSetVmInstanceView(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getAzureComputeVirtualMachineScaleSetVmInstanceView")
+
+	virtualMachine := h.Item.(ScaleSetVMInfo)
+	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
+	instanceId := strings.Split(string(*virtualMachine.ID), "/")[10]
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
 }
