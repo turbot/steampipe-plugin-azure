@@ -1,3 +1,10 @@
+## v0.61.1 [2024-07-12]
+
+_Bug fixes_
+
+- Fixed the `azure_log_alert` table to correctly return values for `scopes`, `actions`, `description`, `enabled` and `condition` columns instead of `null`. ([#796](https://github.com/turbot/steampipe-plugin-azure/pull/796))
+- Updated the documnet based on Azure SDK authentication for different environment. ([#798](https://github.com/turbot/steampipe-plugin-azure/pull/798))
+
 ## v0.61.0 [2024-07-04]
 
 _Enhancements_
