@@ -116,6 +116,9 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		password = os.Getenv(auth.Password)
 	}
 
+	//  It's important to note that Microsoft has since integrated these isolated German cloud regions into the global Azure cloud infrastructure. This means that Azure Germany Cloud services are now provided through the global Azure regions with the same high standards of security, privacy, and compliance.
+	// - SDK issue reference: https://github.com/Azure/azure-sdk-for-go/issues/20293
+	// - Azure announcement: https://learn.microsoft.com/en-us/previous-versions/azure/germany/germany-welcome
 	var cred azcore.TokenCredential
 	var cloudConfiguration cloud.Configuration
 	switch environment {

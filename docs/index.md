@@ -73,7 +73,7 @@ connection "azure" {
   plugin = "azure"
 
   # The Azure cloud environment to use, defaults to AZUREPUBLICCLOUD
-  # Valid environments are AZUREPUBLICCLOUD, AZURECHINACLOUD, AZUREGERMANCLOUD, AZUREUSGOVERNMENTCLOUD
+  # Valid environments are AZUREPUBLICCLOUD, AZURECHINACLOUD, AZUREUSGOVERNMENTCLOUD
   # If using Azure CLI for authentication, make sure to also set the default environment: https://docs.microsoft.com/en-us/cli/azure/manage-clouds-azure-cli
   # environment = "AZUREPUBLICCLOUD"
 
@@ -312,7 +312,7 @@ connection "azure" {
 The Azure AD plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
 
 ```sh
-export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD", "AZUREGERMANCLOUD" and "AZUREUSGOVERNMENTCLOUD"
+export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD" and "AZUREUSGOVERNMENTCLOUD"
 export AZURE_TENANT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"

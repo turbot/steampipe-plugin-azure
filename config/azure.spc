@@ -2,7 +2,7 @@ connection "azure" {
   plugin = "azure"
 
   # The Azure cloud environment to use, defaults to AZUREPUBLICCLOUD
-  # Valid environments are AZUREPUBLICCLOUD, AZURECHINACLOUD, AZUREGERMANCLOUD, AZUREUSGOVERNMENTCLOUD
+  # Valid environments are AZUREPUBLICCLOUD, AZURECHINACLOUD, AZUREUSGOVERNMENTCLOUD
   # If using Azure CLI for authentication, make sure to also set the default environment: https://docs.microsoft.com/en-us/cli/azure/manage-clouds-azure-cli
   # environment = "AZUREPUBLICCLOUD"
 
