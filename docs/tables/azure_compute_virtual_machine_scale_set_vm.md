@@ -109,7 +109,7 @@ select
   nsg.name,
   jsonb_pretty(security_rules)
 from
-  azure.azure_compute_virtual_machine_scale_set_vm as vm,
+  azure_compute_virtual_machine_scale_set_vm as vm,
   jsonb_array_elements(vm.virtual_machine_network_profile) as vm_nic,
   azure_network_security_group as nsg,
   jsonb_array_elements(nsg.network_interfaces) as nsg_int
@@ -131,4 +131,23 @@ from
 where
   lower(json_extract(vm_nic.value, '$.id')) = lower(json_extract(nsg_int.value, '$.id'))
   and vm.name = 'warehouse-01';
+```
+
+### View power state of virtual machines
+Determine the power state of virtual machines in all scale sets.
+
+```sql+postgres
+select
+  vm.name,
+  vm.power_state
+from
+  azure_compute_virtual_machine_scale_set_vm as vm;
+```
+
+```sql+sqlite
+select
+  vm.name,
+  vm.power_state
+from
+  azure_compute_virtual_machine_scale_set_vm as vm;
 ```
