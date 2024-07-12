@@ -45,7 +45,7 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "power_state",
-				Description: "Specifies the power state of the vm.",
+				Description: "Specifies the power state of the VM.",
 				Type:        proto.ColumnType_STRING,
 				Hydrate:     getComputeVirtualMachineInstanceView,
 				Transform:   transform.FromField("Statuses").Transform(getPowerState),
