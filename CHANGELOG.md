@@ -1,3 +1,15 @@
+## v0.62.0 [2024-07-12]
+
+_Enhancements_
+
+- Added column `power_state` to the `azure_compute_virtual_machine_scale_set_vm` table. ([#800](https://github.com/turbot/steampipe-plugin-azure/pull/800)) (Thanks [@pdepdecatcat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `azure_log_alert` table to correctly return values for `scopes`, `actions`, `description`, `enabled` and `condition` columns instead of `null`. ([#796](https://github.com/turbot/steampipe-plugin-azure/pull/796))
+- Updated the documnet based on Azure SDK authentication for different environment. ([#798](https://github.com/turbot/steampipe-plugin-azure/pull/798))
+
+
 ## v0.61.0 [2024-07-04]
 
 _Enhancements_
