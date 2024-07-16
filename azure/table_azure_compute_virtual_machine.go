@@ -705,7 +705,7 @@ func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}
 	// returned by the API. To handle this scenario, we need to check if 'statuses' points
 	// to a nil value and return nil if it does.
 	if statuses == nil {
-		return nil, nil
+		return "", nil
 	}
 
 	return getStatusFromCode(statuses, "PowerState"), nil
