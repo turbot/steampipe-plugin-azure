@@ -325,7 +325,7 @@ func getOperator(operator string) (string, bool) {
 	case "=":
 		return "eq", true
 	case "<>":
-		return "neq", true
+		return "ne", true
 	default:
 		return "", false
 	}
