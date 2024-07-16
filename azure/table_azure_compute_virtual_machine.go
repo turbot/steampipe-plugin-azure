@@ -699,6 +699,10 @@ func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}
 	if !ok {
 		return nil, fmt.Errorf("Conversion failed for virtual machine statuses")
 	}
+	
+	if statuses == nil {
+		return nil, nil
+	}
 
 	return getStatusFromCode(statuses, "PowerState"), nil
 }
