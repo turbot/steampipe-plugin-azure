@@ -21,9 +21,7 @@ func tableAzureResourceResource(ctx context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getResource,
-			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"MissingSubscription", "404"}),
-			},
+			// No error is returned if the resource is not found
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResources,
