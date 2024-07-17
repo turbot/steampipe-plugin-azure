@@ -50,6 +50,12 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "created_at",
+				Description: "The timestamp of resource creation.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("SystemData.CreatedAt").Transform(transform.NullIfZeroValue).Transform(convertDateToTime),
+			},
+			{
 				Name:        "cluster_code_version",
 				Description: "The service fabric runtime version of the cluster. This property can only by set the user when **upgradeMode** is set to 'Manual'.",
 				Type:        proto.ColumnType_STRING,
@@ -186,6 +192,11 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 				Description: "The policy to use when upgrading the cluster.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ClusterProperties.UpgradeDescription"),
+			},
+			{
+				Name:        "system_data",
+				Description: "Metadata pertaining to creation and last modification of the resource.",
+				Type:        proto.ColumnType_JSON,
 			},
 
 			// Steampipe standard columns

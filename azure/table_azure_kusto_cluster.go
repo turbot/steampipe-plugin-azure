@@ -56,6 +56,12 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "created_at",
+				Description: "The timestamp of resource creation.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("SystemData.CreatedAt").Transform(transform.NullIfZeroValue).Transform(convertDateToTime),
+			},
+			{
 				Name:        "location",
 				Description: "Specifies the name of the region, the resource is created at.",
 				Type:        proto.ColumnType_STRING,
@@ -165,6 +171,11 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 				Description: "Virtual network definition of the resource.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ClusterProperties.VirtualNetworkConfiguration"),
+			},
+			{
+				Name:        "system_data",
+				Description: "Metadata pertaining to creation and last modification of the resource.",
+				Type:        proto.ColumnType_JSON,
 			},
 
 			// Steampipe standard columns
