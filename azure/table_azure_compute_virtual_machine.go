@@ -700,6 +700,14 @@ func getPowerState(ctx context.Context, d *transform.TransformData) (interface{}
 		return nil, fmt.Errorf("Conversion failed for virtual machine statuses")
 	}
 
+	// In some cases, we are encountering a situation where 'statuses' is a non-nil pointer
+	// that points to a nil value. This could happen due to incomplete or inconsistent data
+	// returned by the API. To handle this scenario, we need to check if 'statuses' points
+	// to a nil value and return nil if it does.
+	if statuses == nil {
+		return "", nil
+	}
+
 	return getStatusFromCode(statuses, "PowerState"), nil
 }
 
