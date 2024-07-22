@@ -7,7 +7,7 @@ _What's new?_
 
 _Bug fixes_
 
-- Fixed the invalid memory address or nil pointer dereference error for the `power_state` column of the `azure_compute_virtual_machine` table. ([#804](https://github.com/turbot/steampipe-plugin-azure/pull/804))
+- Fixed the `power_state` column of the `azure_compute_virtual_machine` table to correctly return data instead of a `nil pointer dereference` error. ([#804](https://github.com/turbot/steampipe-plugin-azure/pull/804))
 
 ## v0.62.0 [2024-07-12]
 
