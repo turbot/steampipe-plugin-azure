@@ -1,3 +1,14 @@
+## v0.63.0 [2024-07-22]
+
+_What's new?_
+
+- New tables added
+  - [azure_resource](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_resource) ([#803](https://github.com/turbot/steampipe-plugin-azure/pull/803))
+
+_Bug fixes_
+
+- Fixed the `power_state` column of the `azure_compute_virtual_machine` table to correctly return data instead of a `nil pointer dereference` error. ([#804](https://github.com/turbot/steampipe-plugin-azure/pull/804))
+
 ## v0.62.0 [2024-07-12]
 
 _Enhancements_
