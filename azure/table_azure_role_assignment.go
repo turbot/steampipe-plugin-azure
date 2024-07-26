@@ -121,7 +121,6 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "session_error", err)
 		return nil, err
 	}
-	// subscriptionID := session.SubscriptionID
 
 	authorizationClient, err := armauthorization.NewRoleAssignmentsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
@@ -130,9 +129,8 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	defaultFilter := "atScope()" // filter all result
-
+	// Tenant ID is not a required parameter to make the API call.
 	option := &armauthorization.RoleAssignmentsClientListForScopeOptions{
-		TenantID: &session.TenantID,
 		Filter:   &defaultFilter,
 	}
 
