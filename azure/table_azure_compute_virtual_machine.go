@@ -632,8 +632,6 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 		environment = *azureConfig.Environment
 	}
 
-	clientOptions := arm.ClientOptions{}
-
 	// In the Azure Government environment, using the latest API version resulting the following error:
 	// "No registered resource provider found for location 'usgovarizona' and API version '2022-01-25' for type 'guestConfigurationAssignments'.
 	// The supported API versions are '2018-01-20-preview, 2018-06-30-preview, 2018-11-20, 2020-06-25'. The supported locations are ''."
@@ -645,6 +643,8 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 	//
 	// For more information and related discussions, refer to the issue: https://github.com/Azure/azure-sdk-for-go/issues/15702
 
+	clientOptions := arm.ClientOptions{}
+	
 	if environment == "AZUREUSGOVERNMENTCLOUD" {
 		clientOptions.APIVersion = "2020-06-25"
 		clientOptions.Cloud = cloud.AzureGovernment
@@ -658,7 +658,7 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 	clientFactory, err := armguestconfiguration.NewAssignmentsClient(session.SubscriptionID, session.Cred, &clientOptions)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_compute_virtual_machine.listComputeVirtualMachineGuestConfigurationAssignments", "client_error", err)
-		return nil, nil
+		return nil, err
 	}
 
 	pager := clientFactory.NewListPager(resourceGroupName, *virtualMachine.Name, nil)
@@ -671,6 +671,7 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 				return nil, nil
 			}
 			plugin.Logger(ctx).Error("azure_compute_virtual_machine.listComputeVirtualMachineGuestConfigurationAssignments", "api_error", err)
+			return nil, err
 		}
 
 		for _, v := range page.Value {
