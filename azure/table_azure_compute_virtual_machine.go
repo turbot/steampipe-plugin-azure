@@ -644,15 +644,15 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 	// For more information and related discussions, refer to the issue: https://github.com/Azure/azure-sdk-for-go/issues/15702
 
 	clientOptions := arm.ClientOptions{}
-	
-	if environment == "AZUREUSGOVERNMENTCLOUD" {
-		clientOptions.APIVersion = "2020-06-25"
-		clientOptions.Cloud = cloud.AzureGovernment
-	}
 
-	if environment == "AZURECHINACLOUD" {
+	if environment == "AZUREUSGOVERNMENTCLOUD" || environment == "AZURECHINACLOUD" {
 		clientOptions.APIVersion = "2020-06-25"
-		clientOptions.Cloud = cloud.AzureChina
+		switch environment {
+		case "AZUREUSGOVERNMENTCLOUD":
+			clientOptions.Cloud = cloud.AzureGovernment
+		case "AZURECHINACLOUD":
+			clientOptions.Cloud = cloud.AzureChina
+		}
 	}
 
 	clientFactory, err := armguestconfiguration.NewAssignmentsClient(session.SubscriptionID, session.Cred, &clientOptions)
