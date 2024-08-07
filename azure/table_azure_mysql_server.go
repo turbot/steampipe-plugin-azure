@@ -92,6 +92,13 @@ func tableAzureMySQLServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ServerProperties.EarliestRestoreDate").Transform(convertDateToTime),
 			},
 			{
+				Name:        "firewall_rules",
+				Description: "The firewall rules of the server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listMySQLServersFirewallRules,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "fully_qualified_domain_name",
 				Description: "The fully qualified domain name of the server.",
 				Type:        proto.ColumnType_STRING,
@@ -437,6 +444,37 @@ func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h 
 	return mySQLServersConfigurations, nil
 }
 
+func listMySQLServersFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listMySQLServersFirewallRules")
+
+	server := h.Item.(mysql.Server)
+	resourceGroup := strings.Split(string(*server.ID), "/")[4]
+	serverName := *server.Name
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := mysql.NewFirewallRulesClient(subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	op, err := client.ListByServer(ctx, resourceGroup, serverName)
+	if err != nil {
+		plugin.Logger(ctx).Error("listMySQLServersFirewallRules", "list", err)
+		return nil, err
+	}
+
+	var mySQLServersFirewallRules []map[string]interface{}
+
+	for _, i := range *op.Value {
+		mySQLServersFirewallRules = append(mySQLServersFirewallRules, extractMySQLServersFirewallRules(i))
+	}
+
+	return mySQLServersFirewallRules, nil
+}
+
 func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("getMySQLServerSecurityAlertPolicy")
 
@@ -548,4 +586,24 @@ func extractMySQLServersconfiguration(i mysql.Configuration) map[string]interfac
 	}
 
 	return mySQLServersconfiguration
+}
+
+// If we return the API response directly, the output will not provide the properties of FirewallRules
+func extractMySQLServersFirewallRules(i mysql.FirewallRule) map[string]interface{} {
+	mySQLServersFirewallRules := make(map[string]interface{})
+
+	if i.ID != nil {
+		mySQLServersFirewallRules["ID"] = *i.ID
+	}
+	if i.Name != nil {
+		mySQLServersFirewallRules["Name"] = *i.Name
+	}
+	if i.Type != nil {
+		mySQLServersFirewallRules["Type"] = *i.Type
+	}
+	if i.FirewallRuleProperties != nil {
+		mySQLServersFirewallRules["FirewallRuleProperties"] = *i.FirewallRuleProperties
+	}
+
+	return mySQLServersFirewallRules
 }
