@@ -1,10 +1,14 @@
 ## v0.64.0 [2023-08-07]
 
+_Enhancements_
+
+- Added `Reader` and `Data Access` role assignment info to index.md file. ([#811](https://github.com/turbot/steampipe-plugin-azure/pull/811))
+
 _Bug fixes_
 
+- Fixed the `azure_compute_virtual_machine` table to correctly populate `guest_configuration_assignments` column across all `Azure` environments. ([#816](https://github.com/turbot/steampipe-plugin-azure/pull/816))
 - Fixed the `azure_role_assignment` table to return the result with any of the connection type. ([#809](https://github.com/turbot/steampipe-plugin-azure/pull/809))
 - Fixed the paging issue the `azure_monitor_activity_log_event` table using `Azure Resource Manager` stable `Go` package to populate column values. ([#810](https://github.com/turbot/steampipe-plugin-azure/pull/810))
-- Added `Reader` and `Data Access` role assignment info to index.md file. ([#811](https://github.com/turbot/steampipe-plugin-azure/pull/811))
 
 ## v0.63.0 [2024-07-22]
 
@@ -19,7 +23,7 @@ _Bug fixes_
 
 ## v0.62.0 [2024-07-12]
 
-_Enhancements_
+
 
 - Added column `power_state` to the `azure_compute_virtual_machine_scale_set_vm` table. ([#800](https://github.com/turbot/steampipe-plugin-azure/pull/800)) (Thanks [@pdepdecatcat](https://github.com/pdecat) for the contribution!)
 
