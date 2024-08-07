@@ -1,3 +1,11 @@
+## v0.64.0 [2023-08-07]
+
+_Bug fixes_
+
+- Fixed the `azure_role_assignment` table to return the result with any of the connection type. ([#809](https://github.com/turbot/steampipe-plugin-azure/pull/809))
+- Fixed the paging issue the `azure_monitor_activity_log_event` table using `Azure Resource Manager` stable `Go` package to populate column values. ([#810](https://github.com/turbot/steampipe-plugin-azure/pull/810))
+- Added `Reader` and `Data Access` role assignment info to index.md file. ([#811](https://github.com/turbot/steampipe-plugin-azure/pull/811))
+
 ## v0.63.0 [2024-07-22]
 
 _What's new?_
