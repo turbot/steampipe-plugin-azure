@@ -3,11 +3,15 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
+	"reflect"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/guestconfiguration/mgmt/guestconfiguration"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/guestconfiguration/armguestconfiguration"
 
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -616,72 +620,63 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 	virtualMachine := h.Item.(compute.VirtualMachine)
 	resourceGroupName := strings.Split(string(*virtualMachine.ID), "/")[4]
 
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	subscriptionID := session.SubscriptionID
-	client := guestconfiguration.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	// SDK does not support pagination yet
-	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name)
-	if err != nil {
-		// API throws 404 error if vm does not have any guest configuration assignments
-		if strings.Contains(err.Error(), "404") {
-			return nil, nil
+	environment := os.Getenv("AZURE_ENVIRONMENT")
+	azureConfig := GetConfig(d.Connection)
+
+	if azureConfig.Environment != nil {
+		environment = *azureConfig.Environment
+	}
+
+	// In the Azure Government environment, using the latest API version resulting the following error:
+	// "No registered resource provider found for location 'usgovarizona' and API version '2022-01-25' for type 'guestConfigurationAssignments'.
+	// The supported API versions are '2018-01-20-preview, 2018-06-30-preview, 2018-11-20, 2020-06-25'. The supported locations are ''."
+	//
+	// Additionally, the Go SDK package "github.com/Azure/azure-sdk-for-go/services/guestconfiguration/mgmt/2021-01-25/guestconfiguration" has been deprecated.
+	//
+	// To ensure compatibility across different Azure environments, including Azure Government, it is recommended to use the Azure ARM package with a specified API version.
+	// This approach allows for better control over the API versions and helps avoid issues related to deprecated SDK packages.
+	//
+	// For more information and related discussions, refer to the issue: https://github.com/Azure/azure-sdk-for-go/issues/15702
+
+	clientOptions := arm.ClientOptions{}
+
+	if environment == "AZUREUSGOVERNMENTCLOUD" || environment == "AZURECHINACLOUD" {
+		clientOptions.APIVersion = "2020-06-25"
+		switch environment {
+		case "AZUREUSGOVERNMENTCLOUD":
+			clientOptions.Cloud = cloud.AzureGovernment
+		case "AZURECHINACLOUD":
+			clientOptions.Cloud = cloud.AzureChina
 		}
-		plugin.Logger(ctx).Error("listComputeVirtualMachineGuestConfigurationAssignments", "get", err)
+	}
+
+	clientFactory, err := armguestconfiguration.NewAssignmentsClient(session.SubscriptionID, session.Cred, &clientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_compute_virtual_machine.listComputeVirtualMachineGuestConfigurationAssignments", "client_error", err)
 		return nil, err
 	}
 
+	pager := clientFactory.NewListPager(resourceGroupName, *virtualMachine.Name, nil)
 	var assignments []map[string]interface{}
+	if pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			// API throws 404 error if vm does not have any guest configuration assignments
+			if strings.Contains(err.Error(), "404") {
+				return nil, nil
+			}
+			plugin.Logger(ctx).Error("azure_compute_virtual_machine.listComputeVirtualMachineGuestConfigurationAssignments", "api_error", err)
+			return nil, err
+		}
 
-	// If we return the API response directly, the output will not provide all the data for Guest Configuration Assignment
-	for _, configAssignment := range *op.Value {
-		objectMap := make(map[string]interface{})
-		if configAssignment.ID != nil {
-			objectMap["id"] = configAssignment.ID
+		for _, v := range page.Value {
+			assignments = append(assignments, structToMap(reflect.ValueOf(*v)))
 		}
-		if configAssignment.Name != nil {
-			objectMap["name"] = configAssignment.Name
-		}
-		if configAssignment.Location != nil {
-			objectMap["location"] = configAssignment.Location
-		}
-		if configAssignment.Type != nil {
-			objectMap["type"] = configAssignment.Type
-		}
-		if configAssignment.Properties != nil {
-			if configAssignment.Properties.TargetResourceID != nil {
-				objectMap["targetResourceID"] = configAssignment.Properties.TargetResourceID
-			}
-			if configAssignment.Properties.TargetResourceID != nil {
-				objectMap["lastComplianceStatusChecked"] = configAssignment.Properties.LastComplianceStatusChecked
-			}
-			if configAssignment.Properties.ComplianceStatus != "" {
-				objectMap["complianceStatus"] = configAssignment.Properties.ComplianceStatus
-			}
-			if configAssignment.Properties.LatestReportID != nil {
-				objectMap["latestReportID"] = configAssignment.Properties.LatestReportID
-			}
-			if configAssignment.Properties.Context != nil {
-				objectMap["context"] = configAssignment.Properties.Context
-			}
-			if configAssignment.Properties.AssignmentHash != nil {
-				objectMap["assignmentHash"] = configAssignment.Properties.AssignmentHash
-			}
-			if configAssignment.Properties.ProvisioningState != "" {
-				objectMap["provisioningState"] = configAssignment.Properties.ProvisioningState
-			}
-			if configAssignment.Properties.GuestConfiguration != nil {
-				objectMap["guestConfiguration"] = configAssignment.Properties.GuestConfiguration
-			}
-			if configAssignment.Properties.LatestAssignmentReport != nil {
-				objectMap["latestAssignmentReport"] = configAssignment.Properties.LatestAssignmentReport
-			}
-		}
-		assignments = append(assignments, objectMap)
 	}
 
 	return assignments, nil
