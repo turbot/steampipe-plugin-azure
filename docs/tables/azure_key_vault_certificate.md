@@ -1,11 +1,11 @@
 ---
 title: "Steampipe Table: azure_key_vault_certificate - Query Azure Key Vault Certificates using SQL"
-description: "Allows users to query Azure Key Vault Certificates, providing access to certificate details, including key id, key properties, and secret properties."
+description: "Allows users to query Azure Key Vault Certificates, providing access to certificate details, including key ID, key properties, and secret properties."
 ---
 
 # Table: azure_key_vault_certificate - Query Azure Key Vault Certificates using SQL
 
-Azure Key Vault is a cloud service that provides a secure store for secrets, keys, and certificates. Key Vault certificates are managed digital certificates that aid in secure communication and identity verification, essential in various IT and cloud scenarios.
+Azure Key Vault is a cloud service that provides a secure store for secrets, keys, and certificates. Key Vault certificates are managed digital certificates that aid in secure communication and identity verification, which are essential in various IT and cloud scenarios.
 
 ## Table Usage Guide
 
