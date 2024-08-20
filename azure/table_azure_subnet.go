@@ -313,19 +313,20 @@ func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, 
 	}
 
 	configurationId := *ipConfig.ID
-	plugin.Logger(ctx).Error("Resource ID:", configurationId)
 
+	// API version is required to make the API call.
+	// https://learn.microsoft.com/en-us/rest/api/resources/resources/get-by-id?view=rest-resources-2021-04-01#code-try-0
 	apiVersion := "2021-04-01"
 
 	configuration, err := client.GetByID(ctx, configurationId, apiVersion)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_resource.getResource", "api_error", err)
+		plugin.Logger(ctx).Error("azure_subnet.getIpConfiguration", "api_error", err)
 		return nil, err
 	}
 
 	resourceData := make(map[string]interface{})
 
-	// Extract the properties unless we are not getting the top label properties
+	// Extract the properties unless the top-level properties are not being retrieved.
 	if configuration.ID != nil {
 		resourceData["id"] = *configuration.ID
 	}
