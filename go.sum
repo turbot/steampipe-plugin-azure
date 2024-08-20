@@ -213,6 +213,8 @@ github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/managedservices/armmanaged
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/managedservices/armmanagedservices v0.7.0/go.mod h1:UmV8UnyCQ+05EvopWqF6CQsFWI5FWcp/AXGVkJguv9E=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor v0.11.0 h1:Ds0KRF8ggpEGg4Vo42oX1cIt/IfOhHWJBikksZbVxeg=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor v0.11.0/go.mod h1:jj6P8ybImR+5topJ+eH6fgcemSFBmU6/6bFF8KkwuDI=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v2 v2.1.1 h1:iu8l6XmviyuNbBQ/WO5shgLBU2+g18Cdw1iE1Xk2+ig=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v2 v2.1.1/go.mod h1:8Anbzn23yMdpl2DDY4qnFEPY9Vf6CoLphIt4mX59McI=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3 v3.0.0 h1:BIvscO5ZFKaEHoix9jAV6vbatKLiDNb5pj8XjzQR2g4=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3 v3.0.0/go.mod h1:4uHLkZ3JvDvacFcEyB0T/cCeVqlvtHHA7DjvpgvlpdA=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.1.1 h1:7CBQ+Ei8SP2c6ydQTGCCrS35bDxgTMfoP2miAwK++OU=
