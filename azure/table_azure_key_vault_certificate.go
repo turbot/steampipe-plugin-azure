@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	keyVaultp1 "github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/2016-10-01/keyvault"
-	keyVaultp1 "github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2019-09-01/keyvault"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -199,7 +199,7 @@ func listKeyVaultCertificates(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	vaultName := d.EqualsQualString("vault_name")
 
-	if vaultName != "" && vaultName != *vault.Name{
+	if vaultName != "" && vaultName != *vault.Name {
 		return nil, nil
 	}
 
@@ -218,6 +218,15 @@ func listKeyVaultCertificates(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	result, err := client.GetCertificates(ctx, vaultURI, &maxresult)
 	if err != nil {
+		// The connection/table-level ignore config does not work for parent hydrate cases.
+		// We need to handle it here. There is an open issue on the Steampipe SDK side.
+		// Reference: https://github.com/turbot/steampipe-plugin-sdk/issues/544
+		azureConfig := GetConfig(d.Connection)
+		for _, pattern := range azureConfig.IgnoreErrorCodes {
+			if strings.Contains(err.Error(), pattern) {
+				return nil, nil
+			}
+		}
 		plugin.Logger(ctx).Error("azure_key_vault_certificate.listKeyVaultCertificates", "api_error", err)
 		return nil, err
 	}

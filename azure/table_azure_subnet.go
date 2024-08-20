@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -256,11 +257,11 @@ func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	subscriptionID := session.SubscriptionID
-	subnetClient := network.NewInterfaceIPConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	subnetClient := resources.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subnetClient.Authorizer = session.Authorizer
 
 	var wg sync.WaitGroup
-	ipCh := make(chan *network.InterfaceIPConfiguration, len(configurations))
+	ipCh := make(chan *map[string]interface{}, len(configurations))
 	errorCh := make(chan error, len(configurations))
 
 	for i := 0; i < len(configurations); i++ {
@@ -270,16 +271,23 @@ func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plug
 
 	// wait for all ip configurations to be processed
 	wg.Wait()
-	// NOTE: close channel before ranging over results
+
+	// Close channels after all goroutines have finished
 	close(ipCh)
 	close(errorCh)
 
+	// Collect any errors from errorCh
+	var collectedErrors []error
 	for err := range errorCh {
-		// return the first error
-		return nil, err
+		collectedErrors = append(collectedErrors, err)
 	}
 
-	var ipConfigurations []*network.InterfaceIPConfiguration
+	if len(collectedErrors) > 0 {
+		// Return the first error encountered (or handle errors as needed)
+		return nil, collectedErrors[0]
+	}
+
+	var ipConfigurations []*map[string]interface{}
 
 	for ipConfig := range ipCh {
 		ipConfigurations = append(ipConfigurations, ipConfig)
@@ -288,7 +296,7 @@ func getSubnetIpConfigurations(ctx context.Context, d *plugin.QueryData, h *plug
 	return ipConfigurations, nil
 }
 
-func getIpConfigurationAsync(ctx context.Context, ipConfig *network.IPConfiguration, client network.InterfaceIPConfigurationsClient, wg *sync.WaitGroup, ipCh chan *network.InterfaceIPConfiguration, errorCh chan error) {
+func getIpConfigurationAsync(ctx context.Context, ipConfig *network.IPConfiguration, client resources.Client, wg *sync.WaitGroup, ipCh chan *map[string]interface{}, errorCh chan error) {
 	defer wg.Done()
 
 	rowData, err := getIpConfiguration(ctx, ipConfig, client)
@@ -299,23 +307,62 @@ func getIpConfigurationAsync(ctx context.Context, ipConfig *network.IPConfigurat
 	}
 }
 
-func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, client network.InterfaceIPConfigurationsClient) (*network.InterfaceIPConfiguration, error) {
+func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, client resources.Client) (*map[string]interface{}, error) {
 	if ipConfig == nil {
 		return nil, nil
 	}
 
 	configurationId := *ipConfig.ID
-	resourceGroup := strings.Split(configurationId, "/")[4]
-	networkInterface := strings.Split(configurationId, "/")[8]
-	configName := strings.Split(configurationId, "/")[len(strings.Split(configurationId, "/"))-1]
 
-	configuration, err := client.Get(ctx, resourceGroup, networkInterface, configName)
+	// API version is required to make the API call.
+	// https://learn.microsoft.com/en-us/rest/api/resources/resources/get-by-id?view=rest-resources-2021-04-01#code-try-0
+	apiVersion := "2021-04-01"
+
+	configuration, err := client.GetByID(ctx, configurationId, apiVersion)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return nil, nil
-		}
+		plugin.Logger(ctx).Error("azure_subnet.getIpConfiguration", "api_error", err)
 		return nil, err
 	}
 
-	return &configuration, nil
+	resourceData := make(map[string]interface{})
+
+	// Extract the properties unless the top-level properties are not being retrieved.
+	if configuration.ID != nil {
+		resourceData["id"] = *configuration.ID
+	}
+	if configuration.Plan != nil {
+		resourceData["plan"] = *configuration.Plan
+	}
+	if configuration.Properties != nil {
+		resourceData["properties"] = configuration.Properties
+	}
+	if configuration.Kind != nil {
+		resourceData["kind"] = *configuration.Kind
+	}
+	if configuration.ManagedBy != nil {
+		resourceData["managedBy"] = *configuration.ManagedBy
+	}
+	if configuration.Sku != nil {
+		resourceData["sku"] = *configuration.Sku
+	}
+	if configuration.Identity != nil {
+		resourceData["identity"] = *configuration.Identity
+	}
+	if configuration.Name != nil {
+		resourceData["name"] = *configuration.Name
+	}
+	if configuration.Type != nil {
+		resourceData["type"] = *configuration.Type
+	}
+	if configuration.Location != nil {
+		resourceData["location"] = *configuration.Location
+	}
+	if configuration.ExtendedLocation != nil {
+		resourceData["extendedLocation"] = *configuration.ExtendedLocation
+	}
+	if configuration.Tags != nil {
+		resourceData["tags"] = configuration.Tags
+	}
+
+	return &resourceData, nil
 }
