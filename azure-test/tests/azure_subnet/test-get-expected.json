@@ -7,7 +7,8 @@
         "name": "delegation",
         "properties": {
           "serviceName": "Microsoft.ContainerInstance/containerGroups"
-        }
+        },
+        "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
       }
     ],
     "id": "{{ output.resource_id.value }}",
