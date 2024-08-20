@@ -327,40 +327,40 @@ func getIpConfiguration(ctx context.Context, ipConfig *network.IPConfiguration, 
 
 	// Extract the properties unless we are not getting the top label properties
 	if configuration.ID != nil {
-		resourceData["ID"] = *configuration.ID
+		resourceData["id"] = *configuration.ID
 	}
 	if configuration.Plan != nil {
-		resourceData["Plan"] = *configuration.Plan
+		resourceData["plan"] = *configuration.Plan
 	}
 	if configuration.Properties != nil {
-		resourceData["Properties"] = configuration.Properties
+		resourceData["properties"] = configuration.Properties
 	}
 	if configuration.Kind != nil {
-		resourceData["Kind"] = *configuration.Kind
+		resourceData["kind"] = *configuration.Kind
 	}
 	if configuration.ManagedBy != nil {
-		resourceData["ManagedBy"] = *configuration.ManagedBy
+		resourceData["managedBy"] = *configuration.ManagedBy
 	}
 	if configuration.Sku != nil {
-		resourceData["Sku"] = *configuration.Sku
+		resourceData["sku"] = *configuration.Sku
 	}
 	if configuration.Identity != nil {
-		resourceData["Identity"] = *configuration.Identity
+		resourceData["identity"] = *configuration.Identity
 	}
 	if configuration.Name != nil {
-		resourceData["Name"] = *configuration.Name
+		resourceData["name"] = *configuration.Name
 	}
 	if configuration.Type != nil {
-		resourceData["Type"] = *configuration.Type
+		resourceData["type"] = *configuration.Type
 	}
 	if configuration.Location != nil {
-		resourceData["Location"] = *configuration.Location
+		resourceData["location"] = *configuration.Location
 	}
 	if configuration.ExtendedLocation != nil {
-		resourceData["ExtendedLocation"] = *configuration.ExtendedLocation
+		resourceData["extendedLocation"] = *configuration.ExtendedLocation
 	}
 	if configuration.Tags != nil {
-		resourceData["Tags"] = configuration.Tags
+		resourceData["tags"] = configuration.Tags
 	}
 
 	return &resourceData, nil
