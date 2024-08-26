@@ -126,6 +126,12 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineScaleSetProperties.ScaleInPolicy"),
 			},
 			{
+				Name:        "orchestration_mode",
+				Description: "The orchestration mode of the Virtual Machine Scale Set.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromGo(),
+			},
+			{
 				Name:        "tags_src",
 				Description: "Resource tags.",
 				Type:        proto.ColumnType_JSON,

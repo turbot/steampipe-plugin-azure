@@ -328,13 +328,24 @@ func getAzureComputeVirtualMachineScaleSetVmInstanceView(ctx context.Context, d 
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
-	if err != nil {
-		return nil, err
+	if h.ParentItem.(compute.VirtualMachineScaleSet).OrchestrationMode == compute.Flexible {
+		client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+		client.Authorizer = session.Authorizer
+
+		op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
+		if err != nil {
+			return nil, err
+		}
+		return op, nil
+	} else {
+		client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+		client.Authorizer = session.Authorizer
+
+		op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
+		if err != nil {
+			return nil, err
+		}
+		return op, nil
 	}
-
-	return op, nil
 }
