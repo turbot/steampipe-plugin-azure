@@ -345,6 +345,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
 			},
 			{
+				Name:        "time_created",
+				Description: "Specifies the time at which the Virtual Machine resource was created.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("VirtualMachineProperties.TimeCreated").Transform(convertDateToTime),
+			},
+			{
 				Name:        "win_rm",
 				Description: "Specifies the windows remote management listeners. This enables remote windows powershell.",
 				Type:        proto.ColumnType_JSON,
