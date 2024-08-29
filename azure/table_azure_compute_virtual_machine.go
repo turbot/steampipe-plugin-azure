@@ -72,6 +72,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualMachineProperties.ProvisioningState"),
 			},
 			{
+				Name:        "time_created",
+				Description: "Specifies the time at which the virtual machine resource was created.",
+				Type:        proto.ColumnType_TIMESTAMP,
+				Transform:   transform.FromField("VirtualMachineProperties.TimeCreated").Transform(convertDateToTime),
+			},
+			{
 				Name:        "vm_id",
 				Description: "Specifies an unique ID for VM, which is a 128-bits identifier that is encoded and stored in all Azure IaaS VMs SMBIOS and can be read using platform BIOS commands.",
 				Type:        proto.ColumnType_STRING,
@@ -343,12 +349,6 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Description: "Specifies the security related profile settings for the virtual machine.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("VirtualMachineProperties.SecurityProfile"),
-			},
-			{
-				Name:        "time_created",
-				Description: "Specifies the time at which the Virtual Machine resource was created.",
-				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("VirtualMachineProperties.TimeCreated").Transform(convertDateToTime),
 			},
 			{
 				Name:        "win_rm",
