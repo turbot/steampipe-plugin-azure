@@ -105,6 +105,12 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPAddress"),
 			},
 			{
+				Name:        "delete_option",
+				Description: "Specify what happens to the public IP address when the VM using it is deleted. Possible values include: 'Delete', 'Detach'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.DeleteOption"),
+			},
+			{
 				Name:        "ip_configuration_id",
 				Description: "Contains the IP configuration ID",
 				Type:        proto.ColumnType_STRING,
@@ -145,6 +151,30 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Description: "A list of tags associated with the public IP address",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPTags"),
+			},
+			{
+				Name:        "nat_gateway",
+				Description: "The NatGateway for the Public IP address.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.NatGateway"),
+			},
+			{
+				Name:        "service_public_ip_address",
+				Description: "The service public IP address of the public IP address resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.ServicePublicIPAddress"),
+			},
+			{
+				Name:        "ip_configuration",
+				Description: "The IP configuration associated with the public IP address.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPConfiguration"),
+			},
+			{
+				Name:        "linked_public_ip_address",
+				Description: "The linked public IP address of the public IP address resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.LinkedPublicIPAddress"),
 			},
 			{
 				Name:        "zones",
