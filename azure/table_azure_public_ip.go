@@ -105,12 +105,6 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPAddress"),
 			},
 			{
-				Name:        "delete_option",
-				Description: "Specify what happens to the public IP address when the VM using it is deleted. Possible values include: 'Delete', 'Detach'.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.DeleteOption"),
-			},
-			{
 				Name:        "ip_configuration_id",
 				Description: "Contains the IP configuration ID",
 				Type:        proto.ColumnType_STRING,
