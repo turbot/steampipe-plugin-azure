@@ -242,7 +242,7 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(extractGatewayURLPathMaps),
 			},
-			// This column value will be populated once the background configuration for the Application Gateway is complete. And if the tier 'WAF V2' is selected under the Settings > Configuration.
+			// This column value will be populated once the background configuration for the Application Gateway is complete, and if the tier 'WAF V2' is selected under the "Settings > Configuration"
 			{
 				Name:        "web_application_firewall_configuration",
 				Description: "Web application firewall configuration of the application gateway.",
