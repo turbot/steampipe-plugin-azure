@@ -659,8 +659,8 @@ github.com/tombuildsstuff/giovanni v0.15.1 h1:CVRaLOJ7C/eercCrKIsarfJ4SZoGMdBL9Q
 github.com/tombuildsstuff/giovanni v0.15.1/go.mod h1:0TZugJPEtqzPlMpuJHYfXY6Dq2uLPrXf98D2XQSxNbA=
 github.com/turbot/go-kit v0.10.0-rc.0 h1:kd+jp2ibbIV33Hc8SsMAN410Dl9Pz6SJ40axbKUlSoA=
 github.com/turbot/go-kit v0.10.0-rc.0/go.mod h1:fFQqR59I5z5JeeBLfK1PjSifn4Oprs3NiQx0CxeSJxs=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.10.3 h1:3OCvnD0/u2RzNOgd0aBiWJrp/uk5Qjv6ZUt2gF2Xi9g=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.10.3/go.mod h1:zmq31p/5iizn78nJ3k7np4owfuZL+EsZlb7gGMZl6cY=
+github.com/turbot/steampipe-plugin-sdk/v5 v5.10.4 h1:h2Ye0ksL6KN6w2wh1O3mgKthLnyl4QPsTpUj47bRbvc=
+github.com/turbot/steampipe-plugin-sdk/v5 v5.10.4/go.mod h1:FzW+0aq4x1PoCkklCRx43dMrhxk7SYeWVHUb3pNFtFc=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
 github.com/ulikunitz/xz v0.5.10/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
