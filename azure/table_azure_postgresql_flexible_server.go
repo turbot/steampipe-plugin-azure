@@ -66,12 +66,6 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.AdministratorLogin"),
 			},
 			{
-				Name:        "administrator_login_password",
-				Description: "The administrator login password (required for server creation).",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.AdministratorLoginPassword"),
-			},
-			{
 				Name:        "create_mode",
 				Description: "The mode to create a new PostgreSQL server.",
 				Type:        proto.ColumnType_STRING,
