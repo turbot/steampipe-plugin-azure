@@ -42,7 +42,7 @@ resource "azurerm_public_ip" "named_test_resource" {
   resource_group_name = azurerm_resource_group.named_test_resource.name
   location            = azurerm_resource_group.named_test_resource.location
   allocation_method   = "Static"
-
+  sku = "Basic"
   tags = {
     name = var.resource_name
   }

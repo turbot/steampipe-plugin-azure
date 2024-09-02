@@ -1,0 +1,9 @@
+[
+	{
+		"administrator_login": "psqladmin",
+		"name": "{{ resourceName }}",
+		"resource_group": "{{ resourceName }}",
+		"subscription_id": "{{ output.subscription_id.value }}",
+		"version": "12"
+	}
+]

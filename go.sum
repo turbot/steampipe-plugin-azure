@@ -215,6 +215,8 @@ github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor v0.11.0
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor v0.11.0/go.mod h1:jj6P8ybImR+5topJ+eH6fgcemSFBmU6/6bFF8KkwuDI=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mysql/armmysqlflexibleservers/v2 v2.0.0-beta.3 h1:PdvH6bGLHoh8smgaGG3qofAPBhn7bHUvEPwzZiniVHA=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mysql/armmysqlflexibleservers/v2 v2.0.0-beta.3/go.mod h1:EymOCZU0rKh8KRBBGq8faDwKXWCS21vBWweA4iPSoec=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v2 v2.1.1 h1:iu8l6XmviyuNbBQ/WO5shgLBU2+g18Cdw1iE1Xk2+ig=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v2 v2.1.1/go.mod h1:8Anbzn23yMdpl2DDY4qnFEPY9Vf6CoLphIt4mX59McI=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3 v3.0.0 h1:BIvscO5ZFKaEHoix9jAV6vbatKLiDNb5pj8XjzQR2g4=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3 v3.0.0/go.mod h1:4uHLkZ3JvDvacFcEyB0T/cCeVqlvtHHA7DjvpgvlpdA=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.1.1 h1:7CBQ+Ei8SP2c6ydQTGCCrS35bDxgTMfoP2miAwK++OU=
@@ -657,8 +659,8 @@ github.com/tombuildsstuff/giovanni v0.15.1 h1:CVRaLOJ7C/eercCrKIsarfJ4SZoGMdBL9Q
 github.com/tombuildsstuff/giovanni v0.15.1/go.mod h1:0TZugJPEtqzPlMpuJHYfXY6Dq2uLPrXf98D2XQSxNbA=
 github.com/turbot/go-kit v0.10.0-rc.0 h1:kd+jp2ibbIV33Hc8SsMAN410Dl9Pz6SJ40axbKUlSoA=
 github.com/turbot/go-kit v0.10.0-rc.0/go.mod h1:fFQqR59I5z5JeeBLfK1PjSifn4Oprs3NiQx0CxeSJxs=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.10.1 h1:yqiWeswy7geNzRIUJGuA7KQRq6gY5gUOc6ozBgbpNzI=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.10.1/go.mod h1:Ji3NU2vyZChu4aodAuSpeAS/JkApFGvsPePjOn8h9as=
+github.com/turbot/steampipe-plugin-sdk/v5 v5.10.3 h1:3OCvnD0/u2RzNOgd0aBiWJrp/uk5Qjv6ZUt2gF2Xi9g=
+github.com/turbot/steampipe-plugin-sdk/v5 v5.10.3/go.mod h1:zmq31p/5iizn78nJ3k7np4owfuZL+EsZlb7gGMZl6cY=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
 github.com/ulikunitz/xz v0.5.10/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
