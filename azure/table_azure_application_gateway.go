@@ -2,8 +2,6 @@ package azure
 
 import (
 	"context"
-	"reflect"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
@@ -130,6 +128,7 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Hydrate:     listApplicationGatewayDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
+			// This column value will be populated if the firewall policy is associated and the firewall configuration is not disabled for the Application Gateway.
 			{
 				Name:        "firewall_policy",
 				Description: "Reference to the FirewallPolicy resource.",
@@ -243,16 +242,12 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.From(extractGatewayURLPathMaps),
 			},
-			// The list/get API response contains a property called WebApplicationFirewallConfiguration.
-			// However, in all cases, we are receiving a null value for this property.
-			// The CLI command exhibits the same behavior as the API.
-			// Therefore, we have added a hydrate function to retrieve these details.
+			// This column value will be populated once the background configuration for the Application Gateway is complete, and if the tier 'WAF V2' is selected under the "Settings > Configuration"
 			{
 				Name:        "web_application_firewall_configuration",
 				Description: "Web application firewall configuration of the application gateway.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     getWebApplicationFirewallConfiguration,
-				Transform:   transform.FromValue(),
+				Transform:   transform.FromField("ApplicationGatewayPropertiesFormat.WebApplicationFirewallConfiguration"),
 			},
 			{
 				Name:        "zones",
@@ -410,36 +405,6 @@ func listApplicationGatewayDiagnosticSettings(ctx context.Context, d *plugin.Que
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
-}
-
-func getWebApplicationFirewallConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	firewallPolicy := h.Item.(network.ApplicationGateway).FirewallPolicy
-
-	// Check for any WAF policy association
-	if firewallPolicy == nil {
-		return nil, nil
-	}
-	policyId := firewallPolicy.ID
-	resourceGroup := strings.Split(*policyId, "/")[4]
-	policyname := strings.Split(*policyId, "/")[len(strings.Split(*policyId, "/"))-1]
-
-	// Create session
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
-	client := network.NewWebApplicationFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	op, err := client.Get(ctx, resourceGroup, policyname)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_application_gateway.getWebApplicationFirewallConfiguration", "api_error", err)
-		return nil, err
-	}
-
-	return structToMap(reflect.ValueOf(*op.WebApplicationFirewallPolicyPropertiesFormat)), nil
 }
 
 //// TRANSFORM FUNCTIONS
