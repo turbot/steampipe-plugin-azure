@@ -153,7 +153,7 @@ where
   json_extract(http_listeners, '$[0]') is not null;
 ```
 
-### Get application gateway details that is associated with the firewall policy
+### Get application gateway details that are associated with the firewall policy
 Get application gateway associated with WAF policies and configurations
 
 ```sql+postgres
