@@ -147,6 +147,30 @@ func tableAzurePublicIP(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPTags"),
 			},
 			{
+				Name:        "nat_gateway",
+				Description: "The NatGateway for the Public IP address.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.NatGateway"),
+			},
+			{
+				Name:        "service_public_ip_address",
+				Description: "The service public IP address of the public IP address resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.ServicePublicIPAddress"),
+			},
+			{
+				Name:        "ip_configuration",
+				Description: "The IP configuration associated with the public IP address.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.IPConfiguration"),
+			},
+			{
+				Name:        "linked_public_ip_address",
+				Description: "The linked public IP address of the public IP address resource.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("PublicIPAddressPropertiesFormat.LinkedPublicIPAddress"),
+			},
+			{
 				Name:        "zones",
 				Description: "A collection of availability zones denoting the IP allocated for the resource needs to come from",
 				Type:        proto.ColumnType_JSON,
