@@ -8,13 +8,13 @@ _What's new?_
 
 _Enhancements_
 
-- Added column `time_created` to the `azure_compute_virtual_machine` table. ([#831](https://github.com/turbot/steampipe-plugin-azure/pull/831))
+- Added `time_created` column to the `azure_compute_virtual_machine` table. ([#831](https://github.com/turbot/steampipe-plugin-azure/pull/831))
 - Added `ip_configuration`, `linked_public_ip_address`, `nat_gateway` and `service_public_ip_address` columns to the `azure_public_ip` table. ([#836](https://github.com/turbot/steampipe-plugin-azure/pull/836))
 - Added 20 new columns to the `azure_postgresql_flexible_server` table. ([#824](https://github.com/turbot/steampipe-plugin-azure/pull/824))
 
 _Bug fixes_
 
-- Fixed the `ip_configurations` column of the `azure_subnet` table to correctly return data instead of a `null`. ([#822](https://github.com/turbot/steampipe-plugin-azure/pull/822))
+- Fixed the `ip_configurations` column of the `azure_subnet` table to correctly return data instead of `null`. ([#822](https://github.com/turbot/steampipe-plugin-azure/pull/822))
 - Fixed the  `web_application_firewall_configuration` column of `azure_application_gateway` table to correctly return data instead of `null`. ([#835](https://github.com/turbot/steampipe-plugin-azure/pull/835))
 
 _Dependencies_
