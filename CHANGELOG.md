@@ -1,3 +1,28 @@
+## v0.65.0 [2024-09-03]
+
+_What's new?_
+
+- New tables added
+  - [azure_key_vault_certificate](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_key_vault_certificate) ([#698](https://github.com/turbot/steampipe-plugin-azure/pull/698))
+  - [azure_web_application_firewall_policy](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_web_application_firewall_policy) ([#834](https://github.com/turbot/steampipe-plugin-azure/pull/834))
+
+_Enhancements_
+
+- Added `time_created` column to the `azure_compute_virtual_machine` table. ([#831](https://github.com/turbot/steampipe-plugin-azure/pull/831))
+- Added `ip_configuration`, `linked_public_ip_address`, `nat_gateway` and `service_public_ip_address` columns to the `azure_public_ip` table. ([#836](https://github.com/turbot/steampipe-plugin-azure/pull/836))
+- Added 20 new columns to the `azure_postgresql_flexible_server` table. ([#824](https://github.com/turbot/steampipe-plugin-azure/pull/824))
+
+_Bug fixes_
+
+- Fixed the `ip_configurations` column of the `azure_subnet` table to correctly return data instead of `null`. ([#822](https://github.com/turbot/steampipe-plugin-azure/pull/822))
+- Fixed the  `web_application_firewall_configuration` column of `azure_application_gateway` table to correctly return data instead of `null`. ([#835](https://github.com/turbot/steampipe-plugin-azure/pull/835))
+
+_Dependencies_
+
+- Recompiled plugin with Go version `1.22`. ([#832](https://github.com/turbot/steampipe-plugin-azure/pull/832))
+- Recompiled plugin with [steampipe-plugin-sdk v5.10.4](https://github.com/turbot/steampipe-plugin-sdk/blob/develop/CHANGELOG.md#v5104-2024-08-29) that fixes logging in the plugin export tools.
+- Updated the `azure_mysql_flexible_server` and `azure_postgresql_flexible_server` tables to use the new Azure ARM Go package. ([#820](https://github.com/turbot/steampipe-plugin-azure/pull/820))
+
 ## v0.64.0 [2023-08-07]
 
 _Enhancements_
@@ -22,7 +47,6 @@ _Bug fixes_
 - Fixed the `power_state` column of the `azure_compute_virtual_machine` table to correctly return data instead of a `nil pointer dereference` error. ([#804](https://github.com/turbot/steampipe-plugin-azure/pull/804))
 
 ## v0.62.0 [2024-07-12]
-
 
 
 - Added column `power_state` to the `azure_compute_virtual_machine_scale_set_vm` table. ([#800](https://github.com/turbot/steampipe-plugin-azure/pull/800)) (Thanks [@pdepdecatcat](https://github.com/pdecat) for the contribution!)
