@@ -325,16 +325,34 @@ func getAzureComputeVirtualMachineScaleSetVmInstanceView(ctx context.Context, d 
 
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("Error", "getAzureComputeVirtualMachineScaleSetVmInstanceView", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
 
-	op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
-	if err != nil {
-		return nil, err
+	// When VMs are managed by scale sets in flexible orchestration mode,
+	// standard Azure VM APIs must be must be used.
+	// See https://learn.microsoft.com/en-us/answers/questions/1418158/rest-api-request-returns-badrequest-for-vmss
+	// and https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-orchestration-modes?WT.mc_id=modinfra-31635-pierrer#what-has-changed-with-flexible-orchestration-mode
+	if h.ParentItem.(compute.VirtualMachineScaleSet).OrchestrationMode == compute.Flexible {
+		client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+		client.Authorizer = session.Authorizer
+
+		op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
+		if err != nil {
+			plugin.Logger(ctx).Error("Error", "getAzureComputeVirtualMachineScaleSetVmInstanceView", err)
+			return nil, err
+		}
+		return op, nil
+	} else {
+		client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+		client.Authorizer = session.Authorizer
+
+		op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
+		if err != nil {
+			plugin.Logger(ctx).Error("Error", "getAzureComputeVirtualMachineScaleSetVmInstanceView", err)
+			return nil, err
+		}
+		return op, nil
 	}
-
-	return op, nil
 }

@@ -48,6 +48,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 			},
 			{
+				Name:        "virtual_machine_scale_set",
+				Description: "Scale set details for virtual machines managed in flexible orchestration mode.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualMachineProperties.VirtualMachineScaleSet"),
+			},
+			{
 				Name:        "power_state",
 				Description: "Specifies the power state of the VM.",
 				Type:        proto.ColumnType_STRING,
