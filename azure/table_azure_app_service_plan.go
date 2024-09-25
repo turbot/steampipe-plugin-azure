@@ -92,7 +92,7 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "provisioning_state",
-				Description: "Provisioning state of the App Service Environment",
+				Description: "Provisioning state of the App Service Plan",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AppServicePlanProperties.ProvisioningState").Transform(transform.ToString),
 			},
@@ -102,6 +102,12 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("AppServicePlanProperties.Reserved"),
 				Default:     false,
+			},
+			{
+				Name:        "zone_redundant",
+				Description: "If true, this App Service Plan will perform availability zone balancing.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("AppServicePlanProperties.ZoneRedundant"),
 			},
 			{
 				Name:        "sku_capacity",
@@ -138,6 +144,36 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 				Description: "App Service plan status",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("AppServicePlanProperties.Status").Transform(transform.ToString),
+			},
+			{
+				Name:        "geo_region",
+				Description: "Geographical location for the App Service plan",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AppServicePlanProperties.GeoRegion"),
+			},
+			{
+				Name:        "elastic_scale_enabled",
+				Description: "Specifies if ElasticScale is enabled for the App Service plan",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("AppServicePlanProperties.ElasticScaleEnabled"),
+			},
+			{
+				Name:        "worker_tier_name",
+				Description: "Target worker tier assigned to the App Service plan",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("AppServicePlanProperties.WorkerTierName"),
+			},
+			{
+				Name:        "target_worker_count",
+				Description: "Scaling worker count",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("AppServicePlanProperties.TargetWorkerCount"),
+			},
+			{
+				Name:        "target_worker_size_id",
+				Description: "Scaling worker size ID",
+				Type:        proto.ColumnType_INT,
+				Transform:   transform.FromField("AppServicePlanProperties.TargetWorkerSizeID"),
 			},
 			{
 				Name:        "apps",
