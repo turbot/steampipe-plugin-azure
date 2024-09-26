@@ -27,13 +27,13 @@ func tableAzureComputeVirtualMachineSize(_ context.Context) *plugin.Table {
 				Name:        "name",
 				Description: "The name of the virtual machine size.",
 				Type:        proto.ColumnType_STRING,
-				Transform: transform.FromField("VirtualMachineSize.Name"),
+				Transform:   transform.FromField("VirtualMachineSize.Name"),
 			},
 			{
 				Name:        "number_of_cores",
 				Description: "The number of cores supported by the virtual machine size.",
 				Type:        proto.ColumnType_INT,
-				Transform: transform.FromField("VirtualMachineSize.NumberOfCores"),
+				Transform:   transform.FromField("VirtualMachineSize.NumberOfCores"),
 			},
 			{
 				Name:        "os_disk_size_in_mb",
