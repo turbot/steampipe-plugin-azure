@@ -175,6 +175,18 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("DiskProperties.NetworkAccessPolicy"),
 			},
 			{
+				Name:        "public_network_access",
+				Description: "Public network access for the disk can be enabled or disabled",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiskProperties.PublicNetworkAccess"),
+			},
+			{
+				Name:        "data_access_auth_mode",
+				Description: "The mode to use for data access to the disk",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("DiskProperties.DataAccessAuthMode"),
+			},
+			{
 				Name:        "creation_data_option",
 				Description: "This enumerates the possible sources of a disk's creation",
 				Type:        proto.ColumnType_STRING,
