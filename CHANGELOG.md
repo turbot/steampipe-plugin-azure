@@ -1,3 +1,15 @@
+## v0.66.0 [2024-09-28]
+
+_Enhancements_
+
+- Added `data_access_auth_mode` and `public_network_access` columns to the `azure_compute_disk` table. ([#844](https://github.com/turbot/steampipe-plugin-azure/pull/844))
+- Added `zone_redundant`, `geo_region`, `elastic_scale_enabled`, `worker_tier_name`, `target_worker_count`, and `target_worker_size_id` columns to the `azure_app_service_plan` table. ([#842](https://github.com/turbot/steampipe-plugin-azure/pull/842))
+- Added `virtual_machine_scale_set` and `orchestration_mode` columns to `azure_compute_virtual_machine` and `azure_compute_virtual_machine_scale_set` tables respectively. ([#829](https://github.com/turbot/steampipe-plugin-azure/pull/829)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `power_state` column of `azure_compute_virtual_machine_scale_set_vm` table to correctly return data instead of an error for Virtual Machines running in flexible orchestration mode. ([#829](https://github.com/turbot/steampipe-plugin-azure/pull/829)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
 ## v0.65.0 [2024-09-03]
 
 _What's new?_
