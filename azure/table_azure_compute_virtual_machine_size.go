@@ -111,6 +111,12 @@ func listComputeVirtualMachineSizes(ctx context.Context, d *plugin.QueryData, h 
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
+			// In Azure, resource providers are services that allow you to interact with resources (like virtual machines). 
+			// The relevant resource provider for Virtual Machines is `Microsoft.Compute`. 
+			// If this provider is not registered, or if it's not available in the specified region, you might encounter the error.
+                        // You can use the command (`az provider show --namespace Microsoft.Compute`) to check the availability of the service in the specified location.
+                        // Look for the `locations/vmSizes` resource type in the command result to verify it's availability.
+			
 			if strings.Contains(strings.ToLower(err.Error()), "no registered resource provider found for location") {
 				plugin.Logger(ctx).Error("azure_compute_virtual_machine_size.listComputeVirtualMachineSizes", "no registered resource provider found", err.Error())
 				return nil, nil
