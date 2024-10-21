@@ -33,9 +33,6 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			NewInstance: ConfigInstance,
 		},
 		TableMap: map[string]*plugin.Table{
-			"azure_ad_group":                                               tableAzureAdGroup(ctx),
-			"azure_ad_service_principal":                                   tableAzureAdServicePrincipal(ctx),
-			"azure_ad_user":                                                tableAzureAdUser(ctx),
 			"azure_alert_management":                                       tableAzureAlertMangement(ctx),
 			"azure_api_management":                                         tableAzureAPIManagement(ctx),
 			"azure_api_management_backend":                                 tableAzureAPIManagementBackend(ctx),
