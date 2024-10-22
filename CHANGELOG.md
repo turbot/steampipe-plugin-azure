@@ -1,3 +1,11 @@
+## v1.0.0 [2024-10-22]
+
+There are no significant changes in this plugin version; it has been released to align with [Steampipe's v1.0.0](https://steampipe.io/changelog/steampipe-cli-v1-0-0) release. This plugin adheres to [semantic versioning](https://semver.org/#semantic-versioning-specification-semver), ensuring backward compatibility within each major version.
+
+_Breaking changes_
+
+- Removed the deprecated azure_ad_group, azure_ad_user and azure_ad_service_principal tables. ([#849](https://github.com/turbot/steampipe-plugin-azure/pull/849))
+
 ## v0.66.0 [2024-09-28]
 
 _Enhancements_
