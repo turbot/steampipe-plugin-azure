@@ -1,9 +1,0 @@
-[
-  {
-    "display_name": "{{resourceName}}",
-    "mail_enabled": false,
-    "object_id": "{{ output.object_id.value }}",
-    "object_type": "Group",
-    "security_enabled": true
-  }
-]
