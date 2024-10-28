@@ -190,6 +190,13 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				Hydrate:     listPostgreSQLFlexibleServersConfigurations,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "firewall_rules",
+				Description: "The list of firewall rules in a server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listPostgreSQLFlexibleServerFirewallRules,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -336,6 +343,41 @@ func listPostgreSQLFlexibleServersConfigurations(ctx context.Context, d *plugin.
 	}
 
 	return postgreSQLFlexibleServersConfigurations, nil
+}
+
+func listPostgreSQLFlexibleServerFirewallRules(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+
+	server := h.Item.(armmypostgresflexibleservers.Server)
+	resourceGroup := strings.Split(string(*server.ID), "/")[4]
+	serverName := *server.Name
+
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client, err := armmypostgresflexibleservers.NewFirewallRulesClient(subscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_postgresql_flexible_server.listPostgreSQLFlexibleServerFirewallRules", "client_error", err)
+		return nil, err
+	}
+
+	var postgreSQLFlexibleServerFirewallRules []*armmypostgresflexibleservers.FirewallRule
+
+	input := &armmypostgresflexibleservers.FirewallRulesClientListByServerOptions{}
+	pager := client.NewListByServerPager(resourceGroup, serverName, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_postgresql_flexible_server.listPostgreSQLFlexibleServerFirewallRules", "api_error", err)
+			return nil, err
+		}
+		postgreSQLFlexibleServerFirewallRules = append(postgreSQLFlexibleServerFirewallRules, page.Value...)
+	}
+
+	return postgreSQLFlexibleServerFirewallRules, nil
 }
 
 //// TRANSFORM FUNCTION
