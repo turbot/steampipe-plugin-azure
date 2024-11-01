@@ -1,3 +1,14 @@
+## v1.1.0 [2024-11-02]
+
+_What's new?_
+
+- New tables added
+  - [azure_compute_virtual_machine_size](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_compute_virtual_machine_size) ([#841](https://github.com/turbot/steampipe-plugin-azure/pull/841))
+
+_Enhancements_
+
+- Added `firewall_rules` column to the `azure_postgresql_flexible_server` table. ([#852](https://github.com/turbot/steampipe-plugin-azure/pull/852))
+
 ## v1.0.0 [2024-10-22]
 
 There are no significant changes in this plugin version; it has been released to align with [Steampipe's v1.0.0](https://steampipe.io/changelog/steampipe-cli-v1-0-0) release. This plugin adheres to [semantic versioning](https://semver.org/#semantic-versioning-specification-semver), ensuring backward compatibility within each major version.
