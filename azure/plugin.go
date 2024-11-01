@@ -76,6 +76,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_compute_virtual_machine_scale_set":                      tableAzureComputeVirtualMachineScaleSet(ctx),
 			"azure_compute_virtual_machine_scale_set_network_interface":    tableAzureComputeVirtualMachineScaleSetNetworkInterface(ctx),
 			"azure_compute_virtual_machine_scale_set_vm":                   tableAzureComputeVirtualMachineScaleSetVm(ctx),
+			"azure_compute_virtual_machine_size":                           tableAzureComputeVirtualMachineSize(ctx),
 			"azure_consumption_usage":                                      tableAzureConsumptionUsage(ctx),
 			"azure_container_group":                                        tableAzureContainerGroup(ctx),
 			"azure_container_registry":                                     tableAzureContainerRegistry(ctx),
