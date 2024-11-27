@@ -242,8 +242,8 @@ func extractStatusForAvailabilitySet(_ context.Context, d *transform.TransformDa
 	var properties []map[string]interface{}
 
 	if availabilitySet.AvailabilitySetProperties != nil && availabilitySet.AvailabilitySetProperties.Statuses != nil {
-		vmProperies := availabilitySet.AvailabilitySetProperties
-		for _, i := range *vmProperies.Statuses {
+		properies := availabilitySet.AvailabilitySetProperties
+		for _, i := range *properies.Statuses {
 			objectMap := make(map[string]interface{})
 			if i.Code != nil {
 				objectMap["code"] = i.Code
