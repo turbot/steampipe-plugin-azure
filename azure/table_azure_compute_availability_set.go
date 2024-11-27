@@ -83,14 +83,15 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 				Name:        "status",
 				Description: "The resource status information",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("AvailabilitySetProperties.Statuses"),
+				Hydrate:     getAzureComputeAvailabilitySet,
+				Transform:   transform.From(extractStatusForAvailabilitySet),
 			},
 			{
 				Name:        "virtual_machines",
 				Description: "A list of references to all virtual machines in the availability set",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getAzureComputeAvailabilitySet,
-				Transform:   transform.From(extractVirtualMechinesForScaleset),
+				Transform:   transform.From(extractVirtualMachinesForAvailabilitySet),
 			},
 
 			// Steampipe standard columns
@@ -178,10 +179,10 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 
 func getAzureComputeAvailabilitySet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	resourceGroup, name := "", ""
-	
+
 	name = d.EqualsQuals["name"].GetStringValue()
 	resourceGroup = d.EqualsQuals["resource_group"].GetStringValue()
-	
+
 	if h.Item != nil {
 		availabilitySet := h.Item.(compute.AvailabilitySet)
 		id := availabilitySet.ID
@@ -218,18 +219,45 @@ func getAzureComputeAvailabilitySet(ctx context.Context, d *plugin.QueryData, h 
 
 //// UTILITY FUNCTION
 
-func extractVirtualMechinesForScaleset(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	scalSet := d.HydrateItem.(compute.AvailabilitySet)
+func extractVirtualMachinesForAvailabilitySet(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	availabilitySet := d.HydrateItem.(compute.AvailabilitySet)
 	var properties []map[string]interface{}
-	// AvailabilitySetProperties.VirtualMachines
 
-	if scalSet.VirtualMachines != nil {
-		vmProperies := scalSet.AvailabilitySetProperties
+	if availabilitySet.AvailabilitySetProperties != nil && availabilitySet.AvailabilitySetProperties.VirtualMachines != nil {
+		vmProperies := availabilitySet.AvailabilitySetProperties
 		for _, i := range *vmProperies.VirtualMachines {
 			objectMap := make(map[string]interface{})
 			if i.ID != nil {
 				objectMap["id"] = i.ID
 			}
+			properties = append(properties, objectMap)
+		}
+	}
+
+	return properties, nil
+}
+
+func extractStatusForAvailabilitySet(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	availabilitySet := d.HydrateItem.(compute.AvailabilitySet)
+	var properties []map[string]interface{}
+
+	if availabilitySet.AvailabilitySetProperties != nil && availabilitySet.AvailabilitySetProperties.Statuses != nil {
+		vmProperies := availabilitySet.AvailabilitySetProperties
+		for _, i := range *vmProperies.Statuses {
+			objectMap := make(map[string]interface{})
+			if i.Code != nil {
+				objectMap["code"] = i.Code
+			}
+			if i.DisplayStatus != nil {
+				objectMap["displayStatus"] = i.DisplayStatus
+			}
+			if i.Level != "" {
+				objectMap["level"] = i.Level
+			}
+			if i.Message != nil {
+				objectMap["message"] = i.Message
+			}
+
 			properties = append(properties, objectMap)
 		}
 	}
