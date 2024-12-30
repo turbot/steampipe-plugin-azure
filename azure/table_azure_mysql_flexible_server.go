@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -339,6 +340,43 @@ func listMySQLFlexibleServersConfigurations(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
+	// Return nil for the specific states of the flexible server where the 
+	// API does not allow any operations to be performed.
+
+	// Since it is challenging to test all possible states("Disabled", "Dropping", "Ready", "Starting", "Stopped", "Stopping", "Updating") of the flexible server, 
+	// we have added a check to restrict 
+	// API calls for the "Stopping" and "Stopped" states based on current testing.
+
+	// This logic may need to be updated in the future if the API behavior changes or if additional states need to be handled.
+
+	// 1. Stopping: 
+		// Error: azure: GET https://management.azure.com/subscriptions/d46d7416-f95f-4771-bbb5-529d4c76659c/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
+		// --------------------------------------------------------------------------------
+		// RESPONSE 503: 503 Service Unavailable
+		// ERROR CODE: ServiceBusy
+		// --------------------------------------------------------------------------------
+		// {
+		//   "error": {
+		//     "code": "ServiceBusy",
+		//     "message": "Service is temporarily busy and the operation cannot be performed. Please try again later."
+		//   }
+		// }
+	// 2. Stopped
+		// Error: azure: GET https://management.azure.com/subscriptions/d46d7416-f95f-4771-bbb5-529d4c76659c/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
+		// --------------------------------------------------------------------------------
+		// RESPONSE 409: 409 Conflict
+		// ERROR CODE: ServerUnavailableForOperation
+		// --------------------------------------------------------------------------------
+		// {
+		//   "error": {
+		// 	"code": "ServerUnavailableForOperation",
+		// 	"message": "Operation 'GetServerParameters' cannot be performed as server 'test53' is currently in state 'Stopped'."
+		//   }
+		// }
+	// 3. Starting: We are not getting any error
+	if server.Properties != nil && helpers.StringSliceContains([]string{"Stopping", "Stopped", "Updating"},  string(*server.Properties.State)) {
+		return nil, nil
+	}
 	pager := client.NewListByServerPager(resourceGroup, serverName, nil)
 
 	var mySQLFlexibleServersConfigurations []map[string]interface{}
