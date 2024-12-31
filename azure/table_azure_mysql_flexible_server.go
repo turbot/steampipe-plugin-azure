@@ -350,7 +350,7 @@ func listMySQLFlexibleServersConfigurations(ctx context.Context, d *plugin.Query
 	// This logic may need to be updated in the future if the API behavior changes or if additional states need to be handled.
 
 	// 1. Stopping: 
-		// Error: azure: GET https://management.azure.com/subscriptions/d46d7416-f95f-4771-bbb5-529d4c76659c/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
+		// Error: azure: GET https://management.azure.com/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
 		// --------------------------------------------------------------------------------
 		// RESPONSE 503: 503 Service Unavailable
 		// ERROR CODE: ServiceBusy
@@ -362,7 +362,7 @@ func listMySQLFlexibleServersConfigurations(ctx context.Context, d *plugin.Query
 		//   }
 		// }
 	// 2. Stopped
-		// Error: azure: GET https://management.azure.com/subscriptions/d46d7416-f95f-4771-bbb5-529d4c76659c/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
+		// Error: azure: GET https://management.azure.com/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/new-rg/providers/Microsoft.DBforMySQL/flexibleServers/test53/configurations
 		// --------------------------------------------------------------------------------
 		// RESPONSE 409: 409 Conflict
 		// ERROR CODE: ServerUnavailableForOperation
