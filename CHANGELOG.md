@@ -1,3 +1,11 @@
+## v1.1.1 [2025-02-06]
+
+_Bug fixes_
+
+- Fixed the `azure_mysql_flexible_server` table to return an empty row instead of an error when the server is in the `stopped` state. ([#860](https://github.com/turbot/steampipe-plugin-azure/pull/860))
+- Fixed the `azure_compute_availability_set` table to correctly return data for the `virtual_machines` column instead of `null`. ([#856](https://github.com/turbot/steampipe-plugin-azure/pull/856))
+- Refactored the `azure_storage_blob` table to resolve memory usage issues occurring due to large instances of storage blobs. ([#855](https://github.com/turbot/steampipe-plugin-azure/pull/855))
+
 ## v1.1.0 [2024-11-02]
 
 _What's new?_
