@@ -147,7 +147,6 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, h *plugin.
 // listRoleAssignmentsByScope retrieves role assignments for a specific scope
 func listRoleAssignmentsByScope(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData, authorizationClient *armauthorization.RoleAssignmentsClient) (interface{}, error) {
 	scope := d.EqualsQualString("scope")
-	plugin.Logger(ctx).Info("Fetching role assignments for scope:", scope)
 
 	defaultFilter := "atScope()" // filter all result
 	// Tenant ID is not a required parameter to make the API call.
@@ -187,7 +186,8 @@ func listRoleAssignmentsByScope(ctx context.Context, d *plugin.QueryData, _ *plu
 		for _, roleAssignment := range scopeRes.Value {
 			d.StreamListItem(ctx, roleAssignment)
 
-			// Stop streaming if the row limit is reached
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
@@ -212,7 +212,8 @@ func listAllRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		for _, roleAssignment := range res.Value {
 			d.StreamListItem(ctx, roleAssignment)
 
-			// Stop streaming if the row limit is reached
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
