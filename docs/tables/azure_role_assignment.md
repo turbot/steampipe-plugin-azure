@@ -89,3 +89,90 @@ where
   ra.scope like '/subscriptions/%'
   and json_extract(perm.value, '$.actions') = '["*"]';
 ```
+
+### Role assignments at the resource group scope
+Retrieve all role assignments that grant permissions at a specific resource group level.
+
+```sql+postgres
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/my-rg'
+```
+
+```sql+sqlite
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/my-rg'
+```
+
+### Role assignments at the management group scope
+List all role assignments that apply at the management group level, determining access across multiple subscriptions.
+
+```sql+postgres
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/providers/Microsoft.Management/managementGroups/12345678-90ab-cdef-1234-567890abcdef'
+```
+
+```sql+sqlite
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/providers/Microsoft.Management/managementGroups/12345678-90ab-cdef-1234-567890abcdef'
+```
+
+### Role assignments at the storage account scope
+Identify role assignments that provide permissions at a storage account level, enabling access control for storage resources.
+
+```sql+postgres
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/nist-test_group/providers/Microsoft.Storage/storageAccounts/testimmutablecontainer'
+```
+
+```sql+sqlite
+select
+  name,
+  scope,
+  type,
+  principal_id.
+  principal_type
+from
+  azure_role_assignment
+where
+  scope = '/subscriptions/abcdef12-3456-7890-abcd-ef1234567890/resourceGroups/nist-test_group/providers/Microsoft.Storage/storageAccounts/testimmutablecontainer'
+```
