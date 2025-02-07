@@ -37,12 +37,19 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 			// Ref: https://github.com/Azure/azure-rest-api-specs/issues/28255
 			// We will uncomment it once the issue is resolved.
 
-			// KeyColumns: []*plugin.KeyColumn{
-			// 	{
-			// 		Name:    "principal_id",
-			// 		Require: plugin.Optional,
-			// 	},
-			// },
+			KeyColumns: []*plugin.KeyColumn{
+				// When specifying the `scope` value as a query parameter in the WHERE clause,
+				// ensure that it begins with a "/" (forward slash).
+				// If omitted, the query will return empty results due to Steampipe level filtering.
+				// This is because the API response includes a leading "/" in the scope values.
+				// Example values:
+				// - "/subscriptions/<sub_id>"
+				// - "/subscriptions/<sub_id>/resourceGroups/<rg_name>"
+				{
+					Name:    "scope",
+					Require: plugin.Optional,
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -115,7 +122,7 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "session_error", err)
@@ -128,10 +135,24 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		return nil, err
 	}
 
+	// Check if a specific scope is provided
+	if d.EqualsQualString("scope") != "" {
+		return listRoleAssignmentsByScope(ctx, d, h, authorizationClient)
+	}
+
+	// If no scope is provided, fetch all role assignments for the subscription
+	return listAllRoleAssignments(ctx, d, h, authorizationClient)
+}
+
+// listRoleAssignmentsByScope retrieves role assignments for a specific scope
+func listRoleAssignmentsByScope(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData, authorizationClient *armauthorization.RoleAssignmentsClient) (interface{}, error) {
+	scope := d.EqualsQualString("scope")
+
 	defaultFilter := "atScope()" // filter all result
 	// Tenant ID is not a required parameter to make the API call.
-	option := &armauthorization.RoleAssignmentsClientListForScopeOptions{
-		Filter:   &defaultFilter,
+	// List by scope input
+	listForScopeOptions := &armauthorization.RoleAssignmentsClientListForScopeOptions{
+		Filter: &defaultFilter,
 	}
 
 	// For the time being, the optional qualifiers have been commented out
@@ -154,16 +175,17 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	// 	option.Filter = &filter
 	// }
 
-	result := authorizationClient.NewListForScopePager("/subscriptions/"+session.SubscriptionID, option)
-
-	for result.More() {
-		res, err := result.NextPage(ctx)
+	response := authorizationClient.NewListForScopePager(scope, listForScopeOptions)
+	for response.More() {
+		scopeRes, err := response.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_role_assignment.listIamRoleAssignments", "api_error", err)
+			plugin.Logger(ctx).Error("azure_role_assignment.listRoleAssignmentsByScope", "api_error", err)
 			return nil, err
 		}
-		for _, roleAssignment := range res.Value {
+
+		for _, roleAssignment := range scopeRes.Value {
 			d.StreamListItem(ctx, roleAssignment)
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -172,7 +194,33 @@ func listIamRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		}
 	}
 
-	return nil, err
+	return nil, nil
+}
+
+// listAllRoleAssignments retrieves all role assignments for the subscription
+func listAllRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData, authorizationClient *armauthorization.RoleAssignmentsClient) (interface{}, error) {
+
+	result := authorizationClient.NewListForSubscriptionPager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{})
+
+	for result.More() {
+		res, err := result.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_role_assignment.listAllRoleAssignments", "api_error", err)
+			return nil, err
+		}
+
+		for _, roleAssignment := range res.Value {
+			d.StreamListItem(ctx, roleAssignment)
+
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
