@@ -270,6 +270,9 @@ func listMySQLServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	client := mysql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listMySQLServers", "list", err)
@@ -312,6 +315,9 @@ func getMySQLServer(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	client := mysql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getMySQLServer", "get", err)
@@ -342,6 +348,9 @@ func listMySQLServersServerKeys(ctx context.Context, d *plugin.QueryData, h *plu
 
 	client := mysql.NewServerKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, resourceGroup, serverName)
 	if err != nil {
@@ -384,6 +393,9 @@ func listMySQLServerVnetRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	client := mysql.NewVirtualNetworkRulesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.ListByServer(ctx, resourceGroup, serverName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_mysql_server.listMySQLServerVnetRules", "api_error", err)
@@ -422,6 +434,9 @@ func listMySQLServersConfigurations(ctx context.Context, d *plugin.QueryData, h 
 	client := mysql.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.ListByServer(ctx, resourceGroup, serverName)
 	if err != nil {
 		plugin.Logger(ctx).Error("listMySQLServersConfigurations", "list", err)
@@ -453,6 +468,9 @@ func getMySQLServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData,
 
 	client := mysql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroupName, serverName)
 	if err != nil {

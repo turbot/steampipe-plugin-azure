@@ -196,6 +196,9 @@ func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx, *account.ResourceGroup, *account.Name, "", "", "")
 	if err != nil {
 		return nil, err
@@ -246,6 +249,9 @@ func getStorageContainer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {
 		return nil, err
@@ -270,6 +276,9 @@ func getImmutabilityPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	client := storage.NewBlobContainersClient(subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.GetImmutabilityPolicy(ctx, resourceGroup, accountName, *container.Name, "")
 	if err != nil {

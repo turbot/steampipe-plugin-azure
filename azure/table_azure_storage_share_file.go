@@ -184,6 +184,9 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 	fileShareCLient := storage.NewFileSharesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	fileShareCLient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &fileShareCLient, d.Connection)
+
 	// Limiting the results
 	limit := d.QueryContext.Limit
 	maxResult := "100"
@@ -272,6 +275,9 @@ func getStorageAccountsFileShare(ctx context.Context, d *plugin.QueryData, h *pl
 	subscriptionID := session.SubscriptionID
 	fileShareCLient := storage.NewFileSharesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	fileShareCLient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &fileShareCLient, d.Connection)
 
 	result, err := fileShareCLient.Get(ctx, resourceGroup, storageAccountName, name, "", "")
 

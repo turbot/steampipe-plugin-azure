@@ -116,6 +116,9 @@ func listBastionHosts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	bastionClient := network.NewBastionHostsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	bastionClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &bastionClient, d.Connection)
+
 	result, err := bastionClient.List(ctx)
 	if err != nil {
 		logger.Error("azure_bastion_host.listBastionHosts", "api_error", err)
@@ -169,6 +172,9 @@ func getBastionHost(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	subscriptionID := session.SubscriptionID
 	bastionClient := network.NewBastionHostsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	bastionClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &bastionClient, d.Connection)
 
 	result, err := bastionClient.Get(ctx, resourceGroup, name)
 	if err != nil {

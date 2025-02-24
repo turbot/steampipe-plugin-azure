@@ -116,6 +116,9 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &mgClient, d.Connection)
+
 	result, err := mgClient.List(ctx, "", "")
 	if err != nil {
 		plugin.Logger(ctx).Error("listManagementGroups", "list", err)
@@ -162,6 +165,9 @@ func getManagementGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	mgClient := managementgroups.NewClient()
 	mgClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &mgClient, d.Connection)
 
 	op, err := mgClient.Get(ctx, name, "children", nil, "", "")
 	if err != nil {

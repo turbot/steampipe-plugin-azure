@@ -107,6 +107,9 @@ func listDataFactoryDatasets(ctx context.Context, d *plugin.QueryData, h *plugin
 	datasetClient := datafactory.NewDatasetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &datasetClient, d.Connection)
+
 	result, err := datasetClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
 	if err != nil {
 		return nil, err
@@ -151,6 +154,9 @@ func getDataFactoryDataset(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	datasetClient := datafactory.NewDatasetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	datasetClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &datasetClient, d.Connection)
 
 	datasetName := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()

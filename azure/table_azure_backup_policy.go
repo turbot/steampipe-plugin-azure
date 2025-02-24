@@ -179,6 +179,9 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	backupClient := backup.NewPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	backupClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &backupClient, d.Connection)
+
 	result, err := backupClient.List(ctx, vaultname, resourceGroupName, "")
 	if err != nil {
 		return nil, err

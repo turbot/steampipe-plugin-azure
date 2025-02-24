@@ -145,6 +145,9 @@ func listNatGateways(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	networkClient := network.NewNatGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_nat_gateway.listNatGateways", "api_error", err)
@@ -193,6 +196,9 @@ func getNatGateway(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 
 	networkClient := network.NewNatGatewaysClient(subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

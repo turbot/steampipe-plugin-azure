@@ -112,6 +112,9 @@ func listStorageTables(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	storageClient := storage.NewTableClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
 		/*
@@ -176,6 +179,9 @@ func getStorageTable(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
 

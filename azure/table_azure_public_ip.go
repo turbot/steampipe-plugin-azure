@@ -225,6 +225,9 @@ func listPublicIPs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	// ListAll API doesn't return any value so changed to List API
 	result, err := networkClient.List(ctx, *resourceGroup)
 	if err != nil {
@@ -274,6 +277,9 @@ func getPublicIP(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	networkClient := network.NewPublicIPAddressesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

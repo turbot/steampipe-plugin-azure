@@ -269,6 +269,9 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	accountsClient := cognitiveservices.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountsClient, d.Connection)
+
 	result, err := accountsClient.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listCognitiveAccounts", "list", err)
@@ -315,6 +318,9 @@ func getCognitiveAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	accountsClient := cognitiveservices.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountsClient, d.Connection)
+
 	account, err := accountsClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
 		plugin.Logger(ctx).Error("getCognitiveAccount", "get", err)
@@ -345,6 +351,9 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

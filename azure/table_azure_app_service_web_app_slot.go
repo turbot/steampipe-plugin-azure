@@ -345,6 +345,9 @@ func listAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plug
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
+
 	result, err := webClient.ListSlots(ctx, resourceGroupName, appName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.listAppServiceWebAppSlots", "api_error", err)
@@ -412,6 +415,9 @@ func getAppServiceWebAppSlot(ctx context.Context, d *plugin.QueryData, h *plugin
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
+
 	op, err := webClient.GetSlot(ctx, resourceGroup, appName, slotName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_app_service_web_app_slot.getAppServiceWebAppSlot", "api_error", err)
@@ -454,6 +460,9 @@ func getConfigurationSlot(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	webClient := web.NewAppsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
 
 	op, err := webClient.GetConfigurationSlot(ctx, resourceGroupName, appName, strings.Split(slotName, "/")[1])
 	if err != nil {

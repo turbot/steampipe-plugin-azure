@@ -96,6 +96,10 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 
 	resourcesClient := resources.NewGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourcesClient, d.Connection)
+
 	result, err := resourcesClient.List(ctx, "", nil)
 	if err != nil {
 		return nil, err

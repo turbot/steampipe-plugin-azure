@@ -156,6 +156,9 @@ func listDataFactoryPipelines(ctx context.Context, d *plugin.QueryData, h *plugi
 	pipelineClient := datafactory.NewPipelinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &pipelineClient, d.Connection)
+
 	result, err := pipelineClient.ListByFactory(ctx, resourceGroup, *factoryInfo.Name)
 	if err != nil {
 		return nil, err
@@ -200,6 +203,9 @@ func getDataFactoryPipeline(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	pipelineClient := datafactory.NewPipelinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	pipelineClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &pipelineClient, d.Connection)
 
 	pipelineName := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()

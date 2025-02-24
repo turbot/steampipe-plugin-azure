@@ -113,6 +113,9 @@ func listCosmosDBRestorableDatabaseAccounts(ctx context.Context, d *plugin.Query
 	documentDBClient := documentdb.NewRestorableDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, session.SubscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
+
 	result, err := documentDBClient.List(ctx)
 	if err != nil {
 		logger.Error("azure_cosmosdb_restorable_database_account.listCosmosDBRestorableDatabaseAccounts", "api_error", err)

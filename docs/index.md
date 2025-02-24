@@ -107,6 +107,15 @@ connection "azure" {
 
   # If no credentials are specified, the plugin will use Azure CLI authentication
 
+  # The maximum number of attempts (including the initial call) Steampipe will
+  # Defaults to 3 and must be greater than or equal to 1.
+  # max_error_retry_attempts = 3
+
+  # The minimum retry delay in milliseconds after which retries will be performed.
+  # This delay is also used as a base value when calculating the exponential backoff retry times.
+  # Defaults to 30ms and must be greater than or equal to 1ms.
+  # min_error_retry_delay = 30
+
   # List of additional azure error codes to ignore for all queries.
   # By default, common not found error codes are ignored and will still be ignored even if this argument is not set.
   #ignore_error_codes = ["NoAuthenticationInformation", "InvalidAuthenticationInfo", "AccountIsDisabled", "UnauthorizedOperation", "UnrecognizedClientException", "AuthorizationError", "AuthenticationFailed", "InsufficientAccountPermissions"]

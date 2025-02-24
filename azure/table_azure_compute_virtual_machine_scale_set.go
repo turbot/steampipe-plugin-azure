@@ -234,6 +234,9 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListAll(context.Background())
 	if err != nil {
 		return nil, err
@@ -274,6 +277,9 @@ func getAzureComputeVirtualMachineScaleSet(ctx context.Context, d *plugin.QueryD
 	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
@@ -299,6 +305,9 @@ func getAzureComputeVirtualMachineScalesetExtensions(ctx context.Context, d *plu
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachineScaleSetExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(context.Background(), resourceGroupName, *virtualMachineScaleSet.Name)
 	if err != nil {

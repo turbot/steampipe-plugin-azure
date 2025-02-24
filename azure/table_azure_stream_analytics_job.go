@@ -214,6 +214,9 @@ func listStreamAnalyticsJobs(ctx context.Context, d *plugin.QueryData, _ *plugin
 	streamingJobsClient := streamanalytics.NewStreamingJobsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	streamingJobsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &streamingJobsClient, d.Connection)
+
 	result, err := streamingJobsClient.List(context.Background(), "")
 	if err != nil {
 		return nil, err
@@ -260,6 +263,9 @@ func getStreamAnalyticsJob(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	streamingJobsClient := streamanalytics.NewStreamingJobsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	streamingJobsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &streamingJobsClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -289,6 +295,9 @@ func listStreamAnalyticsJobDiagnosticSettings(ctx context.Context, d *plugin.Que
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

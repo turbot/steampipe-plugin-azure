@@ -97,6 +97,9 @@ func listResourceLinks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	resourceLinkClient := links.NewResourceLinksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceLinkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourceLinkClient, d.Connection)
+
 	result, err := resourceLinkClient.ListAtSubscription(ctx, "")
 	if err != nil {
 		return nil, err
@@ -145,6 +148,9 @@ func getResourceLink(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	resourceLinkClient := links.NewResourceLinksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceLinkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourceLinkClient, d.Connection)
 
 	op, err := resourceLinkClient.Get(ctx, linkID)
 	if err != nil {

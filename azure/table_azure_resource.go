@@ -195,6 +195,9 @@ func listResources(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	resourceClient := resources.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourceClient, d.Connection)
+
 	// https://learn.microsoft.com/en-us/rest/api/resources/resources/list?view=rest-resources-2021-04-01#uri-parameters
 	filter := getResourceFilter(d.Quals)
 	expand := "createdTime,changedTime,provisioningState"
@@ -260,6 +263,9 @@ func getResource(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	resourceClient := resources.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourceClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourceClient, d.Connection)
 
 	op, err := resourceClient.GetByID(ctx, id, apiVersion)
 	if err != nil {

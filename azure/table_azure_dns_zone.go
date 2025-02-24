@@ -140,6 +140,9 @@ func listDNSZones(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	dnsClient := dns.NewZonesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dnsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &dnsClient, d.Connection)
+
 	result, err := dnsClient.List(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -188,6 +191,9 @@ func getDNSZone(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 
 	dnsClient := dns.NewZonesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dnsClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &dnsClient, d.Connection)
 
 	op, err := dnsClient.Get(ctx, resourceGroup, name)
 	if err != nil {

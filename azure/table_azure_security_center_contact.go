@@ -94,6 +94,9 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	contactClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &contactClient, d.Connection)
+
 	result, err := contactClient.List(ctx)
 	if err != nil {
 		return err, nil
@@ -138,6 +141,9 @@ func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugi
 	subscriptionID := session.SubscriptionID
 	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	contactClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &contactClient, d.Connection)
 
 	contact, err := contactClient.Get(ctx, name)
 	if err != nil {

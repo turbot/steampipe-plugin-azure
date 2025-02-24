@@ -250,6 +250,9 @@ func listDataLakeAnalyticsAccounts(ctx context.Context, d *plugin.QueryData, _ *
 	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	result, err := accountClient.List(context.Background(), "", nil, nil, "", "", nil)
 	if err != nil {
 		return nil, err
@@ -296,6 +299,9 @@ func getDataLakeAnalyticsAccount(ctx context.Context, d *plugin.QueryData, h *pl
 	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	var name, resourceGroup string
 	if h.Item != nil {
 		data := h.Item.(account.DataLakeAnalyticsAccountBasic)
@@ -333,6 +339,9 @@ func listDataLakeAnalyticsAccountDiagnosticSettings(ctx context.Context, d *plug
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

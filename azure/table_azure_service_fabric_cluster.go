@@ -237,6 +237,9 @@ func listServiceFabricClusters(ctx context.Context, d *plugin.QueryData, _ *plug
 	clusterClient := servicefabric.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	clusterClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &clusterClient, d.Connection)
+
 	result, err := clusterClient.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listServiceFabricClusters", "list", err)
@@ -272,6 +275,9 @@ func getServiceFabricCluster(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	clusterClient := servicefabric.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	clusterClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &clusterClient, d.Connection)
 
 	cluster, err := clusterClient.Get(ctx, resourceGroup, name)
 	if err != nil {

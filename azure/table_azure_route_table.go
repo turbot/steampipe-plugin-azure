@@ -121,6 +121,9 @@ func listRouteTables(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	routeTableClient := network.NewRouteTablesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	routeTableClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &routeTableClient, d.Connection)
+
 	result, err := routeTableClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -169,6 +172,9 @@ func getRouteTable(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 
 	routeTableClient := network.NewRouteTablesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	routeTableClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &routeTableClient, d.Connection)
 
 	op, err := routeTableClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

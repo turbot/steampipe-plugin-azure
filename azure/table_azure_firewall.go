@@ -192,6 +192,10 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	networkClient := network.NewAzureFirewallsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -240,6 +244,9 @@ func getFirewall(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	networkClient := network.NewAzureFirewallsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name)
 	if err != nil {

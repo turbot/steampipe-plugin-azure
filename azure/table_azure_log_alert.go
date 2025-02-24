@@ -127,6 +127,9 @@ func listLogAlerts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	logAlertClient := insights.NewActivityLogAlertsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logAlertClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &logAlertClient, d.Connection)
+
 	result, err := logAlertClient.ListBySubscriptionID(ctx)
 	if err != nil {
 		return nil, err
@@ -160,6 +163,9 @@ func getLogAlert(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	logAlertClient := insights.NewActivityLogAlertsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logAlertClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &logAlertClient, d.Connection)
 
 	op, err := logAlertClient.Get(ctx, resourceGroup, name)
 	if err != nil {

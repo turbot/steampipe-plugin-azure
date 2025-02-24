@@ -130,6 +130,13 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		cloudConfiguration = cloud.AzurePublic
 	}
 	clientOptions := policy.ClientOptions{ClientOptions: cloudPolicy.ClientOptions{Cloud: cloudConfiguration}}
+	
+	// Retry policy
+	retryRules := getRetryRules(d.Connection)
+	clientOptions.ClientOptions.Retry = cloudPolicy.RetryOptions{
+		MaxRetries: int32(*retryRules.MaxErrorRetryAttempts),
+		RetryDelay: *retryRules.MinErrorRetryDelay,
+	}
 
 	if tenantID != "" && subscriptionID != "" && clientID != "" && clientSecret != "" { // Client secret authentication
 		cred, err = azidentity.NewClientSecretCredential(

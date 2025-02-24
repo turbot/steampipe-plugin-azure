@@ -281,6 +281,9 @@ func listPostgreSqlServers(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	client := postgresql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -319,6 +322,9 @@ func getPostgreSqlServer(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client := postgresql.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -346,6 +352,9 @@ func getPostgreSQLServerFirewallRules(ctx context.Context, d *plugin.QueryData, 
 
 	client := postgresql.NewFirewallRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
@@ -389,6 +398,9 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	client := postgresql.NewServerKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.List(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "List", err)
@@ -431,6 +443,9 @@ func getPostgreSQLServerAdministrator(ctx context.Context, d *plugin.QueryData, 
 	client := postgresql.NewServerAdministratorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.List(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
@@ -472,6 +487,9 @@ func getPostgreSQLServerConfigurations(ctx context.Context, d *plugin.QueryData,
 	client := postgresql.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.ListByServer(ctx, resourceGroupName, *server.Name)
 	if err != nil {
 		return nil, err
@@ -512,6 +530,9 @@ func getServerSecurityAlertPolicy(ctx context.Context, d *plugin.QueryData, h *p
 
 	client := postgresql.NewServerSecurityAlertPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroupName, *server.Name)
 	if err != nil {

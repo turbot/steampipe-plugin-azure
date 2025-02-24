@@ -144,9 +144,13 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 	subscriptionID := session.SubscriptionID
 
-	NetworkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	NetworkSecurityGroupClient.Authorizer = session.Authorizer
-	result, err := NetworkSecurityGroupClient.ListAll(ctx)
+	networkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	networkSecurityGroupClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkSecurityGroupClient, d.Connection)
+
+	result, err := networkSecurityGroupClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -192,10 +196,13 @@ func getNetworkSecurityGroup(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 	subscriptionID := session.SubscriptionID
 
-	NetworkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	NetworkSecurityGroupClient.Authorizer = session.Authorizer
+	networkSecurityGroupClient := network.NewSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	networkSecurityGroupClient.Authorizer = session.Authorizer
 
-	op, err := NetworkSecurityGroupClient.Get(ctx, resourceGroup, name, "")
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkSecurityGroupClient, d.Connection)
+
+	op, err := networkSecurityGroupClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -222,6 +229,9 @@ func listNetworkSecurityGroupDiagnosticSettings(ctx context.Context, d *plugin.Q
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {
