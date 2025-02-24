@@ -146,7 +146,7 @@ func mapRestorableLocations(ctx context.Context, d *transform.TransformData) (in
 
 	restorableLocations := *data.RestorableDatabaseAccountProperties.RestorableLocations
 
-	if restorableLocations == nil || len(restorableLocations) < 1 {
+	if len(restorableLocations) < 1 {
 		return nil, nil
 	}
 
