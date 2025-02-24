@@ -48,7 +48,7 @@ func getRetryRules(connection *plugin.Connection) *RetryRule {
 	// Fallback to SDK default value
 	// https://github.com/Azure/go-autorest/blob/main/autorest/client.go#L39
 	maxRetries := 3
-	minDelay := 30 * time.Millisecond
+	minDelay := 30 * time.Second
 
 	if connectionConfig.MaxErrorRetryAttempts != nil {
 		maxRetries = int(*connectionConfig.MaxErrorRetryAttempts)
