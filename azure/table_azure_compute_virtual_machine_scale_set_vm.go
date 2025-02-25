@@ -260,6 +260,9 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(context.Background(), resourceGroupName, *scaleSet.Name, "", "", "")
 	if err != nil {
 		plugin.Logger(ctx).Error("Error", "listAzureComputeVirtualMachineScaleSetVms", err)
@@ -303,6 +306,9 @@ func getAzureComputeVirtualMachineScaleSetVm(ctx context.Context, d *plugin.Quer
 	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(context.Background(), resourceGroup, scaleSetName, instanceId, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("Error", "getAzureComputeVirtualMachineScaleSetVm", err)
@@ -338,6 +344,9 @@ func getAzureComputeVirtualMachineScaleSetVmInstanceView(ctx context.Context, d 
 		client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 		client.Authorizer = session.Authorizer
 
+		// Apply Retry rule
+		ApplyRetryRules(ctx, &client, d.Connection)
+
 		op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
 		if err != nil {
 			plugin.Logger(ctx).Error("Error", "getAzureComputeVirtualMachineScaleSetVmInstanceView", err)
@@ -347,6 +356,9 @@ func getAzureComputeVirtualMachineScaleSetVmInstanceView(ctx context.Context, d 
 	} else {
 		client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 		client.Authorizer = session.Authorizer
+
+		// Apply Retry rule
+		ApplyRetryRules(ctx, &client, d.Connection)
 
 		op, err := client.GetInstanceView(ctx, resourceGroupName, virtualMachine.ScaleSetName, instanceId)
 		if err != nil {

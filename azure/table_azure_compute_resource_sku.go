@@ -156,6 +156,9 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	locksClient := skus.NewResourceSkusClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &locksClient, d.Connection)
+
 	result, err := locksClient.List(ctx)
 	if err != nil {
 		return nil, err

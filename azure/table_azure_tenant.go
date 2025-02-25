@@ -92,6 +92,9 @@ func listTenants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	client := subscriptions.NewTenantsClientWithBaseURI(session.ResourceManagerEndpoint)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.List(ctx)
 	if err != nil {
 		return nil, err

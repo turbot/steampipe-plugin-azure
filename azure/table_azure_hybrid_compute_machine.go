@@ -220,6 +220,9 @@ func listHybridComputeMachines(ctx context.Context, d *plugin.QueryData, h *plug
 	client := hybridcompute.NewMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHybridComputeMachines", "list", err)
@@ -266,6 +269,9 @@ func getHybridComputeMachine(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := hybridcompute.NewMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	machine, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("getHybridComputeMachine", "get", err)
@@ -293,6 +299,10 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 
 	client := hybridcompute.NewMachineExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	var extensions []map[string]interface{}
 
 	result, err := client.List(ctx, resourceGroup, *machine.Name, "")

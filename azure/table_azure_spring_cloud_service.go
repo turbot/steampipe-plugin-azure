@@ -160,6 +160,9 @@ func listSpringCloudServices(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := appplatform.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx, *resourceGroup.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listSpringCloudServices", "list", err)
@@ -206,6 +209,9 @@ func getSpringCloudService(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := appplatform.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	service, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getSpringCloudService", "get", err)
@@ -234,6 +240,9 @@ func listSpringCloudServiceDiagnosticSettings(ctx context.Context, d *plugin.Que
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

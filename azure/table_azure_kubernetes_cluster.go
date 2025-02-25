@@ -254,6 +254,9 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	client := containerservice.NewManagedClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -299,6 +302,9 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	client := containerservice.NewManagedClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	resourceName := d.EqualsQuals["name"].GetStringValue()
 	resourceGroupName := d.EqualsQuals["resource_group"].GetStringValue()

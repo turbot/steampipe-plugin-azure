@@ -76,6 +76,9 @@ func listLocations(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	subscriptionsClient := sub.NewSubscriptionsClientWithBaseURI(session.ResourceManagerEndpoint)
 	subscriptionsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &subscriptionsClient, d.Connection)
+
 	result, err := subscriptionsClient.ListLocations(ctx, subscriptionID)
 	if err != nil {
 		return nil, err

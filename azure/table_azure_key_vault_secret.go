@@ -168,6 +168,10 @@ func listKeyVaultSecrets(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	client := secret.New()
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.GetSecrets(ctx, vaultURI, &maxResults)
 	if err != nil {
 		return nil, err
@@ -231,6 +235,9 @@ func getKeyVaultSecret(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	client := secret.New()
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	vaultURI := "https://" + vaultName + ".vault.azure.net/"
 
 	op, err := client.GetSecret(ctx, vaultURI, name, "")
@@ -264,6 +271,9 @@ func getTurbotData(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	client := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 	maxResults := int32(100)
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, &maxResults)
 	if err != nil {

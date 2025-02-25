@@ -183,6 +183,10 @@ func listLogicAppWorkflows(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	workflowClient := logic.NewWorkflowsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workflowClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workflowClient, d.Connection)
+
 	result, err := workflowClient.ListBySubscription(ctx, nil, "")
 	if err != nil {
 		return nil, err
@@ -228,6 +232,9 @@ func getLogicAppWorkflow(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	workflowClient := logic.NewWorkflowsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workflowClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workflowClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -257,6 +264,9 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

@@ -138,6 +138,9 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	networkClient := network.NewVirtualNetworksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -187,6 +190,9 @@ func getVirtualNetwork(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	networkClient := network.NewVirtualNetworksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

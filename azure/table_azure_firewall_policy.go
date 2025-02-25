@@ -180,6 +180,10 @@ func listFirewallPolicies(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	networkClient := network.NewFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_firewall_policy.listFirewallPolicies", "api_error", err)
@@ -229,6 +233,9 @@ func getFirewallPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	networkClient := network.NewFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

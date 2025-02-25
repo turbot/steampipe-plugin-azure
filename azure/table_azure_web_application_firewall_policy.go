@@ -145,6 +145,9 @@ func listWebApplicationFirewallPolicies(ctx context.Context, d *plugin.QueryData
 	networkClient := network.NewWebApplicationFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_web_application_firewall_policy.listWebApplicationFirewallPolicies", "api_error", err)
@@ -196,6 +199,9 @@ func getWebApplicationFirewallPolicy(ctx context.Context, d *plugin.QueryData, h
 
 	networkClient := network.NewWebApplicationFirewallPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name)
 	if err != nil {

@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/appconfiguration/mgmt/appconfiguration"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -149,6 +149,9 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("listAppConfigurations", "list", err)
@@ -195,6 +198,9 @@ func getAppConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client := appconfiguration.NewConfigurationStoresClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	config, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getAppConfiguration", "get", err)
@@ -223,6 +229,9 @@ func listAppConfigurationDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

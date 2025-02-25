@@ -199,10 +199,13 @@ func listMachineLearningWorkspaces(ctx context.Context, d *plugin.QueryData, _ *
 	}
 	subscriptionID := session.SubscriptionID
 
-	worspaceClient := machinelearningservices.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	worspaceClient.Authorizer = session.Authorizer
+	workspaceClient := machinelearningservices.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	workspaceClient.Authorizer = session.Authorizer
 
-	result, err := worspaceClient.ListBySubscription(ctx, "")
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
+
+	result, err := workspaceClient.ListBySubscription(ctx, "")
 	if err != nil {
 		logger.Error("listMachineLearningWorkspaces", "list", err)
 		return nil, err
@@ -240,6 +243,9 @@ func getMachineLearningWorkspace(ctx context.Context, d *plugin.QueryData, h *pl
 	workspaceClient := machinelearningservices.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workspaceClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -270,6 +276,9 @@ func listMachineLearningWorkspaceDiagnosticSettings(ctx context.Context, d *plug
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

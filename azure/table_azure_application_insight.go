@@ -224,6 +224,9 @@ func listApplicationInsights(ctx context.Context, d *plugin.QueryData, _ *plugin
 	applicationInsightClient := insights.NewComponentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationInsightClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &applicationInsightClient, d.Connection)
+
 	result, err := applicationInsightClient.List(ctx)
 	if err != nil {
 		logger.Error("azure_application_insight.listApplicationInsights", "api_error", err)
@@ -279,6 +282,9 @@ func getApplicationInsight(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	applicationInsightClient := insights.NewComponentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationInsightClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &applicationInsightClient, d.Connection)
 
 	op, err := applicationInsightClient.Get(ctx, resourceGroup, name)
 	if err != nil {

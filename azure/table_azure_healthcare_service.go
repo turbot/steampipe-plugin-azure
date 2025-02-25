@@ -189,6 +189,10 @@ func listHealthcareServices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	healthcareClient := healthcareapis.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	healthcareClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &healthcareClient, d.Connection)
+
 	result, err := healthcareClient.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHealthcareServices", "list", err)
@@ -235,6 +239,9 @@ func getHealthcareService(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	serviceClient := healthcareapis.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	serviceClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &serviceClient, d.Connection)
+
 	op, err := serviceClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getHealthcareService", "get", err)
@@ -271,6 +278,9 @@ func getHealthcarePrivateEndpointConnections(ctx context.Context, d *plugin.Quer
 
 	serviceClient := healthcareapis.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	serviceClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &serviceClient, d.Connection)
 
 	// SDK does not support pagination yet
 	op, err := serviceClient.ListByService(ctx, resourceGroup, *resourceName)
@@ -341,6 +351,9 @@ func getHealthcareServiceDignosticSettings(ctx context.Context, d *plugin.QueryD
 
 	dignosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dignosticSettingClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &dignosticSettingClient, d.Connection)
 
 	op, err := dignosticSettingClient.List(ctx, *resourceId)
 	if err != nil {

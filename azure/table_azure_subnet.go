@@ -173,6 +173,9 @@ func listSubnets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	subnetClient := network.NewSubnetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subnetClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &subnetClient, d.Connection)
+
 	result, err := subnetClient.List(ctx, *resourceGroupName, *virtualNetwork.Name)
 	if err != nil {
 		return nil, err
@@ -216,6 +219,9 @@ func getSubnet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 
 	subnetClient := network.NewSubnetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subnetClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &subnetClient, d.Connection)
 
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 	virtualNetwork := d.EqualsQuals["virtual_network_name"].GetStringValue()

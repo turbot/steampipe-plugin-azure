@@ -21,7 +21,7 @@ func tableAzureMaintenanceConfiguration(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"resource_group", "name"}),
 			Hydrate:    getMaintenanceConfiguration,
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound",  "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
@@ -166,6 +166,9 @@ func listMaintenanceConfigurations(ctx context.Context, d *plugin.QueryData, _ *
 	client := maintenance.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	// The API doesn't support pagination
 	result, err := client.List(ctx)
 	if err != nil {
@@ -206,6 +209,9 @@ func getMaintenanceConfiguration(ctx context.Context, d *plugin.QueryData, h *pl
 
 	client := maintenance.NewConfigurationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

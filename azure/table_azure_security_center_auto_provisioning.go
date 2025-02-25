@@ -76,6 +76,9 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 	autoProvisioningClient := security.NewAutoProvisioningSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	autoProvisioningClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &autoProvisioningClient, d.Connection)
+
 	result, err := autoProvisioningClient.List(ctx)
 	if err != nil {
 		return err, nil

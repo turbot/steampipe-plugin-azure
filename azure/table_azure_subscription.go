@@ -109,6 +109,9 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	client.Authorizer = session.Authorizer
 	subscriptionID := session.SubscriptionID
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, subscriptionID)
 	if err != nil {
 		return nil, err

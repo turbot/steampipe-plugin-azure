@@ -143,6 +143,9 @@ func listAzureStorageSyncs(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	client := storagesync.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureStorageSyncs", "list", err)
@@ -178,6 +181,9 @@ func getAzureStorageSync(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	client := storagesync.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

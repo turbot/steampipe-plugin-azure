@@ -169,6 +169,9 @@ func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 	workspaceClient := databricks.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workspaceClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
+
 	result, err := workspaceClient.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "ListBySubscription", err)
@@ -214,6 +217,9 @@ func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	workspaceClient := databricks.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	workspaceClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
 
 	op, err := workspaceClient.Get(ctx, resourceGroup, workspaceName)
 	if err != nil {

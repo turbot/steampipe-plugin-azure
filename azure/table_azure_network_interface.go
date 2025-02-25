@@ -247,6 +247,9 @@ func listNetworkInterfaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -295,6 +298,9 @@ func getNetworkInterface(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	op, err := networkClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

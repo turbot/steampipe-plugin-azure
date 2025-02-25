@@ -98,6 +98,10 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 	subscriptionID := session.SubscriptionID
 	client := compute.NewSSHPublicKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_compute_ssh_key.listAzureComputeSshKeys", "query_error", err)
@@ -148,6 +152,9 @@ func getAzureComputeSshKey(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	subscriptionID := session.SubscriptionID
 	client := compute.NewSSHPublicKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
