@@ -377,6 +377,10 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// List all containers
 	containerClient := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	containerClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	var containers []storage.ListContainerItem
 
 	result, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")

@@ -45,6 +45,14 @@ type RetryRule struct {
 func getRetryRules(connection *plugin.Connection) *RetryRule {
 	connectionConfig := GetConfig(connection)
 
+	if connectionConfig.MaxErrorRetryAttempts != nil && *connectionConfig.MaxErrorRetryAttempts < 1 {
+		panic("connection config has invalid value for \"max_error_retry_attempts\", it must be greater than or equal to 1")
+	}
+
+	if connectionConfig.MinErrorRetryDelay != nil && *connectionConfig.MinErrorRetryDelay < 1 {
+		panic("connection config has invalid value for \"min_error_retry_delay\", it must be greater than or equal to 1")
+	}
+
 	// Fallback to SDK default value
 	// https://github.com/Azure/go-autorest/blob/main/autorest/client.go#L39
 	maxRetries := 3
