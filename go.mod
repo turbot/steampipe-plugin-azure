@@ -24,7 +24,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.17
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2
-	github.com/Azure/go-autorest/autorest/date v0.3.0
+	github.com/Azure/go-autorest/autorest/date v0.3.1
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v1.0.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
