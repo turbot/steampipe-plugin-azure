@@ -141,6 +141,9 @@ func listPrivateDNSZones(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	dnsClient := privatedns.NewPrivateZonesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dnsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &dnsClient, d.Connection)
+
 	result, err := dnsClient.List(ctx, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_private_dns_zone.listPrivateDNSZones", "query_error", err)
@@ -190,6 +193,9 @@ func getPrivateDNSZone(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	dnsClient := dns.NewZonesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	dnsClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &dnsClient, d.Connection)
 
 	op, err := dnsClient.Get(ctx, resourceGroup, name)
 	if err != nil {

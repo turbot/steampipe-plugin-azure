@@ -178,6 +178,9 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	computeClient := compute.NewImagesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	computeClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &computeClient, d.Connection)
+
 	result, err := computeClient.List(ctx)
 	if err != nil {
 		return nil, err
@@ -227,6 +230,9 @@ func getComputeImage(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	computeClient := compute.NewImagesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	computeClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &computeClient, d.Connection)
 
 	op, err := computeClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {

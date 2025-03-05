@@ -239,6 +239,9 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -294,6 +297,9 @@ func getContainerRegistry(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -313,6 +319,9 @@ func listContainerRegistryLoginCredentials(ctx context.Context, d *plugin.QueryD
 	subscriptionID := session.SubscriptionID
 	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	data := h.Item.(containerregistry.Registry)
 	resourceGroup := strings.Split(*data.ID, "/")[4]
@@ -337,6 +346,9 @@ func listContainerRegistryWebhooks(ctx context.Context, d *plugin.QueryData, h *
 	subscriptionID := session.SubscriptionID
 	client := containerregistry.NewWebhooksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	data := h.Item.(containerregistry.Registry)
 	resourceGroup := strings.Split(*data.ID, "/")[4]
@@ -373,6 +385,9 @@ func listContainerRegistryUsages(ctx context.Context, d *plugin.QueryData, h *pl
 	subscriptionID := session.SubscriptionID
 	client := containerregistry.NewRegistriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	data := h.Item.(containerregistry.Registry)
 	resourceGroup := strings.Split(*data.ID, "/")[4]

@@ -220,6 +220,9 @@ func listHybridKubernetesConnectedClusters(ctx context.Context, d *plugin.QueryD
 	client := hybridkubernetes.NewConnectedClusterClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusters", "list", err)
@@ -266,6 +269,9 @@ func getHybridKubernetesConnectedCluster(ctx context.Context, d *plugin.QueryDat
 	client := hybridkubernetes.NewConnectedClusterClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	cluster, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getHybridKubernetesConnectedCluster", "get", err)
@@ -293,6 +299,10 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 
 	client := kubernetesconfiguration.NewExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	extensions := []kubernetesconfiguration.Extension{}
 	result, err := client.List(ctx, resourceGroup, "Microsoft.Kubernetes", "connectedClusters", *cluster.Name)
 	if err != nil {

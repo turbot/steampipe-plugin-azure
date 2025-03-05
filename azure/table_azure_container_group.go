@@ -183,6 +183,9 @@ func listContainerGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	client := containerinstance.NewContainerGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_container_group.listContainerGroups", "api_error", err)
@@ -221,7 +224,7 @@ func listContainerGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 
 func getContainerGroup(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
-	name := d. EqualsQualString("name")
+	name := d.EqualsQualString("name")
 	resourceGroup := d.EqualsQualString("resource_group")
 
 	// Return nil, if no input provided
@@ -238,6 +241,9 @@ func getContainerGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	subscriptionID := session.SubscriptionID
 	client := containerinstance.NewContainerGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

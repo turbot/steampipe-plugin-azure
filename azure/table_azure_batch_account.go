@@ -189,6 +189,9 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	batchAccountClient := batch.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	batchAccountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &batchAccountClient, d.Connection)
+
 	result, err := batchAccountClient.List(context.Background())
 	if err != nil {
 		return nil, err
@@ -235,6 +238,9 @@ func getBatchAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	batchAccountClient := batch.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	batchAccountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &batchAccountClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -264,6 +270,9 @@ func listBatchAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryData
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

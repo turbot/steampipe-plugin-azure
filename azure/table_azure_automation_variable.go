@@ -134,6 +134,9 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 	accountClient := automation.NewVariableClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	result, err := accountClient.ListByAutomationAccount(ctx, resourceGroupName, *accountName)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationVariables", "api_error", err)
@@ -185,6 +188,9 @@ func getAutomationVariable(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	accountClient := automation.NewVariableClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
 
 	op, err := accountClient.Get(ctx, resourceGroup, accountName, name)
 	if err != nil {

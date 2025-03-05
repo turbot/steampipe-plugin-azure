@@ -156,6 +156,9 @@ func listCosmosDBMongoDatabases(ctx context.Context, d *plugin.QueryData, h *plu
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
+
 	result, err := documentDBClient.ListMongoDBDatabases(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
 		return nil, err
@@ -198,6 +201,9 @@ func getCosmosDBMongoDatabase(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &databaseAccountClient, d.Connection)
 
 	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
@@ -248,6 +254,9 @@ func getCosmosDBMongoThroughput(ctx context.Context, d *plugin.QueryData, h *plu
 
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
 
 	result, err := documentDBClient.GetMongoDBDatabaseThroughput(ctx, *resourceGroup, *accountName, *name)
 	if err != nil {

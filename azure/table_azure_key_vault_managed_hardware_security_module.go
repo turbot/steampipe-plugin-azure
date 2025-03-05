@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -162,6 +162,9 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 	hsmClient.Authorizer = session.Authorizer
 	maxResults := int32(100)
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &hsmClient, d.Connection)
+
 	result, err := hsmClient.ListBySubscription(ctx, &maxResults)
 	if err != nil {
 		return nil, err
@@ -223,6 +226,9 @@ func getKeyVaultManagedHardwareSecurityModule(ctx context.Context, d *plugin.Que
 	client := keyvault.NewManagedHsmsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -250,6 +256,9 @@ func listKeyVaultHsmDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, *id)
 	if err != nil {

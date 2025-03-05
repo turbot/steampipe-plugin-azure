@@ -3,8 +3,8 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/frontdoor/mgmt/frontdoor"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -178,6 +178,9 @@ func listFrontDoors(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	client := frontdoor.NewFrontDoorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listFrontDoors", "list", err)
@@ -224,6 +227,9 @@ func getFrontDoor(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	client := frontdoor.NewFrontDoorsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	door, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getFrontDoor", "get", err)
@@ -252,6 +258,9 @@ func listFrontDoorDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

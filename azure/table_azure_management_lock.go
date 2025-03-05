@@ -113,6 +113,9 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	locksClient := locks.NewManagementLocksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &locksClient, d.Connection)
+
 	result, err := locksClient.ListAtSubscriptionLevel(ctx, subscriptionID)
 	if err != nil {
 		return nil, err
@@ -163,6 +166,9 @@ func getManagementLock(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	locksClient := locks.NewManagementLocksClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	locksClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &locksClient, d.Connection)
 
 	filter := fmt.Sprintf("name eq '%s'", name)
 	op, err := locksClient.ListAtResourceGroupLevel(ctx, resourceGroup, filter)

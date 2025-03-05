@@ -77,6 +77,10 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	resourcesClient := resources.NewProvidersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourcesClient, d.Connection)
+
 	result, err := resourcesClient.List(ctx, "")
 	if err != nil {
 		return nil, err
@@ -123,6 +127,9 @@ func getProvider(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	resourcesClient := resources.NewProvidersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	resourcesClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &resourcesClient, d.Connection)
 
 	op, err := resourcesClient.Get(ctx, namespace, "")
 	if err != nil {

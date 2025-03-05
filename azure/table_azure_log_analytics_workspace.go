@@ -194,6 +194,9 @@ func listLogAnalyticsWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plu
 	client := operationalinsights.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		logger.Error("azure_log_analytics_workspace.listLogAnalyticsWorkspaces", "api_error", err)
@@ -231,6 +234,9 @@ func getLogAnalyticsWorkspace(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	client := operationalinsights.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

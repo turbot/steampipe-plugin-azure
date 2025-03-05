@@ -305,6 +305,9 @@ func listApplicationGateways(ctx context.Context, d *plugin.QueryData, _ *plugin
 	client := network.NewApplicationGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListAll(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listApplicationGateways", "list", err)
@@ -351,6 +354,9 @@ func getApplicationGateway(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := network.NewApplicationGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	gateway, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getApplicationGateway", "get", err)
@@ -379,6 +385,9 @@ func listApplicationGatewayDiagnosticSettings(ctx context.Context, d *plugin.Que
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

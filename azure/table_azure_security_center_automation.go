@@ -129,6 +129,9 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &automationClient, d.Connection)
+
 	result, err := automationClient.List(ctx)
 	if err != nil {
 		return err, nil
@@ -175,6 +178,9 @@ func getSecurityCenterAutomation(ctx context.Context, d *plugin.QueryData, _ *pl
 	subscriptionID := session.SubscriptionID
 	automationClient := security.NewAutomationsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	automationClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &automationClient, d.Connection)
 
 	automation, err := automationClient.Get(ctx, resourceGroup, name)
 	if err != nil {

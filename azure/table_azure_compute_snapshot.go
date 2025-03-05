@@ -258,6 +258,10 @@ func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plug
 	subscriptionID := session.SubscriptionID
 	client := compute.NewSnapshotsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -306,6 +310,9 @@ func getAzureComputeSnapshot(ctx context.Context, d *plugin.QueryData, h *plugin
 	subscriptionID := session.SubscriptionID
 	client := compute.NewSnapshotsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

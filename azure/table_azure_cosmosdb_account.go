@@ -277,7 +277,6 @@ func tableAzureCosmosDBAccount(_ context.Context) *plugin.Table {
 	}
 }
 
-
 type PrivateConnectionInfo struct {
 	PrivateEndpointConnectionId                      string
 	PrivateEndpointId                                string
@@ -300,6 +299,9 @@ func listCosmosDBAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	documentDBClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
 
 	result, err := documentDBClient.List(ctx)
 	if err != nil {
@@ -334,6 +336,9 @@ func getCosmosDBAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	documentDBClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
 
 	op, err := documentDBClient.Get(ctx, resourceGroup, name)
 	if err != nil {

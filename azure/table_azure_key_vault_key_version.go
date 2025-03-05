@@ -200,6 +200,10 @@ func listKeyVaultKeyVersions(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	var keys []keyvault.Key
 	result, err := client.List(ctx, resourceGroup, *vault.Name)
 	if err != nil {
@@ -282,6 +286,9 @@ func getRowDataForKeyVersion(ctx context.Context, d *plugin.QueryData, h *plugin
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.ListVersions(ctx, resourceGroup, *vault.Name, *key.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_key_vault_key_version.getRowDataForKeyVersion", "api_error", err)
@@ -322,6 +329,9 @@ func getKeyVaultKeyVersion(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.GetVersion(ctx, resourceGroup, vaultName, name, keyVersion)
 	if err != nil {

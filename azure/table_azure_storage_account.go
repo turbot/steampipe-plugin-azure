@@ -507,6 +507,9 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	result, err := storageClient.List(ctx)
 	if err != nil {
 		logger.Error("listStorageAccounts", "api error", err)
@@ -559,6 +562,9 @@ func getStorageAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	op, err := storageClient.GetProperties(ctx, resourceGroup, name, storage.AccountExpand("blobRestoreStatus"))
 	if err != nil {
 		return nil, err
@@ -578,6 +584,9 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 
 	storageClient := storage.NewManagementPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	op, err := storageClient.Get(ctx, *accountData.ResourceGroup, *accountData.Name)
 	if err != nil {
@@ -622,6 +631,9 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 	storageClient := storage.NewBlobServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	op, err := storageClient.GetServiceProperties(ctx, *accountData.ResourceGroup, *accountData.Name)
 	if err != nil {
 		return nil, err
@@ -645,6 +657,9 @@ func getAzureStorageAccountTableProperties(ctx context.Context, d *plugin.QueryD
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	// List Storage account keys
 	keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
@@ -692,6 +707,9 @@ func listAzureStorageAccountEncryptionScope(ctx context.Context, d *plugin.Query
 	storageClient := storage.NewEncryptionScopesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	encryptionScope, err := storageClient.List(ctx, *accountData.ResourceGroup, *accountData.Name)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureStorageAccountEncryptionScope", "List", err)
@@ -731,6 +749,9 @@ func listAzureStorageAccountAccessKeys(ctx context.Context, d *plugin.QueryData,
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	keys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 	if err != nil {
@@ -774,6 +795,9 @@ func getAzureStorageAccountBlobServiceLogging(ctx context.Context, d *plugin.Que
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 	if err != nil {
@@ -828,6 +852,9 @@ func getAzureStorageAccountFileProperties(ctx context.Context, d *plugin.QueryDa
 	storageClient := storage.NewFileServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	op, err := storageClient.GetServiceProperties(ctx, *accountData.ResourceGroup, *accountData.Name)
 	if err != nil {
 		if strings.Contains(err.Error(), "FeatureNotSupportedForAccount") {
@@ -854,6 +881,9 @@ func getAzureStorageAccountQueueProperties(ctx context.Context, d *plugin.QueryD
 
 		storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 		storageClient.Authorizer = session.Authorizer
+
+		// Apply Retry rule
+		ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 		accountKeys, err := storageClient.ListKeys(ctx, *accountData.ResourceGroup, *accountData.Name, "")
 		if err != nil {
@@ -909,6 +939,9 @@ func listStorageAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

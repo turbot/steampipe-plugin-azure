@@ -158,6 +158,9 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	factoryClient := datafactory.NewFactoriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &factoryClient, d.Connection)
+
 	result, err := factoryClient.List(ctx)
 	if err != nil {
 		return nil, err
@@ -204,6 +207,9 @@ func getDataFactory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	factoryClient := datafactory.NewFactoriesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	factoryClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &factoryClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -236,6 +242,9 @@ func listDataFactoryPrivateEndpointConnections(ctx context.Context, d *plugin.Qu
 
 	connClient := datafactory.NewPrivateEndPointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	connClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &connClient, d.Connection)
 
 	op, err := connClient.ListByFactory(ctx, resourceGroup, *factoryName)
 	if err != nil {

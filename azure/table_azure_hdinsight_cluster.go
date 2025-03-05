@@ -242,6 +242,9 @@ func listHDInsightClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	client := hdinsight.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHDInsightClusters", "list", err)
@@ -288,6 +291,9 @@ func getHDInsightCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	client := hdinsight.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getHDInsightCluster", "get", err)
@@ -316,6 +322,9 @@ func listHDInsightClusterDiagnosticSettings(ctx context.Context, d *plugin.Query
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

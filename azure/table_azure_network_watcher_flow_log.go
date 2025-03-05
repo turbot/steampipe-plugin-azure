@@ -174,6 +174,9 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 	client := network.NewFlowLogsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx, resourceGroupID, *networkWatcherDetails.Name)
 	if err != nil {
 		return nil, err
@@ -223,6 +226,9 @@ func getNetworkWatcherFlowLog(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	client := network.NewFlowLogsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, networkWatcherName, name)
 	if err != nil {

@@ -130,6 +130,9 @@ func listDiagnosticSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	diagnosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	diagnosticSettingClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &diagnosticSettingClient, d.Connection)
+
 	resourceURI := "/subscriptions/" + subscriptionID
 	result, err := diagnosticSettingClient.List(ctx, resourceURI)
 	if err != nil {
@@ -163,6 +166,9 @@ func getDiagnosticSetting(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	diagnosticSettingClient := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	diagnosticSettingClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &diagnosticSettingClient, d.Connection)
 
 	resourceURI := "/subscriptions/" + subscriptionID
 	op, err := diagnosticSettingClient.Get(ctx, resourceURI, name)

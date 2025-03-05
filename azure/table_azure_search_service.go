@@ -170,6 +170,9 @@ func listSearchServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	searchClient := search.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	searchClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &searchClient, d.Connection)
+
 	result, err := searchClient.ListBySubscription(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -222,6 +225,9 @@ func getSearchService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	searchClient := search.NewServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	searchClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &searchClient, d.Connection)
+
 	op, err := searchClient.Get(ctx, resourceGroup, name, nil)
 	if err != nil {
 		return nil, err
@@ -247,6 +253,9 @@ func listSearchServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, *id)
 	if err != nil {

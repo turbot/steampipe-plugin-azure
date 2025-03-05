@@ -117,6 +117,9 @@ func listStorageTableServices(ctx context.Context, d *plugin.QueryData, h *plugi
 	storageClient := storage.NewTableServicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
 		return nil, err
@@ -150,6 +153,9 @@ func getStorageTableService(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
 

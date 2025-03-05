@@ -114,6 +114,9 @@ func listMonitorLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	client := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	// API doesn't support pagination
 	result, err := client.List(ctx)
 	if err != nil {
@@ -149,6 +152,9 @@ func getMonitorLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	client := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, name)
 	if err != nil {

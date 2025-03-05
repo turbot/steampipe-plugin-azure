@@ -24,7 +24,7 @@ func tableAzurePrivateEndpoint(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listPrivateEndpoints,
-			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
+			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -162,6 +162,9 @@ func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	client := network.NewPrivateEndpointsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	resourceGroupName := h.Item.(resources.Group).Name
 
 	if d.EqualsQualString("resource_group") != "" && d.EqualsQualString("resource_group") != *resourceGroupName {
@@ -211,6 +214,9 @@ func getPrivateEndpoint(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	client := network.NewPrivateEndpointsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {

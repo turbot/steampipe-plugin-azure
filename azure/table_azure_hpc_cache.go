@@ -186,6 +186,9 @@ func listHPCCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	client := storagecache.NewCachesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listHPCCaches", "list", err)
@@ -231,6 +234,9 @@ func getHPCCache(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	client := storagecache.NewCachesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

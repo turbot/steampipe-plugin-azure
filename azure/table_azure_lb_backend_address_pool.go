@@ -141,6 +141,9 @@ func listBackendAddressPools(ctx context.Context, d *plugin.QueryData, h *plugin
 	listBackendAddressPoolsClient := network.NewLoadBalancerBackendAddressPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listBackendAddressPoolsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &listBackendAddressPoolsClient, d.Connection)
+
 	result, err := listBackendAddressPoolsClient.List(ctx, resourceGroup, *loadBalancer.Name)
 	if err != nil {
 		return nil, err
@@ -192,10 +195,13 @@ func getBackendAddressPool(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	}
 	subscriptionID := session.SubscriptionID
 
-	BackendAddressPoolClient := network.NewLoadBalancerBackendAddressPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	BackendAddressPoolClient.Authorizer = session.Authorizer
+	backendAddressPoolClient := network.NewLoadBalancerBackendAddressPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	backendAddressPoolClient.Authorizer = session.Authorizer
 
-	op, err := BackendAddressPoolClient.Get(ctx, resourceGroup, loadBalancerName, backendAddressPoolName)
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &backendAddressPoolClient, d.Connection)
+
+	op, err := backendAddressPoolClient.Get(ctx, resourceGroup, loadBalancerName, backendAddressPoolName)
 	if err != nil {
 		return nil, err
 	}

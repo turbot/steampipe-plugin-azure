@@ -167,6 +167,9 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 	client := network.NewInterfacesClient(subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	scaleSetinfo := h.Item.(compute.VirtualMachineScaleSet)
 	resourceGroupName := strings.Split(string(*scaleSetinfo.ID), "/")[4]
 

@@ -192,6 +192,9 @@ func listSignalRServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	client := signalr.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listSignalRServices", "list", err)
@@ -238,6 +241,9 @@ func getSignalRService(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	client := signalr.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getSignalRService", "get", err)
@@ -266,6 +272,9 @@ func listSignalRServiceDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

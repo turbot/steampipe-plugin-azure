@@ -118,6 +118,9 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	storageClient := storage.NewQueueClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	result, err := storageClient.List(ctx, *account.ResourceGroup, *account.Name, "", "")
 	if err != nil {
 		/*
@@ -175,6 +178,9 @@ func getStorageQueue(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
 	storageDetails, err := storageClient.GetProperties(ctx, resourceGroup, accountName, "")
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -141,6 +141,9 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	listLoadBalancerProbesClient := network.NewLoadBalancerProbesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listLoadBalancerProbesClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &listLoadBalancerProbesClient, d.Connection)
+
 	result, err := listLoadBalancerProbesClient.List(ctx, resourceGroup, *loadBalancer.Name)
 	if err != nil {
 		return nil, err
@@ -194,6 +197,9 @@ func getLoadBalancerProbe(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	LoadBalancerProbeClient := network.NewLoadBalancerProbesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancerProbeClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &LoadBalancerProbeClient, d.Connection)
 
 	op, err := LoadBalancerProbeClient.Get(ctx, resourceGroup, loadBalancerName, probeName)
 	if err != nil {
