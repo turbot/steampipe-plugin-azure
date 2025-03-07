@@ -1,3 +1,18 @@
+## v1.2.0 [2025-03-07]
+
+_What's new?_
+
+- Added optional config arguments `max_error_retry_attempts` and `min_error_retry_delay` to allow customization of the error retry timings. For more information please see [Azure plugin configuration](https://hub.steampipe.io/plugins/turbot/azure#configuration). ([#873](https://github.com/turbot/steampipe-plugin-azure/pull/873))
+
+_Bug fixes_
+
+- Fixed the `scope` column of the `azure_role_assignment` table to correctly return data instead of `nil`. ([#868](https://github.com/turbot/steampipe-plugin-azure/pull/868))
+
+_Dependencies_
+
+- Recompiled plugin with Go version `1.23.1`.
+- Recompiled plugin with [steampipe-plugin-sdk v5.11.3](https://github.com/turbot/steampipe-plugin-sdk/blob/develop/CHANGELOG.md#v5113-2025-02-11) that addresses critical and high vulnerabilities in dependent packages.
+
 ## v1.1.1 [2025-02-06]
 
 _Bug fixes_
