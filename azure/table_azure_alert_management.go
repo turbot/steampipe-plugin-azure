@@ -268,6 +268,9 @@ func listAlertManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	alertManagementClient := alertsmanagement.NewAlertsClientWithBaseURI(session.ResourceManagerEndpoint, "subscriptions/"+subscriptionID, subscriptionID, "")
 	alertManagementClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &alertManagementClient, d.Connection)
+
 	var targetResource, targetResourceType, targetResourceGroup, alertRule, smartGroupID, sortOrder, selectParameter, customTimeRange string
 	var includeContext, includeEgressConfig bool = true, true
 	var pageCount *int32
@@ -344,6 +347,9 @@ func getAlertManagement(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	alertManagementClient := alertsmanagement.NewAlertsClientWithBaseURI(session.ResourceManagerEndpoint, "", subscriptionID, "")
 	alertManagementClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &alertManagementClient, d.Connection)
+
 	op, err := alertManagementClient.GetByID(ctx, alertId)
 	if err != nil {
 		return nil, err
@@ -352,7 +358,7 @@ func getAlertManagement(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	return op, nil
 }
 
-//// INPUT PARAMETER FUNCTIONS
+// // INPUT PARAMETER FUNCTIONS
 // We currently lack an SDK-defined function for retrieving the enum value based on the enum string value. To achieve this, explicit manipulation is required.
 func getShortOrderValue(s string) alertsmanagement.AlertsSortByFields {
 	sortByFields := alertsmanagement.PossibleAlertsSortByFieldsValues()

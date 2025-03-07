@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -146,6 +146,9 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 	listLoadBalancerOutboundClient := network.NewLoadBalancerOutboundRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	listLoadBalancerOutboundClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &listLoadBalancerOutboundClient, d.Connection)
+
 	result, err := listLoadBalancerOutboundClient.List(ctx, resourceGroup, *loadBalancer.Name)
 	if err != nil {
 		return nil, err
@@ -199,6 +202,9 @@ func getLoadBalancerOutboundRule(ctx context.Context, d *plugin.QueryData, h *pl
 
 	LoadBalancerOutboundRuleClient := network.NewLoadBalancerOutboundRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	LoadBalancerOutboundRuleClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &LoadBalancerOutboundRuleClient, d.Connection)
 
 	op, err := LoadBalancerOutboundRuleClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName)
 	if err != nil {

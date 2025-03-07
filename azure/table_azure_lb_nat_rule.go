@@ -159,6 +159,9 @@ func listLoadBalancerNatRules(ctx context.Context, d *plugin.QueryData, h *plugi
 	natClient := network.NewInboundNatRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	natClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &natClient, d.Connection)
+
 	result, err := natClient.List(ctx, resourceGroup, *loadBalancer.Name)
 	if err != nil {
 		return nil, err
@@ -212,6 +215,9 @@ func getLoadBalancerNatRule(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	natClient := network.NewInboundNatRulesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	natClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &natClient, d.Connection)
 
 	op, err := natClient.Get(ctx, resourceGroup, loadBalancerName, loadBalancerOutboundRuleName, "")
 	if err != nil {

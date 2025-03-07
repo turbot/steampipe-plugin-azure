@@ -6,10 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/sql/mgmt/sql"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 )
 
 //// TABLE DEFINITION
@@ -153,6 +153,9 @@ func listMSSQLElasticPools(ctx context.Context, d *plugin.QueryData, h *plugin.H
 	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	server := h.Item.(armsql.Server)
 	serverName := *server.Name
 	resourceGroup := strings.Split(*server.ID, "/")[4]
@@ -195,6 +198,9 @@ func getMSSQLElasticPool(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	client := sql.NewElasticPoolsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, serverName, name)
 	if err != nil {

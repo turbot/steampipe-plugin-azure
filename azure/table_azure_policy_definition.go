@@ -112,10 +112,13 @@ func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	PolicyClient.Authorizer = session.Authorizer
+	policyClient := policy.NewDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	policyClient.Authorizer = session.Authorizer
 
-	result, err := PolicyClient.List(ctx)
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &policyClient, d.Connection)
+
+	result, err := policyClient.List(ctx)
 	if err != nil {
 		return err, nil
 	}

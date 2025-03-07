@@ -203,6 +203,9 @@ func listCosmosDBMongoCollections(ctx context.Context, d *plugin.QueryData, h *p
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
+
 	result, err := documentDBClient.ListMongoDBCollections(ctx, *account.ResourceGroup, *account.Name, databaseName)
 	if err != nil {
 		logger.Error("azure_cosmosdb_mongo_collection.listCosmosDBMongoCollections", "api_error", err)
@@ -248,6 +251,9 @@ func getCosmosDBMongoCollection(ctx context.Context, d *plugin.QueryData, h *plu
 	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &databaseAccountClient, d.Connection)
+
 	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {
 		return nil, err
@@ -284,6 +290,9 @@ func getCosmosDBMongoCollectionThroughput(ctx context.Context, d *plugin.QueryDa
 
 	documentDBClient := documentdb.NewMongoDBResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
 
 	result, err := documentDBClient.GetMongoDBCollectionThroughput(ctx, *resourceGroup, *accountName, *databaseName, *collectionName)
 	if err != nil {

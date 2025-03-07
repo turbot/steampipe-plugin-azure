@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -213,6 +213,10 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 
 	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	data := h.Item.(resources.Group)
 	resourceGroupName := *data.Name
 
@@ -271,6 +275,9 @@ func getVirtualNetworkGateway(ctx context.Context, d *plugin.QueryData, h *plugi
 	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
+
 	op, err := networkClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -295,6 +302,9 @@ func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData
 
 	networkClient := network.NewVirtualNetworkGatewaysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	var gatewayConnections []network.VirtualNetworkGatewayConnectionListEntity
 	result, err := networkClient.ListConnections(ctx, resourceGroup, name)

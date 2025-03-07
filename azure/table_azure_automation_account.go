@@ -17,8 +17,8 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 		Name:        "azure_automation_account",
 		Description: "Azure Automation Account",
 		Get: &plugin.GetConfig{
-			KeyColumns:   plugin.AllColumns([]string{"name", "resource_group"}),
-			Hydrate:      getAutomationAccount,
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			Hydrate:    getAutomationAccount,
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -146,6 +146,9 @@ func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	accountClient := automation.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	result, err := accountClient.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_automation_variable.listAutomationAccounts", "api_error", err)
@@ -196,6 +199,9 @@ func getAutomationAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	accountClient := automation.NewAccountClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
 
 	op, err := accountClient.Get(ctx, resourceGroup, name)
 	if err != nil {

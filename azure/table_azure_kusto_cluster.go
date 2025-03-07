@@ -215,6 +215,9 @@ func listKustoClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	kustoClient := kusto.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	kustoClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &kustoClient, d.Connection)
+
 	//Pagination does not support for kusto cluster list call till date
 	result, err := kustoClient.List(ctx)
 	if err != nil {
@@ -250,6 +253,9 @@ func getKustoCluster(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	kustoClient := kusto.NewClustersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	kustoClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &kustoClient, d.Connection)
 
 	op, err := kustoClient.Get(ctx, resourceGroup, name)
 	if err != nil {

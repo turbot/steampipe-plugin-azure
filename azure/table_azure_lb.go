@@ -180,10 +180,13 @@ func listLoadBalancers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	LoadBalancersClient.Authorizer = session.Authorizer
+	loadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	loadBalancersClient.Authorizer = session.Authorizer
 
-	result, err := LoadBalancersClient.ListAll(ctx)
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &loadBalancersClient, d.Connection)
+
+	result, err := loadBalancersClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -234,10 +237,13 @@ func getLoadBalancer(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 	subscriptionID := session.SubscriptionID
 
-	LoadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	LoadBalancersClient.Authorizer = session.Authorizer
+	loadBalancersClient := network.NewLoadBalancersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	loadBalancersClient.Authorizer = session.Authorizer
 
-	op, err := LoadBalancersClient.Get(ctx, resourceGroup, name, "")
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &loadBalancersClient, d.Connection)
+
+	op, err := loadBalancersClient.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -264,6 +270,9 @@ func listLoadBalancerDiagnosticSettings(ctx context.Context, d *plugin.QueryData
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

@@ -153,6 +153,9 @@ func listConsumptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	consumptionClient := consumption.NewUsageDetailsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	consumptionClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &consumptionClient, d.Connection)
+
 	scope := "/subscriptions/" + subscriptionID + "/" // Default scope is subscription
 	if d.EqualsQualString("scope") != "" {
 		scope = d.EqualsQualString("scope")

@@ -113,6 +113,9 @@ func listCosmosDBRestorableDatabaseAccounts(ctx context.Context, d *plugin.Query
 	documentDBClient := documentdb.NewRestorableDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, session.SubscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
+
 	result, err := documentDBClient.List(ctx)
 	if err != nil {
 		logger.Error("azure_cosmosdb_restorable_database_account.listCosmosDBRestorableDatabaseAccounts", "api_error", err)
@@ -143,7 +146,7 @@ func mapRestorableLocations(ctx context.Context, d *transform.TransformData) (in
 
 	restorableLocations := *data.RestorableDatabaseAccountProperties.RestorableLocations
 
-	if restorableLocations == nil || len(restorableLocations) < 1 {
+	if len(restorableLocations) < 1 {
 		return nil, nil
 	}
 

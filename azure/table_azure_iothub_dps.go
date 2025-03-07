@@ -170,6 +170,10 @@ func listIotHubDpses(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	iotDpsClient := iothub.NewIotDpsResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotDpsClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &iotDpsClient, d.Connection)
+
 	result, err := iotDpsClient.ListBySubscription(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listIotHubDpses", "ListBySubscription", err)
@@ -207,6 +211,9 @@ func getIotHubDps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	iotDpsClient := iothub.NewIotDpsResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotDpsClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &iotDpsClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -237,6 +244,9 @@ func listIotDpsDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *p
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

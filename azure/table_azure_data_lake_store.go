@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/datalake/analytics/mgmt/account"
+	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -227,6 +227,9 @@ func listDataLakeStores(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	result, err := accountClient.List(ctx, "", nil, nil, "", "", nil)
 	if err != nil {
 		return nil, err
@@ -273,6 +276,9 @@ func getDataLakeStore(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	accountClient := account.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	accountClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &accountClient, d.Connection)
+
 	var name, resourceGroup string
 	if h.Item != nil {
 		data := h.Item.(account.DataLakeAnalyticsAccountBasic)
@@ -310,6 +316,9 @@ func listDataLakeStoreDiagnosticSettings(ctx context.Context, d *plugin.QueryDat
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

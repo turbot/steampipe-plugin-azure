@@ -224,6 +224,10 @@ func listRedisCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	subscriptionID := session.SubscriptionID
 	client := redis.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		return nil, err
@@ -278,6 +282,9 @@ func getRedisCache(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	subscriptionID := session.SubscriptionID
 	client := redis.NewClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

@@ -225,6 +225,10 @@ func listIotHubs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 	iotHubClient := devices.NewIotHubResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &iotHubClient, d.Connection)
+
 	result, err := iotHubClient.ListBySubscription(ctx)
 	if err != nil {
 		return nil, err
@@ -270,6 +274,9 @@ func getIotHub(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	iotHubClient := devices.NewIotHubResourceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	iotHubClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &iotHubClient, d.Connection)
+
 	name := d.EqualsQuals["name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 
@@ -299,6 +306,9 @@ func listIotHubDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *p
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

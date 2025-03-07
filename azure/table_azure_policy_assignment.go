@@ -132,10 +132,13 @@ func listPolicyAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	PolicyClient.Authorizer = session.Authorizer
+	policyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	policyClient.Authorizer = session.Authorizer
 
-	result, err := PolicyClient.List(ctx, "")
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &policyClient, d.Connection)
+
+	result, err := policyClient.List(ctx, "")
 	if err != nil {
 		return err, nil
 	}
@@ -178,10 +181,13 @@ func getPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	id := d.EqualsQuals["id"].GetStringValue()
 
 	subscriptionID := session.SubscriptionID
-	PolicyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	PolicyClient.Authorizer = session.Authorizer
+	policyClient := policy.NewAssignmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	policyClient.Authorizer = session.Authorizer
 
-	policy, err := PolicyClient.GetByID(ctx, id)
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &policyClient, d.Connection)
+
+	policy, err := policyClient.GetByID(ctx, id)
 	if err != nil {
 		return err, nil
 	}

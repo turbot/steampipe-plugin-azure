@@ -88,6 +88,9 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &settingClient, d.Connection)
+
 	result, err := settingClient.List(ctx)
 	if err != nil {
 		return err, nil
@@ -185,6 +188,9 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 	subscriptionID := session.SubscriptionID
 	settingClient := security.NewSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &settingClient, d.Connection)
 
 	setting, err := settingClient.Get(ctx, security.SettingName4(name))
 	if err != nil {

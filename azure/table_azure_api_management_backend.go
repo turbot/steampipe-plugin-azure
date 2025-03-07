@@ -185,6 +185,9 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	apiManagementBackendClient := apimanagement.NewBackendClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementBackendClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &apiManagementBackendClient, d.Connection)
+
 	// Build filter string
 	filter := ""
 	if d.EqualsQualString("name") != "" || d.EqualsQualString("url") != "" {
@@ -279,6 +282,9 @@ func getAPIManagementBackend(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	apiManagementBackendClient := apimanagement.NewBackendClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementBackendClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &apiManagementBackendClient, d.Connection)
 
 	op, err := apiManagementBackendClient.Get(ctx, resourceGroup, serviceName, backendID)
 	if err != nil {

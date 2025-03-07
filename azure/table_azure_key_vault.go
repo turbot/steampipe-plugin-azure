@@ -220,6 +220,9 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	keyVaultClient.Authorizer = session.Authorizer
 	maxResults := int32(100)
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &keyVaultClient, d.Connection)
+
 	// Pagination is not handled, as the API always sends value of NotDone() as true,
 	// and the list goes to infinite
 	result, err := keyVaultClient.List(ctx, &maxResults)
@@ -279,6 +282,9 @@ func getKeyVault(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	client := keyvault.NewVaultsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -306,6 +312,9 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {

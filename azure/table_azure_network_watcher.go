@@ -103,6 +103,9 @@ func listNetworkWatchers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	networkWatcherClient := network.NewWatchersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkWatcherClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkWatcherClient, d.Connection)
+
 	result, err := networkWatcherClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -136,6 +139,9 @@ func getNetworkWatcher(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 
 	networkWatcherClient := network.NewWatchersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkWatcherClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkWatcherClient, d.Connection)
 
 	op, err := networkWatcherClient.Get(ctx, resourceGroup, name)
 	if err != nil {

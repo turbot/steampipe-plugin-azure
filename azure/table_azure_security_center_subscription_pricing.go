@@ -84,6 +84,9 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &settingClient, d.Connection)
+
 	result, err := settingClient.List(ctx)
 	if err != nil {
 		return err, nil
@@ -118,6 +121,9 @@ func getSecurityCenterPricing(ctx context.Context, d *plugin.QueryData, _ *plugi
 	subscriptionID := session.SubscriptionID
 	settingClient := security.NewPricingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	settingClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &settingClient, d.Connection)
 
 	setting, err := settingClient.Get(ctx, name)
 	if err != nil {

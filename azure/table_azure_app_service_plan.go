@@ -231,6 +231,9 @@ func listAppServicePlans(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
+
 	result, err := webClient.List(ctx, types.Bool(true))
 	if err != nil {
 		return nil, err
@@ -286,6 +289,9 @@ func getAppServicePlan(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
+
 	op, err := webClient.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -319,6 +325,9 @@ func getServicePlanApps(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	webClient := web.NewAppServicePlansClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	webClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &webClient, d.Connection)
 
 	op, err := webClient.ListWebApps(ctx, resourceGroupName, *servicePlan.Name, "", "", "")
 

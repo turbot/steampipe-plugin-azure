@@ -159,6 +159,9 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 	subAssessmentClient := security.NewSubAssessmentsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	subAssessmentClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &subAssessmentClient, d.Connection)
+
 	result, err := subAssessmentClient.ListAll(ctx, "subscriptions/"+subscriptionID)
 	if err != nil {
 		logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "query_error", err)

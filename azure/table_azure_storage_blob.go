@@ -360,6 +360,10 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// List storage account keys
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	keys, err := storageClient.ListKeys(ctx, resourceGroup, accountName, "")
 	if err != nil {
 		return nil, err
@@ -373,6 +377,10 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	// List all containers
 	containerClient := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	containerClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &storageClient, d.Connection)
+
 	var containers []storage.ListContainerItem
 
 	result, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
@@ -398,7 +406,7 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 		for _, data := range blobs {
 			d.StreamListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
-			
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {

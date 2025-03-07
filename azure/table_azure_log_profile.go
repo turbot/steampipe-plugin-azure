@@ -127,6 +127,9 @@ func listLogProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	logProfileClient := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logProfileClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &logProfileClient, d.Connection)
+
 	result, err := logProfileClient.List(ctx)
 	if err != nil {
 		return nil, err
@@ -159,6 +162,9 @@ func getLogProfile(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 
 	logProfileClient := insights.NewLogProfilesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	logProfileClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &logProfileClient, d.Connection)
 
 	op, err := logProfileClient.Get(ctx, name)
 	if err != nil {

@@ -142,6 +142,10 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 	subscriptionID := session.SubscriptionID
 	client := compute.NewAvailabilitySetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx, "")
 	if err != nil {
 		return nil, err
@@ -202,6 +206,9 @@ func getAzureComputeAvailabilitySet(ctx context.Context, d *plugin.QueryData, h 
 	subscriptionID := session.SubscriptionID
 	client := compute.NewAvailabilitySetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

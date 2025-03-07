@@ -83,6 +83,9 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 	client := security.NewJitNetworkAccessPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return err, nil

@@ -125,6 +125,10 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDiskAccessesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "list_err", err)
@@ -169,6 +173,9 @@ func getAzureComputeDiskAccess(ctx context.Context, d *plugin.QueryData, h *plug
 	subscriptionID := session.SubscriptionID
 	client := compute.NewDiskAccessesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	diskAccess, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

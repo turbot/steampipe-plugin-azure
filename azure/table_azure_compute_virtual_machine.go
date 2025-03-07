@@ -417,6 +417,10 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListAll(ctx, "", "")
 	if err != nil {
 		return nil, err
@@ -466,6 +470,9 @@ func getComputeVirtualMachine(ctx context.Context, d *plugin.QueryData, h *plugi
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name, "")
 	if err != nil {
 		return nil, err
@@ -494,6 +501,9 @@ func getComputeVirtualMachineInstanceView(ctx context.Context, d *plugin.QueryDa
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.InstanceView(ctx, resourceGroupName, *virtualMachine.Name)
 	if err != nil {
 		return nil, err
@@ -516,6 +526,9 @@ func getVMNics(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	subscriptionID := session.SubscriptionID
 	networkClient := network.NewInterfacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	for _, nicRef := range *vm.NetworkProfile.NetworkInterfaces {
 		pathParts := strings.Split(string(*nicRef.ID), "/")
@@ -596,6 +609,9 @@ func getAzureComputeVirtualMachineExtensions(ctx context.Context, d *plugin.Quer
 	client := compute.NewVirtualMachineExtensionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.List(ctx, resourceGroupName, *virtualMachine.Name, "")
 	if err != nil {
 		return nil, err
@@ -666,6 +682,8 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 			clientOptions.Cloud = cloud.AzureChina
 		}
 	}
+
+	clientOptions.Retry = session.ClientOptions.Retry
 
 	clientFactory, err := armguestconfiguration.NewAssignmentsClient(session.SubscriptionID, session.Cred, &clientOptions)
 	if err != nil {

@@ -207,6 +207,9 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	client := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -253,6 +256,9 @@ func getEventHubNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	client := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		return nil, err
@@ -272,6 +278,9 @@ func getNetworkRuleSet(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	subscriptionID := session.SubscriptionID
 	networkClient := eventhub.NewNamespacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	networkClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
 	namespace := h.Item.(eventhub.EHNamespace)
 	resourceGroupName := strings.Split(string(*namespace.ID), "/")[4]
@@ -297,6 +306,9 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, id)
 	if err != nil {
@@ -340,6 +352,9 @@ func listEventHubNamespacePrivateEndpointConnections(ctx context.Context, d *plu
 
 	client := eventhub.NewPrivateEndpointConnectionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.List(ctx, resourceGroup, namespaceName)
 	if err != nil {

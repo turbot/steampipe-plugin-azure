@@ -109,6 +109,9 @@ func listApplicationSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *
 	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationSecurityGroupClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &applicationSecurityGroupClient, d.Connection)
+
 	result, err := applicationSecurityGroupClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -157,6 +160,9 @@ func getApplicationSecurityGroup(ctx context.Context, d *plugin.QueryData, h *pl
 
 	applicationSecurityGroupClient := network.NewApplicationSecurityGroupsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	applicationSecurityGroupClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &applicationSecurityGroupClient, d.Connection)
 
 	op, err := applicationSecurityGroupClient.Get(ctx, resourceGroup, name)
 	if err != nil {

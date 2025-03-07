@@ -199,6 +199,9 @@ func listDataBoxEdgeDevices(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	deviceClient := databoxedge.NewDevicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	deviceClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &deviceClient, d.Connection)
+
 	result, err := deviceClient.ListBySubscription(ctx, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("listDataBoxEdgeDevices", "ListBySubscription", err)
@@ -244,6 +247,9 @@ func getDataBoxEdgeDevice(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	deviceClient := databoxedge.NewDevicesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	deviceClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &deviceClient, d.Connection)
 
 	op, err := deviceClient.Get(ctx, resourceGroup, name)
 	if err != nil {

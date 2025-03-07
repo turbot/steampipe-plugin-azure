@@ -186,6 +186,10 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx, resourceGroup, *vault.Name)
 	if err != nil {
 		return nil, err
@@ -245,6 +249,9 @@ func getKeyVaultKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 
 	client := keyvault.NewKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, vaultName, name)
 	if err != nil {

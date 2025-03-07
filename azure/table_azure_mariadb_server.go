@@ -214,6 +214,9 @@ func listMariaDBServers(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	client := mariadb.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -251,6 +254,9 @@ func getMariaDBServer(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	subscriptionID := session.SubscriptionID
 	client := mariadb.NewServersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {

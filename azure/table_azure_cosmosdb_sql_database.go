@@ -161,6 +161,9 @@ func listCosmosDBSQLDatabases(ctx context.Context, d *plugin.QueryData, h *plugi
 	documentDBClient := documentdb.NewSQLResourcesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	documentDBClient.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &documentDBClient, d.Connection)
+
 	result, err := documentDBClient.ListSQLDatabases(ctx, *account.ResourceGroup, *account.Name)
 	if err != nil {
 		return nil, err
@@ -196,6 +199,9 @@ func getCosmosDBSQLDatabase(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 	databaseAccountClient := documentdb.NewDatabaseAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	databaseAccountClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &databaseAccountClient, d.Connection)
 
 	op, err := databaseAccountClient.Get(ctx, resourceGroup, accountName)
 	if err != nil {

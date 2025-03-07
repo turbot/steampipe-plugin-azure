@@ -214,6 +214,9 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	client := eventgrid.NewTopicsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	result, err := client.ListBySubscription(ctx, "", nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("listEventGridTopics", "ListBySubscription", err)
@@ -261,6 +264,9 @@ func getEventGridTopic(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	client := eventgrid.NewTopicsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
 	op, err := client.Get(ctx, resourceGroup, name)
 	if err != nil {
 		plugin.Logger(ctx).Error("getEventGridTopic", "get", err)
@@ -283,6 +289,9 @@ func listEventGridTopicDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 
 	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
 
 	// Pagination is not supported
 	op, err := client.List(ctx, id)

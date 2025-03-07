@@ -99,6 +99,10 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	subscriptionID := session.SubscriptionID
 	authorizationClient := authorization.NewRoleDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &authorizationClient, d.Connection)
+
 	result, err := authorizationClient.List(ctx, "/subscriptions/"+subscriptionID, "")
 	if err != nil {
 		return nil, err
@@ -145,6 +149,9 @@ func getIamRoleDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 
 	authorizationClient := authorization.NewRoleDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	authorizationClient.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &authorizationClient, d.Connection)
 
 	op, err := authorizationClient.Get(ctx, "/subscriptions/"+subscriptionID, name)
 	if err != nil {
