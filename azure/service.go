@@ -588,8 +588,10 @@ func getRetryRules(connection *plugin.Connection) *RetryRule {
 		panic("connection config has invalid value for \"min_error_retry_delay\", it must be greater than or equal to 1")
 	}
 
-	// Fallback to SDK default value
-	// https://github.com/Azure/go-autorest/blob/main/autorest/client.go#L39
+	// Fallback to the default value set by the go-autorest SDK.
+	// Reference: https://github.com/Azure/go-autorest/blob/main/autorest/client.go#L42
+	// In the newer **Azure SDK for Go**, the default value is 4 seconds.
+	// Reference: https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/azcore/policy/policy.go#L106
 	maxRetries := 3
 	minDelay := 30 * time.Second
 
@@ -598,7 +600,7 @@ func getRetryRules(connection *plugin.Connection) *RetryRule {
 	}
 
 	if connectionConfig.MinErrorRetryDelay != nil {
-		minDelay = time.Duration(*connectionConfig.MinErrorRetryDelay) * time.Millisecond
+		minDelay = time.Duration(*connectionConfig.MinErrorRetryDelay) * time.Second
 	}
 
 	return &RetryRule{
@@ -607,7 +609,7 @@ func getRetryRules(connection *plugin.Connection) *RetryRule {
 	}
 }
 
-// ApplyRetryRules applies retry settings to any Azure SDK client
+// ApplyRetryRules applies retry settings to any older Azure SDK client
 func ApplyRetryRules(ctx context.Context, client interface{}, connection *plugin.Connection) {
 	v := reflect.ValueOf(client).Elem()
 
@@ -623,7 +625,7 @@ func ApplyRetryRules(ctx context.Context, client interface{}, connection *plugin
 
 	// Set RetryDuration if the field exists
 	if field := v.FieldByName("RetryDuration"); field.IsValid() && field.CanSet() {
-		field.SetInt(int64(retryRules.MinErrorRetryDelay.Milliseconds()))
+		field.SetInt(int64(*retryRules.MinErrorRetryDelay))
 	} else if field := v.FieldByName("RetryDuration"); !field.IsValid() || !field.CanSet() {
 		plugin.Logger(ctx).Warn("'RetryDuration' could not be set")
 	}

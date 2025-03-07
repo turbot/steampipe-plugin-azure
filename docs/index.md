@@ -113,7 +113,7 @@ connection "azure" {
 
   # The minimum retry delay in seconds after which retries will be performed.
   # This delay is also used as a base value when calculating the exponential backoff retry times.
-  # Defaults to 30ms and must be greater than or equal to 1ms.
+  # Defaults to 30s and must be greater than or equal to 1s.
   # min_error_retry_delay = 30
 
   # List of additional azure error codes to ignore for all queries.
