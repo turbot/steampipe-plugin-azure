@@ -209,11 +209,13 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "cli_credential_error", err)
 			return nil, err
 		}
-		subscriptionId, err := getSubscriptionIDFromCLINew()
-		if err != nil {
-			return nil, err
+		if subscriptionID == "" {
+			subscriptionId, err := getSubscriptionIDFromCLINew()
+			if err != nil {
+				return nil, err
+			}
+			subscriptionID = subscriptionId
 		}
-		subscriptionID = subscriptionId
 	}
 	sess := &SessionNew{
 		Cred:           cred,
