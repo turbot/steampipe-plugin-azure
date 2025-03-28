@@ -1,9 +1,3 @@
-## v1.2.1 [2025-03-27]
-
-_Bug fixes_
-
-- Fixed the subscription ID being overwritten with the default one from Azure CLI when using CLI authentication.
-
 ## v1.2.0 [2025-03-07]
 
 _What's new?_
