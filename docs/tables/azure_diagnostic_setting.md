@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_diagnostic_setting - Query Azure Diagnostic Settings using SQL"
 description: "Allows users to query Azure Diagnostic Settings, specifically the configuration of logs and metrics for Azure resources."
+folder: "Monitor"
 ---
 
 # Table: azure_diagnostic_setting - Query Azure Diagnostic Settings using SQL

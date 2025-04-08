@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_jit_network_access_policy - Query Azure Security Center Just-In-Time Network Access Policies using SQL"
 description: "Allows users to query Just-In-Time Network Access Policies in Azure Security Center, providing insights into policy configurations and associated resources."
+folder: "Policy"
 ---
 
 # Table: azure_security_center_jit_network_access_policy - Query Azure Security Center Just-In-Time Network Access Policies using SQL

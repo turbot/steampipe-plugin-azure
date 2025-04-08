@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_container_registry - Query Azure Container Registries using SQL"
 description: "Allows users to query Azure Container Registries, providing insights into the status, SKU, network access, and other critical details."
+folder: "Container Registry"
 ---
 
 # Table: azure_container_registry - Query Azure Container Registries using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_location - Query Azure Locations using SQL"
 description: "Allows users to query Azure Locations, specifically to retrieve metadata about the different geographical locations within the Azure platform."
+folder: "Subscription"
 ---
 
 # Table: azure_location - Query Azure Locations using SQL

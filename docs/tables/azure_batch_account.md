@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_batch_account - Query Azure Batch Accounts using SQL"
 description: "Allows users to query Azure Batch Accounts, specifically retrieving details such as the account name, resource group, location, and subscription ID."
+folder: "Batch"
 ---
 
 # Table: azure_batch_account - Query Azure Batch Accounts using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb_nat_rule - Query Azure Load Balancer NAT Rules using SQL"
 description: "Allows users to query Azure Load Balancer NAT Rules, providing insights into the network traffic routing configurations."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb_nat_rule - Query Azure Load Balancer NAT Rules using SQL

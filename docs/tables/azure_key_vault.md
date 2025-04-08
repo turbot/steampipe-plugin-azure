@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault - Query Azure Key Vaults using SQL"
 description: "Allows users to query Azure Key Vaults, specifically the keys, secrets, and certificates stored within them, providing insights into security and access management."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault - Query Azure Key Vaults using SQL

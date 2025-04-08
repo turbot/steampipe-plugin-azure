@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_contact - Query Azure Security Center Contacts using SQL"
 description: "Allows users to query Azure Security Center Contacts, providing insights into contact details, alert notifications, and alert email settings."
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_contact - Query Azure Security Center Contacts using SQL

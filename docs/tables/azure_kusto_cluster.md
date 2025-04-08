@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_kusto_cluster - Query Azure Kusto Clusters using SQL"
 description: "Allows users to query Azure Kusto Clusters, providing insights into the configuration, status, and metadata of each cluster."
+folder: "Kusto"
 ---
 
 # Table: azure_kusto_cluster - Query Azure Kusto Clusters using SQL

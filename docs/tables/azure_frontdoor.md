@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_frontdoor - Query Azure Front Door Services using SQL"
 description: "Allows users to query Azure Front Door Services, providing insights into the routing and acceleration of web traffic."
+folder: "Front Door"
 ---
 
 # Table: azure_frontdoor - Query Azure Front Door Services using SQL

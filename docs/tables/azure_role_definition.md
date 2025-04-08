@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_role_definition - Query Azure Role Definitions using SQL"
 description: "Allows users to query Role Definitions in Azure, specifically the permissions, trust policies, and associated metadata, providing insights into role-specific details."
+folder: "IAM"
 ---
 
 # Table: azure_role_definition - Query Azure Role Definitions using SQL

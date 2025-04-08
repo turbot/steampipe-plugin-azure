@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_dns_zone - Query Azure DNS Zones using SQL"
 description: "Allows users to query Azure DNS Zones, providing detailed information about each DNS zone within the Azure environment."
+folder: "DNS"
 ---
 
 # Table: azure_dns_zone - Query Azure DNS Zones using SQL

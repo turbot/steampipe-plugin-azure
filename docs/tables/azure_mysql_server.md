@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_mysql_server - Query Azure MySQL Servers using SQL"
 description: "Allows users to query Azure MySQL Servers, providing detailed information about the configuration, status, and capabilities of each server instance."
+folder: "MySQL"
 ---
 
 # Table: azure_mysql_server - Query Azure MySQL Servers using SQL

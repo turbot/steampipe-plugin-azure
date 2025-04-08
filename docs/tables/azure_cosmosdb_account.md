@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cosmosdb_account - Query Azure Cosmos DB Accounts using SQL"
 description: "Allows users to query Azure Cosmos DB Accounts, providing detailed information about each account's configurations, properties, and associated resources."
+folder: "CosmosDB"
 ---
 
 # Table: azure_cosmosdb_account - Query Azure Cosmos DB Accounts using SQL

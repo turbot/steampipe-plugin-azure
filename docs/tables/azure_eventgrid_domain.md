@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_eventgrid_domain - Query Azure Event Grid Domains using SQL"
 description: "Allows users to query Azure Event Grid Domains, specifically providing details about the domain name, resource group, location, input schema, metric resource id, and other related data."
+folder: "Event Grid"
 ---
 
 # Table: azure_eventgrid_domain - Query Azure Event Grid Domains using SQL

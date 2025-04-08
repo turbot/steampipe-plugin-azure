@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cosmosdb_sql_database - Query Azure Cosmos DB SQL Databases using SQL"
 description: "Allows users to query Azure Cosmos DB SQL Databases, providing data on the properties, configurations, and usage metrics of each database."
+folder: "CosmosDB"
 ---
 
 # Table: azure_cosmosdb_sql_database - Query Azure Cosmos DB SQL Databases using SQL

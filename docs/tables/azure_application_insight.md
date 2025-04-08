@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_application_insight - Query Azure Application Insights using SQL"
 description: "Allows users to query Application Insights, providing insights into application performance, usage, and availability."
+folder: "Application Insights"
 ---
 
 # Table: azure_application_insight - Query Azure Application Insights using SQL

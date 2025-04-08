@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_kubernetes_service_version - Query Azure Kubernetes Service Versions using SQL"
 description: "Allows users to query Azure Kubernetes Service Versions, providing detailed information about the different versions of the Kubernetes service available in Azure."
+folder: "AKS"
 ---
 
 # Table: azure_kubernetes_service_version - Query Azure Kubernetes Service Versions using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_automation_account - Query Azure Automation Accounts using SQL"
 description: "Allows users to query Azure Automation Accounts, providing insights into the configuration, status, and metadata of each account."
+folder: "Automation"
 ---
 
 # Table: azure_automation_account - Query Azure Automation Accounts using SQL

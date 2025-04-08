@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_tenant - Query Azure Tenants using SQL"
 description: "Allows users to query Azure Tenants, providing insights into the organizations associated with the Azure subscriptions."
+folder: "Tenant"
 ---
 
 # Table: azure_tenant - Query Azure Tenants using SQL

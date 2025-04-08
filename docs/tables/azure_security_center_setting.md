@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_setting - Query Azure Security Center Settings using SQL"
 description: "Allows users to query Azure Security Center Settings, specifically the configuration data, providing insights into security settings and potential discrepancies."
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_setting - Query Azure Security Center Settings using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_recovery_services_backup_job - Query Azure Recovery Services Backup Jobs using SQL"
 description: "Allows users to query Azure Recovery Services Backup Jobs, specifically the job status, duration, and details, providing insights into backup operations and their outcomes."
+folder: "Recovery Services"
 ---
 
 # Table: azure_recovery_services_backup_job - Query Azure Recovery Services Backup Jobs using SQL

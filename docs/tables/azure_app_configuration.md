@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_configuration - Query Azure App Configuration using SQL"
 description: "Allows users to query App Configurations in Azure, providing insights into application settings and feature management."
+folder: "App Configuration"
 ---
 
 # Table: azure_app_configuration - Query Azure App Configuration using SQL

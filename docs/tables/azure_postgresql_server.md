@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_postgresql_server - Query Azure PostgreSQL Servers using SQL"
 description: "Allows users to query Azure PostgreSQL Servers, specifically providing access to configuration details, performance tiers, and resource usage."
+folder: "PostgreSQL"
 ---
 
 # Table: azure_postgresql_server - Query Azure PostgreSQL Servers using SQL

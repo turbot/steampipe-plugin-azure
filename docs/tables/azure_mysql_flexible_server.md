@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_mysql_flexible_server - Query Azure MySQL Flexible Servers using SQL"
 description: "Allows users to query Azure MySQL Flexible Servers, providing detailed information on server configurations, geographical location, and other server-related aspects."
+folder: "MySQL"
 ---
 
 # Table: azure_mysql_flexible_server - Query Azure MySQL Flexible Servers using SQL

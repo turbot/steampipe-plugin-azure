@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault_deleted_vault - Query Azure Key Vaults using SQL"
 description: "Allows users to query deleted Azure Key Vaults, providing insights into the historical and current deletions of Azure Key Vaults."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault_deleted_vault - Query Azure Key Vaults using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_management_lock - Query Azure Management Locks using SQL"
 description: "Allows users to query Azure Management Locks, particularly their properties and associated resources, providing insights into the locks' configurations and status."
+folder: "Management Lock"
 ---
 
 # Table: azure_management_lock - Query Azure Management Locks using SQL

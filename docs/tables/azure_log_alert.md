@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_log_alert - Query Azure Log Alerts using SQL"
 description: "Allows users to query Azure Log Alerts, providing insights into the log alerts set up within their Azure resources."
+folder: "Monitor"
 ---
 
 # Table: azure_log_alert - Query Azure Log Alerts using SQL

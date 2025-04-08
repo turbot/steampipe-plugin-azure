@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_hdinsight_cluster - Query Azure HDInsight Clusters using SQL"
 description: "Allows users to query Azure HDInsight Clusters, providing insights into the configurations, properties, and states of these clusters."
+folder: "HDInsight"
 ---
 
 # Table: azure_hdinsight_cluster - Query Azure HDInsight Clusters using SQL

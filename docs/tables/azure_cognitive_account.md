@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cognitive_account - Query Azure Cognitive Services Accounts using SQL"
 description: "Allows users to query Azure Cognitive Services Accounts, providing insights into various cognitive services such as AI, speech analysis, language understanding, and search capabilities."
+folder: "Cognitive Services"
 ---
 
 # Table: azure_cognitive_account - Query Azure Cognitive Services Accounts using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL"
 description: "Allows users to query Activity Log Events in Azure Monitor, providing insights into the operation logs and changes made in Azure resources."
+folder: "Monitor"
 ---
 
 # Table: azure_monitor_activity_log_event - Query Azure Monitor Activity Log Events using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_consumption_usage - Query Azure Cost Management using SQL"
 description: "Allows users to query Azure Cost Management usage details for the defined scope."
+folder: "Resource"
 ---
 
 # Table: azure_consumption_usage - Query Azure Consumption Usage using SQL

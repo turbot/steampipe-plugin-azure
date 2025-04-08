@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_recovery_services_vault - Query Azure Recovery Services Vaults using SQL"
 description: "Allows users to query Azure Recovery Services Vaults, providing details about each vault's configuration, status, and associated resources."
+folder: "Recovery Services"
 ---
 
 # Table: azure_recovery_services_vault - Query Azure Recovery Services Vaults using SQL

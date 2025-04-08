@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lighthouse_definition - Query Azure Lighthouse Definitions using SQL"
 description: "Allows users to query Azure Lighthouse definitions, providing insights into cross-tenant management and governance."
+folder: "Lighthouse"
 ---
 
 # Table: azure_lighthouse_definition - Query Azure Lighthouse Definitions using SQL

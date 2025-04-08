@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_postgresql_flexible_server - Query Azure PostgreSQL Flexible Servers using SQL"
 description: "Allows users to query Azure PostgreSQL Flexible Servers, providing insights into the configuration, status, and capabilities of these managed database instances."
+folder: "PostgreSQL"
 ---
 
 # Table: azure_postgresql_flexible_server - Query Azure PostgreSQL Flexible Servers using SQL

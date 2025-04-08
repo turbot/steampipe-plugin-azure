@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_subscription - Query Azure Subscriptions using SQL"
 description: "Allows users to query Azure Subscriptions, providing insights into subscription details, including subscription IDs, names, states, and tenants."
+folder: "Subscription"
 ---
 
 # Table: azure_subscription - Query Azure Subscriptions using SQL

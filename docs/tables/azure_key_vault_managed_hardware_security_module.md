@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault_managed_hardware_security_module - Query Azure Key Vaults using SQL"
 description: "Allows users to query Azure Key Vaults, specifically those managed by hardware security modules, providing insights into key management, encryption, and decryption services."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault_managed_hardware_security_module - Query Azure Key Vaults using SQL

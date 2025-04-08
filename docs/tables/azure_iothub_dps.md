@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_iothub_dps - Query Azure IoT Hub Device Provisioning Services using SQL"
 description: "Allows users to query Azure IoT Hub Device Provisioning Services, offering details about the status, registration, and configuration of each device."
+folder: "IoT Hub"
 ---
 
 # Table: azure_iothub_dps - Query Azure IoT Hub Device Provisioning Services using SQL

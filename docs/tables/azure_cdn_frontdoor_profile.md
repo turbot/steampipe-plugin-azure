@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cdn_frontdoor_profile - Query Azure CDN Front Door Profiles using SQL"
 description: "Allows users to query CDN Front Door Profiles in Azure, providing detailed information about each profile, including its endpoint configurations, origin groups, and routing rules."
+folder: "CDN"
 ---
 
 # Table: azure_cdn_frontdoor_profile - Query Azure CDN Front Door Profiles using SQL

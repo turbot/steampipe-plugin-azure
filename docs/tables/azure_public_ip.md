@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_public_ip - Query Azure Public IPs using SQL"
 description: "Allows users to query Public IPs in Azure, specifically the allocated IP address, providing insights into IP configurations and potential network anomalies."
+folder: "Networking"
 ---
 
 # Table: azure_public_ip - Query Azure Public IPs using SQL
