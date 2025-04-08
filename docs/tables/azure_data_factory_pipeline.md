@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_factory_pipeline - Query Azure Data Factory Pipelines using SQL"
 description: "Allows users to query Azure Data Factory Pipelines, providing insights into pipeline configurations, statuses, and activities."
+folder: "Data Factory"
 ---
 
 # Table: azure_data_factory_pipeline - Query Azure Data Factory Pipelines using SQL

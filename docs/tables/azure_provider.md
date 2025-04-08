@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_provider - Query Azure Providers using SQL"
 description: "Allows users to query Azure Providers, specifically the registration status, namespace, and other related properties, providing insights into the Azure resource providers' registration state."
+folder: "General"
 ---
 
 # Table: azure_provider - Query Azure Providers using SQL

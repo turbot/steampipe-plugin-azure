@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_mariadb_server - Query Azure MariaDB Servers using SQL"
 description: "Allows users to query Azure MariaDB Servers, offering insights into the configuration and status of these managed database service instances."
+folder: "MariaDB"
 ---
 
 # Table: azure_mariadb_server - Query Azure MariaDB Servers using SQL

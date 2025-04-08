@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_backup_policy - Query Azure Backup Policies using SQL"
 description: "Allows users to query Azure Backup Policies, providing a comprehensive view of all policies that are used within Azure Backup."
+folder: "Backup"
 ---
 
 # Table: azure_backup_policy - Query Azure Backup Policies using SQL

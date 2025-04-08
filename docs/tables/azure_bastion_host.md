@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_bastion_host - Query Azure Bastion Hosts using SQL"
 description: "Allows users to query Azure Bastion Hosts, providing detailed information about the secure, fully managed network virtual appliance that provides seamless RDP and SSH connectivity to your virtual machines over the Secure Sockets Layer (SSL)."
+folder: "Networking"
 ---
 
 # Table: azure_bastion_host - Query Azure Bastion Hosts using SQL

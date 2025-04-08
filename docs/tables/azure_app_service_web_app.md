@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_service_web_app - Query Azure App Service Web Apps using SQL"
 description: "Allows users to query Azure App Service Web Apps, providing insights into the configuration, status, and metadata of web applications hosted on the Azure App Service platform."
+folder: "App Service"
 ---
 
 # Table: azure_app_service_web_app - Query Azure App Service Web Apps using SQL

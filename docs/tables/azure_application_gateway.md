@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_application_gateway - Query Azure Application Gateways using SQL"
 description: "Allows users to query Azure Application Gateways, providing detailed information about the configuration and status of each gateway."
+folder: "Application Gateway"
 ---
 
 # Table: azure_application_gateway - Query Azure Application Gateways using SQL

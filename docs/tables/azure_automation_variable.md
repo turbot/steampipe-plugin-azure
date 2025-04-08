@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_automation_variable - Query Azure Automation Variables using SQL"
 description: "Allows users to query Azure Automation Variables, providing a comprehensive view of all variables that are used within Azure Automation."
+folder: "Automation"
 ---
 
 # Table: azure_automation_variable - Query Azure Automation Variables using SQL

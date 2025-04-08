@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_application_security_group - Query Azure Application Security Groups using SQL"
 description: "Allows users to query Azure Application Security Groups, providing insights into security configuration and potential network vulnerabilities."
+folder: "Network Security"
 ---
 
 # Table: azure_application_security_group - Query Azure Application Security Groups using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cosmosdb_mongo_database - Query Azure Cosmos DB MongoDB Databases using SQL"
 description: "Allows users to query Azure Cosmos DB MongoDB Databases, providing comprehensive details about each MongoDB database within an Azure Cosmos DB account."
+folder: "CosmosDB"
 ---
 
 # Table: azure_cosmosdb_mongo_database - Query Azure Cosmos DB MongoDB Databases using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_alert_management - Query Azure Alert Management using SQL"
 description: "Allows users to query Azure Alert Management, providing a centralized way to monitor and respond to issues across applications and infrastructure."
+folder: "Resource"
 ---
 
 # Table: azure_alert_management - Query Azure Alert Management using SQL

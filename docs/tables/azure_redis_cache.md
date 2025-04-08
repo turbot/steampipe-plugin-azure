@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_redis_cache - Query Azure Redis Cache using SQL"
 description: "Allows users to query Azure Redis Cache, specifically details about the name, location, resource group, and subscription of each Redis Cache resource."
+folder: "Redis"
 ---
 
 # Table: azure_redis_cache - Query Azure Redis Cache using SQL

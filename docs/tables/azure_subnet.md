@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_subnet - Query Azure Subnets using SQL"
 description: "Allows users to query Azure Subnets, providing detailed information about each subnet within Azure Virtual Networks."
+folder: "Networking"
 ---
 
 # Table: azure_subnet - Query Azure Subnets using SQL

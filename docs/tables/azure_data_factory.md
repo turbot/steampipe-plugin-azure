@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_factory - Query Azure Data Factory using SQL"
 description: "Allows users to query Azure Data Factories, providing insights into the orchestration and automation of ETL workflows in Azure."
+folder: "Data Factory"
 ---
 
 # Table: azure_data_factory - Query Azure Data Factory using SQL

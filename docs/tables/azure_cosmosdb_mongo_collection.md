@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cosmosdb_mongo_collection - Query Azure Cosmos DB Mongo Collections using SQL"
 description: "Allows users to query Azure Cosmos DB Mongo Collections, providing insights into the collection's properties such as name, resource group, account name, and more."
+folder: "CosmosDB"
 ---
 
 # Table: azure_cosmosdb_mongo_collection - Query Azure Cosmos DB Mongo Collections using SQL

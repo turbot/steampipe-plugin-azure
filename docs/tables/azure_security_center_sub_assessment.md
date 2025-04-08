@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_sub_assessment - Query Azure Security Center Sub-Assessments using SQL"
 description: "Allows users to query Azure Security Center Sub-Assessments, providing detailed security findings for each resource."
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_sub_assessment - Query Azure Security Center Sub-Assessments using SQL

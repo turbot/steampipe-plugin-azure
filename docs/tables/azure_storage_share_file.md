@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_share_file - Query Azure Storage Files using SQL"
 description: "Allows users to query Azure Storage Files, specifically retrieving details such as file name, share name, content length, last modified time, and more."
+folder: "Storage"
 ---
 
 # Table: azure_storage_share_file - Query Azure Storage Files using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_eventhub_namespace - Query Azure Event Hubs Namespaces using SQL"
 description: "Allows users to query Azure Event Hubs Namespaces, providing insights into the details of each namespace, including its name, region, resource group, SKU, and more."
+folder: "Event Hubs"
 ---
 
 # Table: azure_eventhub_namespace - Query Azure Event Hubs Namespaces using SQL

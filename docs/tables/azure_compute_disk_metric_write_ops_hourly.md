@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk_metric_write_ops_hourly - Query Azure Compute Disk Metrics using SQL"
 description: "Allows users to query Azure Compute Disk Metrics, specifically the hourly write operations, providing insights into disk usage patterns and potential anomalies."
+folder: "SQL"
 ---
 
 # Table: azure_compute_disk_metric_write_ops_hourly - Query Azure Compute Disk Metrics using SQL

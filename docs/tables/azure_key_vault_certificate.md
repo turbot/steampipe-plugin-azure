@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault_certificate - Query Azure Key Vault Certificates using SQL"
 description: "Allows users to query Azure Key Vault Certificates, providing access to certificate details, including key ID, key properties, and secret properties."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault_certificate - Query Azure Key Vault Certificates using SQL

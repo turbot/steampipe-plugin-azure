@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_maintenance_configuration - Query Azure Maintenance Configurations using SQL"
 description: "Enables users to query Azure Maintenance Configurations to manage and control maintenance operations across Azure resources."
+folder: "Maintenance"
 ---
 
 # Table: azure_maintenance_configuration - Query Azure Maintenance Configurations using SQL

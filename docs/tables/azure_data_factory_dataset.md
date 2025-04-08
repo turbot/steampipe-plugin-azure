@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_factory_dataset - Query Azure Data Factory Datasets using SQL"
 description: "Allows users to query Azure Data Factory Datasets, specifically data processing and transformation details, providing insights into data handling and potential anomalies."
+folder: "Data Factory"
 ---
 
 # Table: azure_data_factory_dataset - Query Azure Data Factory Datasets using SQL

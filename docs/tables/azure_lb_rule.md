@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb_rule - Query Azure Load Balancer Rules using SQL"
 description: "Allows users to query Azure Load Balancer Rules, providing insights into the rules defined for load balancing traffic."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb_rule - Query Azure Load Balancer Rules using SQL

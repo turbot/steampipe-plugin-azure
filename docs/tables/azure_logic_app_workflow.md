@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_logic_app_workflow - Query Azure Logic App Workflows using SQL"
 description: "Allows users to query Azure Logic App Workflows, specifically details regarding the configuration, status, and properties of each workflow, aiding in the management and monitoring of automated business processes."
+folder: "Monitor"
 ---
 
 # Table: azure_logic_app_workflow - Query Azure Logic App Workflows using SQL

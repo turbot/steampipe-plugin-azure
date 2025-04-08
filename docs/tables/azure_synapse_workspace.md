@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_synapse_workspace - Query Azure Synapse Workspaces using SQL"
 description: "Allows users to query Azure Synapse Workspaces, providing insights into the analytics service that brings together enterprise data warehousing and Big Data analytics."
+folder: "Synapse"
 ---
 
 # Table: azure_synapse_workspace - Query Azure Synapse Workspaces using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_virtual_machine - Query Azure Compute Virtual Machines using SQL"
 description: "Allows users to query Azure Compute Virtual Machines, providing detailed information about the configuration, status, and other operational aspects of each virtual machine."
+folder: "Networking"
 ---
 
 # Table: azure_compute_virtual_machine - Query Azure Compute Virtual Machines using SQL

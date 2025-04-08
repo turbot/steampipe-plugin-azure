@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_ssh_key - Query Azure Compute SSH Keys using SQL"
 description: "Allows users to query Azure Compute SSH Keys, providing insights into the SSH keys associated with virtual machines in Azure Compute."
+folder: "Resource"
 ---
 
 # Table: azure_compute_ssh_key - Query Azure Compute SSH Keys using SQL

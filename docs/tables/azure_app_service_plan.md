@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_service_plan - Query Azure App Service Plans using SQL"
 description: "Allows users to query Azure App Service Plans, providing insights into the capacity and scale of the app services running in an Azure subscription."
+folder: "App Service"
 ---
 
 # Table: azure_app_service_plan - Query Azure App Service Plans using SQL

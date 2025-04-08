@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_sync - Query Azure Storage Sync Services using SQL"
 description: "Allows users to query Azure Storage Sync Services, specifically the synchronization details between Azure Blob storage and on-premises servers."
+folder: "Storage"
 ---
 
 # Table: azure_storage_sync - Query Azure Storage Sync Services using SQL

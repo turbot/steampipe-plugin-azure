@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_kubernetes_cluster - Query Azure Kubernetes Services using SQL"
 description: "Allows users to query Azure Kubernetes Services, specifically providing information about the configuration, health and performance of each Kubernetes cluster deployed in Azure."
+folder: "AKS"
 ---
 
 # Table: azure_kubernetes_cluster - Query Azure Kubernetes Services using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_policy_assignment - Query Azure Policy Assignments using SQL"
 description: "Allows users to query Policy Assignments in Azure, specifically the policy assignment details, providing insights into compliance status and policy enforcement."
+folder: "Policy"
 ---
 
 # Table: azure_policy_assignment - Query Azure Policy Assignments using SQL

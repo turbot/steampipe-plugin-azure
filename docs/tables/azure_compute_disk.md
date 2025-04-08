@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk - Query Azure Compute Disks using SQL"
 description: "Allows users to query Azure Compute Disks, specifically providing details about each disk's properties including its type, size, location, and encryption settings."
+folder: "Subscription"
 ---
 
 # Table: azure_compute_disk - Query Azure Compute Disks using SQL

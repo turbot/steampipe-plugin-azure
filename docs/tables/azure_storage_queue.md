@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_queue - Query Azure Storage Queues using SQL"
 description: "Allows users to query Azure Storage Queues, specifically to obtain detailed information about the queues, including metadata, message count, and status."
+folder: "Storage"
 ---
 
 # Table: azure_storage_queue - Query Azure Storage Queues using SQL

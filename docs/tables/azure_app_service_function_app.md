@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_service_function_app - Query Azure App Service Function Apps using SQL"
 description: "Allows users to query Azure App Service Function Apps, specifically providing access to configuration details, app settings, and connection strings."
+folder: "App Service"
 ---
 
 # Table: azure_app_service_function_app - Query Azure App Service Function Apps using SQL

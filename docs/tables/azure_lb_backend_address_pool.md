@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb_backend_address_pool - Query Azure Load Balancer Backend Address Pools using SQL"
 description: "Allows users to query Azure Load Balancer Backend Address Pools, providing insights into the configuration and status of backend address pools associated with Azure Load Balancers."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb_backend_address_pool - Query Azure Load Balancer Backend Address Pools using SQL

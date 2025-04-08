@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_spring_cloud_service - Query Azure Spring Cloud Services using SQL"
 description: "Allows users to query Azure Spring Cloud Services, specifically the details of the service instances, providing insights into the configuration and state of the Spring Cloud applications."
+folder: "Spring Apps"
 ---
 
 # Table: azure_spring_cloud_service - Query Azure Spring Cloud Services using SQL

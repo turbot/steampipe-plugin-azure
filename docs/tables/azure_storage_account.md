@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_account - Query Azure Storage Accounts using SQL"
 description: "Allows users to query Azure Storage Accounts, providing detailed information about each storage account within the Azure subscription."
+folder: "Storage"
 ---
 
 # Table: azure_storage_account - Query Azure Storage Accounts using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_web_application_firewall_policy - Query Azure Web Application Firewall Policies using SQL"
 description: "Allows users to query Azure Web Application Firewall (WAF) policies, providing detailed information on policy configurations, rules, and associated resources."
+folder: "Firewall"
 ---
 
 # Table: azure_web_application_firewall_policy - Query Azure Web Application Firewall Policies using SQL

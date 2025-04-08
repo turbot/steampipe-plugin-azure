@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_eventgrid_topic - Query Azure Event Grid Topics using SQL"
 description: "Allows users to query Azure Event Grid Topics, providing insights into the event routing service which helps in efficiently and reliably routing events from any source, to any destination, at any scale."
+folder: "Event Grid"
 ---
 
 # Table: azure_eventgrid_topic - Query Azure Event Grid Topics using SQL

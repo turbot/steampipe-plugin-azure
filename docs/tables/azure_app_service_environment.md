@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_service_environment - Query Azure App Service Environments using SQL"
 description: "Allows users to query Azure App Service Environments, providing comprehensive details about the app service environments in your Azure account."
+folder: "App Service"
 ---
 
 # Table: azure_app_service_environment - Query Azure App Service Environments using SQL

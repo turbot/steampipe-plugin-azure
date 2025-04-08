@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_table_service - Query Azure Storage Table Services using SQL"
 description: "Allows users to query Azure Storage Table Services, specifically the details of a table service within a storage account, providing insights into its properties and settings."
+folder: "Storage"
 ---
 
 # Table: azure_storage_table_service - Query Azure Storage Table Services using SQL

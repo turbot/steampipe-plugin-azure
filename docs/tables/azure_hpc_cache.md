@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_hpc_cache - Query Azure HPC Cache using SQL"
 description: "Allows users to query Azure HPC Cache, specifically the operational details and status of the cache. This can provide insights into cache utilization, performance, and potential issues."
+folder: "HPC Cache"
 ---
 
 # Table: azure_hpc_cache - Query Azure HPC Cache using SQL

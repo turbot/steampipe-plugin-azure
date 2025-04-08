@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_machine_learning_workspace - Query Azure Machine Learning Workspaces using SQL"
 description: "Allows users to query Azure Machine Learning Workspaces, providing comprehensive information on configuration, status, and properties of each workspace."
+folder: "Machine Learning"
 ---
 
 # Table: azure_machine_learning_workspace - Query Azure Machine Learning Workspaces using SQL

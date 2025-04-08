@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_blob - Query Azure Storage Blobs using SQL"
 description: "Allows users to query Azure Storage Blobs, specifically providing information about blob properties, blob metadata, and blob service properties."
+folder: "Storage"
 ---
 
 # Table: azure_storage_blob - Query Azure Storage Blobs using SQL

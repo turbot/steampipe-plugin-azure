@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_network_watcher_flow_log - Query Azure Network Watcher Flow Logs using SQL"
 description: "Allows users to query Azure Network Watcher Flow Logs, providing insights into network traffic patterns and potential anomalies."
+folder: "Monitor"
 ---
 
 # Table: azure_network_watcher_flow_log - Query Azure Network Watcher Flow Logs using SQL

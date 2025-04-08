@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb_probe - Query Azure Load Balancer Probes using SQL"
 description: "Allows users to query Azure Load Balancer Probes, providing valuable insights into the health and performance of the load balancer."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb_probe - Query Azure Load Balancer Probes using SQL
