@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_virtual_machine_scale_set_vm - Query Azure Compute Virtual Machine Scale Set VMs using SQL"
 description: "Allows users to query Azure Compute Virtual Machine Scale Set VMs, providing insights into the configuration, state, and associated metadata of each virtual machine in a scale set."
-folder: "Networking"
+folder: "Compute"
 ---
 
 # Table: azure_compute_virtual_machine_scale_set_vm - Query Azure Compute Virtual Machine Scale Set VMs using SQL

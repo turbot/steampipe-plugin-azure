@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_automation - Query Azure Security Center Automations using SQL"
 description: "Allows users to query Azure Security Center Automations, specifically the automation details and configurations, providing insights into security automation settings and potential vulnerabilities."
-folder: "Automation"
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_automation - Query Azure Security Center Automations using SQL

@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_snapshot - Query Azure Compute Snapshots using SQL"
 description: "Allows users to query Azure Compute Snapshots, specifically the snapshot details including status, creation time, and disk size, providing insights into the state and usage of virtual machine disk snapshots."
-folder: "Resource"
+folder: "Compute"
 ---
 
 # Table: azure_compute_snapshot - Query Azure Compute Snapshots using SQL

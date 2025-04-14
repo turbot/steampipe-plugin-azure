@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_resource_link - Query Azure Resource Links using SQL"
 description: "Allows users to query Azure Resource Links, providing insights into the interconnections between various Azure resources."
-folder: "Resource"
+folder: "Resource Manager"
 ---
 
 # Table: azure_resource_link - Query Azure Resource Links using SQL

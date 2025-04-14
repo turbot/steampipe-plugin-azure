@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_lake_store - Query Azure Data Lake Store using SQL"
 description: "Allows users to query Azure Data Lake Stores, providing insights into the data storage and analytics service in Azure."
-folder: "Data Lake"
+folder: "Data Lake Storage"
 ---
 
 # Table: azure_data_lake_store - Query Azure Data Lake Store using SQL

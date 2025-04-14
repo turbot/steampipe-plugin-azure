@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_virtual_machine_scale_set_network_interface - Query Azure Compute Virtual Machine Scale Sets Network Interfaces using SQL"
 description: "Allows users to query Azure Compute Virtual Machine Scale Sets Network Interfaces, providing detailed information about the network interfaces of each scale set."
-folder: "Networking"
+folder: "Compute"
 ---
 
 # Table: azure_compute_virtual_machine_scale_set_network_interface - Query Azure Compute Virtual Machine Scale Sets Network Interfaces using SQL

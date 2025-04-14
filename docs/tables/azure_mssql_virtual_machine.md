@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_mssql_virtual_machine - Query Azure SQL Server Virtual Machines using SQL"
 description: "Allows users to query Azure SQL Server Virtual Machines, specifically providing insights into the configuration, status, and operational aspects of the SQL Server instances running on Azure Virtual Machines."
-folder: "SQL Server"
+folder: "MySQL"
 ---
 
 # Table: azure_mssql_virtual_machine - Query Azure SQL Server Virtual Machines using SQL

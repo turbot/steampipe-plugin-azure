@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_mssql_managed_instance - Query Azure SQL Managed Instances using SQL"
 description: "Allows users to query Azure SQL Managed Instances, providing a comprehensive view of the settings, configurations, and health status of these resources."
-folder: "SQL Server"
+folder: "MySQL"
 ---
 
 # Table: azure_mssql_managed_instance - Query Azure SQL Managed Instances using SQL

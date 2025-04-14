@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_mssql_elasticpool - Query Azure SQL Database Elastic Pools using SQL"
 description: "Allows users to query Azure SQL Database Elastic Pools, providing insights into their configuration, performance, and usage statistics."
-folder: "SQL Server"
+folder: "MySQL"
 ---
 
 # Table: azure_mssql_elasticpool - Query Azure SQL Database Elastic Pools using SQL

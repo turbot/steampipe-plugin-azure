@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_virtual_machine_metric_cpu_utilization - Query Azure Compute Virtual Machine Metrics using SQL"
 description: "Allows users to query Azure Compute Virtual Machine CPU Utilization Metrics, providing insights into the CPU usage of virtual machines."
-folder: "Resource"
+folder: "Compute"
 ---
 
 # Table: azure_compute_virtual_machine_metric_cpu_utilization - Query Azure Compute Virtual Machine Metrics using SQL

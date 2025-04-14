@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_virtual_network_gateway - Query Azure Virtual Network Gateways using SQL"
 description: "Allows users to query Azure Virtual Network Gateways, specifically providing details about the gateway's configuration, location, and associated resources."
-folder: "Networking"
+folder: "Network"
 ---
 
 # Table: azure_virtual_network_gateway - Query Azure Virtual Network Gateways using SQL

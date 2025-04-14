@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_signalr_service - Query Azure SignalR Services using SQL"
 description: "Allows users to query Azure SignalR Services, providing insights into real-time web functionality for applications."
-folder: "SignalR"
+folder: "SignalR Service"
 ---
 
 # Table: azure_signalr_service - Query Azure SignalR Services using SQL

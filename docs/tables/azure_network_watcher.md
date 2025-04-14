@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_network_watcher - Query Azure Network Watchers using SQL"
 description: "Allows users to query Azure Network Watchers, providing insights into the network performance monitoring and diagnostic service."
-folder: "Networking"
+folder: "Network Watcher"
 ---
 
 # Table: azure_network_watcher - Query Azure Network Watchers using SQL

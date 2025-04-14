@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_protection_backup_job - Query Azure Data Protection Backup Jobs using SQL"
 description: "Allows users to query Azure Data Protection Backup Jobs, providing insights into the backup processes and job statuses."
-folder: "Backup"
+folder: "Data Protection"
 ---
 
 # Table: azure_data_protection_backup_job - Query Azure Data Protection Backup Jobs using SQL

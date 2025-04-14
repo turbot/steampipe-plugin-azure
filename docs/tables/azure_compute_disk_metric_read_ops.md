@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk_metric_read_ops - Query Azure Compute Disk Metrics using SQL"
 description: "Allows users to query Azure Compute Disk Metrics, specifically read operations, providing insights into disk performance and potential bottlenecks."
-folder: "Resource"
+folder: "Compute"
 ---
 
 # Table: azure_compute_disk_metric_read_ops - Query Azure Compute Disk Metrics using SQL

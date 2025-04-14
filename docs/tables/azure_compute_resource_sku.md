@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_resource_sku - Query Azure Compute Resource SKUs using SQL"
 description: "Allows users to query Azure Compute Resource SKUs, providing details on available virtual machines, their capabilities, restrictions, and pricing tiers."
-folder: "Resource"
+folder: "Compute"
 ---
 
 # Table: azure_compute_resource_sku - Query Azure Compute Resource SKUs using SQL

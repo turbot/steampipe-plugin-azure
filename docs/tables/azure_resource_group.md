@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_resource_group - Query Azure Resource Groups using SQL"
 description: "Allows users to query Azure Resource Groups, providing detailed information about the group's properties, location, and tags."
-folder: "Resource"
+folder: "Resource Manager"
 ---
 
 # Table: azure_resource_group - Query Azure Resource Groups using SQL

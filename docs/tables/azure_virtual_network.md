@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_virtual_network - Query Azure Virtual Networks using SQL"
 description: "Allows users to query Azure Virtual Networks, specifically providing insights into the configuration and status of each virtual network within an Azure subscription."
-folder: "Networking"
+folder: "Network"
 ---
 
 # Table: azure_virtual_network - Query Azure Virtual Networks using SQL

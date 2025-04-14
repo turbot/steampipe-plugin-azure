@@ -1,7 +1,7 @@
 ---
 title: "Steampipe Table: azure_express_route_circuit - Query Azure Express Route Circuits using SQL"
 description: "Allows users to query Azure Express Route Circuits, providing detailed information about each circuit's configuration, status, and performance."
-folder: "Networking"
+folder: "ExpressRoute"
 ---
 
 # Table: azure_express_route_circuit - Query Azure Express Route Circuits using SQL
