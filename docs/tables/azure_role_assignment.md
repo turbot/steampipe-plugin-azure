@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_role_assignment - Query Azure Role Assignments using SQL"
 description: "Allows users to query Azure Role Assignments, specifically the details of role assignments for users, groups, and service principals in Azure Active Directory."
+folder: "IAM"
 ---
 
 # Table: azure_role_assignment - Query Azure Role Assignments using SQL

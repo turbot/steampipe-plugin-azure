@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk_encryption_set - Query Azure Compute Disk Encryption Sets using SQL"
 description: "Allows users to query Azure Compute Disk Encryption Sets, specifically the encryption settings and associated metadata, providing insights into data security and compliance."
+folder: "Compute"
 ---
 
 # Table: azure_compute_disk_encryption_set - Query Azure Compute Disk Encryption Sets using SQL

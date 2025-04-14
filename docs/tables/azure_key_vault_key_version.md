@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault_key_version - Query Azure Key Vault Key Versions using SQL"
 description: "Allows users to query Azure Key Vault Key Versions. This table provides detailed information about each version of a key in Azure Key Vault."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault_key_version - Query Azure Key Vault Key Versions using SQL

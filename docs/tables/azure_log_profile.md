@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_log_profile - Query Azure Log Profiles using SQL"
 description: "Allows users to query Azure Log Profiles, providing insights into system-wide logging configurations that control how activity logs are exported."
+folder: "Monitor"
 ---
 
 # Table: azure_log_profile - Query Azure Log Profiles using SQL

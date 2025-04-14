@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk_metric_read_ops_hourly - Query Azure Compute Disk Metrics using SQL"
 description: "Allows users to query Azure Compute Disk Metrics, specifically the hourly read operations count, providing insights into disk usage patterns and potential performance issues."
+folder: "Compute"
 ---
 
 # Table: azure_compute_disk_metric_read_ops_hourly - Query Azure Compute Disk Metrics using SQL

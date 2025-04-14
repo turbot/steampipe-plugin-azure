@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_api_management - Query Azure API Management Services using SQL"
 description: "Allows users to query Azure API Management Services, specifically providing insights into the management of APIs for both on-premises and cloud solutions."
+folder: "API Management"
 ---
 
 # Table: azure_api_management - Query Azure API Management Services using SQL

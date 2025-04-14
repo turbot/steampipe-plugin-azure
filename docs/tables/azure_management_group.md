@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_management_group - Query Azure Management Groups using SQL"
 description: "Allows users to query Azure Management Groups, providing a hierarchical structure for unified policy and access management across multiple Azure subscriptions."
+folder: "Management Groups"
 ---
 
 # Table: azure_management_group - Query Azure Management Groups using SQL

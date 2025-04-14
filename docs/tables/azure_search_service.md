@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_search_service - Query Azure Search Services using SQL"
 description: "Allows users to query Azure Search Services, specifically the details regarding each search service in an Azure subscription. This provides insights into the properties, settings, and status of these services."
+folder: "Search Service"
 ---
 
 # Table: azure_search_service - Query Azure Search Services using SQL

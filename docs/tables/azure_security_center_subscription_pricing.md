@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_subscription_pricing - Query Azure Security Center Subscription Pricing using SQL"
 description: "Allows users to query Azure Security Center Subscription Pricing, specifically the pricing tier and the resource details associated with the subscription."
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_subscription_pricing - Query Azure Security Center Subscription Pricing using SQL

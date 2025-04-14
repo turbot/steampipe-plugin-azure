@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_cosmosdb_restorable_database_account - Query Azure Cosmos DB Restorable Database Accounts using SQL"
 description: "Allows users to query Azure Cosmos DB Restorable Database Accounts, providing insights into the restorable Azure Cosmos DB accounts within a specified time range."
+folder: "CosmosDB"
 ---
 
 # Table: azure_cosmosdb_restorable_database_account - Query Azure Cosmos DB Restorable Database Accounts using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_hybrid_kubernetes_connected_cluster - Query Azure Hybrid Kubernetes Connected Clusters using SQL"
 description: "Allows users to query Hybrid Kubernetes Connected Clusters in Azure, specifically detailing the configuration, status, and properties of each connected cluster."
+folder: "Hybrid Kubernetes"
 ---
 
 # Table: azure_hybrid_kubernetes_connected_cluster - Query Azure Hybrid Kubernetes Connected Clusters using SQL

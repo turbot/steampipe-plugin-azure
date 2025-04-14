@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_app_service_web_app_slot - Query Azure App Service Web App Slots using SQL"
 description: "Allows users to query Azure App Service Web App Slots, providing insights into the configuration, status, and metadata of each slot."
+folder: "App Service"
 ---
 
 # Table: azure_app_service_web_app_slot - Query Azure App Service Web App Slots using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_image - Query Azure Compute Images using SQL"
 description: "Allows users to query Azure Compute Images, providing detailed information about the virtual machine images available in Azure."
+folder: "Compute"
 ---
 
 # Table: azure_compute_image - Query Azure Compute Images using SQL

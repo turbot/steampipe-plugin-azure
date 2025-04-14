@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_container_group - Query Azure Container Groups using SQL"
 description: "Allows users to query Azure Container Groups, providing detailed information about each container group's configuration, status, and metadata."
+folder: "Container Instances"
 ---
 
 # Table: azure_container_group - Query Azure Container Groups using SQL

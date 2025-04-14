@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_firewall_policy - Query Azure Firewall Policies using SQL"
 description: "Allows users to query Azure Firewall Policies, providing insights into the rules and settings that govern network traffic flow at the application and network level."
+folder: "Firewall"
 ---
 
 # Table: azure_firewall_policy - Query Azure Firewall Policies using SQL

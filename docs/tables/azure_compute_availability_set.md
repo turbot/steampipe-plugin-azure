@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_availability_set - Query Azure Compute Availability Sets using SQL"
 description: "Allows users to query Azure Compute Availability Sets, providing insights into the availability of resources within an Azure Resource Group."
+folder: "Compute"
 ---
 
 # Table: azure_compute_availability_set - Query Azure Compute Availability Sets using SQL

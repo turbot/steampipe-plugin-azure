@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_nat_gateway - Query Azure NAT Gateways using SQL"
 description: "Allows users to query Azure NAT Gateways, providing insights into the network traffic routing and potential anomalies."
+folder: "Network"
 ---
 
 # Table: azure_nat_gateway - Query Azure NAT Gateways using SQL

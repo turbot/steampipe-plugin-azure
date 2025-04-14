@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_healthcare_service - Query Azure Healthcare Services using SQL"
 description: "Allows users to query Azure Healthcare Services, providing insights into the health and performance of healthcare services and potential anomalies."
+folder: "HealthcareAPIs"
 ---
 
 # Table: azure_healthcare_service - Query Azure Healthcare Services using SQL

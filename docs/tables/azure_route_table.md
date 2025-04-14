@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_route_table - Query Azure Route Tables using SQL"
 description: "Allows users to query Route Tables in Azure, specifically the information related to routes and subnets, providing insights into the network flow within an Azure Virtual Network."
+folder: "Network"
 ---
 
 # Table: azure_route_table - Query Azure Route Tables using SQL

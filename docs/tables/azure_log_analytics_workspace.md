@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_log_analytics_workspace - Query Azure Log Analytics Workspaces using SQL"
 description: "Allows users to query Azure Log Analytics Workspaces, providing insights into the configuration and properties of Log Analytics Workspaces within their Azure environment."
+folder: "Monitor"
 ---
 
 # Table: azure_log_analytics_workspace - Query Azure Log Analytics Workspaces using SQL

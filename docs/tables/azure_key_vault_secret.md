@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_key_vault_secret - Query Azure Key Vault Secrets using SQL"
 description: "Allows users to query Azure Key Vault Secrets, providing insights into the secrets stored in Azure Key Vaults, including their attributes, versions, and associated metadata."
+folder: "Key Vault"
 ---
 
 # Table: azure_key_vault_secret - Query Azure Key Vault Secrets using SQL

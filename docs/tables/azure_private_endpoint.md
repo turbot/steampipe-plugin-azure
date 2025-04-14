@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_private_endpoint - Query Azure Private Endpoints using SQL"
 description: "Allows users to query Private Endpoints in Azure, providing detailed information about each private endpoint, including its associated network interfaces, IP configurations, and connection details."
+folder: "Network"
 ---
 
 # Table: azure_private_endpoint - Query Azure Private Endpoints using SQL

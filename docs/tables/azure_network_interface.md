@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_network_interface - Query Azure Network Interfaces using SQL"
 description: "Allows users to query Network Interfaces in Azure, providing detailed information about each network interface, including its associated network security group, IP configuration, and subnet."
+folder: "Network"
 ---
 
 # Table: azure_network_interface - Query Azure Network Interfaces using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_virtual_machine_size - Query Azure Virtual Machine Sizes using SQL"
 description: "Allows users to query available virtual machine sizes in Azure, providing details on cores, memory, disk sizes, and more."
+folder: "Compute"
 ---
 
 # Table: azure_compute_virtual_machine_size - Query Azure Virtual Machine Sizes using SQL

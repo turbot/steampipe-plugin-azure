@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_lake_analytics_account - Query Azure Data Lake Analytics Accounts using SQL"
 description: "Allows users to query Azure Data Lake Analytics Accounts, providing insights into the configuration, state, and other critical details of these resources."
+folder: "Data Lake Analytics"
 ---
 
 # Table: azure_data_lake_analytics_account - Query Azure Data Lake Analytics Accounts using SQL

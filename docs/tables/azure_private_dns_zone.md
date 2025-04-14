@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_private_dns_zone - Query Azure Private DNS Zones using SQL"
 description: "Allows users to query Azure Private DNS Zones, specifically providing insights into their properties, records, and associated metadata."
+folder: "DNS"
 ---
 
 # Table: azure_private_dns_zone - Query Azure Private DNS Zones using SQL

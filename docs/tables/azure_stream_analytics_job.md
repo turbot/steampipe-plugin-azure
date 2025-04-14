@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_stream_analytics_job - Query Azure Stream Analytics Jobs using SQL"
 description: "Allows users to query Azure Stream Analytics Jobs, providing insights into their configurations, statuses, and other associated details."
+folder: "Stream Analytics"
 ---
 
 # Table: azure_stream_analytics_job - Query Azure Stream Analytics Jobs using SQL

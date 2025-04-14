@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_container - Query Azure Storage Containers using SQL"
 description: "Allows users to query Azure Storage Containers. The table provides details about each container in the Azure Storage Account, including metadata, public access level, and more."
+folder: "Storage"
 ---
 
 # Table: azure_storage_container - Query Azure Storage Containers using SQL

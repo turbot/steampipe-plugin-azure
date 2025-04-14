@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_hybrid_compute_machine - Query Azure Hybrid Compute Machines using SQL"
 description: "Allows users to query Azure Hybrid Compute Machines, providing insights into the configuration and status of hybrid machines in the Azure environment."
+folder: "Hybrid Compute"
 ---
 
 # Table: azure_hybrid_compute_machine - Query Azure Hybrid Compute Machines using SQL

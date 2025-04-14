@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_service_fabric_cluster - Query Azure Service Fabric Clusters using SQL"
 description: "Allows users to query Azure Service Fabric Clusters, providing insights into the structure, health, and configuration of each cluster."
+folder: "Service Fabric"
 ---
 
 # Table: azure_service_fabric_cluster - Query Azure Service Fabric Clusters using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb_outbound_rule - Query Azure Load Balancer Outbound Rules using SQL"
 description: "Allows users to query Azure Load Balancer Outbound Rules, specifically providing details about outbound rules configured for Azure Load Balancers."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb_outbound_rule - Query Azure Load Balancer Outbound Rules using SQL

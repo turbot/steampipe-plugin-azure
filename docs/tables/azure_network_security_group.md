@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_network_security_group - Query Azure Network Security Groups using SQL"
 description: "Allows users to query Network Security Groups in Azure, providing insights into the security rules and configurations of the network infrastructure."
+folder: "Network"
 ---
 
 # Table: azure_network_security_group - Query Azure Network Security Groups using SQL

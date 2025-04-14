@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_policy_definition - Query Azure Policy Definitions using SQL"
 description: "Allows users to query Azure Policy Definitions, specifically the details of policy definitions within Azure Policy, providing insights into policy details and compliance information."
+folder: "Policy"
 ---
 
 # Table: azure_policy_definition - Query Azure Policy Definitions using SQL

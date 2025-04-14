@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_resource - Query Azure Resources using SQL"
 description: "Allows users to query Azure resources, providing insights into resource properties, identities, tags, and more."
+folder: "Resource Manager"
 ---
 
 # Table: azure_resource - Query Azure Resources using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_data_protection_backup_vault - Query Azure Data Protection Backup Vaults using SQL"
 description: "Allows users to query Data Protection Backup Vaults in Azure, providing detailed information about each backup vault, including its location, identity, provisioning state, and storage settings."
+folder: "Data Protection"
 ---
 
 # Table: azure_data_protection_backup_vault - Query Azure Data Protection Backup Vaults using SQL

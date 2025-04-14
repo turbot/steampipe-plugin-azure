@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_security_center_auto_provisioning - Query Azure Security Center Auto Provisioning Settings using SQL"
 description: "Allows users to query Azure Security Center Auto Provisioning Settings, providing insights into the automatic deployment of security services and controls."
+folder: "Security Center"
 ---
 
 # Table: azure_security_center_auto_provisioning - Query Azure Security Center Auto Provisioning Settings using SQL

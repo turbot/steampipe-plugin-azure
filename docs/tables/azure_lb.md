@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_lb - Query Azure Load Balancers using SQL"
 description: "Allows users to query Azure Load Balancers, providing detailed information about their configuration, location, and operational status."
+folder: "Load Balancer"
 ---
 
 # Table: azure_lb - Query Azure Load Balancers using SQL

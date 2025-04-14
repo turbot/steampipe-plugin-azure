@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_api_management_backend - Query Azure API Management Backends using SQL"
 description: "Allows users to query Azure API Management Backends, specifically providing access to configuration details, service details, and backend settings."
+folder: "API Management"
 ---
 
 # Table: azure_api_management_backend - Query API Management Backend Configurations using SQL

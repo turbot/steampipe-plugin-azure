@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_servicebus_namespace - Query Azure Service Bus Namespaces using SQL"
 description: "Allows users to query Azure Service Bus Namespaces, providing critical insights into the properties, status, and configurations of each namespace."
+folder: "Service Bus"
 ---
 
 # Table: azure_servicebus_namespace - Query Azure Service Bus Namespaces using SQL

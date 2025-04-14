@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_monitor_log_profile - Query Azure Monitor Log Profiles using SQL"
 description: "Allows users to query Monitor Log Profiles in Azure Monitor, providing insights into the log profile."
+folder: "Monitor"
 ---
 
 # Table: azure_monitor_log_profile - Query Azure Monitor Log Profiles using SQL

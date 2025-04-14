@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_iothub - Query Azure IoT Hub using SQL"
 description: "Allows users to query Azure IoT Hubs, providing insights into the configurations, properties, and status of each IoT hub deployed in Azure."
+folder: "IoT Hub"
 ---
 
 # Table: azure_iothub - Query Azure IoT Hub using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_databricks_workspace - Query Azure Databricks Workspaces using SQL"
 description: "Allows users to query Azure Databricks Workspaces, providing insights into the configuration, status, and properties of each workspace."
+folder: "Databricks"
 ---
 
 # Table: azure_databricks_workspace - Query Azure Databricks Workspaces using SQL

@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_sql_database - Query Azure SQL Databases using SQL"
 description: "Allows users to query Azure SQL Databases, specifically providing details on database status, server information, and configuration settings."
+folder: "SQL"
 ---
 
 # Table: azure_sql_database - Query Azure SQL Databases using SQL

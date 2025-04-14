@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_databox_edge_device - Query Azure Databox Edge Devices using SQL"
 description: "Allows users to query Azure Databox Edge Devices, providing insights into the device's status, SKU, model description, and more."
+folder: "Data Box"
 ---
 
 # Table: azure_databox_edge_device - Query Azure Databox Edge Devices using SQL

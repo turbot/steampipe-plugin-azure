@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_compute_disk_access - Query Azure Compute Disk Accesses using SQL"
 description: "Allows users to query Azure Compute Disk Accesses, providing detailed information about access configurations and their related resources."
+folder: "Compute"
 ---
 
 # Table: azure_compute_disk_access - Query Azure Compute Disk Accesses using SQL

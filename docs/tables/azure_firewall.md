@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_firewall - Query Azure Firewalls using SQL"
 description: "Allows users to query Azure Firewalls, providing insights into the configuration, status, and rules of each firewall in the Azure ecosystem."
+folder: "Firewall"
 ---
 
 # Table: azure_firewall - Query Azure Firewalls using SQL

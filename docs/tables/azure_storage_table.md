@@ -1,6 +1,7 @@
 ---
 title: "Steampipe Table: azure_storage_table - Query Azure Storage Tables using SQL"
 description: "Allows users to query Azure Storage Tables, providing details about each table's properties, including metadata, resource group, and subscription."
+folder: "Storage"
 ---
 
 # Table: azure_storage_table - Query Azure Storage Tables using SQL
