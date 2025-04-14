@@ -1,3 +1,17 @@
+## v1.3.0 [2025-04-14]
+
+_Enhancements_
+
+- Added `folder` metadata to the documentation of all the Azure tables for improved organization on the Steampipe Hub. ([#884](https://github.com/turbot/steampipe-plugin-azure/pull/884))
+
+_Bug fixes_
+
+- Fixed the value of the `subscription_id` column being overwritten with the default from Azure CLI when using CLI authentication. ([#881](https://github.com/turbot/steampipe-plugin-azure/pull/881)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v5.11.5](https://github.com/turbot/steampipe-plugin-sdk/releases/tag/v5.11.5) ([#882](https://github.com/turbot/steampipe-plugin-azure/pull/882))
+
 ## v1.2.0 [2025-03-07]
 
 _What's new?_
