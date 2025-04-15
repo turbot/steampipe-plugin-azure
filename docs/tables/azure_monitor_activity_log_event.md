@@ -204,7 +204,7 @@ from
 
 ## Filter examples
 
-### List evens by resource group
+### List events by resource group
 Discover the segments that are active within a specific resource group in Azure Monitor's activity log. This can be particularly useful for tracking and managing operations, resources, and statuses associated with specific events.
 
 ```sql+postgres
