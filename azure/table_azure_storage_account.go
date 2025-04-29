@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
 	"github.com/tombuildsstuff/giovanni/storage/2019-12-12/blob/accounts"
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -92,6 +93,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "Specifies whether allow or disallow public access to all blobs or containers in the storage account.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("Account.AccountProperties.AllowBlobPublicAccess"),
+			},
+			{
+				Name:        "allow_shared_key_access",
+				Description: "Indicates whether the storage account permits requests to be authorized with the account access key via Shared Key. If false, then all requests, including shared access signatures, must be authorized with Azure Active Directory (Azure AD).",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.AllowSharedKeyAccess"),
 			},
 			{
 				Name:        "blob_change_feed_enabled",
