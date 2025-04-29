@@ -456,6 +456,48 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.NetworkRuleSet.VirtualNetworkRules"),
 			},
+			{
+				Name:        "allow_cross_tenant_replication",
+				Description: "Specifies whether cross-tenant replication is allowed for the storage account.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.AllowCrossTenantReplication"),
+			},
+			{
+				Name:        "default_to_oauth_authentication",
+				Description: "Specifies whether Azure Active Directory is the default authentication method.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.DefaultToOAuthAuthentication"),
+			},
+			{
+				Name:        "sas_expiration_period",
+				Description: "Specifies the time period for SAS token expiration.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.SasExpirationPeriod"),
+			},
+			{
+				Name:        "is_local_user_enabled",
+				Description: "Specifies whether local RBAC users are enabled for the storage account.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.IsLocalUserEnabled"),
+			},
+			{
+				Name:        "routing_preference_routing_choice",
+				Description: "Specifies the network routing choice for the storage account (MicrosoftRouting or InternetRouting).",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Account.AccountProperties.RoutingPreference.RoutingChoice").Transform(transform.ToString),
+			},
+			{
+				Name:        "routing_preference_publish_microsoft_endpoints",
+				Description: "Specifies whether Microsoft routing endpoints are published.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.RoutingPreference.PublishMicrosoftEndpoints"),
+			},
+			{
+				Name:        "routing_preference_publish_internet_endpoints",
+				Description: "Specifies whether Internet routing endpoints are published.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Account.AccountProperties.RoutingPreference.PublishInternetEndpoints"),
+			},
 
 			// Steampipe standard columns
 			{
