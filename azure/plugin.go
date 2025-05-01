@@ -182,6 +182,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_sql_database":                                           tableAzureSqlDatabase(ctx),
 			"azure_sql_server":                                             tableAzureSQLServer(ctx),
 			"azure_storage_account":                                        tableAzureStorageAccount(ctx),
+			"azure_storage_account_local_user":                             tableAzureStorageAccountLocalUser(ctx),
 			"azure_storage_blob":                                           tableAzureStorageBlob(ctx),
 			"azure_storage_blob_service":                                   tableAzureStorageBlobService(ctx),
 			"azure_storage_container":                                      tableAzureStorageContainer(ctx),
