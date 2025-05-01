@@ -110,6 +110,29 @@ where
   allow_blob_public_access;
 ```
 
+### List storage accounts that do not allow shared key access
+Identify storage accounts that have disabled shared key authentication, requiring all requests to be authorized with Azure Active Directory (Azure AD). This helps in assessing your security posture and compliance with security best practices.
+
+```sql+postgres
+select
+  name,
+  allow_shared_key_access
+from
+  azure_storage_account
+where
+  not allow_shared_key_access;
+```
+
+```sql+sqlite
+select
+  name,
+  allow_shared_key_access
+from
+  azure_storage_account
+where
+  allow_shared_key_access = 0;
+```
+
 ### List storage accounts with encryption in transit disabled
 Determine the areas in which data security may be compromised due to the lack of encryption during data transit in your Azure storage accounts. This query is useful to identify potential vulnerabilities and enhance your security measures.
 
