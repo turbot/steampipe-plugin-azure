@@ -147,6 +147,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_mysql_server":                                           tableAzureMySQLServer(ctx),
 			"azure_nat_gateway":                                            tableAzureNatGateway(ctx),
 			"azure_network_interface":                                      tableAzureNetworkInterface(ctx),
+			"azure_network_profile":                                        tableAzureNetworkProfile(ctx),
 			"azure_network_security_group":                                 tableAzureNetworkSecurityGroup(ctx),
 			"azure_network_watcher":                                        tableAzureNetworkWatcher(ctx),
 			"azure_network_watcher_flow_log":                               tableAzureNetworkWatcherFlowLog(ctx),
