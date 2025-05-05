@@ -67,7 +67,7 @@ func tableAzureNetworkProfile(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "container_network_interface_configurations",
-				Description: "List of chid container network interface configurations.",
+				Description: "List of child container network interface configurations.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("ProfilePropertiesFormat.ContainerNetworkInterfaceConfigurations"),
 			},
