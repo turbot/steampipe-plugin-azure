@@ -472,13 +472,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Name:        "sas_expiration_period",
 				Description: "Specifies the time period for SAS token expiration.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.SasPolicy.SasExpirationPeriod"),
+				Transform:   transform.FromField("Account.AccountProperties.SasPolicy.SasExpirationPeriod"),
 			},
 			{
 				Name:        "sas_expiration_action",
 				Description: "The action to be taken when a SAS token expires. Possible values include: 'Log'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.SasPolicy.ExpirationAction"),
+				Transform:   transform.FromField("Account.AccountProperties.SasPolicy.ExpirationAction"),
 			},
 			{
 				Name:        "is_local_user_enabled",
