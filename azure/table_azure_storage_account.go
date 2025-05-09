@@ -490,7 +490,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Name:        "routing_preference_routing_choice",
 				Description: "Specifies the network routing choice for the storage account (MicrosoftRouting or InternetRouting).",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Account.AccountProperties.RoutingPreference.RoutingChoice").Transform(transform.ToString),
+				Transform:   transform.FromField("Account.AccountProperties.RoutingPreference.RoutingChoice"),
 			},
 			{
 				Name:        "routing_preference_publish_microsoft_endpoints",
