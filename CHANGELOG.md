@@ -1,3 +1,10 @@
+## v1.4.0 [2025-05-09]
+
+_Enhancements_
+
+- Added `allow_cross_tenant_replication`, `default_to_oauth_authentication`, `sas_expiration_period`, `sas_expiration_action`, `is_local_user_enabled`, `routing_preference_routing_choice`, `routing_preference_publish_microsoft_endpoints`, `routing_preference_publish_internet_endpoints` columns to the `azure_storage_account` table. ([#891](https://github.com/turbot/steampipe-plugin-azure/pull/891))
+- Added `allow_shared_key_access` column to the `azure_storage_account` table. ([#889](https://github.com/turbot/steampipe-plugin-azure/pull/889))
+
 ## v1.3.0 [2025-04-14]
 
 _Enhancements_
