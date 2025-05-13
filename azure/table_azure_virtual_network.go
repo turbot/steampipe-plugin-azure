@@ -24,7 +24,8 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listVirtualNetworks,
+			Hydrate:    listVirtualNetworks,
+			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -141,6 +142,39 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &networkClient, d.Connection)
 
+	// Check if the query has a resource_group filter
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	if resourceGroup != "" {
+		// If resource_group is specified, list virtual networks in that resource group
+		result, err := networkClient.List(ctx, resourceGroup)
+		if err != nil {
+			return nil, err
+		}
+		for _, network := range result.Values() {
+			d.StreamListItem(ctx, network)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+
+		for result.NotDone() {
+			err = result.NextWithContext(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, network := range result.Values() {
+				d.StreamListItem(ctx, network)
+				if d.RowsRemaining(ctx) == 0 {
+					return nil, nil
+				}
+			}
+		}
+		return nil, nil
+	}
+
+	// If no resource_group filter, list all virtual networks
 	result, err := networkClient.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -168,7 +202,6 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 				return nil, nil
 			}
 		}
-
 	}
 
 	return nil, err

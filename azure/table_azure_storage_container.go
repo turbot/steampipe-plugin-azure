@@ -28,6 +28,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageContainers,
+			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
 		},
 
 		Columns: azureColumns([]*plugin.Column{
@@ -181,7 +182,10 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
-
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	if resourceGroup != "" && resourceGroup != *account.ResourceGroup {
+		return nil, nil
+	}
 	// Blob is not supported for the account if storage type is FileStorage
 	if account.Account.Kind == "FileStorage" {
 		return nil, nil

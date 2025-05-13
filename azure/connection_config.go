@@ -1,6 +1,9 @@
 package azure
 
 import (
+	"context"
+	"strings"
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -17,6 +20,8 @@ type azureConfig struct {
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
+	ResourceGroup         *string  `hcl:"resource_group,optional"`
+	ResourceGroups        []string `hcl:"resource_groups,optional"`
 }
 
 func ConfigInstance() interface{} {
@@ -29,5 +34,24 @@ func GetConfig(connection *plugin.Connection) azureConfig {
 		return azureConfig{}
 	}
 	config, _ := connection.Config.(azureConfig)
+
+	if config.ResourceGroups != nil {
+		if len(config.ResourceGroups) == 0 {
+			// Empty resource_groups array means no resource group filtering
+			plugin.Logger(context.Background()).Warn("connection_config", "connection_name", connection.Name, "empty_resource_groups", "resource_groups = [] means no resource group filtering will be applied")
+		} else {
+			// Normalize resource group names
+			for i, rg := range config.ResourceGroups {
+				config.ResourceGroups[i] = NormalizeResourceGroup(rg)
+			}
+		}
+	}
+
 	return config
+}
+
+func NormalizeResourceGroup(resourceGroup string) string {
+	// ensure resource groups are lower case, to work consistently in matching
+	// and comparisons
+	return strings.ToLower(resourceGroup)
 }

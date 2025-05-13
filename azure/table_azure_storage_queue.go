@@ -35,6 +35,7 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageQueues,
+			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -103,7 +104,10 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
-
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	if resourceGroup != "" && resourceGroup != *account.ResourceGroup {
+		return nil, nil
+	}
 	// Queue is not supported for the account if storage type is FileStorage or BlockBlobStorage
 	if account.Account.Kind == "FileStorage" || account.Account.Kind == "BlockBlobStorage" {
 		return nil, nil

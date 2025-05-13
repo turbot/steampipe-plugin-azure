@@ -33,6 +33,7 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageBlobServices,
+			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -87,7 +88,7 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "default_service_version",
-				Description: "Indicates the default version to use for requests to the Blob service if an incoming request’s version is not specified",
+				Description: "Indicates the default version to use for requests to the Blob service if an incoming request's version is not specified",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.BlobServicePropertiesProperties.DefaultServiceVersion"),
 			},
@@ -106,7 +107,7 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "cors_rules",
-				Description: "A list of CORS rules for a storage account’s Blob service",
+				Description: "A list of CORS rules for a storage account's Blob service",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.BlobServicePropertiesProperties.Cors.CorsRules"),
 			},
@@ -159,6 +160,10 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 func listStorageBlobServices(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+	if resourceGroup != "" && resourceGroup != *account.ResourceGroup {
+		return nil, nil
+	}
 
 	// Blob is not supported for the account if storage type is FileStorage
 	if account.Account.Kind == "FileStorage" {

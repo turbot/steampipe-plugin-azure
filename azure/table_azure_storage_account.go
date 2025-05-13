@@ -39,6 +39,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listStorageAccounts,
+			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
