@@ -1,0 +1,13 @@
+[
+  {
+    "akas": [
+      "azure:///subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}/localUsers/{{ resourceName }}"
+    ],
+    "id": "/subscriptions/{{ output.subscription_id.value }}/resourceGroups/{{ resourceName }}/providers/Microsoft.Storage/storageAccounts/{{ resourceName }}/localUsers/{{ resourceName }}",
+    "name": "{{ resourceName }}",
+    "resource_group": "{{ resourceName }}",
+    "storage_account_name": "{{ resourceName }}",
+    "title": "{{ resourceName }}",
+    "type": "Microsoft.Storage/storageAccounts/localUsers"
+  }
+] 

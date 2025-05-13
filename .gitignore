@@ -17,3 +17,5 @@
 # Ignore file types
 .vscode/
 .idea/
+.terraform/
+.terraform.lock.hcl
