@@ -30,7 +30,7 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 			Hydrate:       listStorageContainers,
 			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
 		},
-
+		GetMatrixItemFunc: ResourceGroupMatrixFilter,
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
@@ -182,10 +182,22 @@ func tableAzureStorageContainer(_ context.Context) *plugin.Table {
 func listStorageContainers(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Get the details of storage account
 	account := h.Item.(*storageAccountInfo)
+
+	// Check if the query has a resource_group filter
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-	if resourceGroup != "" && resourceGroup != *account.ResourceGroup {
+	if resourceGroup != "" && resourceGroup != strings.ToLower(*account.ResourceGroup) {
 		return nil, nil
 	}
+
+	// Check if there's a matrix item from GetMatrixItemFunc (resource group from connection config)
+	matrixItem := plugin.GetMatrixItem(ctx)
+	if matrixItem != nil && matrixItem["resource_group"] != nil {
+		matrixResourceGroup := matrixItem["resource_group"].(string)
+		if matrixResourceGroup != "" && matrixResourceGroup != strings.ToLower(*account.ResourceGroup) {
+			return nil, nil
+		}
+	}
+
 	// Blob is not supported for the account if storage type is FileStorage
 	if account.Account.Kind == "FileStorage" {
 		return nil, nil

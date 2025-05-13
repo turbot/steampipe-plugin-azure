@@ -35,6 +35,13 @@ func GetConfig(connection *plugin.Connection) azureConfig {
 	}
 	config, _ := connection.Config.(azureConfig)
 
+	// Normalize the single ResourceGroup if it's set
+	if config.ResourceGroup != nil {
+		// Normalize the single resource group
+		normalizedRG := NormalizeResourceGroup(*config.ResourceGroup)
+		config.ResourceGroup = &normalizedRG
+	}
+
 	if config.ResourceGroups != nil {
 		if len(config.ResourceGroups) == 0 {
 			// Empty resource_groups array means no resource group filtering
