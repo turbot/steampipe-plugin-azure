@@ -30,6 +30,18 @@ func ResourceGroupMatrixFilter(ctx context.Context, d *plugin.QueryData) []map[s
 		matrix = append(matrix, obj)
 	}
 
+	/**
+	 * matrix:
+	 * [
+	 * 	{
+	 * 		"resource_group": "rg1"
+	 * 	},
+	 * 	{
+	 * 		"resource_group": "rg2"
+	 * 	}
+	 * ]
+	 */
+
 	plugin.Logger(ctx).Debug("ResourceGroupMatrixFilter", "connection_name", d.Connection.Name, "matrix", matrix)
 	return matrix
 }
@@ -38,40 +50,30 @@ func ResourceGroupMatrixFilter(ctx context.Context, d *plugin.QueryData) []map[s
 // This function supports wildcards "*" and "?" in the connection config for resource_groups.
 //
 // Scenarios:
-// 1. When no resource_groups mentioned in connection config, resource_groups is empty, or no resource_group is set either:
-//   - Return an empty list, which means no resource group filtering
+// 1. When no resource_groups mentioned in connection config or resource_groups is empty:
+//   - Return all the resource groups
 //
-// 2. When resource_group is specified but resource_groups is not:
-//   - Return the single resource_group value
+// 2. When resource_groups has specific values:
+//   - Return the list as-is but after verifying that the resource groups specified by the user exist
 //
-// 3. When resource_groups has specific values:
-//   - Return the list as-is
-//
-// 4. When resource_groups has wildcards:
+// 3. When resource_groups has wildcards:
 //   - resource_groups = ["*"] means all resource groups
 //   - resource_groups = ["prod-*"] means all resource groups starting with "prod-"
 func listQueryResourceGroupsForConnection(ctx context.Context, d *plugin.QueryData) ([]string, error) {
 	// Retrieve resource groups list from the plugin connection config
 	azureConfig := GetConfig(d.Connection)
 
-	// If there are no resource groups defined in the config or the array is empty, check for single resource_group
-	if azureConfig.ResourceGroups == nil || len(azureConfig.ResourceGroups) == 0 {
-		if azureConfig.ResourceGroup != nil {
-			// Return the single resource group as the only filter
-			plugin.Logger(ctx).Debug("listQueryResourceGroupsForConnection", "connection_name", d.Connection.Name, "using single resource group", *azureConfig.ResourceGroup)
-			return []string{NormalizeResourceGroup(*azureConfig.ResourceGroup)}, nil
-		}
-
-		// No resource group filtering specified, return empty list
-		plugin.Logger(ctx).Debug("listQueryResourceGroupsForConnection", "connection_name", d.Connection.Name, "no resource group filters configured")
-		return []string{}, nil
-	}
-
-	// Get all resource groups for wildcard matching
+	// Get all resource groups
 	resourceGroups, err := getAllResourceGroups(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("listQueryResourceGroupsForConnection", "connection_name", d.Connection.Name, "error", err)
 		return nil, err
+	}
+
+	// If there are no resource groups defined in the config or the array is empty, return all the resource groups
+	if azureConfig.ResourceGroups == nil || len(azureConfig.ResourceGroups) == 0 {
+		plugin.Logger(ctx).Debug("listQueryResourceGroupsForConnection", "connection_name", d.Connection.Name, "no resource group filters configured, returning all resource groups")
+		return resourceGroups, nil
 	}
 
 	// Filter to resource groups that match the patterns in the config

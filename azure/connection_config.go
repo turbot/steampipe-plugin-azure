@@ -20,7 +20,6 @@ type azureConfig struct {
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
-	ResourceGroup         *string  `hcl:"resource_group,optional"`
 	ResourceGroups        []string `hcl:"resource_groups,optional"`
 }
 
@@ -34,13 +33,6 @@ func GetConfig(connection *plugin.Connection) azureConfig {
 		return azureConfig{}
 	}
 	config, _ := connection.Config.(azureConfig)
-
-	// Normalize the single ResourceGroup if it's set
-	if config.ResourceGroup != nil {
-		// Normalize the single resource group
-		normalizedRG := NormalizeResourceGroup(*config.ResourceGroup)
-		config.ResourceGroup = &normalizedRG
-	}
 
 	if config.ResourceGroups != nil {
 		if len(config.ResourceGroups) == 0 {

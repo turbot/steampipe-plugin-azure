@@ -38,8 +38,10 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate:    listStorageAccounts,
-			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
+			Hydrate: listStorageAccounts,
+			KeyColumns: plugin.KeyColumnSlice{
+				{Name: "resource_group", Require: plugin.Optional},
+			},
 		},
 		GetMatrixItemFunc: ResourceGroupMatrixFilter,
 		Columns: azureColumns([]*plugin.Column{
@@ -560,6 +562,8 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		logger.Error("listStorageAccounts", "get session error", err)
 		return nil, err
 	}
+	// resource_groups = ["nist-test_group", "new-rg"]
+	rg := d.EqualsQualString(matrixKeyResourceGroup)
 	subscriptionID := session.SubscriptionID
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
@@ -567,87 +571,14 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
-	// Check if there's a filter for resource_group in the query
-	resourceGroupFilter := d.EqualsQuals["resource_group"].GetStringValue()
-
-	// Check if there's a matrix item from GetMatrixItemFunc (resource group from connection config)
-	var matrixResourceGroupFilter string
-	matrixItem := plugin.GetMatrixItem(ctx)
-	if matrixItem != nil && matrixItem["resource_group"] != nil {
-		matrixResourceGroupFilter = matrixItem["resource_group"].(string)
-	}
-
-	// If resource_group filter is specified in query or matrix, list accounts in that resource group
-	if resourceGroupFilter != "" || matrixResourceGroupFilter != "" {
-		var resourceGroups []string
-
-		// Build list of resource groups to check
-		if resourceGroupFilter != "" {
-			resourceGroups = append(resourceGroups, resourceGroupFilter)
-		}
-		if matrixResourceGroupFilter != "" && matrixResourceGroupFilter != resourceGroupFilter {
-			resourceGroups = append(resourceGroups, matrixResourceGroupFilter)
-		}
-
-		// For each specified resource group, list accounts and filter
-		for _, rg := range resourceGroups {
-			result, err := storageClient.ListByResourceGroup(ctx, rg)
-			if err != nil {
-				logger.Error("listStorageAccounts", "api error", err)
-				return nil, err
-			}
-
-			for _, account := range result.Values() {
-				accountResourceGroup := strings.ToLower(strings.Split(string(*account.ID), "/")[4])
-
-				// Apply both filters - only return if it matches both when both are specified
-				if (resourceGroupFilter == "" || resourceGroupFilter == accountResourceGroup) &&
-					(matrixResourceGroupFilter == "" || matrixResourceGroupFilter == accountResourceGroup) {
-					d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, &accountResourceGroup})
-				}
-
-				// Check if context has been cancelled or if the limit has been hit
-				if d.RowsRemaining(ctx) == 0 {
-					return nil, nil
-				}
-			}
-
-			for result.NotDone() {
-				err = result.NextWithContext(ctx)
-				if err != nil {
-					return nil, err
-				}
-
-				for _, account := range result.Values() {
-					accountResourceGroup := strings.ToLower(strings.Split(string(*account.ID), "/")[4])
-
-					// Apply both filters - only return if it matches both when both are specified
-					if (resourceGroupFilter == "" || resourceGroupFilter == accountResourceGroup) &&
-						(matrixResourceGroupFilter == "" || matrixResourceGroupFilter == accountResourceGroup) {
-						d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, &accountResourceGroup})
-					}
-
-					// Check if context has been cancelled or if the limit has been hit
-					if d.RowsRemaining(ctx) == 0 {
-						return nil, nil
-					}
-				}
-			}
-		}
-
-		return nil, nil
-	}
-
-	// No resource_group filter, list all storage accounts
-	result, err := storageClient.List(ctx)
+	result, err := storageClient.ListByResourceGroup(ctx, rg)
 	if err != nil {
 		logger.Error("listStorageAccounts", "api error", err)
 		return nil, err
 	}
 
 	for _, account := range result.Values() {
-		resourceGroup := &strings.Split(string(*account.ID), "/")[4]
-		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
+		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, &rg})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
