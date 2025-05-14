@@ -81,6 +81,7 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 				},
 			},
 		},
+		GetMatrixItemFunc: ResourceGroupMatrixFilter,
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

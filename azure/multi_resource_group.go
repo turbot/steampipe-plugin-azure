@@ -30,18 +30,6 @@ func ResourceGroupMatrixFilter(ctx context.Context, d *plugin.QueryData) []map[s
 		matrix = append(matrix, obj)
 	}
 
-	/**
-	 * matrix:
-	 * [
-	 * 	{
-	 * 		"resource_group": "rg1"
-	 * 	},
-	 * 	{
-	 * 		"resource_group": "rg2"
-	 * 	}
-	 * ]
-	 */
-
 	plugin.Logger(ctx).Debug("ResourceGroupMatrixFilter", "connection_name", d.Connection.Name, "matrix", matrix)
 	return matrix
 }
