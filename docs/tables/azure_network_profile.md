@@ -15,7 +15,6 @@ The `azure_network_profile` table provides insights into network profiles within
 ## Examples
 
 ### Basic network profile information
-
 Explore the basic attributes of your Azure Network Profiles to understand their configuration and associated container networks.
 
 ```sql+postgres
@@ -41,7 +40,6 @@ from
 ```
 
 ### List network profiles by their provisioning state
-
 Determine the areas in which network profiles have different provisioning states to identify profiles that may require attention.
 
 ```sql+postgres
@@ -69,8 +67,7 @@ order by
 ```
 
 ### Get container network interface configuration details
-
-Examine container network interface configuration to understand how containers are connected to the network, including subnet associations and IP assignment methods.
+Examine the container network interface configuration to understand how containers are connected to the network, including subnet associations and IP assignment methods.
 
 ```sql+postgres
 select
@@ -95,7 +92,6 @@ from
 ```
 
 ### Find network profiles associated with specific virtual networks
-
 Identify which network profiles are connected to specific virtual networks to better manage your network infrastructure.
 
 ```sql+postgres
