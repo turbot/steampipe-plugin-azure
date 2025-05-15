@@ -152,14 +152,15 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	result, err := client.List(ctx, "")
+	rg := d.EqualsQualString(matrixKeyResourceGroup)
+	result, err := client.ListByResourceGroup(ctx, rg, "")
 	if err != nil {
 		plugin.Logger(ctx).Error("listAppConfigurations", "list", err)
 		return nil, err
 	}
 
 	for _, config := range result.Values() {
-		d.StreamListItem(ctx, config)
+		d.StreamListItem(ctx, config, &rg)
 	}
 
 	for result.NotDone() {

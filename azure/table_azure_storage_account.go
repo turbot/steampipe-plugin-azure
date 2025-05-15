@@ -39,7 +39,11 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listStorageAccounts,
+			KeyColumns: plugin.KeyColumnSlice{
+				{Name: "resource_group", Require: plugin.Optional},
+			},
 		},
+		GetMatrixItemFunc: ResourceGroupMatrixFilter,
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
@@ -558,6 +562,8 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		logger.Error("listStorageAccounts", "get session error", err)
 		return nil, err
 	}
+	// resource_groups = ["nist-test_group", "new-rg"]
+	rg := d.EqualsQualString(matrixKeyResourceGroup)
 	subscriptionID := session.SubscriptionID
 	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	storageClient.Authorizer = session.Authorizer
@@ -565,15 +571,14 @@ func listStorageAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &storageClient, d.Connection)
 
-	result, err := storageClient.List(ctx)
+	result, err := storageClient.ListByResourceGroup(ctx, rg)
 	if err != nil {
 		logger.Error("listStorageAccounts", "api error", err)
 		return nil, err
 	}
 
 	for _, account := range result.Values() {
-		resourceGroup := &strings.Split(string(*account.ID), "/")[4]
-		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, resourceGroup})
+		d.StreamListItem(ctx, &storageAccountInfo{account, account.Name, &rg})
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {

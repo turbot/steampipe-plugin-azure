@@ -182,12 +182,13 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &webClient, d.Connection)
 
-	result, err := webClient.List(ctx)
+	rg := d.EqualsQualString(matrixKeyResourceGroup)
+	result, err := webClient.ListByResourceGroup(ctx, rg)
 	if err != nil {
 		return nil, err
 	}
 	for _, environment := range result.Values() {
-		d.StreamListItem(ctx, environment)
+		d.StreamListItem(ctx, environment, &rg)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {

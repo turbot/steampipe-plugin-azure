@@ -301,20 +301,20 @@ func listAPIManagements(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
-
+	rg := d.EqualsQualString(matrixKeyResourceGroup)
 	apiManagementClient := apimanagement.NewServiceClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	apiManagementClient.Authorizer = session.Authorizer
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &apiManagementClient, d.Connection)
 
-	result, err := apiManagementClient.List(ctx)
+	result, err := apiManagementClient.ListByResourceGroup(ctx, rg)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAPIManagements", "list", err)
 		return nil, err
 	}
 	for _, apiManagement := range result.Values() {
-		d.StreamListItem(ctx, apiManagement)
+		d.StreamListItem(ctx, apiManagement, &rg)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {

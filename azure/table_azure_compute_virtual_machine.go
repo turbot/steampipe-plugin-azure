@@ -33,8 +33,10 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listComputeVirtualMachines,
+			Hydrate:    listComputeVirtualMachines,
+			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
 		},
+		GetMatrixItemFunc: ResourceGroupMatrixFilter,
 		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getNicPublicIPs,
@@ -421,6 +423,74 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
+	// Check if the query has a resource_group filter
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+
+	// If resource_group is provided in the WHERE clause
+	if resourceGroup != "" {
+		result, err := client.List(ctx, resourceGroup, "")
+		if err != nil {
+			return nil, err
+		}
+
+		for _, virtualMachine := range result.Values() {
+			d.StreamListItem(ctx, virtualMachine)
+			// Check if context has been cancelled or if the limit has been hit (if specified)
+			// if there is a limit, it will return the number of rows required to reach this limit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+
+		for result.NotDone() {
+			err = result.NextWithContext(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, virtualMachine := range result.Values() {
+				d.StreamListItem(ctx, virtualMachine)
+				if d.RowsRemaining(ctx) == 0 {
+					return nil, nil
+				}
+			}
+		}
+		return nil, nil
+	}
+
+	// Check if there's a matrix item from GetMatrixItemFunc (resource group from connection config)
+	matrixItem := plugin.GetMatrixItem(ctx)
+	if matrixItem != nil && matrixItem["resource_group"] != nil {
+		matrixResourceGroup := matrixItem["resource_group"].(string)
+		result, err := client.List(ctx, matrixResourceGroup, "")
+		if err != nil {
+			return nil, err
+		}
+
+		for _, virtualMachine := range result.Values() {
+			d.StreamListItem(ctx, virtualMachine)
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+
+		for result.NotDone() {
+			err = result.NextWithContext(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, virtualMachine := range result.Values() {
+				d.StreamListItem(ctx, virtualMachine)
+				if d.RowsRemaining(ctx) == 0 {
+					return nil, nil
+				}
+			}
+		}
+		return nil, nil
+	}
+
+	// No resource_group filter, list all virtual machines
 	result, err := client.ListAll(ctx, "", "")
 	if err != nil {
 		return nil, err
