@@ -21,8 +21,8 @@ Explore which security center contacts in your Azure environment have alert noti
 select
   id,
   email,
-  alert_notifications,
-  alerts_to_admins
+  notifications_by_role,
+  notifications_sources
 from
   azure_security_center_contact;
 ```
@@ -31,8 +31,8 @@ from
 select
   id,
   email,
-  alert_notifications,
-  alerts_to_admins
+  notifications_by_role,
+  notifications_sources
 from
   azure_security_center_contact;
 ```
@@ -44,8 +44,8 @@ Determine areas in which Security Center contacts have been set up without email
 select
   id,
   email,
-  alert_notifications,
-  alerts_to_admins
+  notifications_by_role,
+  notifications_sources
 from
   azure_security_center_contact
 where
@@ -56,8 +56,8 @@ where
 select
   id,
   email,
-  alert_notifications,
-  alerts_to_admins
+  notifications_by_role,
+  notifications_sources
 from
   azure_security_center_contact
 where

@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -44,25 +44,31 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 				Name:        "email",
 				Description: "The email of this security contact.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.Email"),
+				Transform:   transform.FromField("Properties.Emails"),
 			},
 			{
 				Name:        "phone",
 				Description: "The phone number of this security contact.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.Phone"),
+				Transform:   transform.FromField("Properties.Phone"),
 			},
 			{
-				Name:        "alert_notifications",
-				Description: "Whether to send security alerts notifications to the security contact.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.AlertNotifications"),
+				Name:        "is_enabled",
+				Description: "Indicates whether the security contact is enabled.",
+				Type:        proto.ColumnType_BOOL,
+				Transform:   transform.FromField("Properties.IsEnabled"),
 			},
 			{
-				Name:        "alerts_to_admins",
-				Description: "Whether to send security alerts notifications to subscription admins.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("ContactProperties.AlertsToAdmins"),
+				Name:        "notifications_by_role",
+				Description: "Defines whether to send email notifications from Microsoft Defender for Cloud to persons with specific RBAC roles on the subscription.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.NotificationsByRole"),
+			},
+			{
+				Name:        "notifications_sources",
+				Description: "A collection of sources types which evaluate the email notification.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.NotificationsSources"),
 			},
 
 			// Steampipe standard columns
@@ -85,39 +91,26 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
 
-	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	contactClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &contactClient, d.Connection)
-
-	result, err := contactClient.List(ctx)
+	clientFactory, err := armsecurity.NewContactsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	for _, contact := range result.Values() {
-		d.StreamListItem(ctx, contact)
-		// Check if context has been cancelled or if the limit has been hit (if specified)
-		// if there is a limit, it will return the number of rows required to reach this limit
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
-	}
-
-	for result.NotDone() {
-		err = result.NextWithContext(ctx)
+	pager := clientFactory.NewListPager(&armsecurity.ContactsClientListOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
-		for _, contact := range result.Values() {
+
+		for _, contact := range page.Value {
 			d.StreamListItem(ctx, contact)
+
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {
@@ -132,23 +125,22 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 //// HYDRATE FUNCTIONS
 
 func getSecurityCenterContact(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	name := d.EqualsQuals["name"].GetStringValue()
 
-	subscriptionID := session.SubscriptionID
-	contactClient := security.NewContactsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	contactClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &contactClient, d.Connection)
-
-	contact, err := contactClient.Get(ctx, name)
+	clientFactory, err := armsecurity.NewContactsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	return contact, nil
+	name := d.EqualsQualString("name")
+
+	result, err := clientFactory.Get(ctx, armsecurity.SecurityContactName(name), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Contact, nil
 }
