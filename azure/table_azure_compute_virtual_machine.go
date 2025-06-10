@@ -425,7 +425,7 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	var result compute.VirtualMachineListResultPage
 	if d.EqualsQuals["resource_group"] != nil {
 		resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-		result, err = client.List(ctx, resourceGroup)
+		result, err = client.List(ctx, resourceGroup, "")
 	} else {
 		result, err = client.ListAll(ctx, "", "")
 	}
