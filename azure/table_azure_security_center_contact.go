@@ -59,6 +59,18 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.IsEnabled"),
 			},
 			{
+				Name:        "alert_notifications",
+				Description: "[DEPRECATED] Whether to send security alerts notifications to the security contact.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.AlertNotifications"),
+			},
+			{
+				Name:        "alerts_to_admins",
+				Description: "[DEPRECATED] Whether to send security alerts notifications to subscription admins.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ContactProperties.AlertsToAdmins"),
+			},
+			{
 				Name:        "notifications_by_role",
 				Description: "Defines whether to send email notifications from Microsoft Defender for Cloud to persons with specific RBAC roles on the subscription.",
 				Type:        proto.ColumnType_JSON,
