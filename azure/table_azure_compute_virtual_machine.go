@@ -33,7 +33,8 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listComputeVirtualMachines,
+			Hydrate:    listComputeVirtualMachines,
+			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{
@@ -421,7 +422,14 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	result, err := client.ListAll(ctx, "", "")
+	var result compute.VirtualMachineListResultPage
+	if d.EqualsQuals["resource_group"] != nil {
+		resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+		result, err = client.List(ctx, resourceGroup)
+	} else {
+		result, err = client.ListAll(ctx, "", "")
+	}
+
 	if err != nil {
 		return nil, err
 	}
