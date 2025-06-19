@@ -28,6 +28,10 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getComputeVirtualMachine,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "Microsoft.Compute/virtualMachines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
@@ -35,6 +39,10 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:    listComputeVirtualMachines,
 			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "Microsoft.Compute/virtualMachines/read",
+			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{
@@ -409,18 +417,20 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
+
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
 
 	var result compute.VirtualMachineListResultPage
 	if d.EqualsQuals["resource_group"] != nil {

@@ -19,6 +19,10 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 		Description: "Azure Compute Resource SKU",
 		List: &plugin.ListConfig{
 			Hydrate: listResourceSkus,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "Microsoft.Compute/skus/read",
+			},
 		},
 
 		Columns: azureColumns([]*plugin.Column{
@@ -158,6 +162,9 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &locksClient, d.Connection)
+
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
 
 	result, err := locksClient.List(ctx)
 	if err != nil {

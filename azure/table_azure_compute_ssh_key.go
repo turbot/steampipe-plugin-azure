@@ -18,12 +18,20 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeSshKey,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "sshPublicKeys/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeSshKeys,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "sshPublicKeys/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -88,23 +96,23 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeSshKeys")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_compute_ssh_key.listAzureComputeSshKeys", "client_error", err)
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewSSHPublicKeysClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
+
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_compute_ssh_key.listAzureComputeSshKeys", "query_error", err)
 		return nil, err
 	}
 

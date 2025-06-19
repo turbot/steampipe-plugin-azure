@@ -18,12 +18,20 @@ func tableAzureComputeSnapshot(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeSnapshot,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "snapshots/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeSnapshots,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "snapshots/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -249,18 +257,20 @@ func tableAzureComputeSnapshot(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listAzureComputeSnapshots(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeSnapshots")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewSnapshotsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
+
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
 
 	result, err := client.List(ctx)
 	if err != nil {

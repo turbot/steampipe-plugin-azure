@@ -18,12 +18,20 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDiskAccess,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "diskAccesses/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDiskAccesses,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "diskAccesses/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -116,22 +124,23 @@ type PrivateEndpointConnection struct {
 //// LIST FUNCTION
 
 func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeDiskAccesses")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewDiskAccessesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
+
 	result, err := client.List(ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "list_err", err)
 		return nil, err
 	}
 

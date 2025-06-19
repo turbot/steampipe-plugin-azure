@@ -19,12 +19,20 @@ func tableAzureComputeImage(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getComputeImage,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "Microsoft.Compute/images/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listComputeImages,
+			Tags: map[string]string{
+				"service": "compute",
+				"action":  "Microsoft.Compute/images/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -180,6 +188,9 @@ func listComputeImages(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &computeClient, d.Connection)
+
+	// Apply rate limiting
+	d.WaitForListRateLimit(ctx)
 
 	result, err := computeClient.List(ctx)
 	if err != nil {
