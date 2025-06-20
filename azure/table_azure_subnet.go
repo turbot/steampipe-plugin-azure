@@ -29,6 +29,10 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "virtual_network_name", "resource_group"}),
 			Hydrate:    getSubnet,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworks/subnets/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "NotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -36,6 +40,10 @@ func tableAzureSubnet(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listVirtualNetworks,
 			Hydrate:       listSubnets,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworks/subnets/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

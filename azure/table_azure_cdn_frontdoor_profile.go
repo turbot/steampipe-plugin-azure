@@ -16,12 +16,20 @@ func tableAzureCDNFrontDoorProfile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureCDNFrontDoorProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Cdn",
+				"action":  "profiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureCDNFrontDoorProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Cdn",
+				"action":  "profiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

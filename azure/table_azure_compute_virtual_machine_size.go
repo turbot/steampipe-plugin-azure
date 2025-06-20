@@ -22,7 +22,7 @@ func tableAzureComputeVirtualMachineSize(_ context.Context) *plugin.Table {
 			ParentHydrate: listLocations,
 			Hydrate:       listComputeVirtualMachineSizes,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "locations/vmSizes/read",
 			},
 		},

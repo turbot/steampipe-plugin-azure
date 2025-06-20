@@ -19,8 +19,12 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		Name:        "azure_api_management_backend",
 		Description: "Azure API Management Backend",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"backend_id", "resource_group", "service_name"}),
+			KeyColumns: plugin.AllColumns([]string{"api_management_name", "resource_group", "name"}),
 			Hydrate:    getAPIManagementBackend,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "backend/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAPIManagements,
 			Hydrate:       listAPIManagementBackends,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "backend/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "service_name",

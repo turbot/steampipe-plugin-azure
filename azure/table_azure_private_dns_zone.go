@@ -6,9 +6,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/dns/mgmt/dns"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/privatedns/mgmt/privatedns"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -20,12 +19,20 @@ func tableAzurePrivateDNSZone(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPrivateDNSZone,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateDnsZones/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listPrivateDNSZones,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateDnsZones/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

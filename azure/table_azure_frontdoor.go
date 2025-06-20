@@ -20,12 +20,20 @@ func tableAzureFrontDoor(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getFrontDoor,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "frontDoors/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listFrontDoors,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "frontDoors/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -18,6 +18,10 @@ func tableAzureLocation(_ context.Context) *plugin.Table {
 		Description: "Azure Location",
 		List: &plugin.ListConfig{
 			Hydrate: listLocations,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "subscriptions/locations/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -21,6 +21,10 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,
 			Hydrate:       listAzureComputeVirtualMachineScaleSetInterfaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkInterfaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

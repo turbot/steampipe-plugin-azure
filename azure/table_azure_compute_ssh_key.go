@@ -19,7 +19,7 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeSshKey,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "sshPublicKeys/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -29,7 +29,7 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeSshKeys,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "sshPublicKeys/read",
 			},
 		},

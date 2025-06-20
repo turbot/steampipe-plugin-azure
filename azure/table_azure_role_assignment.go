@@ -20,12 +20,20 @@ func tableAzureIamRoleAssignment(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getIamRoleAssignment,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "roleAssignments/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleAssignments,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "roleAssignments/read",
+			},
 			// For the time being, the optional qualifiers have been commented out
 			// due to an issue with the Azure REST API that generates the following error:
 			// 	{

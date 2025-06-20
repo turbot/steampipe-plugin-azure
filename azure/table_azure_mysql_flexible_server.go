@@ -22,6 +22,10 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMySQLFlexibleServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforMySQL",
+				"action":  "flexibleServers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -29,6 +33,10 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listMySQLFlexibleServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforMySQL",
+				"action":  "flexibleServers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

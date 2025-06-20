@@ -20,12 +20,20 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppConfiguration,
+			Tags: map[string]string{
+				"service": "Microsoft.AppConfiguration",
+				"action":  "configurationStores/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppConfigurations,
+			Tags: map[string]string{
+				"service": "Microsoft.AppConfiguration",
+				"action":  "configurationStores/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

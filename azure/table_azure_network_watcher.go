@@ -5,9 +5,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION ////
@@ -19,12 +18,20 @@ func tableAzureNetworkWatcher(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNetworkWatcher,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkWatchers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkWatchers,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkWatchers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

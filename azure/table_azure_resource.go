@@ -19,12 +19,20 @@ func tableAzureResourceResource(ctx context.Context) *plugin.Table {
 		Name:        "azure_resource",
 		Description: "Azure Resource",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("id"),
+			KeyColumns: plugin.AllColumns([]string{"id"}),
 			Hydrate:    getResource,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resources/read",
+			},
 			// No error is returned if the resource is not found
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResources,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resources/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{Name: "region", Require: plugin.Optional, Operators: []string{"=", "<>"}},
 				{Name: "type", Require: plugin.Optional, Operators: []string{"=", "<>"}},

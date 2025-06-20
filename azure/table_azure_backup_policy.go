@@ -19,6 +19,17 @@ func tableAzureBackupPolicy(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_backup_policy",
 		Description: "Azure Backup Policy",
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.AllColumns([]string{"name", "vault_name", "resource_group"}),
+			Hydrate:    getBackupPolicy,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "backupPolicies/read",
+			},
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
+		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listRecoveryServicesVaults,
 			Hydrate:       listBackupPolicy,
@@ -31,6 +42,10 @@ func tableAzureBackupPolicy(_ context.Context) *plugin.Table {
 					Name:    "resource_group",
 					Require: plugin.Optional,
 				},
+			},
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "backupPolicies/read",
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -247,4 +262,36 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		}
 	}
 	return nil, err
+}
+
+func getBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getBackupPolicy")
+
+	name := d.EqualsQuals["name"].GetStringValue()
+	vaultName := d.EqualsQuals["vault_name"].GetStringValue()
+	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
+
+	// Handle empty name or resourceGroup
+	if name == "" || resourceGroup == "" || vaultName == "" {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := backup.NewProtectionPoliciesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
+	op, err := client.Get(ctx, vaultName, resourceGroup, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
 }

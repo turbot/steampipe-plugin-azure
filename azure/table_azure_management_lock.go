@@ -27,12 +27,20 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getManagementLock,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "locks/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"LockNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementLocks,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "locks/read",
+			},
 		},
 
 		Columns: azureColumns([]*plugin.Column{

@@ -20,6 +20,10 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getVirtualNetworkGateway,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworkGateways/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureVirtualNetworkGateway(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listVirtualNetworkGateways,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworkGateways/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

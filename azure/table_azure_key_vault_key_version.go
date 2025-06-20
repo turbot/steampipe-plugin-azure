@@ -26,6 +26,10 @@ func tableAzureKeyVaultKeyVersion(_ context.Context) *plugin.Table {
 					Name: "key_name", Require: plugin.Optional,
 				},
 			},
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "keys/versions/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},

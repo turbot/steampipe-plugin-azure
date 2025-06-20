@@ -20,12 +20,20 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDataFactory,
+			Tags: map[string]string{
+				"service": "Microsoft.DataFactory",
+				"action":  "factories/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataFactories,
+			Tags: map[string]string{
+				"service": "Microsoft.DataFactory",
+				"action":  "factories/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

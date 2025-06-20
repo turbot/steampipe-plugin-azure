@@ -19,12 +19,20 @@ func tableAzureServiceFabricCluster(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getServiceFabricCluster,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceFabric",
+				"action":  "clusters/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listServiceFabricClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceFabric",
+				"action":  "clusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

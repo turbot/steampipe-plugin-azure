@@ -19,12 +19,20 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAutomationAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAutomationAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

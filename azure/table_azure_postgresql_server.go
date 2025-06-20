@@ -20,12 +20,20 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPostgreSqlServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listPostgreSqlServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

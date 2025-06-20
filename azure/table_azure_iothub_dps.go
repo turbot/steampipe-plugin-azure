@@ -20,12 +20,20 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getIotHubDps,
+			Tags: map[string]string{
+				"service": "Microsoft.Devices",
+				"action":  "provisioningServices/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIotHubDpses,
+			Tags: map[string]string{
+				"service": "Microsoft.Devices",
+				"action":  "provisioningServices/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

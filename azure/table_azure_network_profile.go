@@ -18,12 +18,20 @@ func tableAzureNetworkProfile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNetworkProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkProfiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkProfiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -19,9 +19,17 @@ func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getSecurityCenterAutoProvisioning,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "autoProvisioningSettings/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterAutoProvisioning,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "autoProvisioningSettings/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

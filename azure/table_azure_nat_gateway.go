@@ -19,12 +19,20 @@ func tableAzureNatGateway(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNatGateway,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "natGateways/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNatGateways,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "natGateways/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

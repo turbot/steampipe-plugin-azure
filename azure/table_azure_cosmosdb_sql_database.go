@@ -28,13 +28,21 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
 			Hydrate:    getCosmosDBSQLDatabase,
+			Tags: map[string]string{
+				"service": "Microsoft.DocumentDB",
+				"action":  "databaseAccounts/sqlDatabases/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "NotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listCosmosDBAccounts,
 			Hydrate:       listCosmosDBSQLDatabases,
+			Tags: map[string]string{
+				"service": "Microsoft.DocumentDB",
+				"action":  "databaseAccounts/sqlDatabases/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

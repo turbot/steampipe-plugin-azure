@@ -32,6 +32,10 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 				},
 			},
 			Hydrate: getAzureLighthouseDefinition,
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationDefinitions/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"RegistrationDefinitionNotFound"}),
 			},
@@ -39,6 +43,10 @@ func tableAzureLighthouseDefinition(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:    listAzureLighthouseDefinitions,
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationDefinitions/read",
+			},
 		},
 		Columns: []*plugin.Column{
 			{

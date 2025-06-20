@@ -21,12 +21,20 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getServiceBusNamespace,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceBus",
+				"action":  "namespaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listServiceBusNamespaces,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceBus",
+				"action":  "namespaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -20,12 +20,20 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventHubNamespace,
+			Tags: map[string]string{
+				"service": "Microsoft.EventHub",
+				"action":  "namespaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventHubNamespaces,
+			Tags: map[string]string{
+				"service": "Microsoft.EventHub",
+				"action":  "namespaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

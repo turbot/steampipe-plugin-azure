@@ -6,9 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 type tableInfo = struct {
@@ -26,15 +25,23 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_table",
 		Description: "Azure Storage Table",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "resource_group", "name"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "storage_account_name"}),
 			Hydrate:    getStorageTable,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/tableServices/tables/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "OperationNotAllowedOnKind", "TableNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageTables,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/tableServices/tables/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -20,7 +20,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 			KeyColumns: plugin.AllColumns([]string{"scale_set_name", "resource_group", "instance_id"}),
 			Hydrate:    getAzureComputeVirtualMachineScaleSetVm,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "virtualMachineScaleSets/virtualMachines/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -31,7 +31,7 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,
 			Hydrate:       listAzureComputeVirtualMachineScaleSetVms,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "virtualMachineScaleSets/virtualMachines/read",
 			},
 		},

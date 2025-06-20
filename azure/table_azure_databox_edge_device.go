@@ -19,12 +19,20 @@ func tableAzureDataBoxEdgeDevice(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDataBoxEdgeDevice,
+			Tags: map[string]string{
+				"service": "Microsoft.DataBoxEdge",
+				"action":  "dataBoxEdgeDevices/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataBoxEdgeDevices,
+			Tags: map[string]string{
+				"service": "Microsoft.DataBoxEdge",
+				"action":  "dataBoxEdgeDevices/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

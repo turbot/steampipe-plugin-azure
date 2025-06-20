@@ -20,6 +20,10 @@ func tableAzureLoadBalancerNatRule(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
 			Hydrate:    getLoadBalancerNatRule,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/inboundNatRules/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureLoadBalancerNatRule(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerNatRules,
 			ParentHydrate: listLoadBalancers,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/inboundNatRules/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

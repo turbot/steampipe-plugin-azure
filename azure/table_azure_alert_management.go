@@ -20,12 +20,20 @@ func tableAzureAlertMangement(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"id"}),
 			Hydrate:    getAlertManagement,
+			Tags: map[string]string{
+				"service": "Microsoft.AlertsManagement",
+				"action":  "alerts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "InvalidApiVersionParameter", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAlertManagements,
+			Tags: map[string]string{
+				"service": "Microsoft.AlertsManagement",
+				"action":  "alerts/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:    "target_resource",

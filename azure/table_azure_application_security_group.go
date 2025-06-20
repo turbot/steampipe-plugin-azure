@@ -19,12 +19,20 @@ func tableAzureApplicationSecurityGroup(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getApplicationSecurityGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "applicationSecurityGroups/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listApplicationSecurityGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "applicationSecurityGroups/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -7,9 +7,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION ////
@@ -21,12 +20,20 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppServicePlan,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "serverFarms/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServicePlans,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "serverFarms/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

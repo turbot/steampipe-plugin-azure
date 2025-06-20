@@ -19,8 +19,8 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDisk,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/disks/read",
+				"service": "Microsoft.Compute",
+				"action":  "disks/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
@@ -29,8 +29,8 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDisks,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/disks/read",
+				"service": "Microsoft.Compute",
+				"action":  "disks/read",
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

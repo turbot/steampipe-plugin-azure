@@ -19,12 +19,20 @@ func tableAzureBastionHost(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getBastionHost,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "bastionHosts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listBastionHosts,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "bastionHosts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

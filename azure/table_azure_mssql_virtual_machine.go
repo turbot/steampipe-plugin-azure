@@ -18,12 +18,20 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMSSQLVirtualMachine,
+			Tags: map[string]string{
+				"service": "Microsoft.SqlVirtualMachine",
+				"action":  "sqlVirtualMachines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMSSQLVirtualMachines,
+			Tags: map[string]string{
+				"service": "Microsoft.SqlVirtualMachine",
+				"action":  "sqlVirtualMachines/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

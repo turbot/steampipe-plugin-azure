@@ -19,9 +19,17 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getSecurityCenterContact,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "securityContacts/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterContacts,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "securityContacts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

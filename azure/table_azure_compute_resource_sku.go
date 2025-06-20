@@ -20,8 +20,8 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listResourceSkus,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/skus/read",
+				"service": "Microsoft.Compute",
+				"action":  "skus/read",
 			},
 		},
 

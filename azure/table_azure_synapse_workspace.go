@@ -21,12 +21,20 @@ func tableAzureSynapseWorkspace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSynapseWorkspace,
+			Tags: map[string]string{
+				"service": "Microsoft.Synapse",
+				"action":  "workspaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSynapseWorkspaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Synapse",
+				"action":  "workspaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

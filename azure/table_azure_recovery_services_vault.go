@@ -20,12 +20,20 @@ func tableAzureRecoveryServicesVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getRecoveryServicesVault,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "vaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listRecoveryServicesVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "vaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

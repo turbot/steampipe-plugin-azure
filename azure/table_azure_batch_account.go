@@ -20,12 +20,20 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getBatchAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.Batch",
+				"action":  "batchAccounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listBatchAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.Batch",
+				"action":  "batchAccounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

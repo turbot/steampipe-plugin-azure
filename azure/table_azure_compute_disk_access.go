@@ -19,7 +19,7 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDiskAccess,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "diskAccesses/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -29,7 +29,7 @@ func tableAzureComputeDiskAccess(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDiskAccesses,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "diskAccesses/read",
 			},
 		},

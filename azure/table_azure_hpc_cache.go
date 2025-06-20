@@ -21,12 +21,20 @@ func tableAzureHPCCache(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHPCCache,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageCache",
+				"action":  "caches/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHPCCaches,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageCache",
+				"action":  "caches/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

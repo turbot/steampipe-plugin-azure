@@ -20,12 +20,20 @@ func tableAzureHDInsightCluster(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHDInsightCluster,
+			Tags: map[string]string{
+				"service": "Microsoft.HDInsight",
+				"action":  "clusters/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHDInsightClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.HDInsight",
+				"action":  "clusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

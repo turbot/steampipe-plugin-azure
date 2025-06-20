@@ -6,9 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -17,13 +16,23 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_policy_definition",
 		Description: "Azure Policy Definition",
-		// Get API operation is not working as expected, skipping for now
-		// Get: &plugin.GetConfig{
-		// 	KeyColumns: plugin.SingleColumn("name"),
-		// 	Hydrate:    getPolicyDefinition,
-		// },
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("name"),
+			Hydrate:    getPolicyDefinition,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "policyDefinitions/read",
+			},
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
+		},
 		List: &plugin.ListConfig{
-			Hydrate: listPolicyDefintions,
+			Hydrate: listPolicyDefinitions,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "policyDefinitions/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -105,7 +114,7 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listPolicyDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -172,4 +181,42 @@ func getPolicyDefinitionTurbotData(ctx context.Context, d *plugin.QueryData, h *
 	}
 
 	return turbotData, nil
+}
+
+func getPolicyDefinition(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getPolicyDefinition")
+
+	name := d.EqualsQuals["name"].GetStringValue()
+
+	// Return nil, if no input provided
+	if name == "" {
+		return nil, nil
+	}
+
+	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_policy_definition.getPolicyDefinition", "session_error", err)
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	client := policy.NewDefinitionsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
+	client.Authorizer = session.Authorizer
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &client, d.Connection)
+
+	op, err := client.Get(ctx, name)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_policy_definition.getPolicyDefinition", "api_error", err)
+		return nil, err
+	}
+
+	// In some cases resource does not give any notFound error
+	// instead of notFound error, it returns empty data
+	if op.ID != nil {
+		return op, nil
+	}
+
+	return nil, nil
 }

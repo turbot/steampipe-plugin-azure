@@ -32,6 +32,10 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				},
 			},
 			Hydrate: getAzureLighthouseAssignment,
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationAssignments/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"RegistrationAssignmentNotFound"}),
 			},
@@ -39,6 +43,10 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:    listAzureLighthouseAssignments,
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationAssignments/read",
+			},
 		},
 		Columns: []*plugin.Column{
 			{

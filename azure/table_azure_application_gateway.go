@@ -20,12 +20,20 @@ func tableAzureApplicationGateway(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getApplicationGateway,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "applicationGateways/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listApplicationGateways,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "applicationGateways/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

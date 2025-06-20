@@ -19,9 +19,17 @@ func tableAzureManagementGroup(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getManagementGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.Management",
+				"action":  "managementGroups/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.Management",
+				"action":  "managementGroups/read",
+			},
 		},
 		Columns: []*plugin.Column{
 			{

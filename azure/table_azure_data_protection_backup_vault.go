@@ -16,12 +16,20 @@ func tableAzureDataProtectionBackupVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureDataProtectionBackupVault,
+			Tags: map[string]string{
+				"service": "Microsoft.DataProtection",
+				"action":  "backupVaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureDataProtectionBackupVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.DataProtection",
+				"action":  "backupVaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -196,4 +204,3 @@ func getAzureDataProtectionBackupVault(ctx context.Context, d *plugin.QueryData,
 
 	return nil, nil
 }
-

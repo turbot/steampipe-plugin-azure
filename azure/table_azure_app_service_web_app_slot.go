@@ -21,6 +21,10 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "app_name", "resource_group"}),
 			Hydrate:    getAppServiceWebAppSlot,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/slots/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAppServiceWebApps,
 			Hydrate:       listAppServiceWebAppSlots,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/slots/read",
+			},
 			KeyColumns: []*plugin.KeyColumn{
 				{
 					Name:    "app_name",

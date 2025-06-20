@@ -20,12 +20,20 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAPIManagement,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "service/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "InvalidApiVersionParameter", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAPIManagements,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "service/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

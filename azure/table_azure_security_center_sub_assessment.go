@@ -22,6 +22,10 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 		Description: "Azure Security Center Sub Assessment",
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterSubAssessments,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "assessments/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

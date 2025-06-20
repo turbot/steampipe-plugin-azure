@@ -19,12 +19,20 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("namespace"),
 			Hydrate:    getProvider,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "providers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"InvalidResourceNamespace"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listProviders,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "providers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

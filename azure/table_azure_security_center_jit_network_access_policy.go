@@ -18,6 +18,10 @@ func tableAzureSecurityCenterJITNetworkAccessPolicy(_ context.Context) *plugin.T
 		Description: "Azure Security Center JIT Network Access Policy",
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterJITNetworkAccessPolicies,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "jitNetworkAccessPolicies/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

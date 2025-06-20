@@ -19,12 +19,20 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDatabricksWorkspace,
+			Tags: map[string]string{
+				"service": "Microsoft.Databricks",
+				"action":  "workspaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDatabricksWorkspaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Databricks",
+				"action":  "workspaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

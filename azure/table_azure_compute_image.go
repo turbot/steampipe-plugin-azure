@@ -20,8 +20,8 @@ func tableAzureComputeImage(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getComputeImage,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/images/read",
+				"service": "Microsoft.Compute",
+				"action":  "images/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
@@ -30,8 +30,8 @@ func tableAzureComputeImage(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listComputeImages,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/images/read",
+				"service": "Microsoft.Compute",
+				"action":  "images/read",
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

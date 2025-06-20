@@ -29,8 +29,8 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getComputeVirtualMachine,
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/virtualMachines/read",
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachines/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
@@ -40,8 +40,8 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			Hydrate:    listComputeVirtualMachines,
 			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
 			Tags: map[string]string{
-				"service": "compute",
-				"action":  "Microsoft.Compute/virtualMachines/read",
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachines/read",
 			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{

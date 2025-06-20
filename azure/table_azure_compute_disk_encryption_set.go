@@ -19,7 +19,7 @@ func tableAzureComputeDiskEncryptionSet(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDiskEncryptionSet,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "diskEncryptionSets/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -29,7 +29,7 @@ func tableAzureComputeDiskEncryptionSet(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDiskEncryptionSets,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "diskEncryptionSets/read",
 			},
 		},

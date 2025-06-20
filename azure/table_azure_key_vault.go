@@ -21,12 +21,20 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getKeyVault,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

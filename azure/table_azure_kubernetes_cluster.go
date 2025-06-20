@@ -19,9 +19,17 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getKubernetesCluster,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerService",
+				"action":  "managedClusters/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKubernetesClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerService",
+				"action":  "managedClusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -21,12 +21,20 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getCognitiveAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.CognitiveServices",
+				"action":  "accounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listCognitiveAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.CognitiveServices",
+				"action":  "accounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

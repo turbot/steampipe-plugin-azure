@@ -21,12 +21,20 @@ func tableAzureSignalRService(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSignalRService,
+			Tags: map[string]string{
+				"service": "Microsoft.SignalRService",
+				"action":  "signalR/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSignalRServices,
+			Tags: map[string]string{
+				"service": "Microsoft.SignalRService",
+				"action":  "signalR/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

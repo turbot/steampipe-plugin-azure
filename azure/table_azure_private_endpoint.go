@@ -17,14 +17,22 @@ func tableAzurePrivateEndpoint(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPrivateEndpoint,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateEndpoints/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listPrivateEndpoints,
 			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateEndpoints/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -20,7 +20,7 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeAvailabilitySet,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "availabilitySets/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -30,7 +30,7 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeAvailabilitySets,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "availabilitySets/read",
 			},
 		},

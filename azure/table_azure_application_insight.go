@@ -19,12 +19,20 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getApplicationInsight,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "components/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listApplicationInsights,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "components/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

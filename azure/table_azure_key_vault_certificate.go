@@ -21,6 +21,10 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"vault_name", "name"}),
 			Hydrate:    getKeyVaultCertificate,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/certificates/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404", "SecretDisabled"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureKeyVaultCertificate(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:       listKeyVaultCertificates,
 			ParentHydrate: listKeyVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/certificates/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name: "vault_name", Require: plugin.Optional,

@@ -19,6 +19,10 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 		Description: "Azure Monitor Activity Log Event",
 		List: &plugin.ListConfig{
 			Hydrate: listMonitorActivityLogEvents,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "activityLogs/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "event_timestamp",

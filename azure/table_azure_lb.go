@@ -20,12 +20,20 @@ func tableAzureLoadBalancer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getLoadBalancer,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLoadBalancers,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

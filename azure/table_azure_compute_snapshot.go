@@ -19,7 +19,7 @@ func tableAzureComputeSnapshot(_ context.Context) *plugin.Table {
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeSnapshot,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "snapshots/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
@@ -29,7 +29,7 @@ func tableAzureComputeSnapshot(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeSnapshots,
 			Tags: map[string]string{
-				"service": "compute",
+				"service": "Microsoft.Compute",
 				"action":  "snapshots/read",
 			},
 		},

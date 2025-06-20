@@ -22,12 +22,20 @@ func tableAzureHealthcareService(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHealthcareService,
+			Tags: map[string]string{
+				"service": "Microsoft.HealthcareApis",
+				"action":  "services/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHealthcareServices,
+			Tags: map[string]string{
+				"service": "Microsoft.HealthcareApis",
+				"action":  "services/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

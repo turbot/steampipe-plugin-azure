@@ -20,12 +20,20 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppServiceWebApp,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/read",
+			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{

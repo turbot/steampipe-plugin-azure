@@ -21,6 +21,10 @@ func tableAzureConsumptionUsage(_ context.Context) *plugin.Table {
 		Description: "Azure Consumption Usage",
 		List: &plugin.ListConfig{
 			Hydrate: listConsumptionUsage,
+			Tags: map[string]string{
+				"service": "Microsoft.Consumption",
+				"action":  "usageDetails/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "filter",

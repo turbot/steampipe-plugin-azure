@@ -19,12 +19,20 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getContainerRegistry,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerRegistry",
+				"action":  "registries/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "Invalid input", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listContainerRegistries,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerRegistry",
+				"action":  "registries/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

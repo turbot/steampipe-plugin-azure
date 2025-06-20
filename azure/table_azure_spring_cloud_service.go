@@ -21,6 +21,10 @@ func tableAzureSpringCloudService(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSpringCloudService,
+			Tags: map[string]string{
+				"service": "Microsoft.AppPlatform",
+				"action":  "Spring/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureSpringCloudService(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listSpringCloudServices,
+			Tags: map[string]string{
+				"service": "Microsoft.AppPlatform",
+				"action":  "Spring/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
