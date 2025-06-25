@@ -136,9 +136,6 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := client.List(ctx)
 	if err != nil {
 		return nil, err
@@ -149,6 +146,9 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "list_err", err)

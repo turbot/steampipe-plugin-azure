@@ -168,6 +168,9 @@ func listMonitorMetricAlerts(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 	pager := client.NewListBySubscriptionPager(&armmonitor.MetricAlertsClientListBySubscriptionOptions{})
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		result, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_monitor_metric_alert.listMonitorMetricAlerts", "api_error", err)

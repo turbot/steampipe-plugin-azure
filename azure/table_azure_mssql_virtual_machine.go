@@ -196,6 +196,9 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list_paging", err)

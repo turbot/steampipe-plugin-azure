@@ -236,6 +236,9 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listEventGridTopics", "ListBySubscription_pagination", err)

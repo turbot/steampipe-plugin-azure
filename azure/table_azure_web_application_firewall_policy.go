@@ -171,6 +171,9 @@ func listWebApplicationFirewallPolicies(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_web_application_firewall_policy.listWebApplicationFirewallPolicies", "paging_error", err)

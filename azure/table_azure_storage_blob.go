@@ -394,6 +394,9 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	containers = append(containers, result.Values()...)
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -108,9 +108,6 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
 		return nil, err
@@ -126,6 +123,9 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

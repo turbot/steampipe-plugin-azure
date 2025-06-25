@@ -244,9 +244,6 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := client.ListAll(ctx)
 	if err != nil {
 		return nil, err
@@ -256,6 +253,9 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 		d.StreamListItem(ctx, scaleSet)
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

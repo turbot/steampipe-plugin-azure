@@ -249,6 +249,9 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 		return nil, err
 	}
 
+	// Wait for rate limiting
+	d.WaitForListRateLimit(ctx)
+
 	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "client_error", err)

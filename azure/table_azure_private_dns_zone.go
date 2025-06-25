@@ -166,6 +166,9 @@ func listPrivateDNSZones(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

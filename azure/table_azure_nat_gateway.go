@@ -172,6 +172,9 @@ func listNatGateways(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

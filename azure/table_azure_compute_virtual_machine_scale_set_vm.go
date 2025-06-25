@@ -270,9 +270,6 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := client.List(ctx, resourceGroup, *scaleSet.Name, "", "", "")
 	if err != nil {
 		return nil, err
@@ -282,6 +279,9 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 		d.StreamListItem(ctx, ScaleSetVMInfo{*scaleSet.Name, scaleSetVm})
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

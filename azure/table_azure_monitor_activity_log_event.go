@@ -218,6 +218,9 @@ func listMonitorActivityLogEvents(ctx context.Context, d *plugin.QueryData, _ *p
 	pager := clientFactory.NewListPager(filter, options)
 
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_monitor_activity_log_event.listMonitorActivityLogEvents", "api_error", err)

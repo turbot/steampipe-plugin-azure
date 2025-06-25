@@ -242,6 +242,9 @@ func listVirtualNetworkGateways(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
@@ -322,6 +325,9 @@ func getVirtualNetworkGatewayConnection(ctx context.Context, d *plugin.QueryData
 	gatewayConnections = append(gatewayConnections, result.Values()...)
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

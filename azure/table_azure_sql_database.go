@@ -335,6 +335,9 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	pager := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		result, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "api_error", err)

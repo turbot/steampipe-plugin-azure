@@ -182,6 +182,9 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "query_error", err)

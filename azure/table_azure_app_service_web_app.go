@@ -245,6 +245,9 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

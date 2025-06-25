@@ -219,6 +219,9 @@ func listSQLServer(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 
 	pager := client.NewListPager(nil)
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		result, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_sql_server.listSQLServer", "api_error", err)

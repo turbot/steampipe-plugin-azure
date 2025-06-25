@@ -157,6 +157,9 @@ func listAzureCDNFrontDoorProfiles(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_cdn_frontdoor_profile.listAzureCDNFrontDoorProfiles", "paging_error", err)

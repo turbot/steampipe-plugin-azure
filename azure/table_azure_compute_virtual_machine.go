@@ -429,9 +429,6 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	var result compute.VirtualMachineListResultPage
 	if d.EqualsQuals["resource_group"] != nil {
 		resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
@@ -454,6 +451,9 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

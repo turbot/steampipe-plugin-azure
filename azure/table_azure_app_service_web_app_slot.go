@@ -381,6 +381,9 @@ func listAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_app_service_web_app_slot.listAppServiceWebAppSlots", "api_pagging_error", err)

@@ -163,9 +163,6 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &locksClient, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := locksClient.List(ctx)
 	if err != nil {
 		return nil, err
@@ -181,6 +178,9 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

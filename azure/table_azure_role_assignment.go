@@ -211,6 +211,9 @@ func listAllRoleAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	result := authorizationClient.NewListForSubscriptionPager(&armauthorization.RoleAssignmentsClientListForSubscriptionOptions{})
 
 	for result.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		res, err := result.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_role_assignment.listAllRoleAssignments", "api_error", err)

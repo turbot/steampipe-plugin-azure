@@ -242,6 +242,9 @@ func listHybridComputeMachines(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridComputeMachines", "list_paging", err)
@@ -324,6 +327,9 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridComputeMachineExtensions", "list_paging", err)

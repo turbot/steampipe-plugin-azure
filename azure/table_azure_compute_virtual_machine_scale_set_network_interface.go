@@ -187,6 +187,9 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 		d.StreamListItem(ctx, scaleSetNetworkInterfacce)
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -247,6 +247,9 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "list_paging", err)

@@ -193,6 +193,9 @@ func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_private_endpoint.listPrivateEndpoints", "api_error_paging", err)

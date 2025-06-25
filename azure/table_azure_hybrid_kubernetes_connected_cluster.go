@@ -242,6 +242,9 @@ func listHybridKubernetesConnectedClusters(ctx context.Context, d *plugin.QueryD
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusters", "list_paging", err)
@@ -321,6 +324,9 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 	extensions = append(extensions, result.Values()...)
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list_paging", err)

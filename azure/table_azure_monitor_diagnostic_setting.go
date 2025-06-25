@@ -136,6 +136,9 @@ func listMonitorDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *
 
 	pager := client.NewListPager(resourceURI, nil)
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		result, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_monitor_diagnostic_setting.listMonitorDiagnosticSettings", "api_error", err)

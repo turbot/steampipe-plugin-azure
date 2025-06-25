@@ -291,6 +291,9 @@ func listCognitiveAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listCognitiveAccounts", "list_paging", err)
@@ -363,7 +366,7 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	op, err := client.List(ctx, id)
+	result, err := client.List(ctx, id)
 	if err != nil {
 		plugin.Logger(ctx).Error("listCognitiveAccountDiagnosticSettings", "list", err)
 		return nil, err
@@ -372,7 +375,7 @@ func listCognitiveAccountDiagnosticSettings(ctx context.Context, d *plugin.Query
 	// If we return the API response directly, the output does not provide
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
-	for _, i := range *op.Value {
+	for _, i := range *result.Value {
 		objectMap := make(map[string]interface{})
 		if i.ID != nil {
 			objectMap["id"] = i.ID

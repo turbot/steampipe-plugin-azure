@@ -153,9 +153,6 @@ func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, 
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Apply rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	result, err := client.ListBySubscription(ctx, "")
 	if err != nil {
 		return nil, err

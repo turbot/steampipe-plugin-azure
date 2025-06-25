@@ -168,6 +168,9 @@ func listAzureLighthouseDefinitions(ctx context.Context, d *plugin.QueryData, h 
 
 	pager := clientFactory.NewListPager(scope, &armmanagedservices.RegistrationDefinitionsClientListOptions{})
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_lighthouse_definition.listAzureLighthouseDefinitions", "api_error", err)

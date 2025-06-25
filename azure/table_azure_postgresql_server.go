@@ -423,6 +423,9 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	for op.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = op.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "list_paging", err)
