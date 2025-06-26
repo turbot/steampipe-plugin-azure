@@ -26,7 +26,7 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 				"action":  "namespaces/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{

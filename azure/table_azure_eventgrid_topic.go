@@ -25,7 +25,7 @@ func tableAzureEventGridTopic(_ context.Context) *plugin.Table {
 				"action":  "topics/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{

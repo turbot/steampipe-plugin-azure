@@ -43,7 +43,7 @@ func tableAzureComputeVirtualMachineSize(_ context.Context) *plugin.Table {
 				Name:        "os_disk_size_in_mb",
 				Description: "The OS disk size, in MB, allowed by the virtual machine size.",
 				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromField("VirtualMachineSize.OsDiskSizeInMB"),
+				Transform:   transform.FromField("VirtualMachineSize.OSDiskSizeInMB"),
 			},
 			{
 				Name:        "resource_disk_size_in_mb",

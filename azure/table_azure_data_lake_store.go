@@ -26,7 +26,7 @@ func tableAzureDataLakeStore(_ context.Context) *plugin.Table {
 				"action":  "accounts/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
