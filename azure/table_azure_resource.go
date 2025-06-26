@@ -19,7 +19,7 @@ func tableAzureResourceResource(ctx context.Context) *plugin.Table {
 		Name:        "azure_resource",
 		Description: "Azure Resource",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"id"}),
+			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getResource,
 			Tags: map[string]string{
 				"service": "Microsoft.Resources",

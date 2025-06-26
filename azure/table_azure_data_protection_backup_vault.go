@@ -150,7 +150,9 @@ func listAzureDataProtectionBackupVaults(ctx context.Context, d *plugin.QueryDat
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &clientFactory, d.Connection)
 
-	pager := clientFactory.NewGetInSubscriptionPager(nil)
+	input := &armdataprotection.BackupVaultsClientGetInSubscriptionOptions{}
+
+	pager := clientFactory.NewGetInSubscriptionPager(input)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureDataProtectionBackupVaults", "list_err", err)
 		return nil, err

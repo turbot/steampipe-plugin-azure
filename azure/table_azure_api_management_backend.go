@@ -19,7 +19,7 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		Name:        "azure_api_management_backend",
 		Description: "Azure API Management Backend",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"api_management_name", "resource_group", "name"}),
+			KeyColumns: plugin.AllColumns([]string{"backend_id", "resource_group", "service_name"}),
 			Hydrate:    getAPIManagementBackend,
 			Tags: map[string]string{
 				"service": "Microsoft.ApiManagement",

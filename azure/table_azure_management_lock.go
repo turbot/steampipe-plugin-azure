@@ -32,7 +32,7 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 				"action":  "locks/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "LockNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{

@@ -244,7 +244,7 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	result, err := client.ListAll(ctx)
+	result, err := client.ListAll(context.Background())
 	if err != nil {
 		return nil, err
 	}

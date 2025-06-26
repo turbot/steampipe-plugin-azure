@@ -138,6 +138,7 @@ func listAzureComputeDiskAccesses(ctx context.Context, d *plugin.QueryData, _ *p
 
 	result, err := client.List(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listAzureComputeDiskAccesses", "list_err", err)
 		return nil, err
 	}
 

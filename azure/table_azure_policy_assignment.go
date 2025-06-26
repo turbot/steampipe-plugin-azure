@@ -16,7 +16,7 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 		Name:        "azure_policy_assignment",
 		Description: "Azure Policy Assignment",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
+			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getPolicyAssignment,
 			Tags: map[string]string{
 				"service": "Microsoft.Authorization",

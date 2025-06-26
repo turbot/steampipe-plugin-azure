@@ -33,7 +33,7 @@ func tableAzureCosmosDBSQLDatabase(_ context.Context) *plugin.Table {
 				"action":  "databaseAccounts/sqlDatabases/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "NotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{

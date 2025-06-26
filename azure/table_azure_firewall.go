@@ -24,8 +24,8 @@ func tableAzureFirewall(_ context.Context) *plugin.Table {
 				"action":  "azureFirewalls/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
-			},
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},	
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listFirewalls,

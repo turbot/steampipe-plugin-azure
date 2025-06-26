@@ -24,7 +24,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				"action":  "domains/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{

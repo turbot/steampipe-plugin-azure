@@ -98,6 +98,7 @@ func tableAzureComputeSshKey(_ context.Context) *plugin.Table {
 func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
+		plugin.Logger(ctx).Error("listAzureComputeSshKeys", "client_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
@@ -110,6 +111,7 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 	result, err := client.ListBySubscription(ctx)
 	if err != nil {
+		plugin.Logger(ctx).Error("listAzureComputeSshKeys", "list_err", err)
 		return nil, err
 	}
 
@@ -128,6 +130,7 @@ func listAzureComputeSshKeys(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 		err = result.NextWithContext(ctx)
 		if err != nil {
+			plugin.Logger(ctx).Error("listAzureComputeSshKeys", "list_err", err)
 			return nil, err
 		}
 

@@ -18,7 +18,7 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 		Name:        "azure_automation_variable",
 		Description: "Azure Automation Variable",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name", "automation_account_name", "resource_group"}),
+			KeyColumns: plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
 			Hydrate:    getAutomationVariable,
 			Tags: map[string]string{
 				"service": "Microsoft.Automation",

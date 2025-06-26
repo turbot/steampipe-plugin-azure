@@ -25,7 +25,7 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 				"action":  "batchAccounts/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 			},
 		},
 		List: &plugin.ListConfig{
@@ -200,7 +200,7 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &batchAccountClient, d.Connection)
 
-	result, err := batchAccountClient.List(ctx)
+	result, err := batchAccountClient.List(context.Background())
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 				"action":  "links/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "MissingSubscription", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{

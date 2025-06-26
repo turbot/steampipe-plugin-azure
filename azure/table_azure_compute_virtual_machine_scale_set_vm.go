@@ -262,7 +262,7 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	subscriptionID := session.SubscriptionID
 
 	scaleSet := h.Item.(compute.VirtualMachineScaleSet)
-	resourceGroup := strings.Split(*scaleSet.ID, "/")[4]
+	resourceGroupName := strings.ToLower(strings.Split(*scaleSet.ID, "/")[4])
 
 	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
@@ -270,7 +270,7 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	result, err := client.List(ctx, resourceGroup, *scaleSet.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName, *scaleSet.Name, "", "", "")
 	if err != nil {
 		return nil, err
 	}

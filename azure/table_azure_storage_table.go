@@ -25,14 +25,14 @@ func tableAzureStorageTable(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_table",
 		Description: "Azure Storage Table",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name", "storage_account_name"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "storage_account_name", "resource_group"}),
 			Hydrate:    getStorageTable,
 			Tags: map[string]string{
 				"service": "Microsoft.Storage",
 				"action":  "storageAccounts/tableServices/tables/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "OperationNotAllowedOnKind", "TableNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
