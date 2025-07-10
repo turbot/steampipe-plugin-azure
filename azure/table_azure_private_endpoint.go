@@ -17,6 +17,10 @@ func tableAzurePrivateEndpoint(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPrivateEndpoint,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateEndpoints/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -25,6 +29,10 @@ func tableAzurePrivateEndpoint(_ context.Context) *plugin.Table {
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listPrivateEndpoints,
 			KeyColumns:    plugin.OptionalColumns([]string{"resource_group"}),
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "privateEndpoints/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -185,6 +193,9 @@ func listPrivateEndpoints(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_private_endpoint.listPrivateEndpoints", "api_error_paging", err)

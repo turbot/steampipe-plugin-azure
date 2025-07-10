@@ -21,6 +21,10 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "server_name"}),
 			Hydrate:    getMSSQLElasticPool,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "elasticPools/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureMSSQLElasticPool(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
 			Hydrate:       listMSSQLElasticPools,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "elasticPools/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

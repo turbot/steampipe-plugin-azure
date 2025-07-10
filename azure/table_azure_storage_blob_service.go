@@ -26,6 +26,10 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "resource_group"}),
 			Hydrate:    getStorageBlobService,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/blobServices/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
@@ -33,6 +37,10 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageBlobServices,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/blobServices/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -87,7 +95,7 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "default_service_version",
-				Description: "Indicates the default version to use for requests to the Blob service if an incoming request’s version is not specified",
+				Description: "Indicates the default version to use for requests to the Blob service if an incoming request's version is not specified",
 				Type:        proto.ColumnType_STRING,
 				Transform:   transform.FromField("Blob.BlobServicePropertiesProperties.DefaultServiceVersion"),
 			},
@@ -106,7 +114,7 @@ func tableAzureStorageBlobService(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "cors_rules",
-				Description: "A list of CORS rules for a storage account’s Blob service",
+				Description: "A list of CORS rules for a storage account's Blob service",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Blob.BlobServicePropertiesProperties.Cors.CorsRules"),
 			},

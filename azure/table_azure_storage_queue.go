@@ -6,9 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 type queueInfo = struct {
@@ -26,15 +25,23 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 		Name:        "azure_storage_queue",
 		Description: "Azure Storage Queue",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"storage_account_name", "name", "resource_group"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "storage_account_name", "resource_group"}),
 			Hydrate:    getStorageQueue,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/queueServices/queues/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "QueueNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "QueueNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageQueues,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/queueServices/queues/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -144,6 +151,9 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

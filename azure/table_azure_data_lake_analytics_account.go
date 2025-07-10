@@ -18,16 +18,24 @@ import (
 func tableAzureDataLakeAnalyticsAccount(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_data_lake_analytics_account",
-		Description: "Azure Data Lake Analytics account",
+		Description: "Azure Data Lake Analytics Account",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDataLakeAnalyticsAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.DataLakeAnalytics",
+				"action":  "accounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataLakeAnalyticsAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.DataLakeAnalytics",
+				"action":  "accounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -267,6 +275,9 @@ func listDataLakeAnalyticsAccounts(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

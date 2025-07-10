@@ -6,9 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 type flowLogInfo = struct {
@@ -21,17 +20,24 @@ type flowLogInfo = struct {
 func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_network_watcher_flow_log",
-		Description: "Azure Network Watcher FlowLog",
+		Description: "Azure Network Watcher Flow Log",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"network_watcher_name", "name", "resource_group"}),
 			Hydrate:    getNetworkWatcherFlowLog,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkWatchers/flowLogs/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate:       listNetworkWatcherFlowLogs,
-			ParentHydrate: listNetworkWatchers,
+			Hydrate: listNetworkWatcherFlowLogs,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkWatchers/flowLogs/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -191,6 +197,9 @@ func listNetworkWatcherFlowLogs(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

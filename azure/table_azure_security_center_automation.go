@@ -19,9 +19,17 @@ func tableAzureSecurityCenterAutomation(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSecurityCenterAutomation,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "automations/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterAutomations,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "automations/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -147,6 +155,9 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return err, nil

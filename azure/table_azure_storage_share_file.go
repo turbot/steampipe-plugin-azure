@@ -21,6 +21,10 @@ func tableAzureStorageShareFile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group", "storage_account_name"}),
 			Hydrate:    getStorageAccountsFileShare,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "fileServices/shares/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureStorageShareFile(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listStorageAccounts,
 			Hydrate:       listStorageAccountsFileShares,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "fileServices/shares/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -226,6 +234,9 @@ func listStorageAccountsFileShares(ctx context.Context, d *plugin.QueryData, h *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

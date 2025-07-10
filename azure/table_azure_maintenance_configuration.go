@@ -16,16 +16,24 @@ import (
 func tableAzureMaintenanceConfiguration(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_maintenance_configuration",
-		Description: "Azure Maintenance Configuration.",
+		Description: "Azure Maintenance Configuration",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"resource_group", "name"}),
+			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMaintenanceConfiguration,
+			Tags: map[string]string{
+				"service": "Microsoft.Maintenance",
+				"action":  "maintenanceConfigurations/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMaintenanceConfigurations,
+			Tags: map[string]string{
+				"service": "Microsoft.Maintenance",
+				"action":  "maintenanceConfigurations/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

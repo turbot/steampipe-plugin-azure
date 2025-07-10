@@ -22,6 +22,10 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMySQLFlexibleServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforMySQL",
+				"action":  "flexibleServers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -29,6 +33,10 @@ func tableAzureMySQLFlexibleServer(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listMySQLFlexibleServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforMySQL",
+				"action":  "flexibleServers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -260,6 +268,9 @@ func listMySQLFlexibleServers(ctx context.Context, d *plugin.QueryData, h *plugi
 	pager := client.NewListByResourceGroupPager(*resourceGroupName, nil)
 
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_mysql_flexible_server.listMySQLFlexibleServers", "api_error", err)

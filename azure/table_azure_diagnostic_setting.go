@@ -20,12 +20,20 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getDiagnosticSetting,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "diagnosticSettings/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDiagnosticSettings,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "diagnosticSettings/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

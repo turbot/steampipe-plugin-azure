@@ -32,6 +32,10 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 				},
 			},
 			Hydrate: getAzureLighthouseAssignment,
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationAssignments/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"RegistrationAssignmentNotFound"}),
 			},
@@ -39,6 +43,10 @@ func tableAzureLighthouseAssignment(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:    listAzureLighthouseAssignments,
 			KeyColumns: plugin.OptionalColumns([]string{"scope"}),
+			Tags: map[string]string{
+				"service": "Microsoft.ManagedServices",
+				"action":  "registrationAssignments/read",
+			},
 		},
 		Columns: []*plugin.Column{
 			{
@@ -125,6 +133,9 @@ func listAzureLighthouseAssignments(ctx context.Context, d *plugin.QueryData, h 
 
 	pager := clientFactory.NewListPager(scope, &armmanagedservices.RegistrationAssignmentsClientListOptions{})
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_lighthouse_assignment.listAzureLighthouseAssignments", "api_error", err)

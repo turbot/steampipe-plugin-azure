@@ -20,12 +20,20 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPostgreSqlServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listPostgreSqlServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -415,6 +423,9 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	for op.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = op.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "list_paging", err)

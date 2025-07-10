@@ -20,12 +20,20 @@ func tableAzureKeyVaultDeletedVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "region"}),
 			Hydrate:    getKeyVaultDeletedVault,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "deletedVaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaultDeletedVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "deletedVaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -129,6 +137,9 @@ func listKeyVaultDeletedVaults(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

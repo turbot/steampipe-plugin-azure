@@ -19,12 +19,20 @@ func tableAzureStorageSync(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureStorageSync,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageSync",
+				"action":  "storageSyncServices/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureStorageSyncs,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageSync",
+				"action":  "storageSyncServices/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

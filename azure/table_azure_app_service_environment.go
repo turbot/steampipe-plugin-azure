@@ -5,9 +5,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION ////
@@ -19,12 +18,20 @@ func tableAzureAppServiceEnvironment(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppServiceEnvironment,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "hostingEnvironments/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceEnvironments,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "hostingEnvironments/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -196,6 +203,9 @@ func listAppServiceEnvironments(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -19,12 +19,20 @@ func tableAzureProvider(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("namespace"),
 			Hydrate:    getProvider,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "providers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"InvalidResourceNamespace"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listProviders,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "providers/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -95,6 +103,9 @@ func listProviders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -18,12 +18,20 @@ func tableAzureResourceLink(ctx context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getResourceLink,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "links/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"MissingSubscription", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "MissingSubscription", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResourceLinks,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "links/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -114,6 +122,9 @@ func listResourceLinks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

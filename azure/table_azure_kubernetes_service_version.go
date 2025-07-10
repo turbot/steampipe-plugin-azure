@@ -24,6 +24,10 @@ func tableAzureAKSVersion(_ context.Context) *plugin.Table {
 					Require: plugin.Required,
 				},
 			},
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerService",
+				"action":  "managedClusters/versions/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

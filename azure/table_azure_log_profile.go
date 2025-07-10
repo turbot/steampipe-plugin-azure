@@ -19,12 +19,20 @@ func tableAzureLogProfile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getLogProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "logProfiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "logProfiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

@@ -21,6 +21,10 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"backend_id", "resource_group", "service_name"}),
 			Hydrate:    getAPIManagementBackend,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "backend/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
@@ -28,6 +32,10 @@ func tableAzureAPIManagementBackend(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAPIManagements,
 			Hydrate:       listAPIManagementBackends,
+			Tags: map[string]string{
+				"service": "Microsoft.ApiManagement",
+				"action":  "backend/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "service_name",
@@ -239,6 +247,9 @@ func listAPIManagementBackends(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_api_management_backend.listAPIManagementBackends", "list_paging", err)

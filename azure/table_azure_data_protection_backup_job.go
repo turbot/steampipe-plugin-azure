@@ -19,6 +19,10 @@ func tableAzureDataProtectionBackupJob(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureDataProtectionBackupVaults,
 			Hydrate:       listAzureDataProtectionBackupJobs,
+			Tags: map[string]string{
+				"service": "Microsoft.DataProtection",
+				"action":  "backupJobs/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
 			},

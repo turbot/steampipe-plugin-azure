@@ -18,12 +18,20 @@ func tableAzureComputeDiskEncryptionSet(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDiskEncryptionSet,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "diskEncryptionSets/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDiskEncryptionSets,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "diskEncryptionSets/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -130,13 +138,12 @@ func tableAzureComputeDiskEncryptionSet(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listAzureComputeDiskEncryptionSets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeDiskEncryptionSets")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewDiskEncryptionSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
@@ -158,6 +165,9 @@ func listAzureComputeDiskEncryptionSets(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

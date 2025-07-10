@@ -20,6 +20,10 @@ func tableAzureRecoveryServicesBackupJob(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listRecoveryServicesVaults,
 			Hydrate:       listRecoveryServicesBackupJobs,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "backupJobs/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
 			},
@@ -152,6 +156,9 @@ func listRecoveryServicesBackupJobs(ctx context.Context, d *plugin.QueryData, h 
 		SkipToken: nil,
 	})
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_recovery_services_backup_job.listRecoveryServicesBackupJobs", "api_error", err)

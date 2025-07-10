@@ -19,12 +19,20 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeVirtualMachineScaleSet,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachineScaleSets/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeVirtualMachineScaleSets,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachineScaleSets/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -224,13 +232,12 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachineScaleSet")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewVirtualMachineScaleSetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
@@ -246,6 +253,9 @@ func listAzureComputeVirtualMachineScaleSets(ctx context.Context, d *plugin.Quer
 		d.StreamListItem(ctx, scaleSet)
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
