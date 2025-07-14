@@ -35,6 +35,15 @@ func tableAzureAppServicePlan(_ context.Context) *plugin.Table {
 				"action":  "serverFarms/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getServicePlanApps,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "serverFarms/sites/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

@@ -53,6 +53,15 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 				"action":  "mongoDBCollections/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getCosmosDBMongoCollectionThroughput,
+				Tags: map[string]string{
+					"service": "Microsoft.DocumentDB",
+					"action":  "mongoDBCollections/throughput/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

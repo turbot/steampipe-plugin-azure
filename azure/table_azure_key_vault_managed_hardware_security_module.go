@@ -36,6 +36,15 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 				"action":  "managedHsm/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listKeyVaultHsmDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

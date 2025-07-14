@@ -35,6 +35,43 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 				"action":  "servers/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getPostgreSQLServerFirewallRules,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/firewallRules/read",
+				},
+			},
+			{
+				Func: getPostgreSQLServerAdministrator,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/administrators/read",
+				},
+			},
+			{
+				Func: getPostgreSQLServerConfigurations,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/configurations/read",
+				},
+			},
+			{
+				Func: listPostgreSQLServerKeys,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/keys/read",
+				},
+			},
+			{
+				Func: getServerSecurityAlertPolicy,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/securityAlertPolicies/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

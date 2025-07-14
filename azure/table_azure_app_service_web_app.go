@@ -39,6 +39,38 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 			{
 				Func:    getAppServiceWebAppVnetConnection,
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/vnetConnections/read",
+				},
+			},
+			{
+				Func: getWebAppStorageAccount,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/azureStorageAccounts/read",
+				},
+			},
+			{
+				Func: getAppServiceWebAppSiteConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/read",
+				},
+			},
+			{
+				Func: getAppServiceWebAppSiteAuthSetting,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/authsettings/read",
+				},
+			},
+			{
+				Func: getWebAppDiagnosticLogsConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/logs/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

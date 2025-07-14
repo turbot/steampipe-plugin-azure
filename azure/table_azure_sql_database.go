@@ -37,6 +37,10 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 			{
 				Func:    listSqlDatabaseVulnerabilityAssessmentScans,
 				Depends: []plugin.HydrateFunc{listSqlDatabaseVulnerabilityAssessments},
+				Tags: map[string]string{
+					"service": "Microsoft.Sql",
+					"action":  "servers/databases/vulnerabilityAssessments/scans/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

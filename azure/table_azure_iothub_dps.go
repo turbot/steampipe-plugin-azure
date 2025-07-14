@@ -16,7 +16,7 @@ import (
 func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_iothub_dps",
-		Description: "Azure Iot Hub Dps",
+		Description: "Azure IoT Hub Device Provisioning Service",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getIotHubDps,
@@ -25,7 +25,7 @@ func tableAzureIotHubDps(_ context.Context) *plugin.Table {
 				"action":  "provisioningServices/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{

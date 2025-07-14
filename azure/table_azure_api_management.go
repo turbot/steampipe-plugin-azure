@@ -35,6 +35,15 @@ func tableAzureAPIManagement(_ context.Context) *plugin.Table {
 				"action":  "service/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listAPIManagementDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

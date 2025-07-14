@@ -24,7 +24,7 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 				"action":  "registries/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "Invalid input", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{

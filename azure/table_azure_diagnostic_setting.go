@@ -18,7 +18,7 @@ func tableAzureDiagnosticSetting(_ context.Context) *plugin.Table {
 		Name:        "azure_diagnostic_setting",
 		Description: "Azure Diagnostic Setting",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("name"),
+			KeyColumns: plugin.AllColumns([]string{"name"}),
 			Hydrate:    getDiagnosticSetting,
 			Tags: map[string]string{
 				"service": "Microsoft.Insights",

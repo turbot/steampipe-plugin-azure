@@ -35,6 +35,22 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 				"action":  "configurationStores/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listAppConfigurationDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+			{
+				Func: getPublicNetworkAccess,
+				Tags: map[string]string{
+					"service": "Microsoft.AppConfiguration",
+					"action":  "configurationStores/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

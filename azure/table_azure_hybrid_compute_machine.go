@@ -35,6 +35,15 @@ func tableAzureHybridComputeMachine(_ context.Context) *plugin.Table {
 				"action":  "machines/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listHybridComputeMachineExtensions,
+				Tags: map[string]string{
+					"service": "Microsoft.HybridCompute",
+					"action":  "machines/extensions/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

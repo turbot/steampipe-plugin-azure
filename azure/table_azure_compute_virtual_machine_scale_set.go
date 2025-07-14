@@ -34,6 +34,15 @@ func tableAzureComputeVirtualMachineScaleSet(_ context.Context) *plugin.Table {
 				"action":  "virtualMachineScaleSets/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getAzureComputeVirtualMachineScalesetExtensions,
+				Tags: map[string]string{
+					"service": "Microsoft.Compute",
+					"action":  "virtualMachineScaleSets/extensions/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

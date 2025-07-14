@@ -35,6 +35,15 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 				"action":  "batchAccounts/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listBatchAccountDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

@@ -35,6 +35,22 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				"action":  "sites/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getAppServiceFunctionAppSiteConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/read",
+				},
+			},
+			{
+				Func: getAppServiceFunctionAppSiteAuthSetting,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/authsettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

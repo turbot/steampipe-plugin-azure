@@ -34,6 +34,15 @@ func tableAzureKeyVaultKeyVersion(_ context.Context) *plugin.Table {
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getKeyVaultKeyVersion,
+				Tags: map[string]string{
+					"service": "Microsoft.KeyVault",
+					"action":  "keys/versions/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

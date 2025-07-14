@@ -43,6 +43,15 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 				},
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getConfigurationSlot,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/slots/config/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

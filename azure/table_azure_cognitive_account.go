@@ -36,6 +36,15 @@ func tableAzureCognitiveAccount(_ context.Context) *plugin.Table {
 				"action":  "accounts/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listCognitiveAccountDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

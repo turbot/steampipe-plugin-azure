@@ -35,6 +35,15 @@ func tableAzureLogicAppWorkflow(_ context.Context) *plugin.Table {
 				"action":  "workflows/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listLogicAppWorkflowDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
@@ -284,25 +293,23 @@ func listLogicAppWorkflowDiagnosticSettings(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
-	// the contents of DiagnosticSettings
+	// If we return the API response directly, the output will not match the schema defined
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
-		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
-		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.DiagnosticSettings != nil {
-			objectMap["properties"] = i.DiagnosticSettings
-		}
-		diagnosticSettings = append(diagnosticSettings, objectMap)
+		diagnosticSettings = append(diagnosticSettings, map[string]interface{}{
+			"id":                              *i.ID,
+			"name":                            *i.Name,
+			"log_analytics_destination_type":  i.LogAnalyticsDestinationType,
+			"service_bus_rule_id":             i.ServiceBusRuleID,
+			"event_hub_authorization_rule_id": i.EventHubAuthorizationRuleID,
+			"event_hub_name":                  i.EventHubName,
+			"storage_account_id":              i.StorageAccountID,
+			"workspace_id":                    i.WorkspaceID,
+			"logs":                            i.Logs,
+			"metrics":                         i.Metrics,
+		})
 	}
+
 	return diagnosticSettings, nil
 }
 

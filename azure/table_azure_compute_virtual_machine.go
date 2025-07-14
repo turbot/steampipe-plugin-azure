@@ -48,6 +48,31 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 			{
 				Func:    getNicPublicIPs,
 				Depends: []plugin.HydrateFunc{getVMNics},
+				Tags: map[string]string{
+					"service": "Microsoft.Network",
+					"action":  "publicIPAddresses/read",
+				},
+			},
+			{
+				Func: getComputeVirtualMachineInstanceView,
+				Tags: map[string]string{
+					"service": "Microsoft.Compute",
+					"action":  "virtualMachines/instanceView/read",
+				},
+			},
+			{
+				Func: getAzureComputeVirtualMachineExtensions,
+				Tags: map[string]string{
+					"service": "Microsoft.Compute",
+					"action":  "virtualMachines/extensions/read",
+				},
+			},
+			{
+				Func: listComputeVirtualMachineGuestConfigurationAssignments,
+				Tags: map[string]string{
+					"service": "Microsoft.GuestConfiguration",
+					"action":  "guestConfigurationAssignments/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

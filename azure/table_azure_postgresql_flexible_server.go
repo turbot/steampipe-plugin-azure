@@ -38,6 +38,22 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 				"action":  "flexibleServers/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listPostgreSQLFlexibleServersConfigurations,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "flexibleServers/configurations/read",
+				},
+			},
+			{
+				Func: listPostgreSQLFlexibleServerFirewallRules,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "flexibleServers/firewallRules/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

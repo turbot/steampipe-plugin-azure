@@ -34,8 +34,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 
 		List: &plugin.ListConfig{
 			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name"}),
-			ParentHydrate: listStorageAccounts,
-			Hydrate:       listStorageBlobs,
+			Hydrate:    listStorageBlobs,
 			Tags: map[string]string{
 				"service": "Microsoft.Storage",
 				"action":  "storageAccounts/blobServices/containers/blobs/read",
