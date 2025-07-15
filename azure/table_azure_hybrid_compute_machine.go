@@ -20,12 +20,29 @@ func tableAzureHybridComputeMachine(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHybridComputeMachine,
+			Tags: map[string]string{
+				"service": "Microsoft.HybridCompute",
+				"action":  "machines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHybridComputeMachines,
+			Tags: map[string]string{
+				"service": "Microsoft.HybridCompute",
+				"action":  "machines/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listHybridComputeMachineExtensions,
+				Tags: map[string]string{
+					"service": "Microsoft.HybridCompute",
+					"action":  "machines/extensions/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -234,6 +251,9 @@ func listHybridComputeMachines(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridComputeMachines", "list_paging", err)
@@ -316,6 +336,9 @@ func listHybridComputeMachineExtensions(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridComputeMachineExtensions", "list_paging", err)

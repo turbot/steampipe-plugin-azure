@@ -19,12 +19,20 @@ func tableAzureResourceGroup(ctx context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getResourceGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resourceGroups/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResourceGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resourceGroups/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -114,6 +122,9 @@ func listResourceGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

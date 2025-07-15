@@ -21,12 +21,29 @@ func tableAzureKeyVaultManagedHardwareSecurityModule(_ context.Context) *plugin.
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getKeyVaultManagedHardwareSecurityModule,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "managedHsm/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaultManagedHardwareSecurityModules,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "managedHsm/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listKeyVaultHsmDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -179,6 +196,9 @@ func listKeyVaultManagedHardwareSecurityModules(ctx context.Context, d *plugin.Q
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

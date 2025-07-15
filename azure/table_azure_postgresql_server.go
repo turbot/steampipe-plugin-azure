@@ -20,12 +20,57 @@ func tableAzurePostgreSqlServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPostgreSqlServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listPostgreSqlServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "servers/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getPostgreSQLServerFirewallRules,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/firewallRules/read",
+				},
+			},
+			{
+				Func: getPostgreSQLServerAdministrator,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/administrators/read",
+				},
+			},
+			{
+				Func: getPostgreSQLServerConfigurations,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/configurations/read",
+				},
+			},
+			{
+				Func: listPostgreSQLServerKeys,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/keys/read",
+				},
+			},
+			{
+				Func: getServerSecurityAlertPolicy,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "servers/securityAlertPolicies/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -415,6 +460,9 @@ func listPostgreSQLServerKeys(ctx context.Context, d *plugin.QueryData, h *plugi
 	}
 
 	for op.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = op.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listPostgreSQLServerKeys", "list_paging", err)

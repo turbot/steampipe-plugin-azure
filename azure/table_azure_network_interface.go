@@ -5,9 +5,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION ////
@@ -19,12 +18,20 @@ func tableAzureNetworkInterface(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNetworkInterface,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkInterfaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkInterfaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkInterfaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -265,6 +272,9 @@ func listNetworkInterfaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -18,12 +18,20 @@ func tableAzureLogAnalyticsWorkspace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getLogAnalyticsWorkspace,
+			Tags: map[string]string{
+				"service": "Microsoft.OperationalInsights",
+				"action":  "workspaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listLogAnalyticsWorkspaces,
+			Tags: map[string]string{
+				"service": "Microsoft.OperationalInsights",
+				"action":  "workspaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

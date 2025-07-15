@@ -21,12 +21,20 @@ func tableAzureServiceBusNamespace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getServiceBusNamespace,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceBus",
+				"action":  "namespaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listServiceBusNamespaces,
+			Tags: map[string]string{
+				"service": "Microsoft.ServiceBus",
+				"action":  "namespaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -215,6 +223,9 @@ func listServiceBusNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

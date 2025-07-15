@@ -20,12 +20,20 @@ func tableAzureRecoveryServicesVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getRecoveryServicesVault,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "vaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listRecoveryServicesVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "vaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -163,6 +171,9 @@ func listRecoveryServicesVaults(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

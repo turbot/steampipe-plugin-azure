@@ -19,12 +19,20 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventGridDomain,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "domains/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventGridDomains,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "domains/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -236,11 +244,17 @@ func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		return nil, err
 	}
 
+	// Wait for rate limiting
+	d.WaitForListRateLimit(ctx)
+
 	for _, domain := range result.Values() {
 		d.StreamListItem(ctx, domain)
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

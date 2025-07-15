@@ -26,8 +26,21 @@ func tableAzureKeyVaultKeyVersion(_ context.Context) *plugin.Table {
 					Name: "key_name", Require: plugin.Optional,
 				},
 			},
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "keys/versions/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getKeyVaultKeyVersion,
+				Tags: map[string]string{
+					"service": "Microsoft.KeyVault",
+					"action":  "keys/versions/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -213,6 +226,9 @@ func listKeyVaultKeyVersions(ctx context.Context, d *plugin.QueryData, h *plugin
 	keys = append(keys, result.Values()...)
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

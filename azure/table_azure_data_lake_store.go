@@ -21,12 +21,20 @@ func tableAzureDataLakeStore(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDataLakeStore,
+			Tags: map[string]string{
+				"service": "Microsoft.DataLakeStore",
+				"action":  "accounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataLakeStores,
+			Tags: map[string]string{
+				"service": "Microsoft.DataLakeStore",
+				"action":  "accounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -244,6 +252,9 @@ func listDataLakeStores(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

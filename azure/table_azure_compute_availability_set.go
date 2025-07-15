@@ -19,12 +19,20 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeAvailabilitySet,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "availabilitySets/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeAvailabilitySets,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "availabilitySets/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -133,13 +141,12 @@ func tableAzureComputeAvailabilitySet(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listAzureComputeAvailabilitySets(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeAvailabilitySets")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewAvailabilitySetsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 

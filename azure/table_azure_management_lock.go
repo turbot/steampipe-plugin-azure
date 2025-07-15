@@ -27,12 +27,20 @@ func tableAzureManagementLock(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getManagementLock,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "locks/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"LockNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "LockNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementLocks,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "locks/read",
+			},
 		},
 
 		Columns: azureColumns([]*plugin.Column{
@@ -132,6 +140,9 @@ func listManagementLocks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -19,12 +19,20 @@ func tableAzureRedisCache(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getRedisCache,
+			Tags: map[string]string{
+				"service": "Microsoft.Cache",
+				"action":  "redis/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "400"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listRedisCaches,
+			Tags: map[string]string{
+				"service": "Microsoft.Cache",
+				"action":  "redis/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -243,6 +251,9 @@ func listRedisCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

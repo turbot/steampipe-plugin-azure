@@ -18,6 +18,10 @@ func tableAzureComputeDiskMetricReadOps(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeDisks,
 			Hydrate:       listComputeDiskMetricReadOps,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "metrics/read",
+			},
 		},
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{

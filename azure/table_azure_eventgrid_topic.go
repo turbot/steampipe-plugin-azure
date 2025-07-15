@@ -20,12 +20,20 @@ func tableAzureEventGridTopic(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventGridTopic,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "topics/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventGridTopics,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "topics/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -228,6 +236,9 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listEventGridTopics", "ListBySubscription_pagination", err)

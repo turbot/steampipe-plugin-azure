@@ -19,12 +19,20 @@ func tableAzureWebApplicationFirewallPolicy(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getWebApplicationFirewallPolicy,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "webApplicationFirewallPolicies/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listWebApplicationFirewallPolicies,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "webApplicationFirewallPolicies/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -163,6 +171,9 @@ func listWebApplicationFirewallPolicies(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_web_application_firewall_policy.listWebApplicationFirewallPolicies", "paging_error", err)

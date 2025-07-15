@@ -5,9 +5,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -19,9 +18,20 @@ func tableAzurePolicyAssignment(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getPolicyAssignment,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "policyAssignments/read",
+			},
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listPolicyAssignments,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "policyAssignments/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -153,6 +163,9 @@ func listPolicyAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

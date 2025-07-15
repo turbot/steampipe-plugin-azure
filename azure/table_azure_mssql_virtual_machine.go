@@ -18,12 +18,20 @@ func tableAzureMSSQLVirtualMachine(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMSSQLVirtualMachine,
+			Tags: map[string]string{
+				"service": "Microsoft.SqlVirtualMachine",
+				"action":  "sqlVirtualMachines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMSSQLVirtualMachines,
+			Tags: map[string]string{
+				"service": "Microsoft.SqlVirtualMachine",
+				"action":  "sqlVirtualMachines/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -188,6 +196,9 @@ func listMSSQLVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listMSSQLVirtualMachines", "list_paging", err)

@@ -20,12 +20,20 @@ func tableAzureHDInsightCluster(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHDInsightCluster,
+			Tags: map[string]string{
+				"service": "Microsoft.HDInsight",
+				"action":  "clusters/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHDInsightClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.HDInsight",
+				"action":  "clusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -256,6 +264,9 @@ func listHDInsightClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHDInsightClusters", "list_paging", err)

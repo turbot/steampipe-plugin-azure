@@ -31,9 +31,14 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_storage_blob",
 		Description: "Azure Storage Blob",
+
 		List: &plugin.ListConfig{
 			KeyColumns: plugin.AllColumns([]string{"resource_group", "storage_account_name"}),
 			Hydrate:    listStorageBlobs,
+			Tags: map[string]string{
+				"service": "Microsoft.Storage",
+				"action":  "storageAccounts/blobServices/containers/blobs/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			// Basic info
@@ -389,6 +394,9 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	containers = append(containers, result.Values()...)
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
