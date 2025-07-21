@@ -20,12 +20,20 @@ func tableAzureFrontDoor(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getFrontDoor,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "frontDoors/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listFrontDoors,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "frontDoors/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -192,6 +200,9 @@ func listFrontDoors(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listFrontDoors", "list_paging", err)

@@ -18,12 +18,20 @@ func tableAzureComputeDisk(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureComputeDisk,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "disks/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureComputeDisks,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "disks/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -336,6 +344,9 @@ func listAzureComputeDisks(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

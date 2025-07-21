@@ -20,12 +20,20 @@ func tableAzureMSSQLManagedInstance(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getMSSQLManagedInstance,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "managedInstances/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404", "InvalidApiVersionParameter"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMSSQLManagedInstances,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "managedInstances/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -240,6 +248,9 @@ func listMSSQLManagedInstances(ctx context.Context, d *plugin.QueryData, _ *plug
 		plugin.Logger(ctx).Error("azure_mssql_managed_instance.listMSSQLManagedInstances", "session_error", err)
 		return nil, err
 	}
+
+	// Wait for rate limiting
+	d.WaitForListRateLimit(ctx)
 
 	client, err := armsql.NewManagedInstancesClient(session.SubscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {

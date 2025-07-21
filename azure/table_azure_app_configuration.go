@@ -20,12 +20,29 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppConfiguration,
+			Tags: map[string]string{
+				"service": "Microsoft.AppConfiguration",
+				"action":  "configurationStores/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppConfigurations,
+			Tags: map[string]string{
+				"service": "Microsoft.AppConfiguration",
+				"action":  "configurationStores/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listAppConfigurationDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -163,6 +180,9 @@ func listAppConfigurations(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listAppConfigurations", "list_paging", err)

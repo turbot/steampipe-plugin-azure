@@ -21,6 +21,10 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "app_name", "resource_group"}),
 			Hydrate:    getAppServiceWebAppSlot,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/slots/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
@@ -28,10 +32,23 @@ func tableAzureAppServiceWebAppSlot(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAppServiceWebApps,
 			Hydrate:       listAppServiceWebAppSlots,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/slots/read",
+			},
 			KeyColumns: []*plugin.KeyColumn{
 				{
 					Name:    "app_name",
 					Require: plugin.Optional,
+				},
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: getConfigurationSlot,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/slots/config/read",
 				},
 			},
 		},
@@ -373,6 +390,9 @@ func listAppServiceWebAppSlots(ctx context.Context, d *plugin.QueryData, h *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_app_service_web_app_slot.listAppServiceWebAppSlots", "api_pagging_error", err)

@@ -20,17 +20,57 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAppServiceWebApp,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAppServiceWebApps,
+			Tags: map[string]string{
+				"service": "Microsoft.Web",
+				"action":  "sites/read",
+			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getAppServiceWebAppVnetConnection,
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/virtualnetworkconnections/read",
+				},
+			},
+			{
+				Func: getWebAppStorageAccount,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/read",
+				},
+			},
+			{
+				Func: getAppServiceWebAppSiteConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/read",
+				},
+			},
+			{
+				Func: getAppServiceWebAppSiteAuthSetting,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/config/read",
+				},
+			},
+			{
+				Func: getWebAppDiagnosticLogsConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/providers/Microsoft.Insights/diagnosticSettings/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -237,6 +277,9 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

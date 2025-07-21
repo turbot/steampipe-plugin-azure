@@ -20,12 +20,29 @@ func tableAzureEventGridTopic(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventGridTopic,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "topics/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventGridTopics,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "topics/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listEventGridTopicDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.EventGrid",
+					"action":  "topics/providers/Microsoft.Insights/diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -187,7 +204,7 @@ func tableAzureEventGridTopic(_ context.Context) *plugin.Table {
 				Name:        "region",
 				Description: ColumnDescriptionRegion,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Location").Transform(formatRegion).Transform(toLower),
+				Transform:   transform.FromField("Location").Transform(toLower),
 			},
 			{
 				Name:        "resource_group",
@@ -209,7 +226,6 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
 	client := eventgrid.NewTopicsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
@@ -228,9 +244,11 @@ func listEventGridTopics(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("listEventGridTopics", "ListBySubscription_pagination", err)
 			return nil, err
 		}
 
@@ -293,15 +311,14 @@ func listEventGridTopicDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &client, d.Connection)
 
-	// Pagination is not supported
 	op, err := client.List(ctx, id)
 	if err != nil {
 		plugin.Logger(ctx).Error("listEventGridTopicDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
-	// all the contents of DiagnosticSettings
+	// If we return the API response directly, the output does not provide all
+	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})

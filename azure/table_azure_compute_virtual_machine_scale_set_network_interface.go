@@ -21,6 +21,10 @@ func tableAzureComputeVirtualMachineScaleSetNetworkInterface(_ context.Context) 
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,
 			Hydrate:       listAzureComputeVirtualMachineScaleSetInterfaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkInterfaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -183,6 +187,9 @@ func listAzureComputeVirtualMachineScaleSetInterfaces(ctx context.Context, d *pl
 		d.StreamListItem(ctx, scaleSetNetworkInterfacce)
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

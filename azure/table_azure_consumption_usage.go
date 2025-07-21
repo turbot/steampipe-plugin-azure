@@ -21,6 +21,10 @@ func tableAzureConsumptionUsage(_ context.Context) *plugin.Table {
 		Description: "Azure Consumption Usage",
 		List: &plugin.ListConfig{
 			Hydrate: listConsumptionUsage,
+			Tags: map[string]string{
+				"service": "Microsoft.Consumption",
+				"action":  "usageDetails/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "filter",
@@ -206,6 +210,9 @@ func listConsumptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_consumption_usage.listConsumptionUsage", "paging_error", err)

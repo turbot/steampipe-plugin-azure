@@ -16,12 +16,20 @@ func tableAzureDataProtectionBackupVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureDataProtectionBackupVault,
+			Tags: map[string]string{
+				"service": "Microsoft.DataProtection",
+				"action":  "backupVaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureDataProtectionBackupVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.DataProtection",
+				"action":  "backupVaults/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -138,7 +146,12 @@ func listAzureDataProtectionBackupVaults(ctx context.Context, d *plugin.QueryDat
 		plugin.Logger(ctx).Error("azure_data_protection_backup_vault.listAzureDataProtectionBackupVaults", "client_error", err)
 		return nil, err
 	}
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &clientFactory, d.Connection)
+
 	input := &armdataprotection.BackupVaultsClientGetInSubscriptionOptions{}
+
 	pager := clientFactory.NewGetInSubscriptionPager(input)
 	if err != nil {
 		plugin.Logger(ctx).Error("listAzureDataProtectionBackupVaults", "list_err", err)
@@ -196,4 +209,3 @@ func getAzureDataProtectionBackupVault(ctx context.Context, d *plugin.QueryData,
 
 	return nil, nil
 }
-

@@ -21,12 +21,20 @@ func tableAzureSynapseWorkspace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSynapseWorkspace,
+			Tags: map[string]string{
+				"service": "Microsoft.Synapse",
+				"action":  "workspaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSynapseWorkspaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Synapse",
+				"action":  "workspaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -236,6 +244,9 @@ func listSynapseWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listSynapseWorkspaces", "list_paging", err)
@@ -318,6 +329,9 @@ func listWorkspaceManagedSQLServerVulnerabilityAssessments(ctx context.Context, 
 	serverVulnerabilityAssessments = append(serverVulnerabilityAssessments, result.Values()...)
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listWorkspaceManagedSQLServerVulnerabilityAssessments", "list_paging", err)

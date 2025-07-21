@@ -19,12 +19,20 @@ func tableAzureSearchService(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getSearchService,
+			Tags: map[string]string{
+				"service": "Microsoft.Search",
+				"action":  "searchServices/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSearchServices,
+			Tags: map[string]string{
+				"service": "Microsoft.Search",
+				"action":  "searchServices/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -187,6 +195,9 @@ func listSearchServices(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

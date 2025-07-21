@@ -20,6 +20,10 @@ func tableAzureKeyVaultKey(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"vault_name", "name", "resource_group"}),
 			Hydrate:    getKeyVaultKey,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/keys/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureKeyVaultKey(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:       listKeyVaultKeys,
 			ParentHydrate: listKeyVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/keys/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -204,6 +212,9 @@ func listKeyVaultKeys(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

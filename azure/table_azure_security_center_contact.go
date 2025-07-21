@@ -19,9 +19,17 @@ func tableAzureSecurityCenterContact(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getSecurityCenterContact,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "securityContacts/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterContacts,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "securityContacts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -112,6 +120,9 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 	if err != nil {
 		return nil, err
 	}
+
+	// Apply Retry rule
+	ApplyRetryRules(ctx, &clientFactory, d.Connection)
 
 	pager := clientFactory.NewListPager(&armsecurity.ContactsClientListOptions{})
 	for pager.More() {

@@ -20,6 +20,10 @@ func tableAzureLoadBalancerOutboundRule(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
 			Hydrate:    getLoadBalancerOutboundRule,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/outboundRules/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureLoadBalancerOutboundRule(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerOutboundRules,
 			ParentHydrate: listLoadBalancers,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/outboundRules/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -163,6 +171,9 @@ func listLoadBalancerOutboundRules(ctx context.Context, d *plugin.QueryData, h *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

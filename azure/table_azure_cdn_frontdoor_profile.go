@@ -16,12 +16,20 @@ func tableAzureCDNFrontDoorProfile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAzureCDNFrontDoorProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Cdn",
+				"action":  "profiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAzureCDNFrontDoorProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Cdn",
+				"action":  "profiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -149,6 +157,9 @@ func listAzureCDNFrontDoorProfiles(ctx context.Context, d *plugin.QueryData, _ *
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_cdn_frontdoor_profile.listAzureCDNFrontDoorProfiles", "paging_error", err)

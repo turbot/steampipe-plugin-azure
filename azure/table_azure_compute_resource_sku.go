@@ -19,6 +19,10 @@ func tableAzureResourceSku(_ context.Context) *plugin.Table {
 		Description: "Azure Compute Resource SKU",
 		List: &plugin.ListConfig{
 			Hydrate: listResourceSkus,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "skus/read",
+			},
 		},
 
 		Columns: azureColumns([]*plugin.Column{
@@ -174,6 +178,9 @@ func listResourceSkus(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

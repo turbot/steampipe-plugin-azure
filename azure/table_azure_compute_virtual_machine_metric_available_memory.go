@@ -18,6 +18,10 @@ func tableAzureComputeVirtualMachineMetricAvailableMemory(_ context.Context) *pl
 		List: &plugin.ListConfig{
 			ParentHydrate: listComputeVirtualMachines,
 			Hydrate:       listComputeVirtualMachineMetricAvailableMemory,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "metrics/read",
+			},
 		},
 		Columns: monitoringMetricColumns([]*plugin.Column{
 			{

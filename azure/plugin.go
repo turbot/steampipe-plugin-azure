@@ -166,7 +166,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_resource_group":                                         tableAzureResourceGroup(ctx),
 			"azure_resource_link":                                          tableAzureResourceLink(ctx),
 			"azure_role_assignment":                                        tableAzureIamRoleAssignment(ctx),
-			"azure_role_definition":                                        tableAzureIamRoleDefinition(ctx),
+			"azure_role_definition":                                        tableAzureRoleDefinition(ctx),
 			"azure_route_table":                                            tableAzureRouteTable(ctx),
 			"azure_search_service":                                         tableAzureSearchService(ctx),
 			"azure_security_center_auto_provisioning":                      tableAzureSecurityCenterAutoProvisioning(ctx),

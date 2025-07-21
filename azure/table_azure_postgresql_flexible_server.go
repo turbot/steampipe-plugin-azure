@@ -22,6 +22,10 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getPostgreSqlFlexibleServer,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "flexibleServers/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -29,6 +33,26 @@ func tableAzurePostgreSqlFlexibleServer(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listResourceGroups,
 			Hydrate:       listPostgreSqlFlexibleServers,
+			Tags: map[string]string{
+				"service": "Microsoft.DBforPostgreSQL",
+				"action":  "flexibleServers/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listPostgreSQLFlexibleServersConfigurations,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "flexibleServers/configurations/read",
+				},
+			},
+			{
+				Func: listPostgreSQLFlexibleServerFirewallRules,
+				Tags: map[string]string{
+					"service": "Microsoft.DBforPostgreSQL",
+					"action":  "flexibleServers/firewallRules/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -255,6 +279,9 @@ func listPostgreSqlFlexibleServers(ctx context.Context, d *plugin.QueryData, h *
 	pager := client.NewListByResourceGroupPager(*resourceGroupName, input)
 
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_postgresql_flexible_server.listPostgreSqlFlexibleServers", "api_error", err)

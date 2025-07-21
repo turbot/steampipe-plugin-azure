@@ -19,9 +19,17 @@ func tableAzureSecurityCenterAutoProvisioning(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getSecurityCenterAutoProvisioning,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "autoProvisioningSettings/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterAutoProvisioning,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "autoProvisioningSettings/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -94,6 +102,9 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return err, nil

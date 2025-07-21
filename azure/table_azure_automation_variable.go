@@ -20,6 +20,10 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"account_name", "name", "resource_group"}),
 			Hydrate:    getAutomationVariable,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/variables/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			ParentHydrate: listAutomationAccounts,
 			Hydrate:       listAutomationVariables,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/variables/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -153,6 +161,9 @@ func listAutomationVariables(ctx context.Context, d *plugin.QueryData, h *plugin
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_automation_variable.listAutomationVariables", "paginator_error", err)

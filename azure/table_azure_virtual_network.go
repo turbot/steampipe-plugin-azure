@@ -19,12 +19,20 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getVirtualNetwork,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworks/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listVirtualNetworks,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "virtualNetworks/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -155,6 +163,9 @@ func listVirtualNetworks(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -18,12 +18,20 @@ func tableAzureNetworkProfile(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNetworkProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkProfiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkProfiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -134,6 +142,9 @@ func listNetworkProfiles(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listNetworkProfiles", "list_paging", err)

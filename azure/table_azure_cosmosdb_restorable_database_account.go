@@ -19,6 +19,10 @@ func tableAzureCosmosDBRestorableDatabaseAccount(_ context.Context) *plugin.Tabl
 		Description: "Azure Cosmos DB Restorable Database Account",
 		List: &plugin.ListConfig{
 			Hydrate: listCosmosDBRestorableDatabaseAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.DocumentDB",
+				"action":  "locations/restorableDatabaseAccounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

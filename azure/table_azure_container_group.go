@@ -18,12 +18,20 @@ func tableAzureContainerGroup(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getContainerGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerInstance",
+				"action":  "containerGroups/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listContainerGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerInstance",
+				"action":  "containerGroups/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -202,6 +210,9 @@ func listContainerGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

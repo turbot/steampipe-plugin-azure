@@ -6,9 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/policy"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -21,9 +20,20 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 		// Get: &plugin.GetConfig{
 		// 	KeyColumns: plugin.SingleColumn("name"),
 		// 	Hydrate:    getPolicyDefinition,
+		// 	Tags: map[string]string{
+		// 		"service": "Microsoft.Authorization",
+		// 		"action":  "policyDefinitions/read",
+		// 	},
+		// 	IgnoreConfig: &plugin.IgnoreConfig{
+		// 		ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+		// 	},
 		// },
 		List: &plugin.ListConfig{
-			Hydrate: listPolicyDefintions,
+			Hydrate: listPolicyDefinitions,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "policyDefinitions/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -105,7 +115,7 @@ func tableAzurePolicyDefinition(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listPolicyDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
@@ -133,6 +143,9 @@ func listPolicyDefintions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

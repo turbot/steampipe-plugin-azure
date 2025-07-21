@@ -20,6 +20,10 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"load_balancer_name", "name", "resource_group"}),
 			Hydrate:    getLoadBalancerProbe,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/probes/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
@@ -27,6 +31,10 @@ func tableAzureLoadBalancerProbe(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:       listLoadBalancerProbes,
 			ParentHydrate: listLoadBalancers,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "loadBalancers/probes/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -158,6 +166,9 @@ func listLoadBalancerProbes(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

@@ -20,12 +20,20 @@ func tableAzureRouteTable(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getRouteTable,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "routeTables/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listRouteTables,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "routeTables/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -138,6 +146,9 @@ func listRouteTables(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

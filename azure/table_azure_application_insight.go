@@ -19,12 +19,20 @@ func tableAzureApplicationInsight(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getApplicationInsight,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "components/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listApplicationInsights,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "components/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -243,6 +251,9 @@ func listApplicationInsights(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			logger.Error("azure_application_insight.listApplicationInsights", "paging_error", err)

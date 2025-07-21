@@ -19,9 +19,17 @@ func tableAzureManagementGroup(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getManagementGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.Management",
+				"action":  "managementGroups/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listManagementGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.Management",
+				"action":  "managementGroups/read",
+			},
 		},
 		Columns: []*plugin.Column{
 			{
@@ -129,6 +137,9 @@ func listManagementGroups(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

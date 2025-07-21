@@ -19,9 +19,17 @@ func tableAzureSecurityCenterPricing(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getSecurityCenterPricing,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "pricings/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterPricings,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "pricings/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

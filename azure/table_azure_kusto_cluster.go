@@ -22,9 +22,17 @@ func tableAzureKustoCluster(_ context.Context) *plugin.Table {
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
+			Tags: map[string]string{
+				"service": "Microsoft.Kusto",
+				"action":  "clusters/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKustoClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.Kusto",
+				"action":  "clusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

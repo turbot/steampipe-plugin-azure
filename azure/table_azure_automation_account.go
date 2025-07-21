@@ -19,12 +19,20 @@ func tableAzureApAutomationAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getAutomationAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listAutomationAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.Automation",
+				"action":  "automationAccounts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -165,6 +173,9 @@ func listAutomationAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_automation_variable.listAutomationAccounts", "paginator_error", err)

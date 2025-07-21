@@ -28,6 +28,10 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getComputeVirtualMachine,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
@@ -35,11 +39,40 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate:    listComputeVirtualMachines,
 			KeyColumns: plugin.OptionalColumns([]string{"resource_group"}),
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachines/read",
+			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    getNicPublicIPs,
 				Depends: []plugin.HydrateFunc{getVMNics},
+				Tags: map[string]string{
+					"service": "Microsoft.Network",
+					"action":  "publicIPAddresses/read",
+				},
+			},
+			{
+				Func: getComputeVirtualMachineInstanceView,
+				Tags: map[string]string{
+					"service": "Microsoft.Compute",
+					"action":  "virtualMachines/instanceView/read",
+				},
+			},
+			{
+				Func: getAzureComputeVirtualMachineExtensions,
+				Tags: map[string]string{
+					"service": "Microsoft.Compute",
+					"action":  "virtualMachines/extensions/read",
+				},
+			},
+			{
+				Func: listComputeVirtualMachineGuestConfigurationAssignments,
+				Tags: map[string]string{
+					"service": "Microsoft.GuestConfiguration",
+					"action":  "guestConfigurationAssignments/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -409,13 +442,12 @@ func tableAzureComputeVirtualMachine(_ context.Context) *plugin.Table {
 //// LIST FUNCTION ////
 
 func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachines")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
-
 	subscriptionID := session.SubscriptionID
+
 	client := compute.NewVirtualMachinesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
@@ -444,6 +476,9 @@ func listComputeVirtualMachines(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

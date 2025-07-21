@@ -19,12 +19,20 @@ func tableAzureFirewall(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getFirewall,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "azureFirewalls/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listFirewalls,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "azureFirewalls/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -211,6 +219,9 @@ func listFirewalls(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

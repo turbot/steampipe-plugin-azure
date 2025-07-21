@@ -20,15 +20,27 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "server_name", "resource_group"}),
 			Hydrate:    getSqlDatabase,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "servers/databases/read",
+			},
 		},
 		List: &plugin.ListConfig{
 			ParentHydrate: listSQLServer,
 			Hydrate:       listSqlDatabases,
+			Tags: map[string]string{
+				"service": "Microsoft.Sql",
+				"action":  "servers/databases/read",
+			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
 			{
 				Func:    listSqlDatabaseVulnerabilityAssessmentScans,
 				Depends: []plugin.HydrateFunc{listSqlDatabaseVulnerabilityAssessments},
+				Tags: map[string]string{
+					"service": "Microsoft.Sql",
+					"action":  "servers/databases/vulnerabilityAssessments/scans/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -327,6 +339,9 @@ func listSqlDatabases(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	pager := client.NewListByServerPager(resourceGroupName, *server.Name, nil)
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		result, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_sql_database.listSqlDatabases", "api_error", err)

@@ -32,6 +32,10 @@ func tableAzureBackupPolicy(_ context.Context) *plugin.Table {
 					Require: plugin.Optional,
 				},
 			},
+			Tags: map[string]string{
+				"service": "Microsoft.RecoveryServices",
+				"action":  "backupPolicies/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -215,6 +219,9 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
@@ -248,3 +255,4 @@ func listBackupPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	return nil, err
 }
+

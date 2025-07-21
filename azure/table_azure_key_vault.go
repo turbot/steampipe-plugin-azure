@@ -21,12 +21,29 @@ func tableAzureKeyVault(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getKeyVault,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listKeyVaults,
+			Tags: map[string]string{
+				"service": "Microsoft.KeyVault",
+				"action":  "vaults/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listKmsKeyVaultDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -223,8 +240,6 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	// Apply Retry rule
 	ApplyRetryRules(ctx, &keyVaultClient, d.Connection)
 
-	// Pagination is not handled, as the API always sends value of NotDone() as true,
-	// and the list goes to infinite
 	result, err := keyVaultClient.List(ctx, &maxResults)
 	if err != nil {
 		return nil, err
@@ -239,6 +254,9 @@ func listKeyVaults(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

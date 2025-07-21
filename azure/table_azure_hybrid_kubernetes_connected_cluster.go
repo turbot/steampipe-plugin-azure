@@ -21,12 +21,20 @@ func tableAzureHybridKubernetesConnectedCluster(_ context.Context) *plugin.Table
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHybridKubernetesConnectedCluster,
+			Tags: map[string]string{
+				"service": "Microsoft.Kubernetes",
+				"action":  "connectedClusters/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHybridKubernetesConnectedClusters,
+			Tags: map[string]string{
+				"service": "Microsoft.Kubernetes",
+				"action":  "connectedClusters/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -234,6 +242,9 @@ func listHybridKubernetesConnectedClusters(ctx context.Context, d *plugin.QueryD
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusters", "list_paging", err)
@@ -313,6 +324,9 @@ func listHybridKubernetesConnectedClusterExtensions(ctx context.Context, d *plug
 	extensions = append(extensions, result.Values()...)
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHybridKubernetesConnectedClusterExtensions", "list_paging", err)

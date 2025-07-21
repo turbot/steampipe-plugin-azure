@@ -17,6 +17,10 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 		Description: "Azure Tenant",
 		List: &plugin.ListConfig{
 			Hydrate: listTenants,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "tenants/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

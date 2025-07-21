@@ -17,14 +17,22 @@ func tableAzureMonitorLogProfile(_ context.Context) *plugin.Table {
 		Name:        "azure_monitor_log_profile",
 		Description: "Azure Monitor Log Profile",
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AllColumns([]string{"name"}),
+			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getMonitorLogProfile,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "logProfiles/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listMonitorLogProfiles,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "logProfiles/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

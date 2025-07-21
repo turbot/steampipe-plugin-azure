@@ -19,6 +19,10 @@ func tableAzureMonitorActivityLogEvent(_ context.Context) *plugin.Table {
 		Description: "Azure Monitor Activity Log Event",
 		List: &plugin.ListConfig{
 			Hydrate: listMonitorActivityLogEvents,
+			Tags: map[string]string{
+				"service": "Microsoft.Insights",
+				"action":  "activityLogs/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{
 					Name:      "event_timestamp",
@@ -214,6 +218,9 @@ func listMonitorActivityLogEvents(ctx context.Context, d *plugin.QueryData, _ *p
 	pager := clientFactory.NewListPager(filter, options)
 
 	for pager.More() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		page, err := pager.NextPage(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_monitor_activity_log_event.listMonitorActivityLogEvents", "api_error", err)

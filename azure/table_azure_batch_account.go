@@ -20,12 +20,29 @@ func tableAzureBatchAccount(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getBatchAccount,
+			Tags: map[string]string{
+				"service": "Microsoft.Batch",
+				"action":  "batchAccounts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listBatchAccounts,
+			Tags: map[string]string{
+				"service": "Microsoft.Batch",
+				"action":  "batchAccounts/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listBatchAccountDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -196,8 +213,8 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	if err != nil {
 		return nil, err
 	}
-	for _, account := range result.Values() {
-		d.StreamListItem(ctx, account)
+	for _, batchAccount := range result.Values() {
+		d.StreamListItem(ctx, batchAccount)
 		// Check if context has been cancelled or if the limit has been hit (if specified)
 		// if there is a limit, it will return the number of rows required to reach this limit
 		if d.RowsRemaining(ctx) == 0 {
@@ -206,12 +223,15 @@ func listBatchAccounts(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
-		for _, account := range result.Values() {
-			d.StreamListItem(ctx, account)
+		for _, batchAccount := range result.Values() {
+			d.StreamListItem(ctx, batchAccount)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
 			if d.RowsRemaining(ctx) == 0 {

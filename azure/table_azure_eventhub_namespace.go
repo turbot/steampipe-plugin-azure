@@ -20,12 +20,29 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventHubNamespace,
+			Tags: map[string]string{
+				"service": "Microsoft.EventHub",
+				"action":  "namespaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventHubNamespaces,
+			Tags: map[string]string{
+				"service": "Microsoft.EventHub",
+				"action":  "namespaces/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listEventHubNamespaceDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.EventHub",
+					"action":  "namespaces/providers/Microsoft.Insights/diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -121,6 +138,12 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Description: "Enabling this property creates a standard event hubs namespace in regions supported availability zones.",
 				Type:        proto.ColumnType_BOOL,
 				Transform:   transform.FromField("EHNamespaceProperties.ZoneRedundant"),
+			},
+			{
+				Name:        "network_rule_set",
+				Description: "The network rule set for the event hub namespace.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.NetworkRuleSet"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -221,6 +244,9 @@ func listEventHubNamespaces(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
@@ -312,10 +338,11 @@ func listEventHubNamespaceDiagnosticSettings(ctx context.Context, d *plugin.Quer
 
 	op, err := client.List(ctx, id)
 	if err != nil {
+		plugin.Logger(ctx).Error("listEventHubNamespaceDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
+	// If we return the API response directly, the output does not provide all
 	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {

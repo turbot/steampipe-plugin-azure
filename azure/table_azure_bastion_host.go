@@ -19,12 +19,20 @@ func tableAzureBastionHost(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getBastionHost,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "bastionHosts/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listBastionHosts,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "bastionHosts/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -136,6 +144,9 @@ func listBastionHosts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			logger.Error("azure_bastion_host.listBastionHosts", "api_error", err)

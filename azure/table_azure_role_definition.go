@@ -12,19 +12,27 @@ import (
 
 //// TABLE DEFINITION
 
-func tableAzureIamRoleDefinition(_ context.Context) *plugin.Table {
+func tableAzureRoleDefinition(_ context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "azure_role_definition",
 		Description: "Azure Role Definition",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
 			Hydrate:    getIamRoleDefinition,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "roleDefinitions/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listIamRoleDefinitions,
+			Tags: map[string]string{
+				"service": "Microsoft.Authorization",
+				"action":  "roleDefinitions/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -117,6 +125,9 @@ func listIamRoleDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

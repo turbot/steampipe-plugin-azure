@@ -19,6 +19,10 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"scale_set_name", "resource_group", "instance_id"}),
 			Hydrate:    getAzureComputeVirtualMachineScaleSetVm,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachineScaleSets/virtualMachines/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "404"}),
 			},
@@ -26,6 +30,10 @@ func tableAzureComputeVirtualMachineScaleSetVm(_ context.Context) *plugin.Table 
 		List: &plugin.ListConfig{
 			ParentHydrate: listAzureComputeVirtualMachineScaleSets,
 			Hydrate:       listAzureComputeVirtualMachineScaleSetVms,
+			Tags: map[string]string{
+				"service": "Microsoft.Compute",
+				"action":  "virtualMachineScaleSets/virtualMachines/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -247,16 +255,15 @@ type ScaleSetVMInfo struct {
 //// LIST FUNCTION
 
 func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listAzureComputeVirtualMachineScaleSetVms")
 	session, err := GetNewSession(ctx, d, "MANAGEMENT")
 	if err != nil {
 		return nil, err
 	}
+	subscriptionID := session.SubscriptionID
 
 	scaleSet := h.Item.(compute.VirtualMachineScaleSet)
 	resourceGroupName := strings.ToLower(strings.Split(*scaleSet.ID, "/")[4])
 
-	subscriptionID := session.SubscriptionID
 	client := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
 	client.Authorizer = session.Authorizer
 
@@ -265,7 +272,6 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 
 	result, err := client.List(context.Background(), resourceGroupName, *scaleSet.Name, "", "", "")
 	if err != nil {
-		plugin.Logger(ctx).Error("Error", "listAzureComputeVirtualMachineScaleSetVms", err)
 		return nil, err
 	}
 
@@ -273,6 +279,9 @@ func listAzureComputeVirtualMachineScaleSetVms(ctx context.Context, d *plugin.Qu
 		d.StreamListItem(ctx, ScaleSetVMInfo{*scaleSet.Name, scaleSetVm})
 	}
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

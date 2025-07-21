@@ -20,12 +20,29 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDataFactory,
+			Tags: map[string]string{
+				"service": "Microsoft.DataFactory",
+				"action":  "factories/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "Invalid input"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDataFactories,
+			Tags: map[string]string{
+				"service": "Microsoft.DataFactory",
+				"action":  "factories/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listDataFactoryPrivateEndpointConnections,
+				Tags: map[string]string{
+					"service": "Microsoft.DataFactory",
+					"action":  "factories/privateEndpointConnections/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -175,6 +192,9 @@ func listDataFactories(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

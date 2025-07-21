@@ -22,6 +22,10 @@ func tableAzureSecurityCenterSubAssessment(_ context.Context) *plugin.Table {
 		Description: "Azure Security Center Sub Assessment",
 		List: &plugin.ListConfig{
 			Hydrate: listSecurityCenterSubAssessments,
+			Tags: map[string]string{
+				"service": "Microsoft.Security",
+				"action":  "assessments/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -178,6 +182,9 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "query_error", err)

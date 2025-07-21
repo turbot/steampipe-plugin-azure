@@ -20,12 +20,20 @@ func tableAzureNetworkSecurityGroup(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getNetworkSecurityGroup,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkSecurityGroups/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listNetworkSecurityGroups,
+			Tags: map[string]string{
+				"service": "Microsoft.Network",
+				"action":  "networkSecurityGroups/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -165,6 +173,9 @@ func listNetworkSecurityGroups(ctx context.Context, d *plugin.QueryData, _ *plug
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

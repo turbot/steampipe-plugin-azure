@@ -19,12 +19,43 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getContainerRegistry,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerRegistry",
+				"action":  "registries/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "Invalid input", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listContainerRegistries,
+			Tags: map[string]string{
+				"service": "Microsoft.ContainerRegistry",
+				"action":  "registries/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listContainerRegistryLoginCredentials,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/listCredentials/action",
+				},
+			},
+			{
+				Func: listContainerRegistryWebhooks,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/webhooks/read",
+				},
+			},
+			{
+				Func: listContainerRegistryUsages,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/listUsages/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -257,6 +288,9 @@ func listContainerRegistries(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err

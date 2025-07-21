@@ -19,12 +19,29 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getEventGridDomain,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "domains/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceGroupNotFound", "ResourceNotFound", "400", "404"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "400", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listEventGridDomains,
+			Tags: map[string]string{
+				"service": "Microsoft.EventGrid",
+				"action":  "domains/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listEventGridDomainDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -154,7 +171,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the eventgrid domain.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listEventGridDiagnosticSettings,
+				Hydrate:     listEventGridDomainDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -241,6 +258,9 @@ func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			return nil, err
@@ -288,8 +308,8 @@ func getEventGridDomain(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	return op, nil
 }
 
-func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listEventGridDiagnosticSettings")
+func listEventGridDomainDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventGridDomainDiagnosticSettings")
 	id := *h.Item.(eventgrid.Domain).ID
 
 	// Create session
@@ -307,12 +327,12 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 
 	op, err := client.List(ctx, id)
 	if err != nil {
-		plugin.Logger(ctx).Error("listEventGridDiagnosticSettings", "list", err)
+		plugin.Logger(ctx).Error("listEventGridDomainDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
-	// all the contents of DiagnosticSettings
+	// If we return the API response directly, the output does not provide all
+	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})

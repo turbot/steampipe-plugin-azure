@@ -21,12 +21,20 @@ func tableAzureHPCCache(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getHPCCache,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageCache",
+				"action":  "caches/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listHPCCaches,
+			Tags: map[string]string{
+				"service": "Microsoft.StorageCache",
+				"action":  "caches/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -200,6 +208,9 @@ func listHPCCaches(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("listHPCCaches", "list_paging", err)

@@ -21,10 +21,18 @@ func tableAzureResourceResource(ctx context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
 			Hydrate:    getResource,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resources/read",
+			},
 			// No error is returned if the resource is not found
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listResources,
+			Tags: map[string]string{
+				"service": "Microsoft.Resources",
+				"action":  "resources/read",
+			},
 			KeyColumns: plugin.KeyColumnSlice{
 				{Name: "region", Require: plugin.Optional, Operators: []string{"=", "<>"}},
 				{Name: "type", Require: plugin.Optional, Operators: []string{"=", "<>"}},
@@ -226,6 +234,9 @@ func listResources(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_resource.listResources", "api_paging_error", err)

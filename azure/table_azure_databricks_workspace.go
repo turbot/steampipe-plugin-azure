@@ -19,12 +19,20 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"name", "resource_group"}),
 			Hydrate:    getDatabricksWorkspace,
+			Tags: map[string]string{
+				"service": "Microsoft.Databricks",
+				"action":  "workspaces/read",
+			},
 			IgnoreConfig: &plugin.IgnoreConfig{
-				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound"}),
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
 			},
 		},
 		List: &plugin.ListConfig{
 			Hydrate: listDatabricksWorkspaces,
+			Tags: map[string]string{
+				"service": "Microsoft.Databricks",
+				"action":  "workspaces/read",
+			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{
@@ -182,6 +190,9 @@ func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugi
 	}
 
 	for result.NotDone() {
+		// Wait for rate limiting
+		d.WaitForListRateLimit(ctx)
+
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "ListBySubscription_pagination", err)
