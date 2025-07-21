@@ -22,7 +22,7 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 			Hydrate:    getDataFactoryPipeline,
 			Tags: map[string]string{
 				"service": "Microsoft.DataFactory",
-				"action":  "pipelines/read",
+				"action":  "factories/pipelines/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
@@ -33,7 +33,7 @@ func tableAzureDataFactoryPipeline(_ context.Context) *plugin.Table {
 			ParentHydrate: listDataFactories,
 			Tags: map[string]string{
 				"service": "Microsoft.DataFactory",
-				"action":  "pipelines/read",
+				"action":  "factories/pipelines/read",
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

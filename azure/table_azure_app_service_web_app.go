@@ -41,14 +41,14 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Depends: []plugin.HydrateFunc{getAppServiceWebAppSiteConfiguration},
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
-					"action":  "sites/vnetConnections/read",
+					"action":  "sites/virtualnetworkconnections/read",
 				},
 			},
 			{
 				Func: getWebAppStorageAccount,
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
-					"action":  "sites/azureStorageAccounts/read",
+					"action":  "sites/config/read",
 				},
 			},
 			{
@@ -62,14 +62,14 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Func: getAppServiceWebAppSiteAuthSetting,
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
-					"action":  "sites/config/authsettings/read",
+					"action":  "sites/config/read",
 				},
 			},
 			{
 				Func: getWebAppDiagnosticLogsConfiguration,
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
-					"action":  "sites/config/logs/read",
+					"action":  "sites/providers/Microsoft.Insights/diagnosticSettings/read",
 				},
 			},
 		},

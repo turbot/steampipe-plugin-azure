@@ -22,7 +22,7 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 			Hydrate:    getAutomationVariable,
 			Tags: map[string]string{
 				"service": "Microsoft.Automation",
-				"action":  "variables/read",
+				"action":  "automationAccounts/variables/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
@@ -33,7 +33,7 @@ func tableAzureApAutomationVariable(_ context.Context) *plugin.Table {
 			Hydrate:       listAutomationVariables,
 			Tags: map[string]string{
 				"service": "Microsoft.Automation",
-				"action":  "variables/read",
+				"action":  "automationAccounts/variables/read",
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{

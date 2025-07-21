@@ -43,13 +43,6 @@ func tableAzureAppConfiguration(_ context.Context) *plugin.Table {
 					"action":  "diagnosticSettings/read",
 				},
 			},
-			{
-				Func: getPublicNetworkAccess,
-				Tags: map[string]string{
-					"service": "Microsoft.AppConfiguration",
-					"action":  "configurationStores/read",
-				},
-			},
 		},
 		Columns: azureColumns([]*plugin.Column{
 			{

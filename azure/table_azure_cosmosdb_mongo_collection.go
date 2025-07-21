@@ -31,7 +31,7 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			Hydrate:    getCosmosDBMongoCollection,
 			Tags: map[string]string{
 				"service": "Microsoft.DocumentDB",
-				"action":  "mongoDBCollections/read",
+				"action":  "databaseAccounts/mongodbDatabases/collections/read",
 			},
 			IgnoreConfig: &plugin.IgnoreConfig{
 				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "NotFound"}),
@@ -50,7 +50,7 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 			Hydrate:       listCosmosDBMongoCollections,
 			Tags: map[string]string{
 				"service": "Microsoft.DocumentDB",
-				"action":  "mongoDBCollections/read",
+				"action":  "databaseAccounts/mongodbDatabases/collections/read",
 			},
 		},
 		HydrateConfig: []plugin.HydrateConfig{
@@ -58,7 +58,7 @@ func tableAzureCosmosDBMongoCollection(_ context.Context) *plugin.Table {
 				Func: getCosmosDBMongoCollectionThroughput,
 				Tags: map[string]string{
 					"service": "Microsoft.DocumentDB",
-					"action":  "mongoDBCollections/throughput/read",
+					"action":  "databaseAccounts/mongodbDatabases/collections/throughputSettings/read",
 				},
 			},
 		},

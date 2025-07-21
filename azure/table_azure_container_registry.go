@@ -34,6 +34,29 @@ func tableAzureContainerRegistry(_ context.Context) *plugin.Table {
 				"action":  "registries/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listContainerRegistryLoginCredentials,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/listCredentials/action",
+				},
+			},
+			{
+				Func: listContainerRegistryWebhooks,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/webhooks/read",
+				},
+			},
+			{
+				Func: listContainerRegistryUsages,
+				Tags: map[string]string{
+					"service": "Microsoft.ContainerRegistry",
+					"action":  "registries/listUsages/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",

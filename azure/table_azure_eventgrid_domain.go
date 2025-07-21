@@ -34,6 +34,15 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				"action":  "domains/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listEventGridDomainDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Insights",
+					"action":  "diagnosticSettings/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
@@ -162,7 +171,7 @@ func tableAzureEventGridDomain(_ context.Context) *plugin.Table {
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the eventgrid domain.",
 				Type:        proto.ColumnType_JSON,
-				Hydrate:     listEventGridDiagnosticSettings,
+				Hydrate:     listEventGridDomainDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -244,9 +253,6 @@ func listEventGridDomains(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 		return nil, err
 	}
 
-	// Wait for rate limiting
-	d.WaitForListRateLimit(ctx)
-
 	for _, domain := range result.Values() {
 		d.StreamListItem(ctx, domain)
 	}
@@ -302,8 +308,8 @@ func getEventGridDomain(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	return op, nil
 }
 
-func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listEventGridDiagnosticSettings")
+func listEventGridDomainDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listEventGridDomainDiagnosticSettings")
 	id := *h.Item.(eventgrid.Domain).ID
 
 	// Create session
@@ -321,12 +327,12 @@ func listEventGridDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h
 
 	op, err := client.List(ctx, id)
 	if err != nil {
-		plugin.Logger(ctx).Error("listEventGridDiagnosticSettings", "list", err)
+		plugin.Logger(ctx).Error("listEventGridDomainDiagnosticSettings", "list", err)
 		return nil, err
 	}
 
-	// If we return the API response directly, the output does not provide
-	// all the contents of DiagnosticSettings
+	// If we return the API response directly, the output does not provide all
+	// the contents of DiagnosticSettings
 	var diagnosticSettings []map[string]interface{}
 	for _, i := range *op.Value {
 		objectMap := make(map[string]interface{})

@@ -47,7 +47,7 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				Func: getAppServiceFunctionAppSiteAuthSetting,
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
-					"action":  "sites/config/authsettings/read",
+					"action":  "sites/config/read",
 				},
 			},
 		},

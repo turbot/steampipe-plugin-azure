@@ -35,6 +35,15 @@ func tableAzureDataFactory(_ context.Context) *plugin.Table {
 				"action":  "factories/read",
 			},
 		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listDataFactoryPrivateEndpointConnections,
+				Tags: map[string]string{
+					"service": "Microsoft.DataFactory",
+					"action":  "factories/privateEndpointConnections/read",
+				},
+			},
+		},
 		Columns: azureColumns([]*plugin.Column{
 			{
 				Name:        "name",
