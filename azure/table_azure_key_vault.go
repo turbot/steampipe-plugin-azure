@@ -326,7 +326,6 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	if err != nil {
 		return nil, err
 	}
-	// subscriptionID := session.SubscriptionID
 
 	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
 	if err != nil {
