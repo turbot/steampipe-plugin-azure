@@ -330,7 +330,7 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 
 	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_data_protection_backup_vault.listAzureDataProtectionBackupVaults", "client_error", err)
+		plugin.Logger(ctx).Error("azure_key_vault.listKmsKeyVaultDiagnosticSettings", "client_error", err)
 		return nil, err
 	}
 
@@ -343,7 +343,7 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_data_protection_backup_vault.listAzureDataProtectionBackupVaults", "api_error", err)
+			plugin.Logger(ctx).Error("azure_key_vault.listKmsKeyVaultDiagnosticSettings", "api_error", err)
 			return nil, err
 		}
 		for _, i := range page.Value {
