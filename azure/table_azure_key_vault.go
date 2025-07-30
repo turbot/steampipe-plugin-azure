@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/keyvault/mgmt/keyvault"
-	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -322,41 +322,45 @@ func listKmsKeyVaultDiagnosticSettings(ctx context.Context, d *plugin.QueryData,
 	id := getKeyVaultID(h.Item)
 
 	// Create session
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
-	client := insights.NewDiagnosticSettingsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	client.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &client, d.Connection)
-
-	op, err := client.List(ctx, id)
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
 
-	// If we return the API response directly, the output only gives
-	// the contents of DiagnosticSettings
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_key_vault.listKmsKeyVaultDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
 	var diagnosticSettings []map[string]interface{}
-	for _, i := range *op.Value {
-		objectMap := make(map[string]interface{})
-		if i.ID != nil {
-			objectMap["id"] = i.ID
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_key_vault.listKmsKeyVaultDiagnosticSettings", "api_error", err)
+			return nil, err
 		}
-		if i.Name != nil {
-			objectMap["name"] = i.Name
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
 		}
-		if i.Type != nil {
-			objectMap["type"] = i.Type
-		}
-		if i.DiagnosticSettings != nil {
-			objectMap["properties"] = i.DiagnosticSettings
-		}
-		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 	return diagnosticSettings, nil
 }
