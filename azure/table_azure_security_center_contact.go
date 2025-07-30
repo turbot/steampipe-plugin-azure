@@ -121,9 +121,6 @@ func listSecurityCenterContacts(ctx context.Context, d *plugin.QueryData, _ *plu
 		return nil, err
 	}
 
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &clientFactory, d.Connection)
-
 	pager := clientFactory.NewListPager(&armsecurity.ContactsClientListOptions{})
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
