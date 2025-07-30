@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
@@ -417,6 +418,34 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Description: "A list of active diagnostic settings for the storage account.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     listStorageAccountDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "default_blob_diagnostic_settings",
+				Description: "A list of default diagnostic settings for the storage account blob service.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listStorageAccountDefaultBlobDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "default_file_diagnostic_settings",
+				Description: "A list of default diagnostic settings for the storage account file service.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listStorageAccountDefaultFileDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "default_table_diagnostic_settings",
+				Description: "A list of default diagnostic settings for the storage account table service.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listStorageAccountDefaultTableDiagnosticSettings,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "default_queue_diagnostic_settings",
+				Description: "A list of default diagnostic settings for the storage account queue service.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listStorageAccountDefaultQueueDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -1034,6 +1063,202 @@ func listStorageAccountDiagnosticSettings(ctx context.Context, d *plugin.QueryDa
 		diagnosticSettings = append(diagnosticSettings, objectMap)
 	}
 
+	return diagnosticSettings, nil
+}
+
+func listStorageAccountDefaultBlobDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listStorageAccountDefaultBlobDiagnosticSettings")
+	accountData := h.Item.(*storageAccountInfo)
+	id := *accountData.Account.ID + "/blobServices/default"
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultBlobDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultBlobDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
+	return diagnosticSettings, nil
+}
+
+func listStorageAccountDefaultFileDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listStorageAccountDefaultFileDiagnosticSettings")
+	accountData := h.Item.(*storageAccountInfo)
+	id := *accountData.Account.ID + "/fileServices/default"
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultFileDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultFileDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
+	return diagnosticSettings, nil
+}
+
+func listStorageAccountDefaultTableDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listStorageAccountDefaultTableDiagnosticSettings")
+	accountData := h.Item.(*storageAccountInfo)
+	id := *accountData.Account.ID + "/tableServices/default"
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultTableDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultTableDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
+	return diagnosticSettings, nil
+}
+
+func listStorageAccountDefaultQueueDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listStorageAccountDefaultQueueDiagnosticSettings")
+	accountData := h.Item.(*storageAccountInfo)
+	id := *accountData.Account.ID + "/queueServices/default"
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultQueueDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_storage_account.listStorageAccountDefaultQueueDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
 	return diagnosticSettings, nil
 }
 

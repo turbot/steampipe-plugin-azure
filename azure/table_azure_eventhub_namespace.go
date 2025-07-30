@@ -140,12 +140,6 @@ func tableAzureEventHubNamespace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("EHNamespaceProperties.ZoneRedundant"),
 			},
 			{
-				Name:        "network_rule_set",
-				Description: "The network rule set for the event hub namespace.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.NetworkRuleSet"),
-			},
-			{
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the eventhub namespace.",
 				Type:        proto.ColumnType_JSON,
