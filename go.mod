@@ -1,8 +1,8 @@
 module github.com/turbot/steampipe-plugin-azure
 
-go 1.23.1
+go 1.24
 
-toolchain go1.23.2
+toolchain go1.24.1
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
@@ -19,6 +19,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mysql/armmysqlflexibleservers/v2 v2.0.0-beta.3
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresqlflexibleservers/v2 v2.1.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/recoveryservices/armrecoveryservicesbackup/v3 v3.0.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.14.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql v1.2.0
 	github.com/Azure/azure-storage-blob-go v0.12.0
 	github.com/Azure/go-autorest/autorest v0.11.17
@@ -27,7 +28,7 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v1.1.0
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.7
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.13.0
 )
 
 require (
@@ -37,7 +38,6 @@ require (
 	cloud.google.com/go/storage v1.38.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.8.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.14.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.10 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
@@ -138,7 +138,7 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
