@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -67,6 +68,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 			},
 			{
 				Func: getWebAppDiagnosticLogsConfiguration,
+				Tags: map[string]string{
+					"service": "Microsoft.Web",
+					"action":  "sites/providers/Microsoft.Insights/diagnosticSettings/read",
+				},
+			},
+			{
+				Func: listWebAppDiagnosticSettings,
 				Tags: map[string]string{
 					"service": "Microsoft.Web",
 					"action":  "sites/providers/Microsoft.Insights/diagnosticSettings/read",
@@ -186,6 +194,13 @@ func tableAzureAppServiceWebApp(_ context.Context) *plugin.Table {
 				Description: "Describes the logging configuration of an app.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getWebAppDiagnosticLogsConfiguration,
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of diagnostic settings for the app.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listWebAppDiagnosticSettings,
 				Transform:   transform.FromValue(),
 			},
 			{
@@ -491,6 +506,55 @@ func getWebAppDiagnosticLogsConfiguration(ctx context.Context, d *plugin.QueryDa
 	}
 
 	return op, nil
+}
+
+func listWebAppDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listWebAppDiagnosticSettings")
+	data := h.Item.(web.Site)
+	id := *data.ID
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_app_service_web_app.listWebAppDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_app_service_web_app.listWebAppDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
+	return diagnosticSettings, nil
 }
 
 //// TRANSFORM FUNCTION
