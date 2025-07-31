@@ -525,6 +525,12 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Account.AccountProperties.SasPolicy.ExpirationAction"),
 			},
 			{
+				Name:        "key_policy",
+				Description: "KeyPolicy assigned to the storage account..",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Account.AccountProperties.KeyPolicy"),
+			},
+			{
 				Name:        "is_local_user_enabled",
 				Description: "Specifies whether local RBAC users are enabled for the storage account.",
 				Type:        proto.ColumnType_BOOL,
@@ -739,6 +745,18 @@ func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryDa
 func getAzureStorageAccountTableProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	accountData := h.Item.(*storageAccountInfo)
 
+	// Premium storage accounts do not support the Table service endpoint.
+	// Attempting to access the Table endpoint (e.g., https://<account>.table.core.windows.net)
+	// will result in a DNS resolution error. This is expected behavior.
+	// Example primary endpoints for a premium storage account:
+	// "primaryEndpoints": {
+	//     "web":  "https://testpremiumpartha.z20.web.core.windows.net/",
+	//     "blob": "https://testpremiumpartha.blob.core.windows.net/"
+	// }
+	if accountData.Account.Sku.Tier == "Premium" && accountData.Account.PrimaryEndpoints.Table == nil {
+		return nil, nil
+	}
+	
 	// Blob is not supported for the account if storage type is FileStorage
 	if accountData.Account.Kind == "FileStorage" {
 		return nil, nil
