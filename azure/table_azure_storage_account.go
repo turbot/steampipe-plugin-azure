@@ -526,7 +526,7 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "key_policy",
-				Description: "KeyPolicy assigned to the storage account..",
+				Description: "KeyPolicy assigned to the storage account.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Account.AccountProperties.KeyPolicy"),
 			},
