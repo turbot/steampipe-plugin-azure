@@ -33,6 +33,7 @@ func tableAzureNetworkWatcherFlowLog(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
+			ParentHydrate: listNetworkWatchers,
 			Hydrate: listNetworkWatcherFlowLogs,
 			Tags: map[string]string{
 				"service": "Microsoft.Network",
