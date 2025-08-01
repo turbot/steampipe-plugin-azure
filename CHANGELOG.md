@@ -1,3 +1,9 @@
+## v1.5.1 [2025-08-01]
+
+_Bug fixes_
+
+- Fixed the `azure_network_watcher_flow_log` table to correctly return data instead of an error. ([#926](https://github.com/turbot/steampipe-plugin-azure/pull/926))
+
 ## v1.5.0 [2025-08-01]
 
 _Deprecations_
