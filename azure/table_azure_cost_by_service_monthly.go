@@ -64,8 +64,14 @@ func buildCostByServiceInput(granularity string, d *plugin.QueryData) *AzureCost
 	startTime, endTime := getTimeRangeFromQuals(d, granularity)
 
 	// Parse time strings to time.Time
-	startDate, _ := time.Parse("2006-01-02", startTime)
-	endDate, _ := time.Parse("2006-01-02", endTime)
+	startDate, err := time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse startTime '%s': %w", startTime, err)
+	}
+	endDate, err := time.Parse("2006-01-02", endTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endTime '%s': %w", endTime, err)
+	}
 	timePeriod = &armcostmanagement.QueryTimePeriod{
 		From: to.Ptr(startDate),
 		To:   to.Ptr(endDate),
