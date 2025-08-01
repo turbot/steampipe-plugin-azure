@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -41,11 +42,14 @@ func tableAzureCostByResourceGroupDaily(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostByResourceGroupDaily(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	params := buildCostByResourceGroupDailyInput(d)
+	params, err := buildCostByResourceGroupDailyInput(ctx, d)
+	if err != nil {
+		return nil, err
+	}
 	return streamCostAndUsage(ctx, d, params)
 }
 
-func buildCostByResourceGroupDailyInput(d *plugin.QueryData) *AzureCostQueryInput {
+func buildCostByResourceGroupDailyInput(ctx context.Context, d *plugin.QueryData) (*AzureCostQueryInput, error) {
 	// Get time range from quals with daily defaults
 	startTime, endTime := getTimeRangeFromQuals(d, "DAILY")
 
@@ -56,48 +60,22 @@ func buildCostByResourceGroupDailyInput(d *plugin.QueryData) *AzureCostQueryInpu
 	}
 
 	// Set timeframe and time period
-	var timeframe armcostmanagement.TimeframeType
-	var timePeriod *armcostmanagement.QueryTimePeriod = nil
+	timeframe := armcostmanagement.TimeframeTypeCustom
+	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
-	// Check if user provided specific time range
-	hasTimeFilter := false
-	if quals := d.Quals["period_start"]; quals != nil && len(quals.Quals) > 0 {
-		hasTimeFilter = true
+
+	startDate, err := time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse start date: %v", err)
 	}
-	if quals := d.Quals["period_end"]; quals != nil && len(quals.Quals) > 0 {
-		hasTimeFilter = true
+	endDate, err := time.Parse("2006-01-02", endTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
-	if hasTimeFilter {
-		timeframe = armcostmanagement.TimeframeTypeCustom
-		// Parse time strings to time.Time
-		startDate, err := time.Parse("2006-01-02", startTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse start date: %w", err)
-		}
-		endDate, err := time.Parse("2006-01-02", endTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse end date: %w", err)
-		}
-		timePeriod = &armcostmanagement.QueryTimePeriod{
-			From: to.Ptr(startDate),
-			To:   to.Ptr(endDate),
-		}
-	} else {
-		// Always use Custom timeframe for daily data with last 7 days
-		timeframe = armcostmanagement.TimeframeTypeCustom
-		endDate, err := time.Parse("2006-01-02", endTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse end date: %w", err)
-		}
-		startDate, err := time.Parse("2006-01-02", startTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse start date: %w", err)
-		}
-		timePeriod = &armcostmanagement.QueryTimePeriod{
-			From: to.Ptr(startDate),
-			To:   to.Ptr(endDate),
-		}
+	timePeriod = &armcostmanagement.QueryTimePeriod{
+		From: to.Ptr(startDate),
+		To:   to.Ptr(endDate),
 	}
 
 	// Daily granularity
@@ -119,5 +97,5 @@ func buildCostByResourceGroupDailyInput(d *plugin.QueryData) *AzureCostQueryInpu
 		Scope:       "/subscriptions/" + subscriptionID,
 		TimePeriod:  timePeriod,
 		Filter:      filter,
-	}
+	}, nil
 }
