@@ -73,10 +73,8 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (*Az
 		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
-	timePeriod = &armcostmanagement.QueryTimePeriod{
-		From: to.Ptr(startDate),
-		To:   to.Ptr(endDate),
-	}
+	timePeriod.From = to.Ptr(startDate)
+	timePeriod.To = to.Ptr(endDate)
 
 	// Daily granularity
 	azureGranularity := getGranularityFromString("DAILY")

@@ -77,10 +77,8 @@ func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.
 		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
-	timePeriod = &armcostmanagement.QueryTimePeriod{
-		From: to.Ptr(startDate),
-		To:   to.Ptr(endDate),
-	}
+	timePeriod.From = to.Ptr(startDate)
+	timePeriod.To = to.Ptr(endDate)
 
 	azureGranularity := getGranularityFromString(granularity) // Use Monthly granularity when available
 
