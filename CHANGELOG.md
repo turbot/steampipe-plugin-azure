@@ -1,3 +1,35 @@
+## v1.5.0 [2025-08-01]
+
+_Deprecations_
+
+- The following columns of the `azure_security_center_contact` have now been deprecated due to the lack of API support:
+  - `alert_notifications`
+  - `alerts_to_admins`
+  
+_What's new?_
+
+- New tables added
+  - [azure_network_profile](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_network_profile) ([#892](https://github.com/turbot/steampipe-plugin-azure/pull/892))
+
+_Enhancements_
+
+- Added [rate-limiter tags](https://steampipe.io/docs/guides/limiter#concurrency--rate-limiting) to all tables which can be used to smooth request rates and limit the number of parallel requests to avoid hitting API rate limits. ([#904](https://github.com/turbot/steampipe-plugin-azure/pull/904))
+- Added `diagnostic_settings` column to `azure_app_service_web_app` table. ([#921](https://github.com/turbot/steampipe-plugin-azure/pull/921))
+- Added `default_blob_diagnostic_settings`, `default_file_diagnostic_settings`, `default_table_diagnostic_settings` and `default_queue_diagnostic_settings` columns to `azure_storage_account` table. ([#918](https://github.com/turbot/steampipe-plugin-azure/pull/918))
+- Added `key_policy` column to azure_storage_account` table. ([#922](https://github.com/turbot/steampipe-plugin-azure/pull/922))
+
+_Bug fixes_
+
+- Fixed the `azure_storage_account` table to correctly handle the `no such host error for premium type storage account`. ([#922](https://github.com/turbot/steampipe-plugin-azure/pull/922))
+- Fixed the `diagnostic_settings` column in `azure_key_vault` table to correctly return data instead of null. ([#915](https://github.com/turbot/steampipe-plugin-azure/pull/915))
+- Fixed `azure_data_protection_backup_vault` and `azure_security_center_contact` tables to correctly return data instead of an error. ([#917](https://github.com/turbot/steampipe-plugin-azure/pull/917))
+- Fixed the `azure_security_center_contact` table to correctly return data instead of null. ([#902](https://github.com/turbot/steampipe-plugin-azure/pull/902))
+
+_Dependencies_
+
+- Recompiled plugin with Go version `1.24`. ([#912](https://github.com/turbot/steampipe-plugin-azure/pull/912))
+- Recompiled plugin with [steampipe-plugin-sdk v5.13.0](https://github.com/turbot/steampipe-plugin-sdk/blob/develop/CHANGELOG.md#v5130-2025-07-21) that addresses critical and high vulnerabilities in dependent packages. ([#912](https://github.com/turbot/steampipe-plugin-azure/pull/912))
+
 ## v1.4.0 [2025-05-09]
 
 _Enhancements_
