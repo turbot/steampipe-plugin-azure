@@ -71,8 +71,14 @@ func buildCostByResourceGroupDailyInput(d *plugin.QueryData) *AzureCostQueryInpu
 	if hasTimeFilter {
 		timeframe = armcostmanagement.TimeframeTypeCustom
 		// Parse time strings to time.Time
-		startDate, _ := time.Parse("2006-01-02", startTime)
-		endDate, _ := time.Parse("2006-01-02", endTime)
+		startDate, err := time.Parse("2006-01-02", startTime)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse start date: %w", err)
+		}
+		endDate, err := time.Parse("2006-01-02", endTime)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse end date: %w", err)
+		}
 		timePeriod = &armcostmanagement.QueryTimePeriod{
 			From: to.Ptr(startDate),
 			To:   to.Ptr(endDate),
