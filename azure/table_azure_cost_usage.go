@@ -33,13 +33,7 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 					Require: plugin.Required,
 				},
 				{
-					Name:       "period_start",
-					Require:    plugin.Optional,
-					Operators:  []string{">", ">=", "=", "<", "<="},
-					CacheMatch: query_cache.CacheMatchExact,
-				},
-				{
-					Name:       "period_end",
+					Name:       "usage_date",
 					Require:    plugin.Optional,
 					Operators:  []string{">", ">=", "=", "<", "<="},
 					CacheMatch: query_cache.CacheMatchExact,
@@ -109,8 +103,30 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*Az
 	timeframe := armcostmanagement.TimeframeTypeCustom
 	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
-	// Get time range from quals
-	startTime, endTime := getCostUsageTimeRange(d, granularity)
+	// Get time range from usage_date quals using simplified approach
+	startTime, endTime := getUsageDateTimeRange(d, granularity)
+
+	// Set default time range if no quals provided
+	if startTime == "" || endTime == "" {
+		var defaultStart, defaultEnd time.Time
+		switch granularity {
+		case "MONTHLY","DAILY":
+			// Default: 1 year back
+			defaultEnd = time.Now()
+			defaultStart = defaultEnd.AddDate(0, -11, -30)
+		default:
+			// Default: Last 30 days
+			defaultEnd = time.Now()
+			defaultStart = defaultEnd.AddDate(0, 0, -30)
+		}
+
+		if startTime == "" {
+			startTime = defaultStart.Format("2006-01-02")
+		}
+		if endTime == "" {
+			endTime = defaultEnd.Format("2006-01-02")
+		}
+	}
 
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
@@ -163,64 +179,6 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*Az
 	}
 
 	return params, nil
-}
-
-func getCostUsageTimeRange(d *plugin.QueryData, granularity string) (string, string) {
-	timeFormat := "2006-01-02"
-
-	// Default time range based on granularity
-	var defaultStart time.Time
-	var defaultEnd time.Time
-
-	switch granularity {
-	case "MONTHLY":
-		// Default: 1 year back
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, -11, -30)
-	case "DAILY":
-		// Default: Last 30 days
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, 0, -30)
-	default:
-		// Default: Last 30 days
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, 0, -30)
-	}
-
-	startTime := defaultStart.Format(timeFormat)
-	endTime := defaultEnd.Format(timeFormat)
-
-	// Process period_start quals (similar to AWS)
-	if d.Quals["period_start"] != nil && len(d.Quals["period_start"].Quals) <= 1 {
-		for _, q := range d.Quals["period_start"].Quals {
-			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
-			switch q.Operator {
-			case "=", ">=", ">":
-				startTime = t
-			case "<", "<=":
-				endTime = t
-			}
-		}
-	}
-
-	// Process period_end quals (similar to AWS)
-	if d.Quals["period_end"] != nil && len(d.Quals["period_end"].Quals) <= 1 {
-		for _, q := range d.Quals["period_end"].Quals {
-			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
-			switch q.Operator {
-			case "=", ">=", ">":
-				if startTime == defaultStart.Format(timeFormat) {
-					startTime = t
-				}
-			case "<", "<=":
-				if endTime == defaultEnd.Format(timeFormat) {
-					endTime = t
-				}
-			}
-		}
-	}
-
-	return startTime, endTime
 }
 
 //// HYDRATE FUNCTIONS

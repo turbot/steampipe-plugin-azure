@@ -50,19 +50,30 @@ func listCostByResourceGroupDaily(ctx context.Context, d *plugin.QueryData, _ *p
 }
 
 func buildCostByResourceGroupDailyInput(ctx context.Context, d *plugin.QueryData) (*AzureCostQueryInput, error) {
-	// Get time range from quals with daily defaults
-	startTime, endTime := getTimeRangeFromQuals(d, "DAILY")
-
 	// Get subscription ID (will be handled in streamCostAndUsage if empty)
 	subscriptionID := d.EqualsQualString("subscription_id")
 	if subscriptionID == "" {
 		subscriptionID = "placeholder"
 	}
 
-	// Set timeframe and time period
+	// Set timeframe and time period using new usage_date logic
 	timeframe := armcostmanagement.TimeframeTypeCustom
 	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
+	// Get time range from usage_date quals using simplified approach
+	startTime, endTime := getUsageDateTimeRange(d, "DAILY")
+
+	// Set default time range if no quals provided
+	if startTime == "" || endTime == "" {
+		defaultEnd := time.Now()
+		defaultStart := defaultEnd.AddDate(0, -11, -30) // Last 1 year
+		if startTime == "" {
+			startTime = defaultStart.Format("2006-01-02")
+		}
+		if endTime == "" {
+			endTime = defaultEnd.Format("2006-01-02")
+		}
+	}
 
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
