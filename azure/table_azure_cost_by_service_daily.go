@@ -86,8 +86,14 @@ func buildCostByServiceDailyInput(d *plugin.QueryData) *AzureCostQueryInput {
 	} else {
 		// Always use Custom timeframe for daily data with last 7 days
 		timeframe = armcostmanagement.TimeframeTypeCustom
-		endDate, _ := time.Parse("2006-01-02", endTime)
-		startDate, _ := time.Parse("2006-01-02", startTime)
+		endDate, err := time.Parse("2006-01-02", endTime)
+		if err != nil {
+			return nil, fmt.Errorf("invalid end date format: %v", err)
+		}
+		startDate, err := time.Parse("2006-01-02", startTime)
+		if err != nil {
+			return nil, fmt.Errorf("invalid start date format: %v", err)
+		}
 		timePeriod = &armcostmanagement.QueryTimePeriod{
 			From: to.Ptr(startDate),
 			To:   to.Ptr(endDate),
