@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -15,8 +16,7 @@ import (
 
 // CostManagementRow represents a flattened cost management result row with all cost types (like AWS)
 type CostManagementRow struct {
-	PeriodStart *string
-	PeriodEnd   *string
+	UsageDate *time.Time
 
 	// Dimension values (populated based on GroupBy)
 	Dimension1 *string // Generic dimension field (could be ResourceGroup, ServiceName, etc.)
@@ -81,36 +81,12 @@ func AllCostMetrics() []string {
 	}
 }
 
-// getMetricsByQueryContext dynamically determines which metrics to fetch based on query columns (like AWS)
+// getMetricsByQueryContext dynamically determines which metrics to fetch based on query columns
 func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
 	queryColumns := qc.Columns
 	var metrics []string
 
-	for _, c := range queryColumns {
-		switch c {
-		case "unblended_cost_amount", "unblended_cost_unit":
-			metrics = append(metrics, "PreTaxCost")
-		case "pre_tax_cost_amount", "pre_tax_cost_unit":
-			metrics = append(metrics, "PreTaxCost")
-		case "amortized_cost_amount", "amortized_cost_unit":
-			metrics = append(metrics, "PreTaxCost") // Use PreTaxCost for amortized as well
-		case "usage_quantity_amount", "usage_quantity_unit":
-			metrics = append(metrics, "UsageQuantity")
-		}
-	}
-
-	return removeDuplicates(metrics)
-}
-
-// getColumnsFromQueryContext determines which columns to request from Azure API
-func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
-	queryColumns := qc.Columns
-	var columns []*string
-
-	// Always include basic columns
-	columns = append(columns, to.Ptr("Currency"))
-
-	// Add columns based on what user is querying
+	// Always prioritize PreTaxCost as the primary cost metric (from ActualCost query)
 	needsCost := false
 	needsUsage := false
 
@@ -123,6 +99,44 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 		}
 	}
 
+	// Add metrics based on priority (Azure limit: max 2)
+	if needsCost {
+		metrics = append(metrics, "PreTaxCost")
+	}
+	if needsUsage && len(metrics) < 2 {
+		metrics = append(metrics, "UsageQuantity")
+	}
+
+	// Default to PreTaxCost if no specific columns requested
+	if len(metrics) == 0 {
+		metrics = append(metrics, "PreTaxCost")
+	}
+
+	return metrics
+}
+
+// getColumnsFromQueryContext determines which columns to request from Azure API
+func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
+	queryColumns := qc.Columns
+	var columns []*string
+
+	// Always include basic columns
+	columns = append(columns, to.Ptr("Currency"))
+
+	// Check what the user is querying for
+	needsCost := false
+	needsUsage := false
+
+	for _, c := range queryColumns {
+		switch c {
+		case "unblended_cost_amount", "unblended_cost_unit", "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
+			needsCost = true
+		case "usage_quantity_amount", "usage_quantity_unit":
+			needsUsage = true
+		}
+	}
+
+	// Add the primary cost column (PreTaxCost works for all cost types with fallback)
 	if needsCost {
 		columns = append(columns, to.Ptr("PreTaxCost"))
 	}
@@ -130,9 +144,9 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 		columns = append(columns, to.Ptr("UsageQuantity"))
 	}
 
-	// If no specific columns requested, include both
+	// Default to PreTaxCost if no specific columns requested
 	if !needsCost && !needsUsage {
-		columns = append(columns, to.Ptr("PreTaxCost"), to.Ptr("UsageQuantity"))
+		columns = append(columns, to.Ptr("PreTaxCost"))
 	}
 
 	return columns
@@ -153,79 +167,48 @@ func removeDuplicates(slice []string) []string {
 	return result
 }
 
-// getTimeRangeFromQuals extracts start and end dates from period_start and period_end quals
-func getTimeRangeFromQuals(d *plugin.QueryData, granularity string) (string, string) {
+// getUsageDateTimeRange extracts start and end dates from usage_date quals (following AWS pattern)
+func getUsageDateTimeRange(keyQuals *plugin.QueryData, granularity string) (string, string) {
 	timeFormat := "2006-01-02"
 
-	// Default time range based on granularity
-	var defaultStart time.Time
-	var defaultEnd time.Time
+	st, et := "", ""
 
-	switch granularity {
-	case "MONTHLY":
-		// Default: 1 year back (Azure only supports Daily granularity, but we aggregate over longer periods for monthly data)
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, -11, -30) // 1 year back
-	case "DAILY":
-		// Default: Last 30 days
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, 0, -30)
-	default:
-		// Default: Last 30 days
-		defaultEnd = time.Now()
-		defaultStart = defaultEnd.AddDate(0, 0, -30)
-	}
-
-	startTime := defaultStart.Format(timeFormat)
-	endTime := defaultEnd.Format(timeFormat)
-
-	// Process period_start quals
-	if quals := d.Quals["period_start"]; quals != nil {
-		for _, qual := range quals.Quals {
-			if qual.Value != nil && qual.Value.GetTimestampValue() != nil {
-				qualTime := qual.Value.GetTimestampValue().AsTime()
-				switch qual.Operator {
-				case "=":
-					startTime = qualTime.Format(timeFormat)
-				case ">=", ">":
-					if qual.Operator == ">" {
-						qualTime = qualTime.AddDate(0, 0, 1) // Next day for > operator
-					}
-					startTime = qualTime.Format(timeFormat)
-				case "<=", "<":
-					if qual.Operator == "<" {
-						qualTime = qualTime.AddDate(0, 0, -1) // Previous day for < operator
-					}
-					endTime = qualTime.Format(timeFormat)
-				}
+	if keyQuals.Quals["usage_date"] != nil && len(keyQuals.Quals["usage_date"].Quals) <= 1 {
+		for _, q := range keyQuals.Quals["usage_date"].Quals {
+			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
+			switch q.Operator {
+			case "=", ">=", ">":
+				st = t
+			case "<", "<=":
+				et = t
 			}
 		}
 	}
 
-	// Process period_end quals
-	if quals := d.Quals["period_end"]; quals != nil {
-		for _, qual := range quals.Quals {
-			if qual.Value != nil && qual.Value.GetTimestampValue() != nil {
-				qualTime := qual.Value.GetTimestampValue().AsTime()
-				switch qual.Operator {
-				case "=":
-					endTime = qualTime.Format(timeFormat)
-				case "<=", "<":
-					if qual.Operator == "<" {
-						qualTime = qualTime.AddDate(0, 0, -1) // Previous day for < operator
-					}
-					endTime = qualTime.Format(timeFormat)
-				case ">=", ">":
-					if qual.Operator == ">" {
-						qualTime = qualTime.AddDate(0, 0, 1) // Next day for > operator
-					}
-					startTime = qualTime.Format(timeFormat)
-				}
+	now := time.Now()
+
+	// Set defaults if not provided
+	if st == "" {
+		st = now.AddDate(0, -11, 0).Format(timeFormat) // 11 months ago
+	}
+	if et == "" {
+		et = now.AddDate(0, 0, -1).Format(timeFormat) // Yesterday
+	}
+
+	// Parse dates to ensure the range doesn't exceed 1 year
+	startDate, err := time.Parse(timeFormat, st)
+	if err == nil {
+		endDate, err := time.Parse(timeFormat, et)
+		if err == nil {
+			// If the range exceeds 365 days, adjust the end date
+			maxEndDate := startDate.AddDate(1, 0, -1) // 1 year minus 1 day from start
+			if endDate.After(maxEndDate) {
+				et = maxEndDate.Format(timeFormat)
 			}
 		}
 	}
 
-	return startTime, endTime
+	return st, et
 }
 
 // buildFilterExpression creates filter expressions from table key column quals
@@ -233,7 +216,7 @@ func buildFilterExpression(d *plugin.QueryData, dimensionName string) *armcostma
 	var filters []*armcostmanagement.QueryFilter
 	// Process dimension-specific quals (like service_name = 'Storage')
 	for _, keyQual := range d.Table.List.KeyColumns {
-		if keyQual.Name == "period_start" || keyQual.Name == "period_end" || keyQual.Name == "subscription_id" {
+		if keyQual.Name == "usage_date" || keyQual.Name == "subscription_id" {
 			continue // Skip time and subscription quals
 		}
 
@@ -285,16 +268,10 @@ func buildFilterExpression(d *plugin.QueryData, dimensionName string) *armcostma
 func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 	standardColumns := []*plugin.Column{
 		{
-			Name:        "period_start",
-			Description: "Start timestamp for this cost metric.",
+			Name:        "usage_date",
+			Description: "The date for which the cost metric is calculated.",
 			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("PeriodStart"),
-		},
-		{
-			Name:        "period_end",
-			Description: "End timestamp for this cost metric.",
-			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("PeriodEnd"),
+			Transform:   transform.FromField("UsageDate"),
 		},
 		{
 			Name:        "estimated",
@@ -368,13 +345,7 @@ func costManagementKeyColumns() plugin.KeyColumnSlice {
 			Operators: []string{"="},
 		},
 		{
-			Name:       "period_start",
-			Require:    plugin.Optional,
-			Operators:  []string{">", ">=", "=", "<", "<="},
-			CacheMatch: query_cache.CacheMatchExact,
-		},
-		{
-			Name:       "period_end",
+			Name:       "usage_date",
 			Require:    plugin.Optional,
 			Operators:  []string{">", ">=", "=", "<", "<="},
 			CacheMatch: query_cache.CacheMatchExact,
@@ -477,27 +448,49 @@ func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureC
 		dataset.Filter = params.Filter
 	}
 
-	// Build query definition - using Usage type like the working example
+	// Execute query with a single API call, respecting Azure's 2-aggregation limit
+	rowMap := make(map[string]*CostManagementRow)
+
+	// Use ActualCost by default for most reliable results
 	queryDef := armcostmanagement.QueryDefinition{
-		Type:      to.Ptr(armcostmanagement.ExportTypeUsage),
+		Type:      to.Ptr(armcostmanagement.ExportTypeActualCost),
 		Timeframe: to.Ptr(params.Timeframe),
 		Dataset:   dataset,
 	}
 
-	// Set TimePeriod only if using Custom timeframe
+	// Set TimePeriod if using Custom timeframe
 	if params.Timeframe == armcostmanagement.TimeframeTypeCustom && params.TimePeriod != nil {
 		queryDef.TimePeriod = params.TimePeriod
 	}
 
-	// Execute query
+	plugin.Logger(ctx).Debug("Making Azure Cost Management API call", "query", queryDef)
+
 	result, err := client.Usage(ctx, params.Scope, queryDef, nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("Azure Cost Management Query failed", "error", err)
 		return nil, err
 	}
 
-	// Process results - simplified
-	rowMap := make(map[string]*CostManagementRow)
+	for _, c := range result.Properties.Columns{
+
+		plugin.Logger(ctx).Error("Query Result Columns ===>>>", *c.Name, *c.Type)
+	}
+	plugin.Logger(ctx).Error("Query Result Rows ===>>>", result.Properties.Rows)
+
 	processQueryResults(&result.QueryResult, params, "actual", rowMap)
+
+	// Handle pagination
+	for result.QueryResult.Properties != nil && result.QueryResult.Properties.NextLink != nil {
+		nextURL := *result.QueryResult.Properties.NextLink
+		plugin.Logger(ctx).Debug("Following pagination", "nextLink", nextURL)
+
+		result, err = client.Usage(ctx, params.Scope, queryDef, nil)
+		if err != nil {
+			plugin.Logger(ctx).Error("Pagination failed", "error", err)
+			break
+		}
+		processQueryResults(&result.QueryResult, params, "actual", rowMap)
+	}
 
 	// Stream results
 	for _, row := range rowMap {
@@ -538,8 +531,9 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 		var dateColumnName string
 		var dateIdx int = -1
 
-		// For daily granularity, look for UsageDate column
+		// Always look for UsageDate column for daily granularity
 		if params.Granularity == armcostmanagement.GranularityTypeDaily {
+			// Look for UsageDate column (always available in daily data)
 			if idx, ok := columnMap["UsageDate"]; ok {
 				dateColumnName = "UsageDate"
 				dateIdx = idx
@@ -552,12 +546,30 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 			}
 		}
 
-		// Get date value
+		// Get date value - only if we have a valid date column
 		var dateStr string
 		if dateIdx != -1 && len(row) > dateIdx && row[dateIdx] != nil {
-			if date, ok := row[dateIdx].(string); ok {
+			// Handle both string and numeric date formats
+			switch date := row[dateIdx].(type) {
+			case string:
+				// String date format (like "2024-08-01T00:00:00Z")
 				dateStr = strings.Split(date, "T")[0] // Remove time component
 				keyParts = append(keyParts, dateStr)
+			case float64:
+				// Numeric date format (like 20240801)
+				// Convert to string and parse with Go's time.Parse
+				numericDateStr := fmt.Sprintf("%.0f", date)
+				if parsedTime, err := time.Parse("20060102", numericDateStr); err == nil {
+					dateStr = parsedTime.Format("2006-01-02")
+					keyParts = append(keyParts, dateStr)
+				}
+			case int:
+				// Handle int format as well
+				numericDateStr := fmt.Sprintf("%d", date)
+				if parsedTime, err := time.Parse("20060102", numericDateStr); err == nil {
+					dateStr = parsedTime.Format("2006-01-02")
+					keyParts = append(keyParts, dateStr)
+				}
 			}
 		}
 
@@ -600,90 +612,117 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 			}
 			rowMap[rowKey] = costRow
 
-			// Set period dates based on the actual date from the API
-			if len(keyParts) > 0 {
+			// Set period dates and dimensions based on what we found
+			if dateIdx != -1 && len(keyParts) > 0 {
+				// We found a valid date column - standard case for daily and monthly data
 				dateStr := keyParts[0]
-				costRow.PeriodStart = &dateStr
+				if parsedDate, err := time.Parse("2006-01-02", dateStr); err == nil {
+					costRow.UsageDate = &parsedDate
 
-				// Determine if this is monthly or daily data for period_end calculation
-				isMonthlyData := false
-
-				// Check if we found BillingMonth column or if the date is first of month
-				if dateColumnName == "BillingMonth" {
-					isMonthlyData = true
-				} else if len(dateStr) >= 10 && dateStr[8:10] == "01" {
-					// Check if the date is the first of the month (likely monthly data)
-					isMonthlyData = true
-				}
-
-				if isMonthlyData {
-					// This appears to be monthly data - set period_end to last day of the month
-					if parsedDate, err := time.Parse("2006-01-02", dateStr); err == nil {
-						// Calculate last day of the month
-						year, month, _ := parsedDate.Date()
-						// First day of next month
-						nextMonth := time.Date(year, month+1, 1, 0, 0, 0, 0, time.UTC)
-						// Last day of current month
-						lastDay := nextMonth.AddDate(0, 0, -1)
-						lastDayStr := lastDay.Format("2006-01-02")
-						costRow.PeriodEnd = &lastDayStr
-					} else {
-						// Fallback: if parsing fails, use same date
-						costRow.PeriodEnd = &dateStr
+					// Determine if this is monthly or daily data for period_end calculation
+					isMonthlyData := false
+					if dateColumnName == "BillingMonth" {
+						isMonthlyData = true
+					} else if len(dateStr) >= 10 && dateStr[8:10] == "01" {
+						isMonthlyData = true
 					}
+
+					if isMonthlyData {
+						// Monthly data - set usage_date to last day of the month
+						year, month, _ := parsedDate.Date()
+						nextMonth := time.Date(year, month+1, 1, 0, 0, 0, 0, time.UTC)
+						lastDay := nextMonth.AddDate(0, 0, -1)
+						costRow.UsageDate = &lastDay
+					}
+					// For daily data, we keep the original parsed date
+				}
+
+				// Set dimension values (skip the date which is keyParts[0])
+				if len(keyParts) > 1 {
+					costRow.Dimension1 = &keyParts[1]
+				}
+				if len(keyParts) > 2 {
+					costRow.Dimension2 = &keyParts[2]
+				}
+			} else {
+				// Fallback case: no date column found (should be rare)
+				// Use the query time period for date information
+				var periodStart string
+				if params.TimePeriod != nil && params.TimePeriod.From != nil {
+					periodStart = params.TimePeriod.From.Format("2006-01-02")
 				} else {
-					// This appears to be daily data - period_start and period_end are the same
-					costRow.PeriodEnd = &dateStr
+					// Fallback to current date range
+					periodStart = time.Now().Format("2006-01-02")
+				}
+				if parsedPeriodStart, err := time.Parse("2006-01-02", periodStart); err == nil {
+					costRow.UsageDate = &parsedPeriodStart
+				}
+
+				// ALL keyParts are dimensions in this case (no date in keyParts)
+				if len(keyParts) > 0 {
+					costRow.Dimension1 = &keyParts[0]
+				}
+				if len(keyParts) > 1 {
+					costRow.Dimension2 = &keyParts[1]
 				}
 			}
-
-			// Set dimension values from keyParts (skip the date which is keyParts[0])
-			if len(keyParts) > 1 {
-				costRow.Dimension1 = &keyParts[1]
-			}
-			if len(keyParts) > 2 {
-				costRow.Dimension2 = &keyParts[2]
-			}
 		}
 
-		// Map the available cost data to all expected columns
-		// Since we're fetching PreTaxCost, we'll populate multiple columns with this data
-		if idx, ok := columnMap["PreTaxCost"]; ok && len(row) > idx && row[idx] != nil {
-			if cost, ok := row[idx].(float64); ok {
-				// Populate all cost columns with the available PreTaxCost data
-				costRow.PreTaxCostAmount = &cost
-				costRow.PreTaxCostUnit = to.Ptr("USD")
-
-				// Also populate unblended cost (which is the primary cost metric)
-				costRow.UnblendedCostAmount = &cost
-				costRow.UnblendedCostUnit = to.Ptr("USD")
-
-				// For monthly data, also populate amortized cost
-				// (will be the same as actual cost unless we specifically query amortized data)
-				costRow.AmortizedCostAmount = &cost
-				costRow.AmortizedCostUnit = to.Ptr("USD")
-			}
-		}
-
-		// Handle UsageQuantity data if available
-		if idx, ok := columnMap["UsageQuantity"]; ok && len(row) > idx && row[idx] != nil {
-			if usage, ok := row[idx].(float64); ok {
-				costRow.UsageQuantityAmount = &usage
-				costRow.UsageQuantityUnit = to.Ptr("Units")
-			}
-		}
+		// Map the different cost types to their appropriate columns based on costType
+		currency := "USD" // Default currency
 
 		// Extract currency if available
 		if idx, ok := columnMap["Currency"]; ok && len(row) > idx && row[idx] != nil {
-			if currency, ok := row[idx].(string); ok {
-				costRow.Currency = &currency
-				// Update all currency fields to match the actual currency
-				if currency != "" {
-					costRow.PreTaxCostUnit = &currency
+			if curr, ok := row[idx].(string); ok && curr != "" {
+				currency = curr
+			}
+		}
+
+		// Handle different cost metrics based on what's available in the API response
+
+		// Handle PreTaxCost metric (primary from ActualCost query)
+		if idx, ok := columnMap["PreTaxCost"]; ok && len(row) > idx && row[idx] != nil {
+			if cost, ok := row[idx].(float64); ok {
+				costRow.PreTaxCostAmount = &cost
+				costRow.PreTaxCostUnit = &currency
+
+				// For environments without reservations, use PreTaxCost for all cost types
+				if costRow.UnblendedCostAmount == nil {
+					costRow.UnblendedCostAmount = &cost
 					costRow.UnblendedCostUnit = &currency
+				}
+				if costRow.AmortizedCostAmount == nil {
+					costRow.AmortizedCostAmount = &cost
 					costRow.AmortizedCostUnit = &currency
 				}
 			}
 		}
+
+		// Handle Cost metric (if available from AmortizedCost query)
+		if idx, ok := columnMap["Cost"]; ok && len(row) > idx && row[idx] != nil {
+			if cost, ok := row[idx].(float64); ok {
+				costRow.UnblendedCostAmount = &cost
+				costRow.UnblendedCostUnit = &currency
+			}
+		}
+
+		// Handle CostUSD metric (if available from AmortizedCost query)
+		if idx, ok := columnMap["CostUSD"]; ok && len(row) > idx && row[idx] != nil {
+			if cost, ok := row[idx].(float64); ok {
+				costRow.AmortizedCostAmount = &cost
+				costRow.AmortizedCostUnit = &currency
+			}
+		}
+
+		// Handle UsageQuantity metric
+		if idx, ok := columnMap["UsageQuantity"]; ok && len(row) > idx && row[idx] != nil {
+			if usage, ok := row[idx].(float64); ok {
+				costRow.UsageQuantityAmount = &usage
+				costRow.UsageQuantityUnit = &currency
+			}
+		}
+
+		// Set the currency for all cost fields
+		costRow.Currency = &currency
 	}
 }
