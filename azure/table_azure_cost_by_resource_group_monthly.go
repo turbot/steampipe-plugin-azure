@@ -65,8 +65,14 @@ func buildCostByResourceGroupInput(granularity string, d *plugin.QueryData) *Azu
 	startTime, endTime := getTimeRangeFromQuals(d, granularity)
 
 	// Parse time strings to time.Time
-	startDate, _ := time.Parse("2006-01-02", startTime)
-	endDate, _ := time.Parse("2006-01-02", endTime)
+	startDate, err := time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start date format: %v", err)
+	}
+	endDate, err := time.Parse("2006-01-02", endTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid end date format: %v", err)
+	}
 	timePeriod = &armcostmanagement.QueryTimePeriod{
 		From: to.Ptr(startDate),
 		To:   to.Ptr(endDate),
