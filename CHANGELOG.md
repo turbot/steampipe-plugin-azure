@@ -16,7 +16,7 @@ _Enhancements_
 - Added [rate-limiter tags](https://steampipe.io/docs/guides/limiter#concurrency--rate-limiting) to all tables which can be used to smooth request rates and limit the number of parallel requests to avoid hitting API rate limits. ([#904](https://github.com/turbot/steampipe-plugin-azure/pull/904))
 - Added `diagnostic_settings` column to `azure_app_service_web_app` table. ([#921](https://github.com/turbot/steampipe-plugin-azure/pull/921))
 - Added `default_blob_diagnostic_settings`, `default_file_diagnostic_settings`, `default_table_diagnostic_settings` and `default_queue_diagnostic_settings` columns to `azure_storage_account` table. ([#918](https://github.com/turbot/steampipe-plugin-azure/pull/918))
-- Added `key_policy` column to azure_storage_account` table. ([#922](https://github.com/turbot/steampipe-plugin-azure/pull/922))
+- Added `key_policy` column to `azure_storage_account` table. ([#922](https://github.com/turbot/steampipe-plugin-azure/pull/922))
 
 _Bug fixes_
 
