@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -88,58 +89,48 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	params := buildCostUsageInputFromQuals(ctx, d)
+	params, err := buildCostUsageInputFromQuals(ctx, d)
+	if err != nil {
+		return nil, err
+	}
 	return streamCostAndUsage(ctx, d, params)
 }
 
-func buildCostUsageInputFromQuals(ctx context.Context, keyQuals *plugin.QueryData) *AzureCostQueryInput {
-	granularity := strings.ToUpper(keyQuals.EqualsQuals["granularity"].GetStringValue())
+func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*AzureCostQueryInput, error) {
+	granularity := strings.ToUpper(d.EqualsQuals["granularity"].GetStringValue())
 
 	// Get subscription ID
-	subscriptionID := keyQuals.EqualsQualString("subscription_id")
+	subscriptionID := d.EqualsQualString("subscription_id")
 	if subscriptionID == "" {
 		subscriptionID = "placeholder" // Will be replaced in streamCostAndUsage
 	}
 
 	// Set timeframe and time period
-	var timeframe armcostmanagement.TimeframeType
-	var timePeriod *armcostmanagement.QueryTimePeriod = nil
+	timeframe := armcostmanagement.TimeframeTypeCustom
+	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
 	// Get time range from quals
-	startTime, endTime := getCostUsageTimeRange(keyQuals, granularity)
+	startTime, endTime := getCostUsageTimeRange(d, granularity)
 
-	// Check if user provided specific time range
-	hasTimeFilter := false
-	if quals := keyQuals.Quals["period_start"]; quals != nil && len(quals.Quals) > 0 {
-		hasTimeFilter = true
+	startDate, err := time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse start date: %v", err)
 	}
-	if quals := keyQuals.Quals["period_end"]; quals != nil && len(quals.Quals) > 0 {
-		hasTimeFilter = true
+	endDate, err := time.Parse("2006-01-02", endTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
-	if hasTimeFilter {
-		timeframe = armcostmanagement.TimeframeTypeCustom
-		// Parse time strings to time.Time
-		startDate, _ := time.Parse("2006-01-02", startTime)
-		endDate, _ := time.Parse("2006-01-02", endTime)
-		timePeriod = &armcostmanagement.QueryTimePeriod{
-			From: to.Ptr(startDate),
-			To:   to.Ptr(endDate),
-		}
-	} else {
-		// Use MonthToDate for monthly aggregation, or default timeframe
-		if granularity == "MONTHLY" {
-			timeframe = armcostmanagement.TimeframeTypeMonthToDate
-		} else {
-			timeframe = armcostmanagement.TimeframeTypeMonthToDate // Default
-		}
+	timePeriod = &armcostmanagement.QueryTimePeriod{
+		From: to.Ptr(startDate),
+		To:   to.Ptr(endDate),
 	}
 
 	azureGranularity := getGranularityFromString(granularity)
 
 	// Get dimensions
-	dim1 := keyQuals.EqualsQuals["dimension_type_1"].GetStringValue()
-	dim2 := keyQuals.EqualsQuals["dimension_type_2"].GetStringValue()
+	dim1 := d.EqualsQuals["dimension_type_1"].GetStringValue()
+	dim2 := d.EqualsQuals["dimension_type_2"].GetStringValue()
 
 	// Build GroupBy - Azure supports up to 2 grouping dimensions
 	var groupings []*armcostmanagement.QueryGrouping
@@ -173,10 +164,10 @@ func buildCostUsageInputFromQuals(ctx context.Context, keyQuals *plugin.QueryDat
 		params.GroupBy2 = groupings[1]
 	}
 
-	return params
+	return params, nil
 }
 
-func getCostUsageTimeRange(keyQuals *plugin.QueryData, granularity string) (string, string) {
+func getCostUsageTimeRange(d *plugin.QueryData, granularity string) (string, string) {
 	timeFormat := "2006-01-02"
 
 	// Default time range based on granularity
@@ -202,8 +193,8 @@ func getCostUsageTimeRange(keyQuals *plugin.QueryData, granularity string) (stri
 	endTime := defaultEnd.Format(timeFormat)
 
 	// Process period_start quals (similar to AWS)
-	if keyQuals.Quals["period_start"] != nil && len(keyQuals.Quals["period_start"].Quals) <= 1 {
-		for _, q := range keyQuals.Quals["period_start"].Quals {
+	if d.Quals["period_start"] != nil && len(d.Quals["period_start"].Quals) <= 1 {
+		for _, q := range d.Quals["period_start"].Quals {
 			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
 			switch q.Operator {
 			case "=", ">=", ">":
@@ -215,8 +206,8 @@ func getCostUsageTimeRange(keyQuals *plugin.QueryData, granularity string) (stri
 	}
 
 	// Process period_end quals (similar to AWS)
-	if keyQuals.Quals["period_end"] != nil && len(keyQuals.Quals["period_end"].Quals) <= 1 {
-		for _, q := range keyQuals.Quals["period_end"].Quals {
+	if d.Quals["period_end"] != nil && len(d.Quals["period_end"].Quals) <= 1 {
+		for _, q := range d.Quals["period_end"].Quals {
 			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
 			switch q.Operator {
 			case "=", ">=", ">":

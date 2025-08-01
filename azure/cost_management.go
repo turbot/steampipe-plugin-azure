@@ -511,59 +511,6 @@ func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureC
 	return nil, nil
 }
 
-// executeAndMergeQuery executes a single cost query and merges results into the row map
-func executeAndMergeQuery(ctx context.Context, client *armcostmanagement.QueryClient, params *AzureCostQueryInput, exportType armcostmanagement.ExportType, metrics []string, costType string, rowMap map[string]*CostManagementRow) error {
-	// Build aggregation map
-	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
-	for i, metric := range metrics {
-		if i >= 2 {
-			break // Azure limit
-		}
-		aggregation[metric] = &armcostmanagement.QueryAggregation{
-			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
-			Name:     to.Ptr(metric),
-		}
-	}
-
-	// Build dataset
-	dataset := &armcostmanagement.QueryDataset{
-		Granularity: &params.Granularity,
-		Aggregation: aggregation,
-	}
-
-	// Add grouping if specified
-	if params.GroupBy != nil {
-		dataset.Grouping = []*armcostmanagement.QueryGrouping{params.GroupBy}
-	}
-
-	// Add filter if specified
-	if params.Filter != nil {
-		dataset.Filter = params.Filter
-	}
-
-	// Build query definition - using proper SDK types
-	queryDef := armcostmanagement.QueryDefinition{
-		Type:      to.Ptr(exportType),
-		Timeframe: to.Ptr(params.Timeframe),
-		Dataset:   dataset,
-	}
-
-	// Set TimePeriod only if using Custom timeframe
-	if params.Timeframe == armcostmanagement.TimeframeTypeCustom && params.TimePeriod != nil {
-		queryDef.TimePeriod = params.TimePeriod
-	}
-
-	// Execute query
-	result, err := client.Usage(ctx, params.Scope, queryDef, nil)
-	if err != nil {
-		return err
-	}
-
-	// Process results and merge into row map
-	processQueryResults(&result.QueryResult, params, costType, rowMap)
-	return nil
-}
-
 // processQueryResults processes query results and merges them into the row map
 func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCostQueryInput, costType string, rowMap map[string]*CostManagementRow) {
 	if result.Properties == nil || result.Properties.Columns == nil || result.Properties.Rows == nil {
@@ -580,7 +527,7 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 
 	// Process each row
 	for _, row := range result.Properties.Rows {
-		if row == nil || len(row) == 0 {
+		if len(row) == 0 {
 			continue
 		}
 

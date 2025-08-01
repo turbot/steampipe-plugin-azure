@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -44,12 +45,16 @@ func tableAzureCostByServiceMonthly(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listCostByServiceMonthly(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	params := buildCostByServiceInput("MONTHLY", d)
+func listCostByServiceMonthly(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	granularity := "MONTHLY"
+	params, err := buildCostByServiceInput(ctx, granularity, d)
+	if err != nil {
+		return nil, err
+	}
 	return streamCostAndUsage(ctx, d, params)
 }
 
-func buildCostByServiceInput(granularity string, d *plugin.QueryData) *AzureCostQueryInput {
+func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.QueryData) (*AzureCostQueryInput, error) {
 	// Get subscription ID
 	subscriptionID := d.EqualsQualString("subscription_id")
 	if subscriptionID == "" {
@@ -58,20 +63,20 @@ func buildCostByServiceInput(granularity string, d *plugin.QueryData) *AzureCost
 	}
 
 	// Set timeframe and granularity to match working raw API call
-	var timePeriod *armcostmanagement.QueryTimePeriod = nil
+	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
-	// Check if user provided period filters
-	startTime, endTime := getTimeRangeFromQuals(d, granularity)
+	// Get time range from quals
+	startTime, endTime := getCostUsageTimeRange(d, granularity)
 
-	// Parse time strings to time.Time
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse startTime '%s': %w", startTime, err)
+		return nil, fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse endTime '%s': %w", endTime, err)
+		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
+
 	timePeriod = &armcostmanagement.QueryTimePeriod{
 		From: to.Ptr(startDate),
 		To:   to.Ptr(endDate),
@@ -98,5 +103,5 @@ func buildCostByServiceInput(granularity string, d *plugin.QueryData) *AzureCost
 		Filter:      filter,
 	}
 
-	return params
+	return params, nil
 }

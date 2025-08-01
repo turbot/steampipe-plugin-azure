@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -44,12 +45,16 @@ func tableAzureCostByResourceGroupMonthly(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listCostByResourceGroupMonthly(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	params := buildCostByResourceGroupInput("MONTHLY", d)
+func listCostByResourceGroupMonthly(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	granularity := "MONTHLY"
+	params, err := buildCostByResourceGroupInput(ctx, granularity, d)
+	if err != nil {
+		return nil, err
+	}
 	return streamCostAndUsage(ctx, d, params)
 }
 
-func buildCostByResourceGroupInput(granularity string, d *plugin.QueryData) *AzureCostQueryInput {
+func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *plugin.QueryData) (*AzureCostQueryInput, error) {
 	// Get subscription ID
 	subscriptionID := d.EqualsQualString("subscription_id")
 	if subscriptionID == "" {
@@ -58,8 +63,7 @@ func buildCostByResourceGroupInput(granularity string, d *plugin.QueryData) *Azu
 	}
 
 	// Set timeframe and granularity to match working raw API call
-	// var timeframe armcostmanagement.TimeframeType
-	var timePeriod *armcostmanagement.QueryTimePeriod = nil
+	var timePeriod *armcostmanagement.QueryTimePeriod
 
 	// Check if user provided period filters
 	startTime, endTime := getTimeRangeFromQuals(d, granularity)
@@ -67,11 +71,11 @@ func buildCostByResourceGroupInput(granularity string, d *plugin.QueryData) *Azu
 	// Parse time strings to time.Time
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return nil, fmt.Errorf("invalid start date format: %v", err)
+		return nil, fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return nil, fmt.Errorf("invalid end date format: %v", err)
+		return nil, fmt.Errorf("failed to parse end date: %v", err)
 	}
 	timePeriod = &armcostmanagement.QueryTimePeriod{
 		From: to.Ptr(startDate),
@@ -99,5 +103,5 @@ func buildCostByResourceGroupInput(granularity string, d *plugin.QueryData) *Azu
 		Filter:      filter,
 	}
 
-	return params
+	return params, nil
 }
