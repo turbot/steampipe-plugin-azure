@@ -47,19 +47,24 @@ func tableAzureCostByResourceGroupMonthly(_ context.Context) *plugin.Table {
 
 func listCostByResourceGroupMonthly(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	granularity := "MONTHLY"
-	params, err := buildCostByResourceGroupInput(ctx, granularity, d)
+	queryDef, scope, err := buildCostByResourceGroupInput(ctx, granularity, d)
 	if err != nil {
 		return nil, err
 	}
-	return streamCostAndUsage(ctx, d, params)
+	return streamCostAndUsage(ctx, d, queryDef, scope, "ResourceGroupName")
 }
 
-func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *plugin.QueryData) (*AzureCostQueryInput, error) {
-	// Get subscription ID
-	subscriptionID := d.EqualsQualString("subscription_id")
-	if subscriptionID == "" {
-		// We'll get subscription ID during execution using hydrate data
-		subscriptionID = "placeholder" // Will be replaced in streamCostAndUsage
+func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, error) {
+	// Get scope from quals, default to placeholder if not provided
+	scope := d.EqualsQualString("scope")
+	if scope == "" {
+		scope = "/subscriptions/placeholder" // Will be resolved in streamCostAndUsage
+	}
+
+	// Get cost type from quals, default to ActualCost
+	costType := d.EqualsQualString("type")
+	if costType == "" {
+		costType = "ActualCost"
 	}
 
 	// Set timeframe and granularity to match working raw API call
@@ -68,25 +73,13 @@ func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *p
 	// Get time range from period_start/period_end quals
 	startTime, endTime := getPeriodTimeRange(d, granularity)
 
-	// Set default time range if no quals provided
-	if startTime == "" || endTime == "" {
-		defaultEnd := time.Now()
-		defaultStart := defaultEnd.AddDate(0, -11, -30) // 1 year back for monthly
-		if startTime == "" {
-			startTime = defaultStart.Format("2006-01-02")
-		}
-		if endTime == "" {
-			endTime = defaultEnd.Format("2006-01-02")
-		}
-	}
-
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse start date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse end date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse end date: %v", err)
 	}
 	timePeriod = &armcostmanagement.QueryTimePeriod{
 		From: to.Ptr(startDate),
@@ -104,15 +97,53 @@ func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *p
 	// Build filter expressions from quals
 	filter := buildFilterExpression(d, "ResourceGroupName")
 
-	// Create input parameters
-	params := &AzureCostQueryInput{
-		Timeframe:   armcostmanagement.TimeframeTypeCustom,
-		Granularity: azureGranularity,
-		GroupBy:     groupBy,
-		Scope:       "/subscriptions/" + subscriptionID,
-		TimePeriod:  timePeriod,
-		Filter:      filter,
+	// Get dynamic columns based on query context
+	_ = getColumnsFromQueryContext(d.QueryContext) // Not used in grouped queries
+
+	// Build aggregation based on requested columns
+	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
+
+	// Determine which metrics to include
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	if len(metrics) == 0 {
+		// Default metrics if none specified (only cost metrics)
+		metrics = []string{"PreTaxCost"}
 	}
 
-	return params, nil
+	// Add aggregations (Azure limit is 2)
+	for i, metric := range metrics {
+		if i >= 2 {
+			break
+		}
+		aggregation[metric] = &armcostmanagement.QueryAggregation{
+			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
+			Name:     to.Ptr(metric),
+		}
+	}
+
+	// Create dataset with grouping
+	dataset := &armcostmanagement.QueryDataset{
+		Granularity: &azureGranularity,
+		Aggregation: aggregation,
+		Grouping:    []*armcostmanagement.QueryGrouping{groupBy},
+	}
+
+	// Add filter if specified
+	if filter != nil {
+		dataset.Filter = filter
+	}
+
+	// Create QueryDefinition
+	queryDef := armcostmanagement.QueryDefinition{
+		Type:      to.Ptr(getCostTypeFromString(costType)),
+		Timeframe: to.Ptr(armcostmanagement.TimeframeTypeCustom),
+		Dataset:   dataset,
+	}
+
+	// Set TimePeriod if using Custom timeframe
+	if timePeriod != nil {
+		queryDef.TimePeriod = timePeriod
+	}
+
+	return queryDef, scope, nil
 }

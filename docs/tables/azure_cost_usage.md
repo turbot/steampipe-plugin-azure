@@ -16,6 +16,8 @@ The `azure_cost_usage` table provides insights into cost and usage data within M
 
 - This table requires three key qualifiers: `granularity` (DAILY or MONTHLY), `dimension_type_1`, and `dimension_type_2`. Supported dimension types include: ResourceGroup, ResourceGroupName, ResourceLocation, ConsumedService, ResourceType, ServiceName, SubscriptionName, MeterCategory, and many others.
 - This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`.
+  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
   - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
   - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 

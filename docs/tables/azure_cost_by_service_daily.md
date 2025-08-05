@@ -15,12 +15,15 @@ The `azure_cost_by_service_daily` table provides insights into daily cost breakd
 **Important Notes:**
 
 - This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`.
+  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
   - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
   - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 
 ## Examples
 
 ### Basic daily cost info
+
 Explore daily costs across different Azure services to understand your spending patterns and identify the most expensive services.
 
 ```sql+postgres
@@ -50,6 +53,7 @@ order by
 ```
 
 ### Daily costs for a specific service
+
 Analyze the daily cost trend for a specific Azure service to understand its usage patterns and cost fluctuations.
 
 ```sql+postgres
@@ -81,6 +85,7 @@ order by
 ```
 
 ### Query costs for a specific period
+
 Use period_start and period_end parameters to query costs for a specific time range.
 
 ```sql+postgres
@@ -118,6 +123,7 @@ order by
 ```
 
 ### Top 5 most expensive services yesterday
+
 Identify the most expensive Azure services from the previous day to focus cost optimization efforts.
 
 ```sql+postgres
@@ -157,6 +163,7 @@ limit 5;
 ```
 
 ### Weekly cost trend for all services
+
 Analyze the weekly cost trend to understand spending patterns and identify cost spikes.
 
 ```sql+postgres
@@ -192,6 +199,7 @@ order by
 ```
 
 ### Daily cost by service for a specific date range
+
 Get detailed daily cost breakdown for all services within a specific date range.
 
 ```sql+postgres
@@ -225,6 +233,7 @@ order by
 ```
 
 ### Services with cost above threshold
+
 Find services that exceeded a specific cost threshold on any given day for cost monitoring and alerting.
 
 ```sql+postgres
@@ -256,6 +265,7 @@ order by
 ```
 
 ### Compare pre-tax vs amortized costs
+
 Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
 
 ```sql+postgres

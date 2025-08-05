@@ -28,16 +28,12 @@ type CostManagementRow struct {
 
 	// Cost metrics (following AWS naming conventions)
 	// Actual costs (unblended_cost_amount and unblended_cost_unit removed)
-	PreTaxCostAmount *float64 // Pre-tax cost
+	PreTaxCostAmount *float64 // Pre-tax cost (Actual Cost)
 	PreTaxCostUnit   *string
 
 	// Amortized costs (for reservations)
 	AmortizedCostAmount *float64
 	AmortizedCostUnit   *string
-
-	// Usage metrics
-	UsageQuantityAmount *float64
-	UsageQuantityUnit   *string
 
 	// Metadata
 	Estimated *bool
@@ -46,18 +42,7 @@ type CostManagementRow struct {
 	// Common properties
 	SubscriptionID   *string
 	SubscriptionName *string
-}
-
-// AzureCostQueryInput contains all parameters needed for Azure cost queries (similar to AWS GetCostAndUsageInput)
-type AzureCostQueryInput struct {
-	Timeframe   armcostmanagement.TimeframeType
-	Granularity armcostmanagement.GranularityType
-	GroupBy     *armcostmanagement.QueryGrouping   // Optional grouping (primary)
-	GroupBy2    *armcostmanagement.QueryGrouping   // Optional second grouping
-	Metrics     []string                           // List of metrics to fetch
-	TimePeriod  *armcostmanagement.QueryTimePeriod // Optional custom time period
-	Scope       string                             // Subscription scope
-	Filter      *armcostmanagement.QueryFilter     // Optional filter expressions
+	Scope            *string // Azure scope for cost queries
 }
 
 // getGranularityFromString converts granularity string to Azure GranularityType
@@ -74,12 +59,24 @@ func getGranularityFromString(granularity string) armcostmanagement.GranularityT
 	}
 }
 
+// getCostTypeFromString converts cost type string to Azure ExportType
+func getCostTypeFromString(costType string) armcostmanagement.ExportType {
+	switch costType {
+	case "AmortizedCost":
+		return armcostmanagement.ExportTypeAmortizedCost
+	case "ActualCost":
+		return armcostmanagement.ExportTypeActualCost
+	default:
+		// Default to ActualCost
+		return armcostmanagement.ExportTypeActualCost
+	}
+}
+
 // AllCostMetrics returns all available cost metrics for Azure Cost Management (like AWS)
 func AllCostMetrics() []string {
 	return []string{
-		"PreTaxCost",
-		"Cost",
-		"UsageQuantity",
+		"PreTaxCost", // Actual Cost
+		"Cost",       // Amortized Cost
 	}
 }
 
@@ -88,25 +85,19 @@ func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
 	queryColumns := qc.Columns
 	var metrics []string
 
-	// Always prioritize PreTaxCost as the primary cost metric (from ActualCost query)
+	// Check for cost metrics only (usage quantity removed)
 	needsCost := false
-	needsUsage := false
 
 	for _, c := range queryColumns {
 		switch c {
 		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
 			needsCost = true
-		case "usage_quantity_amount", "usage_quantity_unit":
-			needsUsage = true
 		}
 	}
 
 	// Add metrics based on priority (Azure limit: max 2)
 	if needsCost {
 		metrics = append(metrics, "PreTaxCost")
-	}
-	if needsUsage && len(metrics) < 2 {
-		metrics = append(metrics, "UsageQuantity")
 	}
 
 	// Default to PreTaxCost if no specific columns requested
@@ -125,16 +116,13 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	// Always include basic columns
 	columns = append(columns, to.Ptr("Currency"))
 
-	// Check what the user is querying for
+	// Check what the user is querying for (usage quantity removed)
 	needsCost := false
-	needsUsage := false
 
 	for _, c := range queryColumns {
 		switch c {
 		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
 			needsCost = true
-		case "usage_quantity_amount", "usage_quantity_unit":
-			needsUsage = true
 		}
 	}
 
@@ -142,12 +130,9 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	if needsCost {
 		columns = append(columns, to.Ptr("PreTaxCost"))
 	}
-	if needsUsage {
-		columns = append(columns, to.Ptr("UsageQuantity"))
-	}
 
 	// Default to PreTaxCost if no specific columns requested
-	if !needsCost && !needsUsage {
+	if !needsCost {
 		columns = append(columns, to.Ptr("PreTaxCost"))
 	}
 
@@ -169,10 +154,8 @@ func getPeriodTimeRange(keyQuals *plugin.QueryData, granularity string) (string,
 			t := q.Value.GetTimestampValue().AsTime()
 			timeStr := t.Format(timeFormat)
 			switch q.Operator {
-			case "=", ">=", ">":
+			case "=":
 				st = timeStr
-			case "<", "<=":
-				et = timeStr
 			}
 		}
 	}
@@ -191,14 +174,8 @@ func getPeriodTimeRange(keyQuals *plugin.QueryData, granularity string) (string,
 			t := q.Value.GetTimestampValue().AsTime()
 			timeStr := t.Format(timeFormat)
 			switch q.Operator {
-			case "=", ">=", ">":
-				if st == "" {
-					st = timeStr
-				}
-			case "<", "<=":
-				if et == "" {
-					et = timeStr
-				}
+			case "=":
+				et = timeStr
 			}
 		}
 	}
@@ -207,23 +184,10 @@ func getPeriodTimeRange(keyQuals *plugin.QueryData, granularity string) (string,
 
 	// Set defaults if not provided
 	if st == "" {
-		st = now.AddDate(0, -11, -30).Format(timeFormat) // 11 months ago
+		st = now.AddDate(0, -11, -30).Format(timeFormat) // 11 months 30 days ago
 	}
 	if et == "" {
 		et = now.AddDate(0, 0, -1).Format(timeFormat) // Yesterday
-	}
-
-	// Parse dates to ensure the range doesn't exceed 1 year
-	startDate, err := time.Parse(timeFormat, st)
-	if err == nil {
-		endDate, err := time.Parse(timeFormat, et)
-		if err == nil {
-			// If the range exceeds 365 days, adjust the end date
-			maxEndDate := startDate.AddDate(1, 0, -1) // 1 year minus 1 day from start
-			if endDate.After(maxEndDate) {
-				et = maxEndDate.Format(timeFormat)
-			}
-		}
 	}
 
 	return st, et
@@ -234,8 +198,8 @@ func buildFilterExpression(d *plugin.QueryData, dimensionName string) *armcostma
 	var filters []*armcostmanagement.QueryFilter
 	// Process dimension-specific quals (like service_name = 'Storage')
 	for _, keyQual := range d.Table.List.KeyColumns {
-		if keyQual.Name == "usage_date" || keyQual.Name == "subscription_id" || keyQual.Name == "period_start" || keyQual.Name == "period_end" {
-			continue // Skip time and subscription quals
+		if keyQual.Name == "usage_date" || keyQual.Name == "scope" || keyQual.Name == "type" || keyQual.Name == "period_start" || keyQual.Name == "period_end" {
+			continue // Skip time, scope, type quals
 		}
 
 		filterQual := d.Quals[keyQual.Name]
@@ -295,13 +259,13 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Name:        "period_start",
 			Description: "The start date of the period, populated if specified in query parameters.",
 			Type:        proto.ColumnType_TIMESTAMP,
-			Transform:   transform.FromField("PeriodStart"),
+			Transform:   transform.FromQual("period_start"),
 		},
 		{
 			Name:        "period_end",
 			Description: "The end date of the period, populated if specified in query parameters.",
 			Type:        proto.ColumnType_TIMESTAMP,
-			Transform:   transform.FromField("PeriodEnd"),
+			Transform:   transform.FromQual("period_end"),
 		},
 		{
 			Name:        "estimated",
@@ -334,18 +298,18 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Type:        proto.ColumnType_STRING,
 			Transform:   transform.FromField("AmortizedCostUnit"),
 		},
-		// Usage metrics
 		{
-			Name:        "usage_quantity_amount",
-			Description: "The amount of usage that you incurred. NOTE: If you return the UsageQuantity metric, the service aggregates all usage numbers without taking into account the units. For example, if you aggregate usageQuantity across all of Azure Compute, the results aren't meaningful because Azure Compute hours and data transfer are measured in different units (for example, hours vs. GB).",
-			Type:        proto.ColumnType_DOUBLE,
-			Transform:   transform.FromField("UsageQuantityAmount"),
+			Name:        "scope",
+			Description: "The Azure scope for the cost query (e.g., subscription, resource group, etc.).",
+			Type:        proto.ColumnType_STRING,
+			Transform:   transform.FromField("Scope"),
 		},
 		{
-			Name:        "usage_quantity_unit",
-			Description: "Unit type for usage quantity.",
+			Name:        "type",
+			Description: "The cost type for the query. Valid values are 'ActualCost' and 'AmortizedCost'. Defaults to 'ActualCost'.",
 			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("UsageQuantityUnit"),
+			Transform:   transform.FromQual("type"),
+			Default:     "ActualCost",
 		},
 	}
 
@@ -357,20 +321,25 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 func costManagementKeyColumns() plugin.KeyColumnSlice {
 	return plugin.KeyColumnSlice{
 		{
-			Name:      "subscription_id",
+			Name:      "scope",
+			Require:   plugin.Optional,
+			Operators: []string{"="},
+		},
+		{
+			Name:      "type",
 			Require:   plugin.Optional,
 			Operators: []string{"="},
 		},
 		{
 			Name:       "period_start",
 			Require:    plugin.Optional,
-			Operators:  []string{">", ">=", "=", "<", "<="},
+			Operators:  []string{"="},
 			CacheMatch: query_cache.CacheMatchExact,
 		},
 		{
 			Name:       "period_end",
 			Require:    plugin.Optional,
-			Operators:  []string{">", ">=", "=", "<", "<="},
+			Operators:  []string{"="},
 			CacheMatch: query_cache.CacheMatchExact,
 		},
 	}
@@ -392,109 +361,41 @@ func getCostManagementClient(ctx context.Context, d *plugin.QueryData, h *plugin
 }
 
 // streamCostAndUsage is the generic function for streaming cost data (like AWS)
-func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureCostQueryInput) (interface{}, error) {
+func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, queryDef armcostmanagement.QueryDefinition, scope string, groupingNames ...string) (interface{}, error) {
 	client, err := getCostManagementClient(ctx, d, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Resolve subscription ID if it's a placeholder
-	if params.Scope == "/subscriptions/placeholder" {
-		subscriptionData, err := getSubscriptionID(ctx, d, nil)
-		if err != nil {
-			return nil, err
-		}
-		subscriptionID := subscriptionData.(string)
-		params.Scope = "/subscriptions/" + subscriptionID
-	}
-
-	// Get dynamic columns based on query context
-	requestedColumns := getColumnsFromQueryContext(d.QueryContext)
-
-	// Build aggregation based on requested columns
-	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
-
-	// Determine which metrics to include
-	metrics := getMetricsByQueryContext(d.QueryContext)
-	if len(metrics) == 0 {
-		// Default metrics if none specified
-		metrics = []string{"PreTaxCost", "UsageQuantity"}
-	}
-
-	// Add aggregations (Azure limit is 2)
-	for i, metric := range metrics {
-		if i >= 2 {
-			break
-		}
-		aggregation[metric] = &armcostmanagement.QueryAggregation{
-			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
-			Name:     to.Ptr(metric),
+	// Resolve scope if it's a placeholder or extract from quals
+	if scope == "/subscriptions/placeholder" {
+		// Check if scope is provided in quals
+		scopeQual := d.EqualsQualString("scope")
+		if scopeQual != "" {
+			scope = scopeQual
+		} else {
+			// Fallback to subscription ID if no scope provided
+			subscriptionData, err := getSubscriptionID(ctx, d, nil)
+			if err != nil {
+				return nil, err
+			}
+			subscriptionID := subscriptionData.(string)
+			scope = "/subscriptions/" + subscriptionID
 		}
 	}
 
-	// Azure API restriction: Cannot use Configuration with Grouping/Aggregation
-	// If we have grouping, use traditional approach without Configuration
-	// If no grouping, use Configuration approach for column selection
-
-	var dataset *armcostmanagement.QueryDataset
-
-	if params.GroupBy != nil || params.GroupBy2 != nil {
-		// Traditional approach with grouping - no Configuration
-		dataset = &armcostmanagement.QueryDataset{
-			Granularity: &params.Granularity,
-			Aggregation: aggregation,
-		}
-
-		// Add grouping if specified - Azure supports up to 2 groupings
-		var groupings []*armcostmanagement.QueryGrouping
-		if params.GroupBy != nil {
-			groupings = append(groupings, params.GroupBy)
-		}
-		if params.GroupBy2 != nil {
-			groupings = append(groupings, params.GroupBy2)
-		}
-		if len(groupings) > 0 {
-			dataset.Grouping = groupings
-		}
-	} else {
-		// Configuration approach without grouping - for flexible column selection
-		dataset = &armcostmanagement.QueryDataset{
-			Granularity: &params.Granularity,
-			Configuration: &armcostmanagement.QueryDatasetConfiguration{
-				Columns: requestedColumns,
-			},
-		}
-	}
-
-	// Add filter if specified
-	if params.Filter != nil {
-		dataset.Filter = params.Filter
-	}
-
-	// Execute query with a single API call, respecting Azure's 2-aggregation limit
+	// Execute query with a single API call
 	rowMap := make(map[string]*CostManagementRow)
 
-	// Use ActualCost by default for most reliable results
-	queryDef := armcostmanagement.QueryDefinition{
-		Type:      to.Ptr(armcostmanagement.ExportTypeActualCost),
-		Timeframe: to.Ptr(params.Timeframe),
-		Dataset:   dataset,
-	}
+	plugin.Logger(ctx).Debug("Making Azure Cost Management API call", "query", queryDef, "scope", scope)
 
-	// Set TimePeriod if using Custom timeframe
-	if params.Timeframe == armcostmanagement.TimeframeTypeCustom && params.TimePeriod != nil {
-		queryDef.TimePeriod = params.TimePeriod
-	}
-
-	plugin.Logger(ctx).Debug("Making Azure Cost Management API call", "query", queryDef)
-
-	result, err := client.Usage(ctx, params.Scope, queryDef, nil)
+	result, err := client.Usage(ctx, scope, queryDef, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("Azure Cost Management Query failed", "error", err)
 		return nil, err
 	}
 
-	processQueryResults(&result.QueryResult, params, rowMap)
+	processQueryResults(&result.QueryResult, scope, rowMap, groupingNames...)
 
 	// Stream results
 	for _, row := range rowMap {
@@ -509,7 +410,7 @@ func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureC
 }
 
 // processQueryResults processes query results and merges them into the row map
-func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCostQueryInput, rowMap map[string]*CostManagementRow) {
+func processQueryResults(result *armcostmanagement.QueryResult, scope string, rowMap map[string]*CostManagementRow, groupingNames ...string) {
 	if result.Properties == nil || result.Properties.Columns == nil || result.Properties.Rows == nil {
 		return
 	}
@@ -535,19 +436,13 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 		var dateColumnName string
 		var dateIdx int = -1
 
-		// Always look for UsageDate column for daily granularity
-		if params.Granularity == armcostmanagement.GranularityTypeDaily {
-			// Look for UsageDate column (always available in daily data)
-			if idx, ok := columnMap["UsageDate"]; ok {
-				dateColumnName = "UsageDate"
-				dateIdx = idx
-			}
-		} else {
-			// For monthly granularity, look for BillingMonth column
-			if idx, ok := columnMap["BillingMonth"]; ok {
-				dateColumnName = "BillingMonth"
-				dateIdx = idx
-			}
+		// Look for date columns - try UsageDate first, then BillingMonth
+		if idx, ok := columnMap["UsageDate"]; ok {
+			dateColumnName = "UsageDate"
+			dateIdx = idx
+		} else if idx, ok := columnMap["BillingMonth"]; ok {
+			dateColumnName = "BillingMonth"
+			dateIdx = idx
 		}
 
 		// Get date value - only if we have a valid date column
@@ -577,20 +472,40 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 			}
 		}
 
-		// Add dimension value if grouping is specified
-		if params.GroupBy != nil && params.GroupBy.Name != nil {
-			if idx, ok := columnMap[*params.GroupBy.Name]; ok && len(row) > idx && row[idx] != nil {
+		// Add dimension values based on the specific groupings requested
+		// This ensures dimensions map correctly to Dimension1 and Dimension2 in the right order
+		var dim1Value, dim2Value string
+
+		// Get dimension values in the correct order based on groupingNames
+		if len(groupingNames) > 0 {
+			// First grouping -> Dimension1
+			if idx, ok := columnMap[groupingNames[0]]; ok && len(row) > idx && row[idx] != nil {
 				if dimValue, ok := row[idx].(string); ok {
+					dim1Value = dimValue
 					keyParts = append(keyParts, dimValue)
 				}
 			}
 		}
 
-		// Add second dimension value if second grouping is specified
-		if params.GroupBy2 != nil && params.GroupBy2.Name != nil {
-			if idx, ok := columnMap[*params.GroupBy2.Name]; ok && len(row) > idx && row[idx] != nil {
+		if len(groupingNames) > 1 {
+			// Second grouping -> Dimension2
+			if idx, ok := columnMap[groupingNames[1]]; ok && len(row) > idx && row[idx] != nil {
 				if dimValue, ok := row[idx].(string); ok {
+					dim2Value = dimValue
 					keyParts = append(keyParts, dimValue)
+				}
+			}
+		}
+
+		// If no grouping names provided, fall back to any available dimension columns
+		if len(groupingNames) == 0 {
+			for colName, idx := range columnMap {
+				if colName != "UsageDate" && colName != "BillingMonth" && colName != "Currency" &&
+					colName != "PreTaxCost" && colName != "Cost" && colName != "CostUSD" &&
+					len(row) > idx && row[idx] != nil {
+					if dimValue, ok := row[idx].(string); ok {
+						keyParts = append(keyParts, dimValue)
+					}
 				}
 			}
 		}
@@ -641,33 +556,25 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 					// For daily data, we keep the original parsed date
 				}
 
-				// Set dimension values (skip the date which is keyParts[0])
-				if len(keyParts) > 1 {
-					costRow.Dimension1 = &keyParts[1]
+				// Set dimension values using the explicitly mapped values
+				if dim1Value != "" {
+					costRow.Dimension1 = &dim1Value
 				}
-				if len(keyParts) > 2 {
-					costRow.Dimension2 = &keyParts[2]
+				if dim2Value != "" {
+					costRow.Dimension2 = &dim2Value
 				}
 			} else {
 				// Fallback case: no date column found (should be rare)
-				// Use the query time period for date information
-				var periodStart string
-				if params.TimePeriod != nil && params.TimePeriod.From != nil {
-					periodStart = params.TimePeriod.From.Format("2006-01-02")
-				} else {
-					// Fallback to current date range
-					periodStart = time.Now().Format("2006-01-02")
-				}
-				if parsedPeriodStart, err := time.Parse("2006-01-02", periodStart); err == nil {
-					costRow.UsageDate = &parsedPeriodStart
-				}
+				// Use current date as fallback
+				fallbackDate := time.Now()
+				costRow.UsageDate = &fallbackDate
 
-				// ALL keyParts are dimensions in this case (no date in keyParts)
-				if len(keyParts) > 0 {
-					costRow.Dimension1 = &keyParts[0]
+				// Use the explicitly mapped dimension values
+				if dim1Value != "" {
+					costRow.Dimension1 = &dim1Value
 				}
-				if len(keyParts) > 1 {
-					costRow.Dimension2 = &keyParts[1]
+				if dim2Value != "" {
+					costRow.Dimension2 = &dim2Value
 				}
 			}
 		}
@@ -713,15 +620,12 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 			}
 		}
 
-		// Handle UsageQuantity metric
-		if idx, ok := columnMap["UsageQuantity"]; ok && len(row) > idx && row[idx] != nil {
-			if usage, ok := row[idx].(float64); ok {
-				costRow.UsageQuantityAmount = &usage
-				costRow.UsageQuantityUnit = &currency
-			}
-		}
-
 		// Set the currency for all cost fields
 		costRow.Currency = &currency
+
+		// Set scope from params
+		if costRow.Scope == nil {
+			costRow.Scope = &scope
+		}
 	}
 }
