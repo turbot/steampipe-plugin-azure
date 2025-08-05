@@ -18,16 +18,18 @@ import (
 type CostManagementRow struct {
 	UsageDate *time.Time
 
+	// Period dates (optional, populated from query parameters)
+	PeriodStart *time.Time
+	PeriodEnd   *time.Time
+
 	// Dimension values (populated based on GroupBy)
 	Dimension1 *string // Generic dimension field (could be ResourceGroup, ServiceName, etc.)
 	Dimension2 *string // Second dimension field for multi-dimensional grouping
 
 	// Cost metrics (following AWS naming conventions)
-	// Actual costs
-	UnblendedCostAmount *float64 // Primary actual cost
-	UnblendedCostUnit   *string
-	PreTaxCostAmount    *float64 // Pre-tax cost
-	PreTaxCostUnit      *string
+	// Actual costs (unblended_cost_amount and unblended_cost_unit removed)
+	PreTaxCostAmount *float64 // Pre-tax cost
+	PreTaxCostUnit   *string
 
 	// Amortized costs (for reservations)
 	AmortizedCostAmount *float64
@@ -92,7 +94,7 @@ func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
 
 	for _, c := range queryColumns {
 		switch c {
-		case "unblended_cost_amount", "unblended_cost_unit", "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
+		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
 			needsCost = true
 		case "usage_quantity_amount", "usage_quantity_unit":
 			needsUsage = true
@@ -129,7 +131,7 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 
 	for _, c := range queryColumns {
 		switch c {
-		case "unblended_cost_amount", "unblended_cost_unit", "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
+		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
 			needsCost = true
 		case "usage_quantity_amount", "usage_quantity_unit":
 			needsUsage = true
@@ -167,20 +169,51 @@ func removeDuplicates(slice []string) []string {
 	return result
 }
 
-// getUsageDateTimeRange extracts start and end dates from usage_date quals (following AWS pattern)
-func getUsageDateTimeRange(keyQuals *plugin.QueryData, granularity string) (string, string) {
+// getPeriodTimeRange extracts start and end dates from period_start and period_end quals (following AWS pattern)
+func getPeriodTimeRange(keyQuals *plugin.QueryData, granularity string) (string, string) {
 	timeFormat := "2006-01-02"
+	if granularity == "HOURLY" {
+		timeFormat = "2006-01-02T15:04:05Z"
+	}
 
 	st, et := "", ""
 
-	if keyQuals.Quals["usage_date"] != nil && len(keyQuals.Quals["usage_date"].Quals) <= 1 {
-		for _, q := range keyQuals.Quals["usage_date"].Quals {
-			t := q.Value.GetTimestampValue().AsTime().Format(timeFormat)
+	// Extract period_start - support multiple operators
+	if keyQuals.Quals["period_start"] != nil && len(keyQuals.Quals["period_start"].Quals) <= 1 {
+		for _, q := range keyQuals.Quals["period_start"].Quals {
+			t := q.Value.GetTimestampValue().AsTime()
+			timeStr := t.Format(timeFormat)
 			switch q.Operator {
 			case "=", ">=", ">":
-				st = t
+				st = timeStr
 			case "<", "<=":
-				et = t
+				et = timeStr
+			}
+		}
+	}
+
+	// The API supports a single value with the '=' operator.
+	// For queries like: "period_end BETWEEN current_timestamp - interval '31d' AND current_timestamp - interval '1d'", the FDW parses the query parameters with multiple qualifiers.
+	// In this case, we will have multiple qualifiers with operators such as:
+	// 1. The length of keyQuals.Quals["period_end"].Quals will be 2.
+	// 2. The qualifier values would be "2024-05-10" with the '>=" operator and "2024-06-09" with the '<=' operator.
+	// In this scenario, manipulating the start and end time is a bit difficult and challenging.
+	// Let the API fetch all the rows, and filtering will occur at the Steampipe level.
+
+	// Extract period_end - support multiple operators
+	if keyQuals.Quals["period_end"] != nil && len(keyQuals.Quals["period_end"].Quals) <= 1 {
+		for _, q := range keyQuals.Quals["period_end"].Quals {
+			t := q.Value.GetTimestampValue().AsTime()
+			timeStr := t.Format(timeFormat)
+			switch q.Operator {
+			case "=", ">=", ">":
+				if st == "" {
+					st = timeStr
+				}
+			case "<", "<=":
+				if et == "" {
+					et = timeStr
+				}
 			}
 		}
 	}
@@ -189,7 +222,7 @@ func getUsageDateTimeRange(keyQuals *plugin.QueryData, granularity string) (stri
 
 	// Set defaults if not provided
 	if st == "" {
-		st = now.AddDate(0, -11, 0).Format(timeFormat) // 11 months ago
+		st = now.AddDate(0, -11, -30).Format(timeFormat) // 11 months ago
 	}
 	if et == "" {
 		et = now.AddDate(0, 0, -1).Format(timeFormat) // Yesterday
@@ -216,7 +249,7 @@ func buildFilterExpression(d *plugin.QueryData, dimensionName string) *armcostma
 	var filters []*armcostmanagement.QueryFilter
 	// Process dimension-specific quals (like service_name = 'Storage')
 	for _, keyQual := range d.Table.List.KeyColumns {
-		if keyQual.Name == "usage_date" || keyQual.Name == "subscription_id" {
+		if keyQual.Name == "usage_date" || keyQual.Name == "subscription_id" || keyQual.Name == "period_start" || keyQual.Name == "period_end" {
 			continue // Skip time and subscription quals
 		}
 
@@ -270,27 +303,26 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 		{
 			Name:        "usage_date",
 			Description: "The date for which the cost metric is calculated.",
-			Type:        proto.ColumnType_STRING,
+			Type:        proto.ColumnType_TIMESTAMP,
 			Transform:   transform.FromField("UsageDate"),
+		},
+		{
+			Name:        "period_start",
+			Description: "The start date of the period, populated if specified in query parameters.",
+			Type:        proto.ColumnType_TIMESTAMP,
+			Transform:   transform.FromField("PeriodStart"),
+		},
+		{
+			Name:        "period_end",
+			Description: "The end date of the period, populated if specified in query parameters.",
+			Type:        proto.ColumnType_TIMESTAMP,
+			Transform:   transform.FromField("PeriodEnd"),
 		},
 		{
 			Name:        "estimated",
 			Description: "Whether the cost data is estimated.",
 			Type:        proto.ColumnType_BOOL,
 			Transform:   transform.FromField("Estimated"),
-		},
-		// Actual costs (similar to AWS unblended costs)
-		{
-			Name:        "unblended_cost_amount",
-			Description: "Unblended costs represent your usage costs on the day they are charged to you. In finance terms, they represent your costs on a cash basis of accounting.",
-			Type:        proto.ColumnType_DOUBLE,
-			Transform:   transform.FromField("UnblendedCostAmount"),
-		},
-		{
-			Name:        "unblended_cost_unit",
-			Description: "Unit type for unblended costs.",
-			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("UnblendedCostUnit"),
 		},
 		{
 			Name:        "pre_tax_cost_amount",
@@ -345,7 +377,13 @@ func costManagementKeyColumns() plugin.KeyColumnSlice {
 			Operators: []string{"="},
 		},
 		{
-			Name:       "usage_date",
+			Name:       "period_start",
+			Require:    plugin.Optional,
+			Operators:  []string{">", ">=", "=", "<", "<="},
+			CacheMatch: query_cache.CacheMatchExact,
+		},
+		{
+			Name:       "period_end",
 			Require:    plugin.Optional,
 			Operators:  []string{">", ">=", "=", "<", "<="},
 			CacheMatch: query_cache.CacheMatchExact,
@@ -471,26 +509,7 @@ func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureC
 		return nil, err
 	}
 
-	for _, c := range result.Properties.Columns{
-
-		plugin.Logger(ctx).Error("Query Result Columns ===>>>", *c.Name, *c.Type)
-	}
-	plugin.Logger(ctx).Error("Query Result Rows ===>>>", result.Properties.Rows)
-
-	processQueryResults(&result.QueryResult, params, "actual", rowMap)
-
-	// Handle pagination
-	for result.QueryResult.Properties != nil && result.QueryResult.Properties.NextLink != nil {
-		nextURL := *result.QueryResult.Properties.NextLink
-		plugin.Logger(ctx).Debug("Following pagination", "nextLink", nextURL)
-
-		result, err = client.Usage(ctx, params.Scope, queryDef, nil)
-		if err != nil {
-			plugin.Logger(ctx).Error("Pagination failed", "error", err)
-			break
-		}
-		processQueryResults(&result.QueryResult, params, "actual", rowMap)
-	}
+	processQueryResults(&result.QueryResult, params, rowMap)
 
 	// Stream results
 	for _, row := range rowMap {
@@ -505,7 +524,7 @@ func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, params *AzureC
 }
 
 // processQueryResults processes query results and merges them into the row map
-func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCostQueryInput, costType string, rowMap map[string]*CostManagementRow) {
+func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCostQueryInput, rowMap map[string]*CostManagementRow) {
 	if result.Properties == nil || result.Properties.Columns == nil || result.Properties.Rows == nil {
 		return
 	}
@@ -686,11 +705,7 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 				costRow.PreTaxCostAmount = &cost
 				costRow.PreTaxCostUnit = &currency
 
-				// For environments without reservations, use PreTaxCost for all cost types
-				if costRow.UnblendedCostAmount == nil {
-					costRow.UnblendedCostAmount = &cost
-					costRow.UnblendedCostUnit = &currency
-				}
+				// For environments without reservations, use PreTaxCost for amortized costs as fallback
 				if costRow.AmortizedCostAmount == nil {
 					costRow.AmortizedCostAmount = &cost
 					costRow.AmortizedCostUnit = &currency
@@ -699,11 +714,10 @@ func processQueryResults(result *armcostmanagement.QueryResult, params *AzureCos
 		}
 
 		// Handle Cost metric (if available from AmortizedCost query)
+		// Note: UnblendedCostAmount has been removed from the schema
 		if idx, ok := columnMap["Cost"]; ok && len(row) > idx && row[idx] != nil {
-			if cost, ok := row[idx].(float64); ok {
-				costRow.UnblendedCostAmount = &cost
-				costRow.UnblendedCostUnit = &currency
-			}
+			// Cost metric is no longer mapped to unblended_cost_amount as it's been removed
+			_ = idx // Suppress unused variable warning
 		}
 
 		// Handle CostUSD metric (if available from AmortizedCost query)

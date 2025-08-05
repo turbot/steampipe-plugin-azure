@@ -103,14 +103,14 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*Az
 	timeframe := armcostmanagement.TimeframeTypeCustom
 	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
-	// Get time range from usage_date quals using simplified approach
-	startTime, endTime := getUsageDateTimeRange(d, granularity)
+	// Get time range from period_start/period_end quals
+	startTime, endTime := getPeriodTimeRange(d, granularity)
 
 	// Set default time range if no quals provided
 	if startTime == "" || endTime == "" {
 		var defaultStart, defaultEnd time.Time
 		switch granularity {
-		case "MONTHLY","DAILY":
+		case "MONTHLY", "DAILY":
 			// Default: 1 year back
 			defaultEnd = time.Now()
 			defaultStart = defaultEnd.AddDate(0, -11, -30)

@@ -12,6 +12,12 @@ Azure Cost Management provides cost analytics to help you understand and manage 
 
 The `azure_cost_by_resource_group_daily` table provides insights into daily cost breakdown by resource group within Microsoft Azure. As a Cloud Architect, FinOps engineer, or DevOps professional, explore resource group-specific cost details through this table, including daily usage costs, currency information, and resource group names. Utilize it to uncover cost patterns per team or project, identify expensive resource groups, track daily spending trends, and optimize resource group allocation.
 
+**Important Notes:**
+
+- This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+  - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+
 ## Examples
 
 ### Basic daily cost info by resource group
@@ -22,26 +28,26 @@ Explore daily costs across different Azure resource groups to understand your sp
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ### Daily costs for a specific resource group
@@ -52,8 +58,8 @@ Analyze the daily cost trend for a specific Azure resource group to understand i
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
@@ -66,14 +72,52 @@ order by
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
   resource_group = 'production-rg'
 order by
   usage_date desc;
+```
+
+### Query costs for a specific period
+
+Use period_start and period_end parameters to query costs for a specific time range.
+
+```sql+postgres
+select
+  usage_date,
+  resource_group,
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  period_start,
+  period_end
+from
+  azure_cost_by_resource_group_daily
+where
+  period_start = '2024-08-01'
+  and period_end = '2024-08-31'
+order by
+  pre_tax_cost_amount desc;
+```
+
+```sql+sqlite
+select
+  usage_date,
+  resource_group,
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  period_start,
+  period_end
+from
+  azure_cost_by_resource_group_daily
+where
+  period_start = '2024-08-01'
+  and period_end = '2024-08-31'
+order by
+  pre_tax_cost_amount desc;
 ```
 
 ### Top 5 most expensive resource groups yesterday
@@ -83,8 +127,8 @@ Identify the most expensive Azure resource groups from the previous day to focus
 ```sql+postgres
 select
   resource_group,
-  sum(unblended_cost_amount) as total_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
@@ -92,7 +136,7 @@ where
   and usage_date < current_date
 group by
   resource_group,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc
 limit 5;
@@ -101,8 +145,8 @@ limit 5;
 ```sql+sqlite
 select
   resource_group,
-  sum(unblended_cost_amount) as total_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
@@ -110,7 +154,7 @@ where
   and usage_date < date('now')
 group by
   resource_group,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc
 limit 5;
@@ -123,15 +167,15 @@ Analyze the weekly cost trend to understand spending patterns across resource gr
 ```sql+postgres
 select
   date_trunc('week', usage_date) as week_start,
-  sum(unblended_cost_amount) as weekly_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as weekly_cost,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
   usage_date >= current_date - interval '30 days'
 group by
   date_trunc('week', usage_date),
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   week_start desc;
 ```
@@ -139,15 +183,15 @@ order by
 ```sql+sqlite
 select
   date(usage_date, 'weekday 0', '-6 days') as week_start,
-  sum(unblended_cost_amount) as weekly_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as weekly_cost,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
   usage_date >= date('now', '-30 days')
 group by
   date(usage_date, 'weekday 0', '-6 days'),
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   week_start desc;
 ```
@@ -160,12 +204,12 @@ Find resource groups that had no costs on specific days, which might indicate un
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
-  unblended_cost_amount = 0
+  pre_tax_cost_amount = 0
 order by
   usage_date desc,
   resource_group;
@@ -175,12 +219,12 @@ order by
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
-  unblended_cost_amount = 0
+  pre_tax_cost_amount = 0
 order by
   usage_date desc,
   resource_group;
@@ -194,9 +238,9 @@ Compare daily costs between different resource groups to understand relative spe
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit,
-  rank() over (partition by usage_date order by unblended_cost_amount desc) as cost_rank
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  rank() over (partition by usage_date order by pre_tax_cost_amount desc) as cost_rank
 from
   azure_cost_by_resource_group_daily
 where
@@ -210,9 +254,9 @@ order by
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit,
-  rank() over (partition by usage_date order by unblended_cost_amount desc) as cost_rank
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  rank() over (partition by usage_date order by pre_tax_cost_amount desc) as cost_rank
 from
   azure_cost_by_resource_group_daily
 where
@@ -230,26 +274,64 @@ Find resource groups that exceeded a specific cost threshold on any given day fo
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
-  unblended_cost_amount > 50
+  pre_tax_cost_amount > 50
 order by
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_by_resource_group_daily
 where
-  unblended_cost_amount > 50
+  pre_tax_cost_amount > 50
 order by
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
+```
+
+### Compare pre-tax vs amortized costs
+
+Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
+
+```sql+postgres
+select
+  resource_group,
+  usage_date,
+  pre_tax_cost_amount,
+  amortized_cost_amount,
+  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
+  pre_tax_cost_unit
+from
+  azure_cost_by_resource_group_daily
+where
+  amortized_cost_amount is not null
+  and pre_tax_cost_amount != amortized_cost_amount
+order by
+  reservation_savings desc;
+```
+
+```sql+sqlite
+select
+  resource_group,
+  usage_date,
+  pre_tax_cost_amount,
+  amortized_cost_amount,
+  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
+  pre_tax_cost_unit
+from
+  azure_cost_by_resource_group_daily
+where
+  amortized_cost_amount is not null
+  and pre_tax_cost_amount != amortized_cost_amount
+order by
+  reservation_savings desc;
 ```
