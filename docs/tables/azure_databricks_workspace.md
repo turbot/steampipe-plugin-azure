@@ -164,3 +164,38 @@ from
 where
   json_extract(json_extract(parameters, '$.enableNoPublicIp'), '$.value') = 'false';
 ```
+
+### List workspaces with diagnostic settings configured
+Discover the segments that have diagnostic settings configured for your Azure Databricks workspaces. This is useful for monitoring and troubleshooting workspace activity by identifying which workspaces have logging enabled.
+
+```sql+postgres
+select
+  name,
+  id,
+  workspace_id,
+  setting -> 'properties' ->> 'storageAccountId' as storage_account_id,
+  log ->> 'category' as log_category,
+  log ->> 'enabled' as log_enabled
+from
+  azure_databricks_workspace,
+  jsonb_array_elements(diagnostic_settings) setting,
+  jsonb_array_elements(setting -> 'properties' -> 'logs') log
+where
+  diagnostic_settings is not null;
+```
+
+```sql+sqlite
+select
+  name,
+  id,
+  workspace_id,
+  json_extract(setting.value, '$.properties.storageAccountId') as storage_account_id,
+  json_extract(log.value, '$.category') as log_category,
+  json_extract(log.value, '$.enabled') as log_enabled
+from
+  azure_databricks_workspace,
+  json_each(diagnostic_settings) as setting,
+  json_each(json_extract(setting.value, '$.properties.logs')) as log
+where
+  diagnostic_settings is not null;
+```

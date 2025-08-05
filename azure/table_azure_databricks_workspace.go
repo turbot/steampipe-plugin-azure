@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/databricks/mgmt/databricks"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -32,6 +33,15 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 			Tags: map[string]string{
 				"service": "Microsoft.Databricks",
 				"action":  "workspaces/read",
+			},
+		},
+		HydrateConfig: []plugin.HydrateConfig{
+			{
+				Func: listDatabricksWorkspaceDiagnosticSettings,
+				Tags: map[string]string{
+					"service": "Microsoft.Databricks",
+					"action":  "workspaces/providers/Microsoft.Insights/diagnosticSettings/read",
+				},
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
@@ -126,6 +136,13 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 				Description: "The details of Managed Identity of Storage Account",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("WorkspaceProperties.StorageAccountIdentity"),
+			},
+			{
+				Name:        "diagnostic_settings",
+				Description: "A list of diagnostic settings for the databricks workspace.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listDatabricksWorkspaceDiagnosticSettings,
+				Transform:   transform.FromValue(),
 			},
 
 			// Steampipe standard columns
@@ -238,4 +255,53 @@ func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 
 	return op, nil
+}
+
+func listDatabricksWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Debug("listDatabricksWorkspaceDiagnosticSettings")
+	data := h.Item.(databricks.Workspace)
+	id := *data.ID
+
+	// Create session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactory, err := armmonitor.NewDiagnosticSettingsClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaceDiagnosticSettings", "client_error", err)
+		return nil, err
+	}
+
+	var diagnosticSettings []map[string]interface{}
+
+	input := &armmonitor.DiagnosticSettingsClientListOptions{}
+
+	pager := clientFactory.NewListPager(id, input)
+
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaceDiagnosticSettings", "api_error", err)
+			return nil, err
+		}
+		for _, i := range page.Value {
+			objectMap := make(map[string]interface{})
+			if i.ID != nil {
+				objectMap["id"] = i.ID
+			}
+			if i.Name != nil {
+				objectMap["name"] = i.Name
+			}
+			if i.Type != nil {
+				objectMap["type"] = i.Type
+			}
+			if i.Properties != nil {
+				objectMap["properties"] = i.Properties
+			}
+			diagnosticSettings = append(diagnosticSettings, objectMap)
+		}
+	}
+	return diagnosticSettings, nil
 }
