@@ -141,6 +141,13 @@ func tableAzureKeyVaultKey(_ context.Context) *plugin.Table {
 				Hydrate:     getKeyVaultKey,
 				Transform:   transform.FromField("KeyProperties.KeyOps"),
 			},
+			{
+				Name:        "rotation_policy",
+				Description: "The key rotation policy.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getKeyVaultKey,
+				Transform:   transform.FromField("KeyProperties.RotationPolicy"),
+			},
 
 			// Steampipe standard columns
 			{
