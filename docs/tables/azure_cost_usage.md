@@ -12,7 +12,12 @@ Azure Cost Management provides cost analytics to help you understand and manage 
 
 The `azure_cost_usage` table provides insights into cost and usage data within Microsoft Azure with flexible dimension support. As a Cloud Architect, FinOps engineer, or DevOps professional, explore cost details through this table using any combination of Azure dimensions. Utilize it to create custom cost breakdowns, analyze spending patterns across multiple dimensions, track costs by location and service, and perform advanced cost analytics that match your organizational structure.
 
-**Note:** This table requires three key qualifiers: `granularity` (DAILY or MONTHLY), `dimension_type_1`, and `dimension_type_2`. Supported dimension types include: ResourceGroup, ResourceGroupName, ResourceLocation, ConsumedService, ResourceType, ServiceName, SubscriptionName, MeterCategory, and many others.
+**Important Notes:**
+
+- This table requires three key qualifiers: `granularity` (DAILY or MONTHLY), `dimension_type_1`, and `dimension_type_2`. Supported dimension types include: ResourceGroup, ResourceGroupName, ResourceLocation, ConsumedService, ResourceType, ServiceName, SubscriptionName, MeterCategory, and many others.
+- This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+  - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 
 ## Examples
 
@@ -25,8 +30,8 @@ select
   usage_date,
   dimension_1 as service_name,
   dimension_2 as resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -35,7 +40,7 @@ where
   and dimension_type_2 = 'ResourceGroupName'
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ```sql+sqlite
@@ -43,8 +48,8 @@ select
   usage_date,
   dimension_1 as service_name,
   dimension_2 as resource_group,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -53,7 +58,7 @@ where
   and dimension_type_2 = 'ResourceGroupName'
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ### Monthly costs by location and service
@@ -65,8 +70,8 @@ select
   usage_date,
   dimension_1 as location,
   dimension_2 as service_name,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -75,7 +80,7 @@ where
   and dimension_type_2 = 'ServiceName'
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ```sql+sqlite
@@ -83,8 +88,8 @@ select
   usage_date,
   dimension_1 as location,
   dimension_2 as service_name,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -93,7 +98,53 @@ where
   and dimension_type_2 = 'ServiceName'
 order by
   usage_date desc,
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
+```
+
+### Query costs for a specific period
+
+Use period_start and period_end parameters to query costs for a specific time range with flexible dimensions.
+
+```sql+postgres
+select
+  usage_date,
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  period_start,
+  period_end
+from
+  azure_cost_usage
+where
+  granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and period_start = '2024-08-01'
+  and period_end = '2024-08-31'
+order by
+  pre_tax_cost_amount desc;
+```
+
+```sql+sqlite
+select
+  usage_date,
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  pre_tax_cost_amount,
+  pre_tax_cost_unit,
+  period_start,
+  period_end
+from
+  azure_cost_usage
+where
+  granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and period_start = '2024-08-01'
+  and period_end = '2024-08-31'
+order by
+  pre_tax_cost_amount desc;
 ```
 
 ### Resource type and consumed service analysis
@@ -105,8 +156,8 @@ select
   usage_date,
   dimension_1 as resource_type,
   dimension_2 as consumed_service,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -115,7 +166,7 @@ where
   and dimension_type_2 = 'ConsumedService'
   and usage_date >= current_date - interval '7 days'
 order by
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ```sql+sqlite
@@ -123,8 +174,8 @@ select
   usage_date,
   dimension_1 as resource_type,
   dimension_2 as consumed_service,
-  unblended_cost_amount,
-  unblended_cost_unit
+  pre_tax_cost_amount,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -133,7 +184,7 @@ where
   and dimension_type_2 = 'ConsumedService'
   and usage_date >= date('now', '-7 days')
 order by
-  unblended_cost_amount desc;
+  pre_tax_cost_amount desc;
 ```
 
 ### Subscription and service cost breakdown
@@ -145,8 +196,8 @@ select
   usage_date,
   dimension_1 as subscription_name,
   dimension_2 as service_name,
-  sum(unblended_cost_amount) as total_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -158,7 +209,7 @@ group by
   usage_date,
   dimension_1,
   dimension_2,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   usage_date desc,
   total_cost desc;
@@ -169,8 +220,8 @@ select
   usage_date,
   dimension_1 as subscription_name,
   dimension_2 as service_name,
-  sum(unblended_cost_amount) as total_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -182,7 +233,7 @@ group by
   usage_date,
   dimension_1,
   dimension_2,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   usage_date desc,
   total_cost desc;
@@ -196,9 +247,9 @@ Find the highest cost combinations for any dimension pair within a specific date
 select
   dimension_1,
   dimension_2,
-  sum(unblended_cost_amount) as total_cost,
+  sum(pre_tax_cost_amount) as total_cost,
   count(*) as usage_days,
-  unblended_cost_unit
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -209,7 +260,7 @@ where
 group by
   dimension_1,
   dimension_2,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc
 limit 10;
@@ -219,9 +270,9 @@ limit 10;
 select
   dimension_1,
   dimension_2,
-  sum(unblended_cost_amount) as total_cost,
+  sum(pre_tax_cost_amount) as total_cost,
   count(*) as usage_days,
-  unblended_cost_unit
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -232,7 +283,7 @@ where
 group by
   dimension_1,
   dimension_2,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc
 limit 10;
@@ -247,12 +298,12 @@ select
   usage_date,
   dimension_1 as meter_category,
   dimension_2 as service_name,
-  unblended_cost_amount,
-  lag(unblended_cost_amount) over (
+  pre_tax_cost_amount,
+  lag(pre_tax_cost_amount) over (
     partition by dimension_1, dimension_2
     order by usage_date
   ) as previous_period_cost,
-  unblended_cost_unit
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -270,12 +321,12 @@ select
   usage_date,
   dimension_1 as meter_category,
   dimension_2 as service_name,
-  unblended_cost_amount,
-  lag(unblended_cost_amount) over (
+  pre_tax_cost_amount,
+  lag(pre_tax_cost_amount) over (
     partition by dimension_1, dimension_2
     order by usage_date
   ) as previous_period_cost,
-  unblended_cost_unit
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -298,10 +349,10 @@ select
   dimension_type_2,
   granularity,
   count(*) as total_records,
-  sum(unblended_cost_amount) as total_cost,
-  avg(unblended_cost_amount) as avg_cost,
-  max(unblended_cost_amount) as max_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  avg(pre_tax_cost_amount) as avg_cost,
+  max(pre_tax_cost_amount) as max_cost,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -310,7 +361,7 @@ group by
   dimension_type_1,
   dimension_type_2,
   granularity,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc;
 ```
@@ -321,10 +372,10 @@ select
   dimension_type_2,
   granularity,
   count(*) as total_records,
-  sum(unblended_cost_amount) as total_cost,
-  avg(unblended_cost_amount) as avg_cost,
-  max(unblended_cost_amount) as max_cost,
-  unblended_cost_unit
+  sum(pre_tax_cost_amount) as total_cost,
+  avg(pre_tax_cost_amount) as avg_cost,
+  max(pre_tax_cost_amount) as max_cost,
+  pre_tax_cost_unit
 from
   azure_cost_usage
 where
@@ -333,7 +384,53 @@ group by
   dimension_type_1,
   dimension_type_2,
   granularity,
-  unblended_cost_unit
+  pre_tax_cost_unit
 order by
   total_cost desc;
+```
+
+### Compare pre-tax vs amortized costs
+
+Analyze the difference between pre-tax costs and amortized costs across different dimensions to understand reservation impacts.
+
+```sql+postgres
+select
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  usage_date,
+  pre_tax_cost_amount,
+  amortized_cost_amount,
+  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
+  pre_tax_cost_unit
+from
+  azure_cost_usage
+where
+  granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and amortized_cost_amount is not null
+  and pre_tax_cost_amount != amortized_cost_amount
+order by
+  reservation_savings desc;
+```
+
+```sql+sqlite
+select
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  usage_date,
+  pre_tax_cost_amount,
+  amortized_cost_amount,
+  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
+  pre_tax_cost_unit
+from
+  azure_cost_usage
+where
+  granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and amortized_cost_amount is not null
+  and pre_tax_cost_amount != amortized_cost_amount
+order by
+  reservation_savings desc;
 ```

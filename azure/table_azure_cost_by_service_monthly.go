@@ -65,8 +65,8 @@ func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.
 	// Set timeframe and granularity to match working raw API call
 	timePeriod := &armcostmanagement.QueryTimePeriod{}
 
-	// Get time range from usage_date quals using simplified approach
-	startTime, endTime := getUsageDateTimeRange(d, granularity)
+	// Get time range from period_start/period_end quals
+	startTime, endTime := getPeriodTimeRange(d, granularity)
 
 	// Set default time range if no quals provided
 	if startTime == "" || endTime == "" {

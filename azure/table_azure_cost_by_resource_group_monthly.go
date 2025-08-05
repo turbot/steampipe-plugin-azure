@@ -65,8 +65,8 @@ func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *p
 	// Set timeframe and granularity to match working raw API call
 	var timePeriod *armcostmanagement.QueryTimePeriod
 
-	// Get time range from usage_date quals using simplified approach
-	startTime, endTime := getUsageDateTimeRange(d, granularity)
+	// Get time range from period_start/period_end quals
+	startTime, endTime := getPeriodTimeRange(d, granularity)
 
 	// Set default time range if no quals provided
 	if startTime == "" || endTime == "" {
@@ -80,7 +80,6 @@ func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *p
 		}
 	}
 
-	// Parse time strings to time.Time
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse start date: %v", err)
