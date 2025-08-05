@@ -735,6 +735,7 @@ func getAzureStorageAccountFileServices(ctx context.Context, d *plugin.QueryData
 	storageClient, err := armstorage.NewFileServicesClient(subscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountFileServices", "client_error", err)
+		return nil, err
 	}
 
 	op, err := storageClient.List(ctx, *accountData.ResourceGroup, *accountData.Name, &armstorage.FileServicesClientListOptions{})
