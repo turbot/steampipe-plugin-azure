@@ -339,3 +339,47 @@ select
 from
   azure_storage_account;
 ```
+
+### Extract file services properties from nested JSON
+
+Explore the file services configuration of Azure storage accounts by extracting nested JSON properties into individual columns. This query iterates over all file services in the array and is useful for analyzing SMB protocol settings, retention policies, and CORS configurations.
+
+```sql+postgres
+select
+  name,
+  fs ->> 'id' as file_service_id,
+  fs -> 'sku' ->> 'name' as file_service_sku_name,
+  fs -> 'sku' ->> 'tier' as file_service_sku_tier,
+  fs ->> 'type' as file_service_type,
+  fs -> 'properties' -> 'shareDeleteRetentionPolicy' ->> 'days' as retention_days,
+  fs -> 'properties' -> 'shareDeleteRetentionPolicy' ->> 'enabled' as retention_enabled,
+  fs -> 'properties' -> 'protocolSettings' -> 'smb' ->> 'versions' as smb_versions,
+  fs -> 'properties' -> 'protocolSettings' -> 'smb' ->> 'channelEncryption' as smb_channel_encryption,
+  fs -> 'properties' -> 'protocolSettings' -> 'smb' ->> 'authenticationMethods' as smb_auth_methods,
+  fs -> 'properties' -> 'protocolSettings' -> 'smb' ->> 'kerberosTicketEncryption' as smb_kerberos_encryption
+from
+  azure_storage_account,
+  jsonb_array_elements(file_services) as fs
+where
+  file_services is not null;
+```
+
+```sql+sqlite
+select
+  name,
+  json_extract(fs.value, '$.id') as file_service_id,
+  json_extract(fs.value, '$.sku.name') as file_service_sku_name,
+  json_extract(fs.value, '$.sku.tier') as file_service_sku_tier,
+  json_extract(fs.value, '$.type') as file_service_type,
+  json_extract(fs.value, '$.properties.shareDeleteRetentionPolicy.days') as retention_days,
+  json_extract(fs.value, '$.properties.shareDeleteRetentionPolicy.enabled') as retention_enabled,
+  json_extract(fs.value, '$.properties.protocolSettings.smb.versions') as smb_versions,
+  json_extract(fs.value, '$.properties.protocolSettings.smb.channelEncryption') as smb_channel_encryption,
+  json_extract(fs.value, '$.properties.protocolSettings.smb.authenticationMethods') as smb_auth_methods,
+  json_extract(fs.value, '$.properties.protocolSettings.smb.kerberosTicketEncryption') as smb_kerberos_encryption
+from
+  azure_storage_account,
+  json_each(file_services) as fs
+where
+  file_services is not null;
+```
