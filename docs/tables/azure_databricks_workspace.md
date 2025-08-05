@@ -166,7 +166,6 @@ where
 ```
 
 ### List workspaces with diagnostic settings configured
-
 Discover the segments that have diagnostic settings configured for your Azure Databricks workspaces. This is useful for monitoring and troubleshooting workspace activity by identifying which workspaces have logging enabled.
 
 ```sql+postgres
