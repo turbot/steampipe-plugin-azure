@@ -154,21 +154,6 @@ func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	return columns
 }
 
-// removeDuplicates removes duplicate metrics from slice
-func removeDuplicates(slice []string) []string {
-	keys := make(map[string]bool)
-	var result []string
-
-	for _, item := range slice {
-		if !keys[item] {
-			keys[item] = true
-			result = append(result, item)
-		}
-	}
-
-	return result
-}
-
 // getPeriodTimeRange extracts start and end dates from period_start and period_end quals (following AWS pattern)
 func getPeriodTimeRange(keyQuals *plugin.QueryData, granularity string) (string, string) {
 	timeFormat := "2006-01-02"
