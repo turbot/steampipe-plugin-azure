@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/aztables"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/tombuildsstuff/giovanni/storage/2018-11-09/queue/queues"
@@ -414,6 +415,13 @@ func tableAzureStorageAccount(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Logging.RetentionPolicy"),
 			},
 			{
+				Name:        "file_services",
+				Description: "The properties of File services in storage account.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getAzureStorageAccountFileServices,
+				Transform:   transform.FromValue(),
+			},
+			{
 				Name:        "diagnostic_settings",
 				Description: "A list of active diagnostic settings for the storage account.",
 				Type:        proto.ColumnType_JSON,
@@ -713,6 +721,33 @@ func getAzureStorageAccountLifecycleManagementPolicy(ctx context.Context, d *plu
 	}
 
 	return objectMap, nil
+}
+
+func getAzureStorageAccountFileServices(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountData := h.Item.(*storageAccountInfo)
+
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	subscriptionID := session.SubscriptionID
+
+	storageClient, err := armstorage.NewFileServicesClient(subscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountFileServices", "client_error", err)
+		return nil, err
+	}
+
+	op, err := storageClient.List(ctx, *accountData.ResourceGroup, *accountData.Name, &armstorage.FileServicesClientListOptions{})
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_storage_account.getAzureStorageAccountFileServices", "api_error", err)
+		return nil, err
+	}
+
+	if op.Value != nil {
+		return op.Value, nil
+	}
+	return nil, nil
 }
 
 func getAzureStorageAccountBlobProperties(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
