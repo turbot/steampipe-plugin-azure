@@ -42,18 +42,24 @@ func tableAzureCostByServiceDaily(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostByServiceDaily(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	params, err := buildCostByServiceDailyInput(ctx, d)
+	queryDef, scope, err := buildCostByServiceDailyInput(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	return streamCostAndUsage(ctx, d, params)
+	return streamCostAndUsage(ctx, d, queryDef, scope, "ServiceName")
 }
 
-func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (*AzureCostQueryInput, error) {
-	// Get subscription ID (will be handled in streamCostAndUsage if empty)
-	subscriptionID := d.EqualsQualString("subscription_id")
-	if subscriptionID == "" {
-		subscriptionID = "placeholder"
+func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, error) {
+	// Get scope from quals, default to placeholder if not provided
+	scope := d.EqualsQualString("scope")
+	if scope == "" {
+		scope = "/subscriptions/placeholder" // Will be resolved in streamCostAndUsage
+	}
+
+	// Get cost type from quals, default to ActualCost
+	costType := d.EqualsQualString("type")
+	if costType == "" {
+		costType = "ActualCost"
 	}
 
 	// Set timeframe and time period using new usage_date logic
@@ -63,25 +69,13 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (*Az
 	// Get time range from period_start/period_end quals
 	startTime, endTime := getPeriodTimeRange(d, "DAILY")
 
-	// Set default time range if no quals provided
-	if startTime == "" || endTime == "" {
-		defaultEnd := time.Now()
-		defaultStart := defaultEnd.AddDate(0, -11, -30) // Last 1 year
-		if startTime == "" {
-			startTime = defaultStart.Format("2006-01-02")
-		}
-		if endTime == "" {
-			endTime = defaultEnd.Format("2006-01-02")
-		}
-	}
-
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse start date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse end date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse end date: %v", err)
 	}
 
 	timePeriod.From = to.Ptr(startDate)
@@ -99,12 +93,53 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (*Az
 	// Build filter for service_name if provided
 	filter := buildFilterExpression(d, "ServiceName")
 
-	return &AzureCostQueryInput{
-		Timeframe:   timeframe,
-		Granularity: azureGranularity,
-		GroupBy:     groupBy,
-		Scope:       "/subscriptions/" + subscriptionID,
-		TimePeriod:  timePeriod,
-		Filter:      filter,
-	}, nil
+	// Get dynamic columns based on query context
+	// _ = getColumnsFromQueryContext(d.QueryContext) // Not used in grouped queries
+
+	// Build aggregation based on requested columns
+	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
+
+	// Determine which metrics to include
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	if len(metrics) == 0 {
+		// Default metrics if none specified (only cost metrics)
+		metrics = []string{"PreTaxCost"}
+	}
+
+	// Add aggregations (Azure limit is 2)
+	for i, metric := range metrics {
+		if i >= 2 {
+			break
+		}
+		aggregation[metric] = &armcostmanagement.QueryAggregation{
+			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
+			Name:     to.Ptr(metric),
+		}
+	}
+
+	// Create dataset with grouping
+	dataset := &armcostmanagement.QueryDataset{
+		Granularity: &azureGranularity,
+		Aggregation: aggregation,
+		Grouping:    []*armcostmanagement.QueryGrouping{groupBy},
+	}
+
+	// Add filter if specified
+	if filter != nil {
+		dataset.Filter = filter
+	}
+
+	// Create QueryDefinition
+	queryDef := armcostmanagement.QueryDefinition{
+		Type:      to.Ptr(getCostTypeFromString(costType)),
+		Timeframe: to.Ptr(timeframe),
+		Dataset:   dataset,
+	}
+
+	// Set TimePeriod if using Custom timeframe
+	if timeframe == armcostmanagement.TimeframeTypeCustom && timePeriod != nil {
+		queryDef.TimePeriod = timePeriod
+	}
+
+	return queryDef, scope, nil
 }

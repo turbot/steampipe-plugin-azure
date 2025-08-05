@@ -15,12 +15,15 @@ The `azure_cost_by_service_monthly` table provides insights into monthly cost br
 **Important Notes:**
 
 - This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`.
+  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
   - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
   - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 
 ## Examples
 
 ### Basic monthly cost info
+
 Explore monthly costs across different Azure services to understand your spending patterns and identify the most expensive services by month.
 
 ```sql+postgres
@@ -50,6 +53,7 @@ order by
 ```
 
 ### Monthly cost trend for a specific service
+
 Analyze the monthly cost trend for a specific Azure service to understand its long-term usage patterns and cost evolution.
 
 ```sql+postgres
@@ -81,6 +85,7 @@ order by
 ```
 
 ### Query costs for a specific period
+
 Use period_start and period_end parameters to query costs for a specific time range.
 
 ```sql+postgres
@@ -118,6 +123,7 @@ order by
 ```
 
 ### Total monthly spend by service
+
 Get the total monthly cost for each service to understand which services contribute most to your monthly Azure bill.
 
 ```sql+postgres
@@ -151,6 +157,7 @@ order by
 ```
 
 ### Year-over-year cost comparison
+
 Compare monthly costs between different years to understand cost growth and seasonal patterns.
 
 ```sql+postgres
@@ -192,6 +199,7 @@ order by
 ```
 
 ### Services with increasing monthly costs
+
 Identify services where costs are trending upward by comparing recent months to help focus cost optimization efforts.
 
 ```sql+postgres
@@ -245,6 +253,7 @@ order by
 ```
 
 ### Average monthly cost per service
+
 Calculate the average monthly cost for each service to understand baseline spending patterns.
 
 ```sql+postgres
@@ -280,6 +289,7 @@ order by
 ```
 
 ### Compare pre-tax vs amortized costs
+
 Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
 
 ```sql+postgres

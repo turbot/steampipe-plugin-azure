@@ -15,12 +15,15 @@ The `azure_cost_by_resource_group_monthly` table provides insights into monthly 
 **Important Notes:**
 
 - This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`.
+  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
   - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
   - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 
 ## Examples
 
 ### Basic monthly cost info by resource group
+
 Explore monthly costs across different Azure resource groups to understand your spending patterns and identify the most expensive resource groups by month.
 
 ```sql+postgres
@@ -50,6 +53,7 @@ order by
 ```
 
 ### Monthly cost trend for a specific resource group
+
 Analyze the monthly cost trend for a specific Azure resource group to understand its long-term usage patterns and cost evolution.
 
 ```sql+postgres
@@ -81,6 +85,7 @@ order by
 ```
 
 ### Query costs for a specific period
+
 Use period_start and period_end parameters to query costs for a specific time range.
 
 ```sql+postgres
@@ -118,6 +123,7 @@ order by
 ```
 
 ### Total monthly spend by resource group
+
 Get the total monthly cost for each resource group to understand which teams or projects contribute most to your monthly Azure bill.
 
 ```sql+postgres
@@ -151,6 +157,7 @@ order by
 ```
 
 ### Resource groups with increasing monthly costs
+
 Identify resource groups where costs are trending upward by comparing recent months to help focus cost optimization efforts on specific teams or projects.
 
 ```sql+postgres
@@ -204,6 +211,7 @@ order by
 ```
 
 ### Departmental budget tracking
+
 Track monthly spending against potential budgets by resource group to monitor departmental or team spending limits.
 
 ```sql+postgres
@@ -243,6 +251,7 @@ order by
 ```
 
 ### Resource group cost distribution
+
 Analyze the distribution of costs across resource groups to understand how spending is allocated across different teams or projects.
 
 ```sql+postgres
@@ -279,6 +288,7 @@ order by
 ```
 
 ### Quarter-over-quarter cost comparison
+
 Compare quarterly costs for resource groups to understand seasonal patterns and long-term trends.
 
 ```sql+postgres
@@ -332,6 +342,7 @@ order by
 ```
 
 ### Compare pre-tax vs amortized costs
+
 Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
 
 ```sql+postgres

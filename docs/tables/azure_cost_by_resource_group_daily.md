@@ -15,6 +15,8 @@ The `azure_cost_by_resource_group_daily` table provides insights into daily cost
 **Important Notes:**
 
 - This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`.
+  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
   - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
   - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
 

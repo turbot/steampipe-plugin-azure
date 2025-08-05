@@ -11,36 +11,34 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-	"github.com/turbot/steampipe-plugin-sdk/v5/query_cache"
 )
 
 func tableAzureCostUsage(_ context.Context) *plugin.Table {
+	keyColumns := costManagementKeyColumns()
+	keyColumns = append(
+		plugin.KeyColumnSlice{
+			{
+				Name:    "granularity",
+				Require: plugin.Required,
+			},
+			{
+				Name:    "dimension_type_1",
+				Require: plugin.Required,
+			},
+			{
+				Name:    "dimension_type_2",
+				Require: plugin.Required,
+			},
+		}, keyColumns...,
+	)
+
 	return &plugin.Table{
 		Name:        "azure_cost_usage",
 		Description: "Azure Cost Management - Cost and Usage with flexible dimensions",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.KeyColumnSlice{
-				{
-					Name:    "granularity",
-					Require: plugin.Required,
-				},
-				{
-					Name:    "dimension_type_1",
-					Require: plugin.Required,
-				},
-				{
-					Name:    "dimension_type_2",
-					Require: plugin.Required,
-				},
-				{
-					Name:       "usage_date",
-					Require:    plugin.Optional,
-					Operators:  []string{">", ">=", "=", "<", "<="},
-					CacheMatch: query_cache.CacheMatchExact,
-				},
-			},
-			Hydrate: listCostUsage,
-			Tags:    map[string]string{"service": "Microsoft.CostManagement", "action": "Query"},
+			KeyColumns: keyColumns,
+			Hydrate:    listCostUsage,
+			Tags:       map[string]string{"service": "Microsoft.CostManagement", "action": "Query"},
 		},
 		Columns: azureColumns(
 			costManagementColumns([]*plugin.Column{
@@ -83,20 +81,26 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	params, err := buildCostUsageInputFromQuals(ctx, d)
+	queryDef, scope, dim1, dim2, err := buildCostUsageInputFromQuals(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	return streamCostAndUsage(ctx, d, params)
+	return streamCostAndUsage(ctx, d, queryDef, scope, dim1, dim2)
 }
 
-func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*AzureCostQueryInput, error) {
+func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, string, string, error) {
 	granularity := strings.ToUpper(d.EqualsQuals["granularity"].GetStringValue())
 
-	// Get subscription ID
-	subscriptionID := d.EqualsQualString("subscription_id")
-	if subscriptionID == "" {
-		subscriptionID = "placeholder" // Will be replaced in streamCostAndUsage
+	// Get scope from quals, default to placeholder if not provided
+	scope := d.EqualsQualString("scope")
+	if scope == "" {
+		scope = "/subscriptions/placeholder" // Will be resolved in streamCostAndUsage
+	}
+
+	// Get cost type from quals, default to ActualCost
+	costType := d.EqualsQualString("type")
+	if costType == "" {
+		costType = "ActualCost"
 	}
 
 	// Set timeframe and time period
@@ -130,11 +134,11 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*Az
 
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse start date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", "", "", fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse end date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", "", "", fmt.Errorf("failed to parse end date: %v", err)
 	}
 
 	timePeriod.From = to.Ptr(startDate)
@@ -161,24 +165,70 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (*Az
 		})
 	}
 
-	// Create input parameters
-	params := &AzureCostQueryInput{
-		Timeframe:   timeframe,
-		Granularity: azureGranularity,
-		Scope:       "/subscriptions/" + subscriptionID,
-		TimePeriod:  timePeriod,
-		Filter:      nil, // No dimension-specific filters for this table
+	// Get dynamic columns based on query context
+	requestColumns := getColumnsFromQueryContext(d.QueryContext)
+
+	// Build aggregation based on requested columns
+	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
+
+	// Determine which metrics to include
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	if len(metrics) == 0 {
+		// Default metrics if none specified (only cost metrics)
+		metrics = []string{"PreTaxCost"}
 	}
 
-	// Set groupings - use both GroupBy and GroupBy2 for multiple dimensions
+	// Add aggregations (Azure limit is 2)
+	for i, metric := range metrics {
+		if i >= 2 {
+			break
+		}
+		aggregation[metric] = &armcostmanagement.QueryAggregation{
+			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
+			Name:     to.Ptr(metric),
+		}
+	}
+
+	// Azure API restriction: Cannot use Configuration with Grouping/Aggregation
+	// If we have grouping, use traditional approach without Configuration
+	// If no grouping, use Configuration approach for column selection
+
+	var dataset *armcostmanagement.QueryDataset
+
 	if len(groupings) > 0 {
-		params.GroupBy = groupings[0]
-	}
-	if len(groupings) > 1 {
-		params.GroupBy2 = groupings[1]
+		// Traditional approach with grouping - no Configuration
+		dataset = &armcostmanagement.QueryDataset{
+			Granularity: &azureGranularity,
+			Aggregation: aggregation,
+		}
+
+		// Add grouping if specified - Azure supports up to 2 groupings
+		if len(groupings) > 0 {
+			dataset.Grouping = groupings
+		}
+	} else {
+		// Configuration approach without grouping - for flexible column selection
+		dataset = &armcostmanagement.QueryDataset{
+			Granularity: &azureGranularity,
+			Configuration: &armcostmanagement.QueryDatasetConfiguration{
+				Columns: requestColumns,
+			},
+		}
 	}
 
-	return params, nil
+	// Create QueryDefinition
+	queryDef := armcostmanagement.QueryDefinition{
+		Type:      to.Ptr(getCostTypeFromString(costType)),
+		Timeframe: to.Ptr(timeframe),
+		Dataset:   dataset,
+	}
+
+	// Set TimePeriod if using Custom timeframe
+	if timeframe == armcostmanagement.TimeframeTypeCustom && timePeriod != nil {
+		queryDef.TimePeriod = timePeriod
+	}
+
+	return queryDef, scope, dim1, dim2, nil
 }
 
 //// HYDRATE FUNCTIONS
