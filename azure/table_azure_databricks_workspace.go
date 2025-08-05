@@ -258,7 +258,7 @@ func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.
 }
 
 func listDatabricksWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("listDatabricksWorkspaceDiagnosticSettings")
+	plugin.Logger(ctx).Debug("listDatabricksWorkspaceDiagnosticSettings")
 	data := h.Item.(databricks.Workspace)
 	id := *data.ID
 
