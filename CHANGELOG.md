@@ -1,3 +1,11 @@
+## v1.6.0 [2025-08-06]
+
+_Enhancements_
+
+- Added `diagnostic_settings` column to the `azure_databricks_workspace` table. ([#930](https://github.com/turbot/steampipe-plugin-azure/pull/930))
+- Added `file_services` column to the `azure_storage_account` table. ([#933](https://github.com/turbot/steampipe-plugin-azure/pull/933))
+- Added `rotation_policy` column to the `azure_key_vault_key` table. ([#931](https://github.com/turbot/steampipe-plugin-azure/pull/931))
+
 ## v1.5.1 [2025-08-01]
 
 _Bug fixes_
