@@ -68,7 +68,7 @@ func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.
 	}
 
 	// Set timeframe and granularity to match working raw API call
-	timePeriod := &armcostmanagement.QueryTimePeriod{}
+	var timePeriod *armcostmanagement.QueryTimePeriod
 
 	// Get time range from period_start/period_end quals
 	startTime, endTime := getPeriodTimeRange(d, granularity)
@@ -82,8 +82,10 @@ func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.
 		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse end date: %v", err)
 	}
 
-	timePeriod.From = to.Ptr(startDate)
-	timePeriod.To = to.Ptr(endDate)
+	timePeriod = &armcostmanagement.QueryTimePeriod{
+		From: to.Ptr(startDate),
+		To:   to.Ptr(endDate),
+	}
 
 	azureGranularity := getGranularityFromString(granularity) // Use Monthly granularity when available
 
@@ -139,10 +141,8 @@ func buildCostByServiceInput(ctx context.Context, granularity string, d *plugin.
 		Dataset:   dataset,
 	}
 
-	// Set TimePeriod if using Custom timeframe
-	if timePeriod != nil {
-		queryDef.TimePeriod = timePeriod
-	}
+	// Set TimePeriod for custom timeframe
+	queryDef.TimePeriod = timePeriod
 
 	return queryDef, scope, nil
 }

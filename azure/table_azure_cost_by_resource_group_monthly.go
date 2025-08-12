@@ -140,10 +140,8 @@ func buildCostByResourceGroupInput(ctx context.Context, granularity string, d *p
 		Dataset:   dataset,
 	}
 
-	// Set TimePeriod if using Custom timeframe
-	if timePeriod != nil {
-		queryDef.TimePeriod = timePeriod
-	}
+	// Set TimePeriod for custom timeframe
+	queryDef.TimePeriod = timePeriod
 
 	return queryDef, scope, nil
 }
