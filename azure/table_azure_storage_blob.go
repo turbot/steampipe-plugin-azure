@@ -2,20 +2,23 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	armstorage "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	azblob "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/container"
 )
 
-type blobInfo = struct {
-	Blob           azblob.BlobItemInternal
+// blobInfo holds a flattened view mapped from track2 SDK types preserving previous column expectations
+type blobInfo struct {
+	Blob           *container.BlobItem
 	Name           string
 	Account        string
 	Container      *string
@@ -336,143 +339,198 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
+	logger := plugin.Logger(ctx)
 	accountName := d.EqualsQuals["storage_account_name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-
 	if accountName == "" || resourceGroup == "" {
 		return nil, nil
 	}
 
-	// Get storage account location
-	accountClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	accountClient.Authorizer = session.Authorizer
+	// Management plane session (legacy) for account metadata and potential key listing
+	mgmtSession, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	armCredSession, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
 
-	op, err := accountClient.GetProperties(ctx, resourceGroup, accountName, "")
+	subscriptionID := mgmtSession.SubscriptionID
+
+	// Get storage account properties (track2 ARM)
+	armClient, err := armstorage.NewAccountsClient(subscriptionID, armCredSession.Cred, armCredSession.ClientOptions)
+	if err != nil {
+		return nil, err
+	}
+	accountResp, err := armClient.GetProperties(ctx, resourceGroup, accountName, nil)
 	if err != nil {
 		if strings.Contains(err.Error(), "ResourceNotFound") || strings.Contains(err.Error(), "ResourceGroupNotFound") {
 			return nil, nil
 		}
 		return nil, err
 	}
-	region := *op.Location
+	region := ""
+	if accountResp.Account.Properties != nil && accountResp.Account.Location != nil {
+		region = *accountResp.Account.Location
+	}
 
-	// List storage account keys
-	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	storageClient.Authorizer = session.Authorizer
+	allowShared := true
+	if accountResp.Account.Properties != nil && accountResp.Account.Properties.AllowSharedKeyAccess != nil {
+		allowShared = *accountResp.Account.Properties.AllowSharedKeyAccess
+	}
 
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &storageClient, d.Connection)
+	config := GetConfig(d.Connection)
+	authMode := "aad"
+	if config.AuthMode != nil && *config.AuthMode != "" {
+		authMode = strings.ToLower(*config.AuthMode)
+	}
 
-	keys, err := storageClient.ListKeys(ctx, resourceGroup, accountName, "")
+	if authMode == "auto" {
+		logger.Warn("azure_storage_blob", "deprecated_auth_mode", "auth_mode=auto is deprecated; set auth_mode=aad | shared_key | sas explicitly")
+	}
+
+	// Resolve data-plane credential/client options
+	serviceClient, err := buildBlobServiceClient(ctx, d, armCredSession.Cred, authMode, accountName, resourceGroup, subscriptionID, mgmtSession.StorageEndpointSuffix, allowShared)
 	if err != nil {
 		return nil, err
 	}
 
-	credential, errC := azblob.NewSharedKeyCredential(accountName, *(*(keys.Keys))[0].Value)
-	if errC != nil {
-		return nil, errC
-	}
-
-	// List all containers
-	containerClient := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	containerClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &storageClient, d.Connection)
-
-	var containers []storage.ListContainerItem
-
-	result, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
-	if err != nil {
-		return nil, err
-	}
-	containers = append(containers, result.Values()...)
-	for result.NotDone() {
-		// Wait for rate limiting
+	// List containers using data-plane (track2) client
+	cPager := serviceClient.NewListContainersPager(nil)
+	for cPager.More() {
+		// Rate limit coordination
 		d.WaitForListRateLimit(ctx)
-
-		err := result.NextWithContext(ctx)
+		cPage, err := cPager.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
-		containers = append(containers, result.Values()...)
-	}
-
-	// Iterating all the available containers
-	for _, item := range containers {
-		blobs, err := getRowDataForBlob(ctx, item, accountName, session.StorageEndpointSuffix, credential)
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_storage_blob.listStorageBlobs.getRowDataForBlob", "api_error", err)
-			return nil, err
-		}
-
-		for _, data := range blobs {
-			d.StreamListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
-
-			// Check if context has been cancelled or if the limit has been hit (if specified)
-			// if there is a limit, it will return the number of rows required to reach this limit
+		for _, c := range cPage.ContainerItems {
+			containerName := ""
+			if c.Name != nil {
+				containerName = *c.Name
+			}
+			if containerName == "" {
+				continue
+			}
+			if err := streamBlobsInContainer(ctx, d, serviceClient, accountName, resourceGroup, subscriptionID, region, containerName); err != nil {
+				return nil, err
+			}
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
 	}
 
-	return nil, err
+	return nil, nil
 }
 
-// List all the available blobs
-func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, accountName string, storageEndpointSuffix string, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
-	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.%s", accountName, storageEndpointSuffix))
-	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
+// buildBlobServiceClient creates a track2 azblob ServiceClient according to auth_mode
+func buildBlobServiceClient(ctx context.Context, d *plugin.QueryData, tokenCred azcore.TokenCredential, authMode, accountName, resourceGroup, subscriptionID, storageEndpointSuffix string, allowShared bool) (*azblob.Client, error) {
+	config := GetConfig(d.Connection)
+	endpoint := fmt.Sprintf("https://%s.blob.%s", accountName, storageEndpointSuffix)
 
-	// Create Service URL
-	serviceURL := azblob.NewServiceURL(*primaryURL, p)
-	containerURL := serviceURL.NewContainerURL(*container.Name)
-
-	var items []blobInfo
-	subscriptionID := strings.Split(string(*container.ID), "/")[2]
-
-	// List the blob(s) in our container; since a container may hold millions of blobs, this is done 1 segment at a time.
-	for marker := (azblob.Marker{}); marker.NotDone(); {
-		// Get a result segment starting with the blob indicated by the current Marker.
-		listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{
-			Details: azblob.BlobListingDetails{
-				Copy:             true,
-				Metadata:         true,
-				Snapshots:        true,
-				UncommittedBlobs: true,
-				Deleted:          true,
-				Tags:             true,
-				Versions:         false,
-			},
-		})
+	switch authMode {
+	case "", "aad", "auto":
+		// AAD path
+		svc, err := azblob.NewClient(endpoint, tokenCred, nil)
 		if err != nil {
 			return nil, err
 		}
-
-		// ListBlobs returns the start of the next segment; you MUST use this to get
-		// the next segment (after processing the current result segment).
-		marker = listBlob.NextMarker
-		isSnapshot := true
-
-		for _, blob := range listBlob.Segment.BlobItems {
-			// Snapshot of a blob has same configuration,
-			// only difference is that the snapshot has a property which specifies
-			// the time, when the snapshot was taken
-			if len(blob.Snapshot) < 1 {
-				isSnapshot = false
+		if authMode == "auto" {
+			return svc, nil
+		}
+		return svc, nil
+	case "shared_key":
+		if !allowShared {
+			return nil, fmt.Errorf("Shared Key access disabled on storage account '%s'; set auth_mode=aad instead", accountName)
+		}
+		var key string
+		if config.StorageAccountKey != nil && *config.StorageAccountKey != "" {
+			key = *config.StorageAccountKey
+		} else if config.AllowStorageKeyListing != nil && *config.AllowStorageKeyListing {
+			legacyClient, err := armstorage.NewAccountsClient(subscriptionID, tokenCred, nil)
+			if err != nil {
+				return nil, err
 			}
-			items = append(items, blobInfo{blob, blob.Name, accountName, container.Name, "", &subscriptionID, "", isSnapshot})
+			listResp, err := legacyClient.ListKeys(ctx, resourceGroup, accountName, nil)
+			if err != nil {
+				return nil, err
+			}
+			if len(listResp.Keys) == 0 || listResp.Keys[0].Value == nil {
+				return nil, fmt.Errorf("no storage account keys returned for '%s'", accountName)
+			}
+			key = *listResp.Keys[0].Value
+		} else {
+			return nil, fmt.Errorf("auth_mode=shared_key requires storage_account_key or allow_storage_key_listing=true")
+		}
+		cred, err := azblob.NewSharedKeyCredential(accountName, key)
+		if err != nil {
+			return nil, err
+		}
+		return azblob.NewClientWithSharedKeyCredential(endpoint, cred, nil)
+	case "sas":
+		if config.StorageSASToken == nil || *config.StorageSASToken == "" {
+			return nil, fmt.Errorf("auth_mode=sas requires storage_sas_token")
+		}
+		raw := *config.StorageSASToken
+		if !strings.HasPrefix(raw, "?") {
+			raw = "?" + raw
+		}
+		u := endpoint + raw
+		svc, err := azblob.NewClientWithNoCredential(u, nil)
+		if err != nil {
+			return nil, err
+		}
+		// No explicit SAS parse helper in root; rely on service error later for invalid tokens.
+		return svc, nil
+	default:
+		return nil, fmt.Errorf("unsupported auth_mode '%s'", authMode)
+	}
+}
+
+func streamBlobsInContainer(ctx context.Context, d *plugin.QueryData, blobClient *azblob.Client, accountName, resourceGroup, subscriptionID, region, containerName string) error {
+	pager := blobClient.NewListBlobsFlatPager(containerName, &azblob.ListBlobsFlatOptions{Include: azblob.ListBlobsInclude{Copy: true, Metadata: true, Snapshots: true, Deleted: true, Tags: true, Versions: false}})
+	for pager.More() {
+		if d.RowsRemaining(ctx) == 0 {
+			return nil
+		}
+		resp, err := pager.NextPage(ctx)
+		if err != nil {
+			// Friendly error translation
+			if translated := translateBlobError(err); translated != nil {
+				return translated
+			}
+			return err
+		}
+		for _, item := range resp.Segment.BlobItems {
+			isSnapshot := item.Snapshot != nil && *item.Snapshot != ""
+			name := ""
+			if item.Name != nil {
+				name = *item.Name
+			}
+			ci := &blobInfo{Blob: item, Name: name, Account: accountName, Container: &containerName, ResourceGroup: resourceGroup, SubscriptionID: &subscriptionID, Location: region, IsSnapshot: isSnapshot}
+			d.StreamListItem(ctx, ci)
+			if d.RowsRemaining(ctx) == 0 {
+				return nil
+			}
 		}
 	}
+	return nil
+}
 
-	return items, nil
+func translateBlobError(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := err.Error()
+	if strings.Contains(msg, "KeyBasedAuthenticationNotPermitted") {
+		return fmt.Errorf("Shared Key authentication not permitted on this storage account; set auth_mode=aad or enable shared key access")
+	}
+	if strings.Contains(msg, "AuthorizationPermissionMismatch") || strings.Contains(strings.ToLower(msg), "authorizationfailure") {
+		return errors.New("authorization failed (possible missing role). Ensure the caller has at least 'Storage Blob Data Reader' role")
+	}
+	return nil
 }
 
 //// TRANSFORM FUNCTIONS
