@@ -17,12 +17,7 @@ type azureConfig struct {
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
-
-	// Storage data-plane auth configuration
-	AuthMode               *string `hcl:"auth_mode"`                 // aad (default) | shared_key | sas | auto (deprecated)
-	StorageAccountKey      *string `hcl:"storage_account_key"`       // explicit shared key
-	StorageSASToken        *string `hcl:"storage_sas_token"`         // SAS token (with or without leading '?')
-	AllowStorageKeyListing *bool   `hcl:"allow_storage_key_listing"` // permit ListKeys call when using shared_key without explicit key
+	DataPlaneAuthMode     *string  `hcl:"data_plane_auth_mode"` // auto (default) | aad | shared_key
 }
 
 func ConfigInstance() interface{} {

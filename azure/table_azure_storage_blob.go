@@ -2,15 +2,12 @@ package azure
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	armstorage "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	azblob "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/container"
@@ -339,7 +336,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	logger := plugin.Logger(ctx)
+	// logger removed (no deprecation warning needed with simplified auth)
 	accountName := d.EqualsQuals["storage_account_name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 	if accountName == "" || resourceGroup == "" {
@@ -381,13 +378,9 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 
 	config := GetConfig(d.Connection)
-	authMode := "aad"
-	if config.AuthMode != nil && *config.AuthMode != "" {
-		authMode = strings.ToLower(*config.AuthMode)
-	}
-
-	if authMode == "auto" {
-		logger.Warn("azure_storage_blob", "deprecated_auth_mode", "auth_mode=auto is deprecated; set auth_mode=aad | shared_key | sas explicitly")
+	authMode := "auto"
+	if config.DataPlaneAuthMode != nil && *config.DataPlaneAuthMode != "" {
+		authMode = strings.ToLower(*config.DataPlaneAuthMode)
 	}
 
 	// Resolve data-plane credential/client options
@@ -395,6 +388,8 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	if err != nil {
 		return nil, err
 	}
+
+	// auto fallback handled centrally inside buildBlobServiceClient
 
 	// List containers using data-plane (track2) client
 	cPager := serviceClient.NewListContainersPager(nil)
@@ -426,68 +421,6 @@ func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 }
 
 // buildBlobServiceClient creates a track2 azblob ServiceClient according to auth_mode
-func buildBlobServiceClient(ctx context.Context, d *plugin.QueryData, tokenCred azcore.TokenCredential, authMode, accountName, resourceGroup, subscriptionID, storageEndpointSuffix string, allowShared bool) (*azblob.Client, error) {
-	config := GetConfig(d.Connection)
-	endpoint := fmt.Sprintf("https://%s.blob.%s", accountName, storageEndpointSuffix)
-
-	switch authMode {
-	case "", "aad", "auto":
-		// AAD path
-		svc, err := azblob.NewClient(endpoint, tokenCred, nil)
-		if err != nil {
-			return nil, err
-		}
-		if authMode == "auto" {
-			return svc, nil
-		}
-		return svc, nil
-	case "shared_key":
-		if !allowShared {
-			return nil, fmt.Errorf("Shared Key access disabled on storage account '%s'; set auth_mode=aad instead", accountName)
-		}
-		var key string
-		if config.StorageAccountKey != nil && *config.StorageAccountKey != "" {
-			key = *config.StorageAccountKey
-		} else if config.AllowStorageKeyListing != nil && *config.AllowStorageKeyListing {
-			legacyClient, err := armstorage.NewAccountsClient(subscriptionID, tokenCred, nil)
-			if err != nil {
-				return nil, err
-			}
-			listResp, err := legacyClient.ListKeys(ctx, resourceGroup, accountName, nil)
-			if err != nil {
-				return nil, err
-			}
-			if len(listResp.Keys) == 0 || listResp.Keys[0].Value == nil {
-				return nil, fmt.Errorf("no storage account keys returned for '%s'", accountName)
-			}
-			key = *listResp.Keys[0].Value
-		} else {
-			return nil, fmt.Errorf("auth_mode=shared_key requires storage_account_key or allow_storage_key_listing=true")
-		}
-		cred, err := azblob.NewSharedKeyCredential(accountName, key)
-		if err != nil {
-			return nil, err
-		}
-		return azblob.NewClientWithSharedKeyCredential(endpoint, cred, nil)
-	case "sas":
-		if config.StorageSASToken == nil || *config.StorageSASToken == "" {
-			return nil, fmt.Errorf("auth_mode=sas requires storage_sas_token")
-		}
-		raw := *config.StorageSASToken
-		if !strings.HasPrefix(raw, "?") {
-			raw = "?" + raw
-		}
-		u := endpoint + raw
-		svc, err := azblob.NewClientWithNoCredential(u, nil)
-		if err != nil {
-			return nil, err
-		}
-		// No explicit SAS parse helper in root; rely on service error later for invalid tokens.
-		return svc, nil
-	default:
-		return nil, fmt.Errorf("unsupported auth_mode '%s'", authMode)
-	}
-}
 
 func streamBlobsInContainer(ctx context.Context, d *plugin.QueryData, blobClient *azblob.Client, accountName, resourceGroup, subscriptionID, region, containerName string) error {
 	pager := blobClient.NewListBlobsFlatPager(containerName, &azblob.ListBlobsFlatOptions{Include: azblob.ListBlobsInclude{Copy: true, Metadata: true, Snapshots: true, Deleted: true, Tags: true, Versions: false}})
@@ -519,19 +452,7 @@ func streamBlobsInContainer(ctx context.Context, d *plugin.QueryData, blobClient
 	return nil
 }
 
-func translateBlobError(err error) error {
-	if err == nil {
-		return nil
-	}
-	msg := err.Error()
-	if strings.Contains(msg, "KeyBasedAuthenticationNotPermitted") {
-		return fmt.Errorf("Shared Key authentication not permitted on this storage account; set auth_mode=aad or enable shared key access")
-	}
-	if strings.Contains(msg, "AuthorizationPermissionMismatch") || strings.Contains(strings.ToLower(msg), "authorizationfailure") {
-		return errors.New("authorization failed (possible missing role). Ensure the caller has at least 'Storage Blob Data Reader' role")
-	}
-	return nil
-}
+// translateBlobError defined centrally in storage_data_plane.go
 
 //// TRANSFORM FUNCTIONS
 
