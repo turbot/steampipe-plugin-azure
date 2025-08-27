@@ -452,8 +452,6 @@ func streamBlobsInContainer(ctx context.Context, d *plugin.QueryData, blobClient
 	return nil
 }
 
-// translateBlobError defined centrally in storage_data_plane.go
-
 //// TRANSFORM FUNCTIONS
 
 func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, error) {
