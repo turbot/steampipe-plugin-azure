@@ -74,9 +74,9 @@ Further reading:
 - [Writing plugins](https://steampipe.io/docs/develop/writing-plugins)
 - [Writing your first table](https://steampipe.io/docs/develop/writing-your-first-table)
 
-## Storage Data Plane Authentication (Blobs & Queues)
+## Storage Data Plane Authentication
 
-The `azure_storage_blob` and `azure_storage_queue` tables now default to Azure AD (OAuth) authentication using your configured identity (environment variables, managed identity, CLI, Azure CLI login, etc.). The prior implicit Shared Key path (automatic key listing) has been removed to align with hardened environments that disable Shared Key access.
+The `azure_storage_blob` and `azure_storage_queue` tables now default to Azure AD (OAuth) authentication using your configured identity (environment variables, managed identity, CLI, Azure CLI login, etc.). With this change, the plugin no longer defaults to Shared Key authentication but will fall back to it.
 
 In almost all cases you should rely on Azure AD RBAC (e.g. assign the principal the `Storage Blob Data Reader` or `Storage Queue Data Reader` role). The controls below are advanced / legacy overrides only—avoid using them unless you have a specific need.
 
@@ -85,25 +85,16 @@ Advanced (optional) connection overrides (`azure.spc`):
 ```
 connection "azure" {
 	plugin  = "azure"
-	# auth_mode can be: aad | shared_key | sas
-	auth_mode = "aad"
-
-	# For shared_key mode either provide the key or allow key listing
-	# storage_account_key       = "<account key>"
-	# allow_storage_key_listing = true
-
-	# For sas mode provide a service SAS (with leading ? optional)
-	# storage_sas_token = "?sv=..."
+	# data_plane_auth_mode can be: auto (default) | aad | shared_key
+	data_plane_auth_mode = "aad"
 }
 ```
 
 Notes:
-* Default (no settings): Azure AD (`auth_mode` omitted) for both blobs and queues.
-* `auth_mode = aad`: Explicit Azure AD (default path).
-* `auth_mode = shared_key`: Uses account Shared Key. You must supply `storage_account_key` OR set `allow_storage_key_listing = true`. Fails fast if the account has disabled shared key access (`allowSharedKeyAccess = false`).
-* `auth_mode = sas`: Uses a service/account SAS token (`storage_sas_token`). Scope/permissions limited to the SAS grants.
-* `auth_mode = auto`: Deprecated; treated as `aad` with a warning.
-* Friendly errors are returned for common issues (disabled shared key, permission mismatch / missing role assignments).
+* Default (no settings): Azure AD (`data_plane_auth_mode` omitted) for both blobs and queues.
+* `data_plane_auth_mode = auto`: Uses the default authentication method (Azure AD) with fall back to Shared Key if needed.
+* `data_plane_auth_mode = aad`: Explicit Azure AD.
+* `data_plane_auth_mode = shared_key`: Explicit Shared Key.
 
 Track 2 SDK adoption:
 * Blobs: `github.com/Azure/azure-sdk-for-go/sdk/storage/azblob`
