@@ -2,6 +2,8 @@ package azure
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -13,7 +15,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/container"
 )
 
-// blobInfo holds a flattened view mapped from track2 SDK types preserving previous column expectations
 type blobInfo struct {
 	Blob           *container.BlobItem
 	Name           string
@@ -63,7 +64,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "type",
 				Description: "Specifies the type of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(derefToString),
 			},
 			{
 				Name:        "is_snapshot",
@@ -76,7 +77,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "access_tier",
 				Description: "The tier of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.AccessTier").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.AccessTier").Transform(derefToString),
 			},
 			{
 				Name:        "creation_time",
@@ -101,7 +102,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "etag",
 				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.Etag").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.Etag").Transform(derefToString),
 			},
 			{
 				Name:        "last_modified",
@@ -113,7 +114,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "snapshot",
 				Description: "Specifies the time, when the snapshot is taken.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Snapshot"),
+				Transform:   transform.FromField("Blob.Snapshot").Transform(derefToString),
 			},
 			{
 				Name:        "version_id",
@@ -251,19 +252,19 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "lease_duration",
 				Description: "Specifies whether the lease is of infinite or fixed duration, when a blob is leased.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseDuration").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseDuration").Transform(derefToString),
 			},
 			{
 				Name:        "lease_state",
 				Description: "Specifies lease state of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseState").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseState").Transform(derefToString),
 			},
 			{
 				Name:        "lease_status",
 				Description: "Specifies the lease status of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseStatus").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseStatus").Transform(derefToString),
 			},
 			{
 				Name:        "incremental_copy",
@@ -287,7 +288,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "archive_status",
 				Description: "Specifies the archive status of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.ArchiveStatus").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.ArchiveStatus").Transform(derefToString),
 			},
 			{
 				Name:        "blob_tag_set",
@@ -463,4 +464,47 @@ func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, 
 	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
 
 	return akas, nil
+}
+
+// derefToString converts pointer, fmt.Stringer, or basic values to string, returning "" when nil.
+func derefToString(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	v := d.Value
+	if v == nil {
+		return "", nil
+	}
+	// Unwrap pointers recursively (max a few levels to avoid cycles)
+	rv := reflect.ValueOf(v)
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return "", nil
+		}
+		rv = rv.Elem()
+	}
+	if !rv.IsValid() {
+		return "", nil
+	}
+	if s, ok := rv.Interface().(fmt.Stringer); ok {
+		if s == nil {
+			return "", nil
+		}
+		return s.String(), nil
+	}
+	switch rv.Kind() {
+	case reflect.String:
+		return rv.String(), nil
+	case reflect.Bool:
+		if rv.Bool() {
+			return "true", nil
+		}
+		return "false", nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return fmt.Sprintf("%d", rv.Int()), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return fmt.Sprintf("%d", rv.Uint()), nil
+	case reflect.Float32, reflect.Float64:
+		return fmt.Sprintf("%v", rv.Float()), nil
+	default:
+		// Fallback to fmt.Sprintf
+		return fmt.Sprintf("%v", rv.Interface()), nil
+	}
 }
