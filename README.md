@@ -74,6 +74,34 @@ Further reading:
 - [Writing plugins](https://steampipe.io/docs/develop/writing-plugins)
 - [Writing your first table](https://steampipe.io/docs/develop/writing-your-first-table)
 
+## Storage Data Plane Authentication
+
+The `azure_storage_blob` and `azure_storage_queue` tables now default to Azure AD (OAuth) authentication using your configured identity (environment variables, managed identity, CLI, Azure CLI login, etc.). With this change, the plugin no longer defaults to Shared Key authentication but will fall back to it.
+
+In almost all cases you should rely on Azure AD RBAC (e.g. assign the principal the `Storage Blob Data Reader` or `Storage Queue Data Reader` role). The controls below are advanced / legacy overrides only—avoid using them unless you have a specific need.
+
+Advanced (optional) connection overrides (`azure.spc`):
+
+```
+connection "azure" {
+	plugin  = "azure"
+	# data_plane_auth_mode can be: auto (default) | aad | shared_key
+	data_plane_auth_mode = "aad"
+}
+```
+
+Notes:
+* Default (no settings): Azure AD (`data_plane_auth_mode` omitted) for both blobs and queues.
+* `data_plane_auth_mode = auto`: Uses the default authentication method (Azure AD) with fall back to Shared Key if needed.
+* `data_plane_auth_mode = aad`: Explicit Azure AD.
+* `data_plane_auth_mode = shared_key`: Explicit Shared Key.
+
+Track 2 SDK adoption:
+* Blobs: `github.com/Azure/azure-sdk-for-go/sdk/storage/azblob`
+* Queues: `github.com/Azure/azure-sdk-for-go/sdk/storage/azqueue`
+
+Future work may extend this pattern to additional storage data-plane surfaces (files, tables) as Track 2 coverage matures.
+
 ## Open Source & Contributing
 
 This repository is published under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (source code) and [CC BY-NC-ND](https://creativecommons.org/licenses/by-nc-nd/2.0/) (docs) licenses. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). We look forward to collaborating with you!

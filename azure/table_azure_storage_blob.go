@@ -3,19 +3,20 @@ package azure
 import (
 	"context"
 	"fmt"
-	"net/url"
+	"reflect"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
-	"github.com/Azure/azure-storage-blob-go/azblob"
+	armstorage "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	azblob "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/container"
 )
 
-type blobInfo = struct {
-	Blob           azblob.BlobItemInternal
+type blobInfo struct {
+	Blob           *container.BlobItem
 	Name           string
 	Account        string
 	Container      *string
@@ -63,7 +64,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "type",
 				Description: "Specifies the type of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.BlobType").Transform(derefToString),
 			},
 			{
 				Name:        "is_snapshot",
@@ -76,7 +77,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "access_tier",
 				Description: "The tier of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.AccessTier").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.AccessTier").Transform(derefToString),
 			},
 			{
 				Name:        "creation_time",
@@ -101,7 +102,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "etag",
 				Description: "An unique read-only string that changes whenever the resource is updated.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.Etag").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.Etag").Transform(derefToString),
 			},
 			{
 				Name:        "last_modified",
@@ -113,7 +114,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "snapshot",
 				Description: "Specifies the time, when the snapshot is taken.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Snapshot"),
+				Transform:   transform.FromField("Blob.Snapshot").Transform(derefToString),
 			},
 			{
 				Name:        "version_id",
@@ -251,19 +252,19 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "lease_duration",
 				Description: "Specifies whether the lease is of infinite or fixed duration, when a blob is leased.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseDuration").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseDuration").Transform(derefToString),
 			},
 			{
 				Name:        "lease_state",
 				Description: "Specifies lease state of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseState").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseState").Transform(derefToString),
 			},
 			{
 				Name:        "lease_status",
 				Description: "Specifies the lease status of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.LeaseStatus").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.LeaseStatus").Transform(derefToString),
 			},
 			{
 				Name:        "incremental_copy",
@@ -287,7 +288,7 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 				Name:        "archive_status",
 				Description: "Specifies the archive status of the blob.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Blob.Properties.ArchiveStatus").Transform(transform.ToString),
+				Transform:   transform.FromField("Blob.Properties.ArchiveStatus").Transform(derefToString),
 			},
 			{
 				Name:        "blob_tag_set",
@@ -336,143 +337,119 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
-	if err != nil {
-		return nil, err
-	}
-	subscriptionID := session.SubscriptionID
-
 	accountName := d.EqualsQuals["storage_account_name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
-
 	if accountName == "" || resourceGroup == "" {
 		return nil, nil
 	}
 
-	// Get storage account location
-	accountClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	accountClient.Authorizer = session.Authorizer
+	// Management plane session (legacy) for account metadata and potential key listing
+	mgmtSession, err := GetNewSession(ctx, d, "MANAGEMENT")
+	if err != nil {
+		return nil, err
+	}
+	armCredSession, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
 
-	op, err := accountClient.GetProperties(ctx, resourceGroup, accountName, "")
+	subscriptionID := mgmtSession.SubscriptionID
+
+	// Get storage account properties (track2 ARM)
+	armClient, err := armstorage.NewAccountsClient(subscriptionID, armCredSession.Cred, armCredSession.ClientOptions)
+	if err != nil {
+		return nil, err
+	}
+	accountResp, err := armClient.GetProperties(ctx, resourceGroup, accountName, nil)
 	if err != nil {
 		if strings.Contains(err.Error(), "ResourceNotFound") || strings.Contains(err.Error(), "ResourceGroupNotFound") {
 			return nil, nil
 		}
 		return nil, err
 	}
-	region := *op.Location
+	region := ""
+	if accountResp.Account.Properties != nil && accountResp.Account.Location != nil {
+		region = *accountResp.Account.Location
+	}
 
-	// List storage account keys
-	storageClient := storage.NewAccountsClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	storageClient.Authorizer = session.Authorizer
+	allowShared := true
+	if accountResp.Account.Properties != nil && accountResp.Account.Properties.AllowSharedKeyAccess != nil {
+		allowShared = *accountResp.Account.Properties.AllowSharedKeyAccess
+	}
 
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &storageClient, d.Connection)
+	config := GetConfig(d.Connection)
+	authMode := "auto"
+	if config.DataPlaneAuthMode != nil && *config.DataPlaneAuthMode != "" {
+		authMode = strings.ToLower(*config.DataPlaneAuthMode)
+	}
 
-	keys, err := storageClient.ListKeys(ctx, resourceGroup, accountName, "")
+	// Resolve data-plane credential/client options
+	serviceClient, err := buildBlobServiceClient(ctx, d, armCredSession.Cred, authMode, accountName, resourceGroup, subscriptionID, mgmtSession.StorageEndpointSuffix, allowShared)
 	if err != nil {
 		return nil, err
 	}
 
-	credential, errC := azblob.NewSharedKeyCredential(accountName, *(*(keys.Keys))[0].Value)
-	if errC != nil {
-		return nil, errC
-	}
+	// auto fallback handled centrally inside buildBlobServiceClient
 
-	// List all containers
-	containerClient := storage.NewBlobContainersClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	containerClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &storageClient, d.Connection)
-
-	var containers []storage.ListContainerItem
-
-	result, err := containerClient.List(ctx, resourceGroup, accountName, "", "", "")
-	if err != nil {
-		return nil, err
-	}
-	containers = append(containers, result.Values()...)
-	for result.NotDone() {
-		// Wait for rate limiting
+	// List containers using data-plane (track2) client
+	cPager := serviceClient.NewListContainersPager(nil)
+	for cPager.More() {
+		// Rate limit coordination
 		d.WaitForListRateLimit(ctx)
-
-		err := result.NextWithContext(ctx)
+		cPage, err := cPager.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
-		containers = append(containers, result.Values()...)
-	}
-
-	// Iterating all the available containers
-	for _, item := range containers {
-		blobs, err := getRowDataForBlob(ctx, item, accountName, session.StorageEndpointSuffix, credential)
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_storage_blob.listStorageBlobs.getRowDataForBlob", "api_error", err)
-			return nil, err
-		}
-
-		for _, data := range blobs {
-			d.StreamListItem(ctx, &blobInfo{data.Blob, data.Name, accountName, data.Container, resourceGroup, &subscriptionID, region, data.IsSnapshot})
-
-			// Check if context has been cancelled or if the limit has been hit (if specified)
-			// if there is a limit, it will return the number of rows required to reach this limit
+		for _, c := range cPage.ContainerItems {
+			containerName := ""
+			if c.Name != nil {
+				containerName = *c.Name
+			}
+			if containerName == "" {
+				continue
+			}
+			if err := streamBlobsInContainer(ctx, d, serviceClient, accountName, resourceGroup, subscriptionID, region, containerName); err != nil {
+				return nil, err
+			}
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
 	}
 
-	return nil, err
+	return nil, nil
 }
 
-// List all the available blobs
-func getRowDataForBlob(ctx context.Context, container storage.ListContainerItem, accountName string, storageEndpointSuffix string, credential *azblob.SharedKeyCredential) ([]blobInfo, error) {
-	primaryURL, _ := url.Parse(fmt.Sprintf("https://%s.blob.%s", accountName, storageEndpointSuffix))
-	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
+// buildBlobServiceClient creates a track2 azblob ServiceClient according to auth_mode
 
-	// Create Service URL
-	serviceURL := azblob.NewServiceURL(*primaryURL, p)
-	containerURL := serviceURL.NewContainerURL(*container.Name)
-
-	var items []blobInfo
-	subscriptionID := strings.Split(string(*container.ID), "/")[2]
-
-	// List the blob(s) in our container; since a container may hold millions of blobs, this is done 1 segment at a time.
-	for marker := (azblob.Marker{}); marker.NotDone(); {
-		// Get a result segment starting with the blob indicated by the current Marker.
-		listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{
-			Details: azblob.BlobListingDetails{
-				Copy:             true,
-				Metadata:         true,
-				Snapshots:        true,
-				UncommittedBlobs: true,
-				Deleted:          true,
-				Tags:             true,
-				Versions:         false,
-			},
-		})
-		if err != nil {
-			return nil, err
+func streamBlobsInContainer(ctx context.Context, d *plugin.QueryData, blobClient *azblob.Client, accountName, resourceGroup, subscriptionID, region, containerName string) error {
+	pager := blobClient.NewListBlobsFlatPager(containerName, &azblob.ListBlobsFlatOptions{Include: azblob.ListBlobsInclude{Copy: true, Metadata: true, Snapshots: true, Deleted: true, Tags: true, Versions: false}})
+	for pager.More() {
+		if d.RowsRemaining(ctx) == 0 {
+			return nil
 		}
-
-		// ListBlobs returns the start of the next segment; you MUST use this to get
-		// the next segment (after processing the current result segment).
-		marker = listBlob.NextMarker
-		isSnapshot := true
-
-		for _, blob := range listBlob.Segment.BlobItems {
-			// Snapshot of a blob has same configuration,
-			// only difference is that the snapshot has a property which specifies
-			// the time, when the snapshot was taken
-			if len(blob.Snapshot) < 1 {
-				isSnapshot = false
+		resp, err := pager.NextPage(ctx)
+		if err != nil {
+			// Friendly error translation
+			if translated := translateBlobError(err); translated != nil {
+				return translated
 			}
-			items = append(items, blobInfo{blob, blob.Name, accountName, container.Name, "", &subscriptionID, "", isSnapshot})
+			return err
+		}
+		for _, item := range resp.Segment.BlobItems {
+			isSnapshot := item.Snapshot != nil && *item.Snapshot != ""
+			name := ""
+			if item.Name != nil {
+				name = *item.Name
+			}
+			ci := &blobInfo{Blob: item, Name: name, Account: accountName, Container: &containerName, ResourceGroup: resourceGroup, SubscriptionID: &subscriptionID, Location: region, IsSnapshot: isSnapshot}
+			d.StreamListItem(ctx, ci)
+			if d.RowsRemaining(ctx) == 0 {
+				return nil
+			}
 		}
 	}
-
-	return items, nil
+	return nil
 }
 
 //// TRANSFORM FUNCTIONS
@@ -484,4 +461,47 @@ func blobDataToAka(_ context.Context, d *transform.TransformData) (interface{}, 
 	akas := []string{"azure:///subscriptions/" + *blob.SubscriptionID + "/resourceGroups/" + blob.ResourceGroup + "/providers/Microsoft.Storage/storageAccounts/" + blob.Account + "/blobServices/default/containers/" + *blob.Container + "/blobs/" + blob.Name, "azure:///subscriptions/" + *blob.SubscriptionID + "/resourcegroups/" + strings.ToLower(blob.ResourceGroup) + "/providers/microsoft.storage/storageaccounts/" + strings.ToLower(blob.Account) + "/blobservices/default/containers/" + strings.ToLower(*blob.Container) + "/blobs/" + strings.ToLower(blob.Name)}
 
 	return akas, nil
+}
+
+// derefToString converts pointer, fmt.Stringer, or basic values to string, returning "" when nil.
+func derefToString(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	v := d.Value
+	if v == nil {
+		return "", nil
+	}
+	// Unwrap pointers recursively (max a few levels to avoid cycles)
+	rv := reflect.ValueOf(v)
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return "", nil
+		}
+		rv = rv.Elem()
+	}
+	if !rv.IsValid() {
+		return "", nil
+	}
+	if s, ok := rv.Interface().(fmt.Stringer); ok {
+		if s == nil {
+			return "", nil
+		}
+		return s.String(), nil
+	}
+	switch rv.Kind() {
+	case reflect.String:
+		return rv.String(), nil
+	case reflect.Bool:
+		if rv.Bool() {
+			return "true", nil
+		}
+		return "false", nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return fmt.Sprintf("%d", rv.Int()), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return fmt.Sprintf("%d", rv.Uint()), nil
+	case reflect.Float32, reflect.Float64:
+		return fmt.Sprintf("%v", rv.Float()), nil
+	default:
+		// Fallback to fmt.Sprintf
+		return fmt.Sprintf("%v", rv.Interface()), nil
+	}
 }

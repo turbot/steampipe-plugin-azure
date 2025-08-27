@@ -17,6 +17,7 @@ type azureConfig struct {
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
+	DataPlaneAuthMode     *string  `hcl:"data_plane_auth_mode"` // auto (default) | aad | shared_key
 }
 
 func ConfigInstance() interface{} {

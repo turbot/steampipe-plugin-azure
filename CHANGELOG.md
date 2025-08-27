@@ -1,3 +1,15 @@
+## vNext
+
+_Enhancements_
+
+- The `azure_storage_blob` and `azure_storage_queue` tables now use Azure AD (OAuth) by default and fall back to Shared Key credentials.
+- Implemented Azure Storage Track 2 SDK for storage data plane operations providing improved paging, consistency, and Azure AD first-class authentication.
+- Added advanced (optional) connection config arguments `data_plane_auth_mode` to override the default Azure AD authentication for Storage data plane calls.
+
+_Dependencies_
+
+- Removed legacy Track 1 dependency `github.com/Azure/azure-storage-blob-go`.
+
 ## v1.6.0 [2025-08-06]
 
 _Enhancements_
