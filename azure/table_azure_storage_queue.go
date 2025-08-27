@@ -48,17 +48,61 @@ func tableAzureStorageQueue(_ context.Context) *plugin.Table {
 			},
 		},
 		Columns: azureColumns([]*plugin.Column{
-			{Name: "name", Type: proto.ColumnType_STRING, Description: "The friendly name that identifies the queue."},
-			{Name: "id", Description: "Resource ID of the queue.", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID")},
-			{Name: "storage_account_name", Description: "The storage account containing the queue.", Type: proto.ColumnType_STRING, Transform: transform.FromField("Account")},
-			{Name: "type", Description: "Type of the resource.", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type")},
-			{Name: "metadata", Description: "Queue metadata key-value pairs.", Type: proto.ColumnType_JSON, Transform: transform.FromField("Metadata")},
+			{
+				Name:        "name",
+				Type:        proto.ColumnType_STRING,
+				Description: "The friendly name that identifies the queue.",
+			},
+			{
+				Name:        "id",
+				Description: "Resource ID of the queue.",
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("ID"),
+			},
+			{
+				Name:        "storage_account_name",
+				Description: "The storage account containing the queue.",
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("Account"),
+			},
+			{
+				Name:        "type",
+				Description: "Type of the resource.",
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("Type"),
+			},
+			{
+				Name:        "metadata",
+				Description: "Queue metadata key-value pairs.",
+				Type:       proto.ColumnType_JSON,
+				Transform:  transform.FromField("Metadata"),
+			},
 			// Standard columns
-			{Name: "title", Description: ColumnDescriptionTitle, Type: proto.ColumnType_STRING, Transform: transform.FromField("Name")},
-			{Name: "akas", Description: ColumnDescriptionAkas, Type: proto.ColumnType_JSON, Transform: transform.From(buildQueueAkas)},
+			{
+				Name:        "title",
+				Description: ColumnDescriptionTitle,
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("Name"),
+			},
+			{
+				Name:        "akas",
+				Description: ColumnDescriptionAkas,
+				Type:       proto.ColumnType_JSON,
+				Transform:  transform.From(buildQueueAkas),
+			},
 			// Azure standard
-			{Name: "region", Description: ColumnDescriptionRegion, Type: proto.ColumnType_STRING, Transform: transform.FromField("Location").Transform(toLower)},
-			{Name: "resource_group", Description: ColumnDescriptionResourceGroup, Type: proto.ColumnType_STRING, Transform: transform.FromField("ResourceGroup").Transform(toLower)},
+			{
+				Name:        "region",
+				Description: ColumnDescriptionRegion,
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("Location").Transform(toLower),
+			},
+			{
+				Name:        "resource_group",
+				Description: ColumnDescriptionResourceGroup,
+				Type:       proto.ColumnType_STRING,
+				Transform:  transform.FromField("ResourceGroup").Transform(toLower),
+			},
 		}),
 	}
 }
