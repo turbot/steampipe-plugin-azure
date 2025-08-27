@@ -337,7 +337,6 @@ func tableAzureStorageBlob(_ context.Context) *plugin.Table {
 //// FETCH FUNCTIONS
 
 func listStorageBlobs(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	// logger removed (no deprecation warning needed with simplified auth)
 	accountName := d.EqualsQuals["storage_account_name"].GetStringValue()
 	resourceGroup := d.EqualsQuals["resource_group"].GetStringValue()
 	if accountName == "" || resourceGroup == "" {
