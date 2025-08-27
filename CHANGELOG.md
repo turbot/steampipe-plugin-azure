@@ -1,13 +1,10 @@
 ## vNext
 
-_Breaking changes_
-
-- The `azure_storage_blob` and `azure_storage_queue` tables now use Azure AD (OAuth) by default and no longer implicitly fall back to Shared Key credentials. The previous implicit key listing behavior has been removed. (If you previously relied on automatic Shared Key access you must now either rely on Azure AD RBAC or opt in explicitly via the advanced storage auth override options described below.)
-
 _Enhancements_
 
-- Implemented Azure Storage Track 2 SDK for blobs (`sdk/storage/azblob`) and queues (`sdk/storage/azqueue`) providing improved paging, consistency, and Azure AD first-class authentication.
-- Added advanced (optional) connection config arguments `auth_mode`, `storage_account_key`, `storage_sas_token`, and `allow_storage_key_listing` to override the default Azure AD authentication for Storage data plane calls. These are considered an advanced / legacy compatibility feature; most users should not set them.
+- The `azure_storage_blob` and `azure_storage_queue` tables now use Azure AD (OAuth) by default and fall back to Shared Key credentials.
+- Implemented Azure Storage Track 2 SDK for storage data plane operations providing improved paging, consistency, and Azure AD first-class authentication.
+- Added advanced (optional) connection config arguments `data_plane_auth_mode` to override the default Azure AD authentication for Storage data plane calls.
 
 _Dependencies_
 
