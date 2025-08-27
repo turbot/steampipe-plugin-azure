@@ -150,7 +150,7 @@ func listStorageQueues(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		if err != nil {
 			// Translate common auth errors and wrap properly
 			if strings.Contains(err.Error(), "KeyBasedAuthenticationNotPermitted") {
-				return nil, fmt.Errorf("shared key disabled; retry with auth_mode=aad: %w", err)
+				return nil, fmt.Errorf("shared key disabled; retry with data_plane_auth_mode=aad: %w", err)
 			}
 			return nil, err
 		}
