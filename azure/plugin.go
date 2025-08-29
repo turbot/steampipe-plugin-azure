@@ -5,6 +5,7 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/rate_limiter"
 )
 
 const pluginName = "steampipe-plugin-azure"
@@ -31,6 +32,90 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
+		},
+		RateLimiters: []*rate_limiter.Definition{
+			// Tables mentioned in GitHub issue #927 - Azure Services Highly Prone to Rate Limits
+
+			// 1. Azure Resource Manager (ARM) - All list and get resource metadata calls go through ARM
+			// https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
+			// ~12,000 reads/hour per subscription per region
+			{
+				Name:       "azure_subscription",
+				FillRate:   25,
+				BucketSize: 250,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.Resources' and action = 'subscriptions/read'",
+			},
+			// https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#subscription-and-tenant-limits
+			{
+				Name:       "azure_resource_group",
+				FillRate:   25,
+				BucketSize: 250,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.Resources' and action = 'resourceGroups/read'",
+			},
+			// https://learn.microsoft.com/en-us/azure/virtual-machines/compute-throttling-limits#throttling-limits-for-virtual-machines
+			{
+				Name:       "azure_compute_virtual_machine",
+				FillRate:   500,
+				BucketSize: 1500,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.Compute' and action = 'virtualMachines/read'",
+			},
+			{
+				Name:       "azure_compute_virtual_machine_operations",
+				FillRate:   12,
+				BucketSize: 36,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service in ('Microsoft.Compute', 'Microsoft.GuestConfiguration', 'Microsoft.Network') and action in ('virtualMachines/instanceView/read', 'virtualMachines/extensions/read', 'publicIPAddresses/read')",
+			},
+
+			// https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-storage-resource-provider-limits
+			{
+				Name:       "azure_storage_account",
+				FillRate:   2,
+				BucketSize: 50,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.Storage' and action = 'storageAccounts/read'",
+			},
+			// https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-blob-storage-limits
+			{
+				Name:       "azure_storage_blob",
+				FillRate:   500,
+				BucketSize: 500,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.Storage' and action = 'storageAccounts/blobServices/containers/blobs/read'",
+			},
+
+			// 3. Azure Key Vault - Every get for a secret/key/certificate is a counted API request
+			// https://learn.microsoft.com/en-us/azure/key-vault/general/service-limits
+			// ~2,000 GET/10s per vault
+			{
+				Name:       "azure_key_vault_secret",
+				FillRate:   40, 
+				BucketSize: 400,
+				Scope:      []string{"connection", "subscription", "vault"},
+				Where:      "service = 'Microsoft.KeyVault' and action = 'vaults/secrets/read'",
+			},
+			{
+				Name:       "azure_key_vault_key",
+				FillRate:   20,
+				BucketSize: 200,
+				Scope:      []string{"connection", "subscription", "vault"},
+				Where:      "service = 'Microsoft.KeyVault' and action = 'vaults/keys/read'",
+			},
+
+			// Azure Monitor / Log Analytics - Querying log data is essentially a read op
+			// https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
+			// API queries often capped by 200 QPS per workspace, but contributes significantly to ARM traffic
+			// https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/service-limits#alerts-api
+			{
+				Name:       "azure_monitor_activity_log",
+				FillRate:   1, // Conservative limit for activity log queries
+				BucketSize: 50,
+				Scope:      []string{"connection", "subscription", "region"},
+				Where:      "service = 'Microsoft.Insights' and action = 'activityLogs/read'",
+			},
 		},
 		TableMap: map[string]*plugin.Table{
 			"azure_alert_management":                                       tableAzureAlertMangement(ctx),
