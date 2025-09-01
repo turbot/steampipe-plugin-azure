@@ -13,7 +13,6 @@ Azure Cost Management provides cost analytics to help you understand and manage 
 The `azure_cost_usage` table provides insights into cost and usage data within Microsoft Azure with flexible dimension support. As a Cloud Architect, FinOps engineer, or DevOps professional, explore cost details through this table using any combination of Azure dimensions. Utilize it to create custom cost breakdowns, analyze spending patterns across multiple dimensions, track costs by location and service, and perform advanced cost analytics that match your organizational structure.
 
 **Important Notes:**
-
 - You **_must_** specify `cost_type` (ActualCost or AmortizedCost), `granularity` (DAILY or MONTHLY), and at least one dimension qualifier — either `dimension_type_1` and/or `dimension_type_2` or `dimension_types` — in a `where` clause in order to use this table.
 - For improved performance, it is advised that you use the optional quals `period_start` and `period_end` to limit the result set to a specific time period.
 - This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:

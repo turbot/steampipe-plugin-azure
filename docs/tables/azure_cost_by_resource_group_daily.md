@@ -13,14 +13,13 @@ Azure Cost Management provides cost analytics to help you understand and manage 
 The `azure_cost_by_resource_group_daily` table provides insights into daily cost breakdown by resource group within Microsoft Azure. As a Cloud Architect, FinOps engineer, or DevOps professional, explore resource group-specific cost details through this table, including daily usage costs, currency information, and resource group names. Utilize it to uncover cost patterns per team or project, identify expensive resource groups, track daily spending trends, and optimize resource group allocation.
 
 **Important Notes:**
-
 - You **_must_** specify `cost_type` (ActualCost or AmortizedCost) in a `where` clause in order to use this table.
 - For improved performance, it is advised that you use the optional quals `period_start` and `period_end` to limit the result set to a specific time period.
 - This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:
   - `scope` with supported operators `=`. Default to current subscription. Possible value are see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
   - `period_start` with supported operators `=`. Default: 1 year ago.
   - `period_end` with supported operators `=`. Default: yesterday.
-  - `resource_group` with supported operators `=`, `<>`.
+  - `resource_group`
 
 ## Examples
 
