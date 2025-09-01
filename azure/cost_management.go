@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/query_cache"
 )
 
-var CostMetrics = []string{"PreTaxCost"}
+var CostMetrics = []string{"PreTaxCost", "Cost"}
 
 // CostManagementRow represents a flattened cost management result row with all cost types (like AWS)
 // https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/understand-usage-details-fields
@@ -30,10 +31,9 @@ type CostManagementRow struct {
 	Dimension2 *string // Second dimension field for multi-dimensional grouping
 	Dimensions *map[string]string
 
-	// Cost metrics (following AWS naming conventions)
-	// Actual costs (unblended_cost_amount and unblended_cost_unit removed)
-	PreTaxCostAmount *float64 // Pre-tax cost (Actual Cost)
-	PreTaxCostUnit   *string
+	// Cost metrics
+	PreTaxCostAmount *float64
+	CostAmount       *float64
 
 	// Metadata
 	Currency *string
@@ -71,16 +71,38 @@ func getCostTypeFromString(costType string) armcostmanagement.ExportType {
 	}
 }
 
+
+// getMetricsByQueryContext determines which metrics to fetch based on selected columns
+func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
+	var metrics []string
+	// If user selected cost, include Cost
+	costMetricAdded := false
+	preTaxCostMetricAdded := false
+	if slices.Contains(qc.Columns, "cost") {
+		costMetricAdded = true
+		metrics = append(metrics, "Cost")
+	}
+
+	if slices.Contains(qc.Columns, "pre_tax_cost") {
+		preTaxCostMetricAdded = true
+		metrics = append(metrics, "PreTaxCost")
+	}
+
+	// default to PreTaxCost if nothing explicitly requested
+	if !costMetricAdded && !preTaxCostMetricAdded {
+		metrics = append(metrics, "PreTaxCost")
+	}
+
+	return metrics
+}
+
 // getColumnsFromQueryContext determines which columns to request from Azure API
 func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	var columns []*string
-
-	// Always include currency and the metric columns referenced in CostMetrics
 	columns = append(columns, to.Ptr("Currency"))
-	for _, m := range CostMetrics {
+	for _, m := range getMetricsByQueryContext(qc) {
 		columns = append(columns, to.Ptr(m))
 	}
-
 	return columns
 }
 
@@ -212,37 +234,25 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Type:        proto.ColumnType_TIMESTAMP,
 			Transform:   transform.FromQual("period_end"),
 		},
-		// {
-		// 	Name:        "estimated",
-		// 	Description: "Whether the cost data is estimated.",
-		// 	Type:        proto.ColumnType_BOOL,
-		// 	Transform:   transform.FromField("Estimated"),
-		// },
+		// estimated removed
 		{
-			Name:        "pre_tax_cost_amount",
+			Name:        "pre_tax_cost",
 			Description: "Pre-tax cost amount for the period.",
 			Type:        proto.ColumnType_DOUBLE,
 			Transform:   transform.FromField("PreTaxCostAmount"),
 		},
 		{
-			Name:        "pre_tax_cost_unit",
-			Description: "Unit type for pre-tax costs.",
-			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("PreTaxCostUnit"),
+			Name:        "cost",
+			Description: "Aggregated cost amount for the period (Cost metric).",
+			Type:        proto.ColumnType_DOUBLE,
+			Transform:   transform.FromField("CostAmount"),
 		},
-		// Amortized costs (for reservations)
-		// {
-		// 	Name:        "amortized_cost_amount",
-		// 	Description: "This cost metric reflects the effective cost of the upfront and monthly reservation fees spread across the billing period. By default, Cost Explorer shows the fees for Reserved Instances as a spike on the day that you're charged, but if you choose to show costs as amortized costs, the costs are amortized over the billing period. This means that the costs are broken out into the effective daily rate. Azure estimates your amortized costs by combining your unblended costs with the amortized portion of your upfront and recurring reservation fees.",
-		// 	Type:        proto.ColumnType_DOUBLE,
-		// 	Transform:   transform.FromField("AmortizedCostAmount"),
-		// },
-		// {
-		// 	Name:        "amortized_cost_unit",
-		// 	Description: "Unit type for amortized costs.",
-		// 	Type:        proto.ColumnType_STRING,
-		// 	Transform:   transform.FromField("AmortizedCostUnit"),
-		// },
+		{
+			Name:        "currency",
+			Description: "Currency code for the returned cost values.",
+			Type:        proto.ColumnType_STRING,
+			Transform:   transform.FromField("Currency"),
+		},
 		{
 			Name:        "scope",
 			Description: "The Azure scope for the cost query (e.g., subscription, resource group, etc.).",
@@ -498,10 +508,21 @@ func processQueryResults(result *armcostmanagement.QueryResult, scope string, ro
 		if currency == "" {
 			currency = "USD"
 		}
-		if v, ok := getFloat(row, "PreTaxCost"); ok {
-			costRow.PreTaxCostAmount = &v
-			costRow.PreTaxCostUnit = &currency
+		// Handle PreTaxCost metric
+		if idx, ok := columnIdx["PreTaxCost"]; ok && len(row) > idx && row[idx] != nil {
+			if cost, ok := row[idx].(float64); ok {
+				costRow.PreTaxCostAmount = &cost
+			}
 		}
+
+		// Handle Cost metric
+		if idx, ok := columnIdx["Cost"]; ok && len(row) > idx && row[idx] != nil {
+			if v, ok := row[idx].(float64); ok {
+				costRow.CostAmount = &v
+			}
+		}
+
+		// Set the currency for all cost fields
 		costRow.Currency = &currency
 
 		// 5) scope

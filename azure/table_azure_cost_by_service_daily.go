@@ -93,14 +93,12 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (arm
 	// Build filter for service_name if provided
 	filter := buildFilterExpression(d, "ServiceName")
 
-	// Get dynamic columns based on query context
-	// _ = getColumnsFromQueryContext(d.QueryContext) // Not used in grouped queries
-
+	
 	// Build aggregation based on requested columns
 	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
 
-	// Determine which metrics to include (from global CostMetrics)
-	for i, metric := range CostMetrics {
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	for i, metric := range metrics {
 		if i >= 2 {
 			break
 		}

@@ -92,15 +92,11 @@ func buildCostByResourceGroupDailyInput(ctx context.Context, d *plugin.QueryData
 
 	// Build filter for resource_group if provided
 	filter := buildFilterExpression(d, "ResourceGroupName")
-
-	// Get dynamic columns based on query context
-	_ = getColumnsFromQueryContext(d.QueryContext) // Not used in grouped queries
-
 	// Build aggregation based on requested columns
 	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
 
-	// Determine which metrics to include (from global CostMetrics)
-	for i, metric := range CostMetrics {
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	for i, metric := range metrics {
 		if i >= 2 {
 			break
 		}

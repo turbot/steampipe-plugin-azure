@@ -206,9 +206,10 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 	// Build aggregation based on requested columns
 	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
 
-	// Determine which metrics to include (from global CostMetrics)
-	for i, metric := range CostMetrics {
-		if i >= 2 { // Azure allows max 2 aggregations
+	// Determine which metrics to include based on selected columns
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	for i, metric := range metrics {
+		if i >= 2 {
 			break
 		}
 		aggregation[metric] = &armcostmanagement.QueryAggregation{
