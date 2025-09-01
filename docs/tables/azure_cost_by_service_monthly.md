@@ -25,7 +25,6 @@ The `azure_cost_by_service_monthly` table provides insights into monthly cost br
 ## Examples
 
 ### Recent monthly costs by service
-
 Get the last 6 months of monthly costs across Azure services, showing the cost breakdown by service with currency details.
 
 ```sql+postgres
@@ -63,7 +62,6 @@ limit 10;
 ```
 
 ### Historical monthly costs for a specific service
-
 Analyze the complete historical monthly cost trend for a specific Azure service to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
@@ -99,7 +97,6 @@ order by
 ```
 
 ### Costs for a specific billing period
-
 Use period_start and period_end parameters to query costs for a specific annual billing period (2024), showing all services and their costs.
 
 ```sql+postgres
@@ -141,7 +138,6 @@ order by
 ```
 
 ### Total historical spend by service
-
 Get the total cumulative cost for each service across all months to understand which services contribute most to your overall Azure spending.
 
 ```sql+postgres
@@ -179,7 +175,6 @@ order by
 ```
 
 ### Monthly cost trends by year
-
 Compare monthly costs between 2024 and 2025 to understand year-over-year cost growth and seasonal spending patterns.
 
 ```sql+postgres
@@ -223,7 +218,6 @@ order by
 ```
 
 ### Services with month-over-month cost increases
-
 Identify services where costs increased from the previous month, showing the actual cost change amounts to help focus cost optimization efforts.
 
 ```sql+postgres
@@ -281,7 +275,6 @@ order by
 ```
 
 ### Cost statistics by service
-
 Calculate average, minimum, and maximum monthly costs for each service to understand spending patterns and cost variability.
 
 ```sql+postgres
@@ -321,7 +314,6 @@ order by
 ```
 
 ### Tax analysis for amortized costs
-
 Analyze the difference between pre-tax costs and final amortized costs to understand tax implications on monthly service spending.
 
 ```sql+postgres

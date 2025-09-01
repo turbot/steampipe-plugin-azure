@@ -25,7 +25,6 @@ The `azure_cost_by_service_daily` table provides insights into daily cost breakd
 ## Examples
 
 ### Recent daily costs by service
-
 Get the most recent 7 days of daily costs across Azure services, showing the cost breakdown by service with currency details.
 
 ```sql+postgres
@@ -63,7 +62,6 @@ limit 10;
 ```
 
 ### Historical daily costs for a specific service
-
 Analyze the complete historical daily cost trend for a specific Azure service to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
@@ -99,7 +97,6 @@ order by
 ```
 
 ### Costs for a specific billing period
-
 Use period_start and period_end parameters to query costs for a specific time range, showing both actual cost and pre-tax cost with period metadata.
 
 ```sql+postgres
@@ -141,7 +138,6 @@ order by
 ```
 
 ### Service cost aggregation analysis
-
 Identify the top 5 most expensive Azure services over the last 30 days with total costs and average daily spending to focus optimization efforts.
 
 ```sql+postgres
@@ -183,7 +179,6 @@ limit 5;
 ```
 
 ### Daily total spending trends
-
 Analyze the aggregated daily cost trends across all services to identify spending patterns and cost spikes over the last 30 days.
 
 ```sql+postgres
@@ -221,7 +216,6 @@ order by
 ```
 
 ### Service costs within a date range
-
 Get detailed daily cost breakdown for all services within a specific 7-day period, ordered by usage date and cost amount.
 
 ```sql+postgres
@@ -257,7 +251,6 @@ order by
 ```
 
 ### High-cost services above threshold
-
 Identify services that exceeded a specific cost threshold ($0.50) on any given day, useful for cost monitoring and budget alerting.
 
 ```sql+postgres
@@ -291,7 +284,6 @@ order by
 ```
 
 ### Reservation savings analysis
-
 Compare actual costs vs amortized costs to identify reservation savings by joining ActualCost and AmortizedCost data for each service and day.
 
 ```sql+postgres

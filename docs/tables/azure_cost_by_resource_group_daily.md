@@ -25,7 +25,6 @@ The `azure_cost_by_resource_group_daily` table provides insights into daily cost
 ## Examples
 
 ### Recent daily costs by resource group
-
 Get the most recent 7 days of daily costs across Azure resource groups, showing the cost breakdown by resource group with subscription details.
 
 ```sql+postgres
@@ -65,7 +64,6 @@ limit 10;
 ```
 
 ### Historical daily costs for a specific resource group
-
 Analyze the complete historical daily cost trend for a specific Azure resource group to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
@@ -101,7 +99,6 @@ order by
 ```
 
 ### Costs for a specific billing period
-
 Use period_start and period_end parameters to query costs for a specific time range, showing both actual cost and pre-tax cost with period metadata.
 
 ```sql+postgres
@@ -143,7 +140,6 @@ order by
 ```
 
 ### Top 5 most expensive resource groups in the last 30 days
-
 Identify the most expensive Azure resource groups from the last 30 days to focus cost optimization efforts on specific teams or projects.
 
 ```sql+postgres
@@ -185,7 +181,6 @@ limit 5;
 ```
 
 ### Daily total spending trends
-
 Analyze the aggregated daily cost trends across all resource groups to identify spending patterns and cost spikes over the last 30 days.
 
 ```sql+postgres
@@ -223,7 +218,6 @@ order by
 ```
 
 ### Identify idle resource groups
-
 Find resource groups that had zero costs on specific days, which might indicate unused or idle resources that could be optimized or cleaned up.
 
 ```sql+postgres
@@ -259,7 +253,6 @@ order by
 ```
 
 ### Daily cost ranking by resource group
-
 Compare daily costs between different resource groups using ranking to understand relative spending patterns across teams or projects over the last 7 days.
 
 ```sql+postgres
@@ -297,7 +290,6 @@ order by
 ```
 
 ### High-cost resource groups above threshold
-
 Identify resource groups that exceeded a specific cost threshold ($1.00) on any given day, useful for cost monitoring and budget alerting.
 
 ```sql+postgres

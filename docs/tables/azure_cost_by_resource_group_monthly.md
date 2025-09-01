@@ -25,7 +25,6 @@ The `azure_cost_by_resource_group_monthly` table provides insights into monthly 
 ## Examples
 
 ### Recent monthly costs by resource group
-
 Get the last 6 months of monthly costs across Azure resource groups, showing the cost breakdown by resource group with subscription details.
 
 ```sql+postgres
@@ -63,7 +62,6 @@ limit 10;
 ```
 
 ### Historical monthly costs for a specific resource group
-
 Analyze the complete historical monthly cost trend for a specific Azure resource group to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
@@ -99,7 +97,6 @@ order by
 ```
 
 ### Costs for a specific billing period
-
 Use period_start and period_end parameters to query costs for a specific time range, showing both actual cost and pre-tax cost with period metadata.
 
 ```sql+postgres
@@ -141,7 +138,6 @@ order by
 ```
 
 ### Aggregate spending analysis by resource group
-
 Get the total cumulative costs across all months for each resource group to identify which teams or projects contribute most to your overall Azure spending.
 
 ```sql+postgres
@@ -181,7 +177,6 @@ limit 10;
 ```
 
 ### Month-over-month cost increases
-
 Identify resource groups with increasing costs by comparing each month to the previous month, showing absolute cost changes to help focus optimization efforts.
 
 ```sql+postgres
@@ -241,7 +236,6 @@ limit 10;
 ```
 
 ### Budget threshold monitoring
-
 Track monthly spending against predefined budget thresholds ($50 over budget, $30 near budget) by resource group to monitor departmental spending limits.
 
 ```sql+postgres
@@ -285,7 +279,6 @@ order by
 ```
 
 ### Cost statistics by resource group
-
 Analyze cost distribution statistics (average, min, max, standard deviation) across resource groups to understand spending patterns and variability.
 
 ```sql+postgres
@@ -328,7 +321,6 @@ limit 10;
 ```
 
 ### Quarterly cost aggregation
-
 Aggregate monthly costs into quarterly totals for each resource group to analyze seasonal spending patterns and quarterly budget planning.
 
 ```sql+postgres
@@ -386,7 +378,6 @@ order by
 ```
 
 ### Reservation savings analysis
-
 Compare actual costs vs amortized costs to identify reservation savings by joining ActualCost and AmortizedCost data for each resource group and month.
 
 ```sql+postgres

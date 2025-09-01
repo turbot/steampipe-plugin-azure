@@ -24,7 +24,6 @@ The `azure_cost_usage` table provides insights into cost and usage data within M
 ## Examples
 
 ### Recent daily costs by service and resource group
-
 Get the last 7 days of daily costs broken down by service name and resource group to understand which services are costing the most in each resource group.
 
 ```sql+postgres
@@ -70,7 +69,6 @@ limit 5;
 ```
 
 ### Location-based cost analysis (last 6 months)
-
 Analyze the last 6 months of costs broken down by resource location to understand geographical spending patterns and identify the most expensive regions.
 
 ```sql+postgres
@@ -114,7 +112,6 @@ limit 10;
 ```
 
 ### Costs for a specific billing period
-
 Use period_start and period_end parameters to query costs for a specific monthly billing period (August 2025), showing service and resource group breakdown.
 
 ```sql+postgres
@@ -162,7 +159,6 @@ order by
 ```
 
 ### Daily service cost breakdown
-
 Analyze the last 7 days of costs broken down by service name to understand which services are generating the highest costs.
 
 ```sql+postgres
@@ -206,7 +202,6 @@ limit 10;
 ```
 
 ### Multi-subscription daily cost tracking
-
 Track daily costs across different subscriptions and services over the last 30 days to understand multi-subscription spending patterns.
 
 ```sql+postgres
@@ -260,7 +255,6 @@ order by
 ```
 
 ### Top service and resource group costs for January 2025
-
 Find the highest cost service and resource group combinations within January 2025, showing total costs and number of usage days.
 
 ```sql+postgres
@@ -312,7 +306,6 @@ limit 10;
 ```
 
 ### Monthly cost trends by meter category and service
-
 Analyze monthly cost trends by meter category and service using window functions to compare current and previous period costs.
 
 ```sql+postgres
@@ -364,7 +357,6 @@ order by
 ```
 
 ### Weekly cost statistics by service and resource group
-
 Get statistical summary (count, sum, average, max) of costs for service and resource group dimensions over the last 7 days.
 
 ```sql+postgres
@@ -422,7 +414,6 @@ order by
 ```
 
 ### Reservation savings analysis
-
 Compare actual costs vs amortized costs across service and resource group dimensions to identify reservation savings and understand cost optimization opportunities.
 
 ```sql+postgres
@@ -528,7 +519,6 @@ order by
 ```
 
 ### Monthly amortized cost across multiple dimensions
-
 Show monthly aggregated amortized cost with a multi-dimension breakdown; returns cost, usage_date (month-end), and a pretty-printed dimensions JSON.
 
 ```sql+postgres
