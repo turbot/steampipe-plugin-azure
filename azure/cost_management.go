@@ -14,7 +14,10 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/query_cache"
 )
 
+var CostMetrics = []string{"PreTaxCost"}
+
 // CostManagementRow represents a flattened cost management result row with all cost types (like AWS)
+// https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/understand-usage-details-fields
 type CostManagementRow struct {
 	UsageDate *time.Time
 
@@ -25,19 +28,15 @@ type CostManagementRow struct {
 	// Dimension values (populated based on GroupBy)
 	Dimension1 *string // Generic dimension field (could be ResourceGroup, ServiceName, etc.)
 	Dimension2 *string // Second dimension field for multi-dimensional grouping
+	Dimensions *map[string]string
 
 	// Cost metrics (following AWS naming conventions)
 	// Actual costs (unblended_cost_amount and unblended_cost_unit removed)
 	PreTaxCostAmount *float64 // Pre-tax cost (Actual Cost)
 	PreTaxCostUnit   *string
 
-	// Amortized costs (for reservations)
-	AmortizedCostAmount *float64
-	AmortizedCostUnit   *string
-
 	// Metadata
-	Estimated *bool
-	Currency  *string
+	Currency *string
 
 	// Common properties
 	SubscriptionID   *string
@@ -74,66 +73,23 @@ func getCostTypeFromString(costType string) armcostmanagement.ExportType {
 
 // AllCostMetrics returns all available cost metrics for Azure Cost Management (like AWS)
 func AllCostMetrics() []string {
-	return []string{
-		"PreTaxCost", // Actual Cost
-		"Cost",       // Amortized Cost
-	}
+	return append([]string{}, CostMetrics...)
 }
 
 // getMetricsByQueryContext dynamically determines which metrics to fetch based on query columns
 func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
-	queryColumns := qc.Columns
-	var metrics []string
-
-	// Check for cost metrics only (usage quantity removed)
-	needsCost := false
-
-	for _, c := range queryColumns {
-		switch c {
-		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
-			needsCost = true
-		}
-	}
-
-	// Add metrics based on priority (Azure limit: max 2)
-	if needsCost {
-		metrics = append(metrics, "PreTaxCost")
-	}
-
-	// Default to PreTaxCost if no specific columns requested
-	if len(metrics) == 0 {
-		metrics = append(metrics, "PreTaxCost")
-	}
-
-	return metrics
+	// Currently we only request the metrics defined in CostMetrics (e.g., PreTaxCost)
+	return append([]string{}, CostMetrics...)
 }
 
 // getColumnsFromQueryContext determines which columns to request from Azure API
 func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
-	queryColumns := qc.Columns
 	var columns []*string
 
-	// Always include basic columns
+	// Always include currency and the metric columns referenced in CostMetrics
 	columns = append(columns, to.Ptr("Currency"))
-
-	// Check what the user is querying for (usage quantity removed)
-	needsCost := false
-
-	for _, c := range queryColumns {
-		switch c {
-		case "pre_tax_cost_amount", "pre_tax_cost_unit", "amortized_cost_amount", "amortized_cost_unit":
-			needsCost = true
-		}
-	}
-
-	// Add the primary cost column (PreTaxCost works for all cost types with fallback)
-	if needsCost {
-		columns = append(columns, to.Ptr("PreTaxCost"))
-	}
-
-	// Default to PreTaxCost if no specific columns requested
-	if !needsCost {
-		columns = append(columns, to.Ptr("PreTaxCost"))
+	for _, m := range CostMetrics {
+		columns = append(columns, to.Ptr(m))
 	}
 
 	return columns
@@ -267,12 +223,12 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Type:        proto.ColumnType_TIMESTAMP,
 			Transform:   transform.FromQual("period_end"),
 		},
-		{
-			Name:        "estimated",
-			Description: "Whether the cost data is estimated.",
-			Type:        proto.ColumnType_BOOL,
-			Transform:   transform.FromField("Estimated"),
-		},
+		// {
+		// 	Name:        "estimated",
+		// 	Description: "Whether the cost data is estimated.",
+		// 	Type:        proto.ColumnType_BOOL,
+		// 	Transform:   transform.FromField("Estimated"),
+		// },
 		{
 			Name:        "pre_tax_cost_amount",
 			Description: "Pre-tax cost amount for the period.",
@@ -286,18 +242,18 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Transform:   transform.FromField("PreTaxCostUnit"),
 		},
 		// Amortized costs (for reservations)
-		{
-			Name:        "amortized_cost_amount",
-			Description: "This cost metric reflects the effective cost of the upfront and monthly reservation fees spread across the billing period. By default, Cost Explorer shows the fees for Reserved Instances as a spike on the day that you're charged, but if you choose to show costs as amortized costs, the costs are amortized over the billing period. This means that the costs are broken out into the effective daily rate. Azure estimates your amortized costs by combining your unblended costs with the amortized portion of your upfront and recurring reservation fees.",
-			Type:        proto.ColumnType_DOUBLE,
-			Transform:   transform.FromField("AmortizedCostAmount"),
-		},
-		{
-			Name:        "amortized_cost_unit",
-			Description: "Unit type for amortized costs.",
-			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromField("AmortizedCostUnit"),
-		},
+		// {
+		// 	Name:        "amortized_cost_amount",
+		// 	Description: "This cost metric reflects the effective cost of the upfront and monthly reservation fees spread across the billing period. By default, Cost Explorer shows the fees for Reserved Instances as a spike on the day that you're charged, but if you choose to show costs as amortized costs, the costs are amortized over the billing period. This means that the costs are broken out into the effective daily rate. Azure estimates your amortized costs by combining your unblended costs with the amortized portion of your upfront and recurring reservation fees.",
+		// 	Type:        proto.ColumnType_DOUBLE,
+		// 	Transform:   transform.FromField("AmortizedCostAmount"),
+		// },
+		// {
+		// 	Name:        "amortized_cost_unit",
+		// 	Description: "Unit type for amortized costs.",
+		// 	Type:        proto.ColumnType_STRING,
+		// 	Transform:   transform.FromField("AmortizedCostUnit"),
+		// },
 		{
 			Name:        "scope",
 			Description: "The Azure scope for the cost query (e.g., subscription, resource group, etc.).",
@@ -306,10 +262,9 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 		},
 		{
 			Name:        "type",
-			Description: "The cost type for the query. Valid values are 'ActualCost' and 'AmortizedCost'. Defaults to 'ActualCost'.",
+			Description: "The cost type for the query. Valid values are 'ActualCost' and 'AmortizedCost'.",
 			Type:        proto.ColumnType_STRING,
 			Transform:   transform.FromQual("type"),
-			Default:     "ActualCost",
 		},
 	}
 
@@ -327,7 +282,7 @@ func costManagementKeyColumns() plugin.KeyColumnSlice {
 		},
 		{
 			Name:      "type",
-			Require:   plugin.Optional,
+			Require:   plugin.Required,
 			Operators: []string{"="},
 		},
 		{
@@ -415,215 +370,152 @@ func processQueryResults(result *armcostmanagement.QueryResult, scope string, ro
 		return
 	}
 
-	// Extract column mapping for easier access
-	columnMap := make(map[string]int)
+	// Build column index map for quick lookups
+	columnIdx := make(map[string]int)
 	for i, col := range result.Properties.Columns {
 		if col.Name != nil {
-			columnMap[*col.Name] = i
+			columnIdx[*col.Name] = i
 		}
 	}
 
-	// Process each row
-	for _, row := range result.Properties.Rows {
-		if len(row) == 0 {
-			continue
+	// Helpers
+	getString := func(row []any, name string) string {
+		if idx, ok := columnIdx[name]; ok && idx < len(row) && row[idx] != nil {
+			if s, ok := row[idx].(string); ok {
+				return s
+			}
 		}
-
-		// Build row key - date should always be first
-		keyParts := []string{}
-
-		// Identify the date column based on granularity or column names
-		var dateColumnName string
-		var dateIdx int = -1
-
-		// Look for date columns - try UsageDate first, then BillingMonth
-		if idx, ok := columnMap["UsageDate"]; ok {
-			dateColumnName = "UsageDate"
-			dateIdx = idx
-		} else if idx, ok := columnMap["BillingMonth"]; ok {
-			dateColumnName = "BillingMonth"
-			dateIdx = idx
-		}
-
-		// Get date value - only if we have a valid date column
-		var dateStr string
-		if dateIdx != -1 && len(row) > dateIdx && row[dateIdx] != nil {
-			// Handle both string and numeric date formats
-			switch date := row[dateIdx].(type) {
-			case string:
-				// String date format (like "2024-08-01T00:00:00Z")
-				dateStr = strings.Split(date, "T")[0] // Remove time component
-				keyParts = append(keyParts, dateStr)
+		return ""
+	}
+	getFloat := func(row []any, name string) (float64, bool) {
+		if idx, ok := columnIdx[name]; ok && idx < len(row) && row[idx] != nil {
+			switch v := row[idx].(type) {
 			case float64:
-				// Numeric date format (like 20240801)
-				// Convert to string and parse with Go's time.Parse
-				numericDateStr := fmt.Sprintf("%.0f", date)
-				if parsedTime, err := time.Parse("20060102", numericDateStr); err == nil {
-					dateStr = parsedTime.Format("2006-01-02")
-					keyParts = append(keyParts, dateStr)
-				}
+				return v, true
 			case int:
-				// Handle int format as well
-				numericDateStr := fmt.Sprintf("%d", date)
-				if parsedTime, err := time.Parse("20060102", numericDateStr); err == nil {
-					dateStr = parsedTime.Format("2006-01-02")
-					keyParts = append(keyParts, dateStr)
-				}
+				return float64(v), true
 			}
 		}
+		return 0, false
+	}
 
-		// Add dimension values based on the specific groupings requested
-		// This ensures dimensions map correctly to Dimension1 and Dimension2 in the right order
-		var dim1Value, dim2Value string
+	// Determine date column preference
+	dateCol := "UsageDate"
+	if _, ok := columnIdx["UsageDate"]; !ok {
+		if _, ok2 := columnIdx["BillingMonth"]; ok2 {
+			dateCol = "BillingMonth"
+		}
+	}
 
-		// Get dimension values in the correct order based on groupingNames
-		if len(groupingNames) > 0 {
-			// First grouping -> Dimension1
-			if idx, ok := columnMap[groupingNames[0]]; ok && len(row) > idx && row[idx] != nil {
-				if dimValue, ok := row[idx].(string); ok {
-					dim1Value = dimValue
-					keyParts = append(keyParts, dimValue)
+	for _, row := range result.Properties.Rows {
+		// 1) usage_date
+		var usageDateStr string
+		if dateCol == "UsageDate" {
+			usageDateStr = getString(row, "UsageDate")
+			if usageDateStr == "" {
+				if n, ok := getFloat(row, "UsageDate"); ok {
+					s := fmt.Sprintf("%.0f", n)
+					if t, err := time.Parse("20060102", s); err == nil {
+						usageDateStr = t.Format("2006-01-02")
+					}
+				}
+			} else if strings.Contains(usageDateStr, "T") {
+				usageDateStr = strings.Split(usageDateStr, "T")[0]
+			}
+		} else { // BillingMonth -> normalize to last day of month
+			usageDateStr = getString(row, "BillingMonth")
+			if usageDateStr != "" {
+				// Try RFC3339 first
+				if t, err := time.Parse(time.RFC3339, usageDateStr); err == nil {
+					y, m, _ := t.Date()
+					next := time.Date(y, m+1, 1, 0, 0, 0, 0, time.UTC)
+					usageDateStr = next.AddDate(0, 0, -1).Format("2006-01-02")
+				} else {
+					// Handle formats like 2006-01-02T15:04:05 (no timezone) or 2006-01-02
+					if strings.Contains(usageDateStr, "T") {
+						usageDateStr = strings.Split(usageDateStr, "T")[0]
+					}
+					if t2, err2 := time.Parse("2006-01-02", usageDateStr); err2 == nil {
+						y, m, _ := t2.Date()
+						next := time.Date(y, m+1, 1, 0, 0, 0, 0, time.UTC)
+						usageDateStr = next.AddDate(0, 0, -1).Format("2006-01-02")
+					} else {
+						// leave empty and try numeric path below
+						usageDateStr = ""
+					}
 				}
 			}
-		}
-
-		if len(groupingNames) > 1 {
-			// Second grouping -> Dimension2
-			if idx, ok := columnMap[groupingNames[1]]; ok && len(row) > idx && row[idx] != nil {
-				if dimValue, ok := row[idx].(string); ok {
-					dim2Value = dimValue
-					keyParts = append(keyParts, dimValue)
-				}
-			}
-		}
-
-		// If no grouping names provided, fall back to any available dimension columns
-		if len(groupingNames) == 0 {
-			for colName, idx := range columnMap {
-				if colName != "UsageDate" && colName != "BillingMonth" && colName != "Currency" &&
-					colName != "PreTaxCost" && colName != "Cost" && colName != "CostUSD" &&
-					len(row) > idx && row[idx] != nil {
-					if dimValue, ok := row[idx].(string); ok {
-						keyParts = append(keyParts, dimValue)
+			if usageDateStr == "" { // try numeric encodings
+				if n, ok := getFloat(row, "BillingMonth"); ok {
+					s := fmt.Sprintf("%.0f", n)
+					// try YYYYMM, fallback YYYYMMDD
+					if len(s) == 6 {
+						if t, err := time.Parse("200601", s); err == nil {
+							y, m, _ := t.Date()
+							next := time.Date(y, m+1, 1, 0, 0, 0, 0, time.UTC)
+							usageDateStr = next.AddDate(0, 0, -1).Format("2006-01-02")
+						}
+					} else if len(s) == 8 {
+						if t, err := time.Parse("20060102", s); err == nil {
+							y, m, _ := t.Date()
+							next := time.Date(y, m+1, 1, 0, 0, 0, 0, time.UTC)
+							usageDateStr = next.AddDate(0, 0, -1).Format("2006-01-02")
+						}
 					}
 				}
 			}
 		}
-
-		if len(keyParts) == 0 {
+		if usageDateStr == "" {
+			continue
+		}
+		parsedDate, err := time.Parse("2006-01-02", usageDateStr)
+		if err != nil {
 			continue
 		}
 
-		// Build composite key
-		rowKey := keyParts[0]
-		if len(keyParts) > 1 {
-			rowKey += "_" + keyParts[1]
+		// 2) dimensions in the order provided
+		var dim1, dim2 string
+		if len(groupingNames) > 0 {
+			dim1 = getString(row, groupingNames[0])
 		}
-		if len(keyParts) > 2 {
-			rowKey += "_" + keyParts[2]
+		if len(groupingNames) > 1 {
+			dim2 = getString(row, groupingNames[1])
 		}
 
-		// Get or create row
+		// 3) stable key
+		rowKey := usageDateStr + "|" + dim1 + "|" + dim2
 		costRow, exists := rowMap[rowKey]
 		if !exists {
-			costRow = &CostManagementRow{
-				Estimated: to.Ptr(false),
+			costRow = &CostManagementRow{}
+			costRow.UsageDate = &parsedDate
+			if dim1 != "" {
+				costRow.Dimension1 = &dim1
+			}
+			if dim2 != "" {
+				costRow.Dimension2 = &dim2
 			}
 			rowMap[rowKey] = costRow
+		}
 
-			// Set period dates and dimensions based on what we found
-			if dateIdx != -1 && len(keyParts) > 0 {
-				// We found a valid date column - standard case for daily and monthly data
-				dateStr := keyParts[0]
-				if parsedDate, err := time.Parse("2006-01-02", dateStr); err == nil {
-					costRow.UsageDate = &parsedDate
-
-					// Determine if this is monthly or daily data for period_end calculation
-					isMonthlyData := false
-					if dateColumnName == "BillingMonth" {
-						isMonthlyData = true
-					} else if len(dateStr) >= 10 && dateStr[8:10] == "01" {
-						isMonthlyData = true
-					}
-
-					if isMonthlyData {
-						// Monthly data - set usage_date to last day of the month
-						year, month, _ := parsedDate.Date()
-						nextMonth := time.Date(year, month+1, 1, 0, 0, 0, 0, time.UTC)
-						lastDay := nextMonth.AddDate(0, 0, -1)
-						costRow.UsageDate = &lastDay
-					}
-					// For daily data, we keep the original parsed date
-				}
-
-				// Set dimension values using the explicitly mapped values
-				if dim1Value != "" {
-					costRow.Dimension1 = &dim1Value
-				}
-				if dim2Value != "" {
-					costRow.Dimension2 = &dim2Value
-				}
-			} else {
-				// Fallback case: no date column found (should be rare)
-				// Use current date as fallback
-				fallbackDate := time.Now()
-				costRow.UsageDate = &fallbackDate
-
-				// Use the explicitly mapped dimension values
-				if dim1Value != "" {
-					costRow.Dimension1 = &dim1Value
-				}
-				if dim2Value != "" {
-					costRow.Dimension2 = &dim2Value
-				}
+		if len(groupingNames) > 0 {
+			costRow.Dimensions = &map[string]string{}
+			for _, dimName := range groupingNames {
+				(*costRow.Dimensions)[dimName] = getString(row, dimName)
 			}
 		}
 
-		// Map the different cost types to their appropriate columns based on costType
-		currency := "USD" // Default currency
-
-		// Extract currency if available
-		if idx, ok := columnMap["Currency"]; ok && len(row) > idx && row[idx] != nil {
-			if curr, ok := row[idx].(string); ok && curr != "" {
-				currency = curr
-			}
+		// 4) currency and cost mapping
+		currency := getString(row, "Currency")
+		if currency == "" {
+			currency = "USD"
 		}
-
-		// Handle different cost metrics based on what's available in the API response
-
-		// Handle PreTaxCost metric (primary from ActualCost query)
-		if idx, ok := columnMap["PreTaxCost"]; ok && len(row) > idx && row[idx] != nil {
-			if cost, ok := row[idx].(float64); ok {
-				costRow.PreTaxCostAmount = &cost
-				costRow.PreTaxCostUnit = &currency
-
-				// For environments without reservations, use PreTaxCost for amortized costs as fallback
-				if costRow.AmortizedCostAmount == nil {
-					costRow.AmortizedCostAmount = &cost
-					costRow.AmortizedCostUnit = &currency
-				}
-			}
+		if v, ok := getFloat(row, "PreTaxCost"); ok {
+			costRow.PreTaxCostAmount = &v
+			costRow.PreTaxCostUnit = &currency
 		}
-
-		// Handle Cost metric (if available from AmortizedCost query)
-		// Note: UnblendedCostAmount has been removed from the schema
-		if idx, ok := columnMap["Cost"]; ok && len(row) > idx && row[idx] != nil {
-			// Cost metric is no longer mapped to unblended_cost_amount as it's been removed
-			_ = idx // Suppress unused variable warning
-		}
-
-		// Handle CostUSD metric (if available from AmortizedCost query)
-		if idx, ok := columnMap["CostUSD"]; ok && len(row) > idx && row[idx] != nil {
-			if cost, ok := row[idx].(float64); ok {
-				costRow.AmortizedCostAmount = &cost
-				costRow.AmortizedCostUnit = &currency
-			}
-		}
-
-		// Set the currency for all cost fields
 		costRow.Currency = &currency
 
-		// Set scope from params
+		// 5) scope
 		if costRow.Scope == nil {
 			costRow.Scope = &scope
 		}

@@ -59,7 +59,7 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (arm
 	// Get cost type from quals, default to ActualCost
 	costType := d.EqualsQualString("type")
 	if costType == "" {
-		costType = "ActualCost"
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("missing required qual 'type' (ActualCost | AmortizedCost)")
 	}
 
 	// Set timeframe and time period using new usage_date logic
@@ -99,15 +99,8 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (arm
 	// Build aggregation based on requested columns
 	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
 
-	// Determine which metrics to include
-	metrics := getMetricsByQueryContext(d.QueryContext)
-	if len(metrics) == 0 {
-		// Default metrics if none specified (only cost metrics)
-		metrics = []string{"PreTaxCost"}
-	}
-
-	// Add aggregations (Azure limit is 2)
-	for i, metric := range metrics {
+	// Determine which metrics to include (from global CostMetrics)
+	for i, metric := range CostMetrics {
 		if i >= 2 {
 			break
 		}

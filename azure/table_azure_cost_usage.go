@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -23,11 +24,15 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:    "dimension_type_1",
-				Require: plugin.Required,
+				Require: plugin.AnyOf,
 			},
 			{
 				Name:    "dimension_type_2",
-				Require: plugin.Required,
+				Require: plugin.AnyOf,
+			},
+			{
+				Name:    "dimension_types",
+				Require: plugin.AnyOf,
 			},
 		}, keyColumns...,
 	)
@@ -54,6 +59,12 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 					Type:        proto.ColumnType_STRING,
 					Transform:   transform.FromField("Dimension2"),
 				},
+				{
+					Name:        "dimensions",
+					Description: "The dimensions values in the form of key value pairs.",
+					Type:        proto.ColumnType_JSON,
+					Transform:   transform.FromField("Dimensions"),
+				},
 				// Quals columns - to filter the lookups
 				{
 					Name:        "granularity",
@@ -73,6 +84,12 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 					Type:        proto.ColumnType_STRING,
 					Hydrate:     hydrateCostUsageQuals,
 				},
+				{
+					Name:        "dimension_types",
+					Description: "The dimension keys in the form of array of strings.",
+					Type:        proto.ColumnType_JSON,
+					Hydrate:     hydrateCostUsageQuals,
+				},
 			}),
 		),
 	}
@@ -81,14 +98,17 @@ func tableAzureCostUsage(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	queryDef, scope, dim1, dim2, err := buildCostUsageInputFromQuals(ctx, d)
+	queryDef, scope, dim1, dim2, dims, err := buildCostUsageInputFromQuals(ctx, d)
 	if err != nil {
 		return nil, err
+	}
+	if len(dims) > 0 {
+		return streamCostAndUsage(ctx, d, queryDef, scope, dims...)
 	}
 	return streamCostAndUsage(ctx, d, queryDef, scope, dim1, dim2)
 }
 
-func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, string, string, error) {
+func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, string, string, []string, error) {
 	granularity := strings.ToUpper(d.EqualsQuals["granularity"].GetStringValue())
 
 	// Get scope from quals, default to placeholder if not provided
@@ -100,7 +120,7 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 	// Get cost type from quals, default to ActualCost
 	costType := d.EqualsQualString("type")
 	if costType == "" {
-		costType = "ActualCost"
+		return armcostmanagement.QueryDefinition{}, "", "", "", []string{}, fmt.Errorf("missing required qual 'type' (ActualCost | AmortizedCost)")
 	}
 
 	// Set timeframe and time period
@@ -134,11 +154,11 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 
 	startDate, err := time.Parse("2006-01-02", startTime)
 	if err != nil {
-		return armcostmanagement.QueryDefinition{}, "", "", "", fmt.Errorf("failed to parse start date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", "", "", []string{}, fmt.Errorf("failed to parse start date: %v", err)
 	}
 	endDate, err := time.Parse("2006-01-02", endTime)
 	if err != nil {
-		return armcostmanagement.QueryDefinition{}, "", "", "", fmt.Errorf("failed to parse end date: %v", err)
+		return armcostmanagement.QueryDefinition{}, "", "", "", []string{}, fmt.Errorf("failed to parse end date: %v", err)
 	}
 
 	timePeriod.From = to.Ptr(startDate)
@@ -149,6 +169,7 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 	// Get dimensions
 	dim1 := d.EqualsQuals["dimension_type_1"].GetStringValue()
 	dim2 := d.EqualsQuals["dimension_type_2"].GetStringValue()
+	dims := d.EqualsQuals["dimension_types"].GetJsonbValue()
 
 	// Build GroupBy - Azure supports up to 2 grouping dimensions
 	var groupings []*armcostmanagement.QueryGrouping
@@ -165,22 +186,29 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 		})
 	}
 
+	var dimensions []string
+	if dims != "" {
+		err := json.Unmarshal([]byte(dims), &dimensions)
+		if err != nil {
+			return armcostmanagement.QueryDefinition{}, "", "", "", []string{}, fmt.Errorf("failed to parse dimensions: %v", err)
+		}
+		for _, dim := range dimensions {
+			groupings = append(groupings, &armcostmanagement.QueryGrouping{
+				Type: to.Ptr(armcostmanagement.QueryColumnTypeDimension),
+				Name: to.Ptr(dim),
+			})
+		}
+	}
+
 	// Get dynamic columns based on query context
 	requestColumns := getColumnsFromQueryContext(d.QueryContext)
 
 	// Build aggregation based on requested columns
 	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
 
-	// Determine which metrics to include
-	metrics := getMetricsByQueryContext(d.QueryContext)
-	if len(metrics) == 0 {
-		// Default metrics if none specified (only cost metrics)
-		metrics = []string{"PreTaxCost"}
-	}
-
-	// Add aggregations (Azure limit is 2)
-	for i, metric := range metrics {
-		if i >= 2 {
+	// Determine which metrics to include (from global CostMetrics)
+	for i, metric := range CostMetrics {
+		if i >= 2 { // Azure allows max 2 aggregations
 			break
 		}
 		aggregation[metric] = &armcostmanagement.QueryAggregation{
@@ -228,16 +256,25 @@ func buildCostUsageInputFromQuals(ctx context.Context, d *plugin.QueryData) (arm
 		queryDef.TimePeriod = timePeriod
 	}
 
-	return queryDef, scope, dim1, dim2, nil
+	return queryDef, scope, dim1, dim2, dimensions, nil
 }
 
 //// HYDRATE FUNCTIONS
 
 func hydrateCostUsageQuals(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	dimensionTypesJson := d.EqualsQuals["dimension_types"].GetJsonbValue()
+	var dimensionTypes []string
+	if dimensionTypesJson != "" {
+		err := json.Unmarshal([]byte(dimensionTypesJson), &dimensionTypes)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &AzureCostUsageQuals{
 		Granularity:    d.EqualsQuals["granularity"].GetStringValue(),
 		DimensionType1: d.EqualsQuals["dimension_type_1"].GetStringValue(),
 		DimensionType2: d.EqualsQuals["dimension_type_2"].GetStringValue(),
+		DimensionTypes: dimensionTypes,
 	}, nil
 }
 
@@ -245,4 +282,5 @@ type AzureCostUsageQuals struct {
 	Granularity    string
 	DimensionType1 string
 	DimensionType2 string
+	DimensionTypes []string
 }
