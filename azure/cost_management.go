@@ -97,6 +97,7 @@ func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
 }
 
 // getColumnsFromQueryContext determines which columns to request from Azure API
+// TODO: Is it required?
 func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	var columns []*string
 	columns = append(columns, to.Ptr("Currency"))
