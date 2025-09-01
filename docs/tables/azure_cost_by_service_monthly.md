@@ -14,58 +14,70 @@ The `azure_cost_by_service_monthly` table provides insights into monthly cost br
 
 **Important Notes:**
 
-- This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
-  - `scope` with supported operators `=`.
-  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
-  - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
-  - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+- You **_must_** specify `cost_type` (ActualCost or AmortizedCost) in a `where` clause in order to use this table.
+- For improved performance, it is advised that you use the optional quals `period_start` and `period_end` to limit the result set to a specific time period.
+- This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`. Default to current subscription. Possible value are see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
+  - `period_start` with supported operators `=`. Default: 1 year ago.
+  - `period_end` with supported operators `=`. Default: yesterday.
+  - `service_name` with supported operators `=`, `<>`.
 
 ## Examples
 
-### Basic monthly cost info
+### Recent monthly costs by service
 
-Explore monthly costs across different Azure services to understand your spending patterns and identify the most expensive services by month.
+Get the last 6 months of monthly costs across Azure services, showing the cost breakdown by service with currency details.
 
 ```sql+postgres
 select
-  usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  usage_date,
+  cost,
+  currency
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
+  and usage_date >= NOW() - INTERVAL '6 months'
 order by
   usage_date desc,
-  pre_tax_cost_amount desc;
+  cost desc
+limit 10;
 ```
 
 ```sql+sqlite
 select
-  usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  usage_date,
+  cost,
+  currency
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
+  and usage_date >= date('now', '-6 months')
 order by
   usage_date desc,
-  pre_tax_cost_amount desc;
+  cost desc
+limit 10;
 ```
 
-### Monthly cost trend for a specific service
+### Historical monthly costs for a specific service
 
-Analyze the monthly cost trend for a specific Azure service to understand its long-term usage patterns and cost evolution.
+Analyze the complete historical monthly cost trend for a specific Azure service to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  pre_tax_cost,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  service_name = 'Storage'
+  cost_type = 'ActualCost'
+  and service_name = 'Storage'
 order by
   usage_date desc;
 ```
@@ -74,69 +86,77 @@ order by
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  pre_tax_cost,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  service_name = 'Storage'
+  cost_type = 'ActualCost'
+  and service_name = 'Storage'
 order by
   usage_date desc;
 ```
 
-### Query costs for a specific period
+### Costs for a specific billing period
 
-Use period_start and period_end parameters to query costs for a specific time range.
+Use period_start and period_end parameters to query costs for a specific annual billing period (2024), showing all services and their costs.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
+  cost,
+  pre_tax_cost,
+  currency,
   period_start,
   period_end
 from
   azure_cost_by_service_monthly
 where
-  period_start = '2024-01-01'
+  cost_type = 'ActualCost'
+  and period_start = '2024-01-01'
   and period_end = '2024-12-31'
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
+  cost,
+  pre_tax_cost,
+  currency,
   period_start,
   period_end
 from
   azure_cost_by_service_monthly
 where
-  period_start = '2024-01-01'
+  cost_type = 'ActualCost'
+  and period_start = '2024-01-01'
   and period_end = '2024-12-31'
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
-### Total monthly spend by service
+### Total historical spend by service
 
-Get the total monthly cost for each service to understand which services contribute most to your monthly Azure bill.
+Get the total cumulative cost for each service across all months to understand which services contribute most to your overall Azure spending.
 
 ```sql+postgres
 select
   service_name,
-  sum(pre_tax_cost_amount) as total_monthly_cost,
-  pre_tax_cost_unit,
+  sum(cost) as total_monthly_cost,
+  currency,
   count(*) as months_with_usage
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   total_monthly_cost desc;
 ```
@@ -144,36 +164,39 @@ order by
 ```sql+sqlite
 select
   service_name,
-  sum(pre_tax_cost_amount) as total_monthly_cost,
-  pre_tax_cost_unit,
+  sum(cost) as total_monthly_cost,
+  currency,
   count(*) as months_with_usage
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   total_monthly_cost desc;
 ```
 
-### Year-over-year cost comparison
+### Monthly cost trends by year
 
-Compare monthly costs between different years to understand cost growth and seasonal patterns.
+Compare monthly costs between 2024 and 2025 to understand year-over-year cost growth and seasonal spending patterns.
 
 ```sql+postgres
 select
   extract(month from usage_date) as month_number,
   extract(year from usage_date) as year,
-  sum(pre_tax_cost_amount) as monthly_total,
-  pre_tax_cost_unit
+  sum(cost) as monthly_total,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  extract(year from usage_date) in (2024, 2025)
+  cost_type = 'ActualCost'
+  and extract(year from usage_date) in (2024, 2025)
 group by
   extract(month from usage_date),
   extract(year from usage_date),
-  pre_tax_cost_unit
+  currency
 order by
   month_number,
   year;
@@ -183,46 +206,49 @@ order by
 select
   cast(strftime('%m', usage_date) as integer) as month_number,
   cast(strftime('%Y', usage_date) as integer) as year,
-  sum(pre_tax_cost_amount) as monthly_total,
-  pre_tax_cost_unit
+  sum(cost) as monthly_total,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  cast(strftime('%Y', usage_date) as integer) in (2024, 2025)
+  cost_type = 'ActualCost'
+  and cast(strftime('%Y', usage_date) as integer) in (2024, 2025)
 group by
   cast(strftime('%m', usage_date) as integer),
   cast(strftime('%Y', usage_date) as integer),
-  pre_tax_cost_unit
+  currency
 order by
   month_number,
   year;
 ```
 
-### Services with increasing monthly costs
+### Services with month-over-month cost increases
 
-Identify services where costs are trending upward by comparing recent months to help focus cost optimization efforts.
+Identify services where costs increased from the previous month, showing the actual cost change amounts to help focus cost optimization efforts.
 
 ```sql+postgres
 with monthly_costs as (
   select
     service_name,
     usage_date,
-    pre_tax_cost_amount,
-    lag(pre_tax_cost_amount) over (partition by service_name order by usage_date) as prev_month_cost
+    cost,
+    lag(cost) over (partition by service_name order by usage_date) as prev_month_cost
   from
     azure_cost_by_service_monthly
+  where
+    cost_type = 'ActualCost'
 )
 select
   service_name,
   usage_date,
-  pre_tax_cost_amount as current_month,
+  cost as current_month,
   prev_month_cost as previous_month,
-  pre_tax_cost_amount - prev_month_cost as cost_change
+  cost - prev_month_cost as cost_change
 from
   monthly_costs
 where
   prev_month_cost is not null
-  and pre_tax_cost_amount > prev_month_cost
+  and cost > prev_month_cost
 order by
   cost_change desc;
 ```
@@ -232,42 +258,46 @@ with monthly_costs as (
   select
     service_name,
     usage_date,
-    pre_tax_cost_amount,
-    lag(pre_tax_cost_amount) over (partition by service_name order by usage_date) as prev_month_cost
+    cost,
+    lag(cost) over (partition by service_name order by usage_date) as prev_month_cost
   from
     azure_cost_by_service_monthly
+  where
+    cost_type = 'ActualCost'
 )
 select
   service_name,
   usage_date,
-  pre_tax_cost_amount as current_month,
+  cost as current_month,
   prev_month_cost as previous_month,
-  pre_tax_cost_amount - prev_month_cost as cost_change
+  cost - prev_month_cost as cost_change
 from
   monthly_costs
 where
   prev_month_cost is not null
-  and pre_tax_cost_amount > prev_month_cost
+  and cost > prev_month_cost
 order by
   cost_change desc;
 ```
 
-### Average monthly cost per service
+### Cost statistics by service
 
-Calculate the average monthly cost for each service to understand baseline spending patterns.
+Calculate average, minimum, and maximum monthly costs for each service to understand spending patterns and cost variability.
 
 ```sql+postgres
 select
   service_name,
-  round(avg(pre_tax_cost_amount), 2) as avg_monthly_cost,
-  round(min(pre_tax_cost_amount), 2) as min_monthly_cost,
-  round(max(pre_tax_cost_amount), 2) as max_monthly_cost,
-  pre_tax_cost_unit
+  avg(cost) as avg_monthly_cost,
+  min(cost) as min_monthly_cost,
+  max(cost) as max_monthly_cost,
+  currency
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   avg_monthly_cost desc;
 ```
@@ -275,53 +305,57 @@ order by
 ```sql+sqlite
 select
   service_name,
-  round(avg(pre_tax_cost_amount), 2) as avg_monthly_cost,
-  round(min(pre_tax_cost_amount), 2) as min_monthly_cost,
-  round(max(pre_tax_cost_amount), 2) as max_monthly_cost,
-  pre_tax_cost_unit
+  round(avg(cost), 2) as avg_monthly_cost,
+  round(min(cost), 2) as min_monthly_cost,
+  round(max(cost), 2) as max_monthly_cost,
+  currency
 from
   azure_cost_by_service_monthly
+where
+  cost_type = 'ActualCost'
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   avg_monthly_cost desc;
 ```
 
-### Compare pre-tax vs amortized costs
+### Tax analysis for amortized costs
 
-Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
+Analyze the difference between pre-tax costs and final amortized costs to understand tax implications on monthly service spending.
 
 ```sql+postgres
 select
   service_name,
   usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  pre_tax_cost,
+  cost,
+  (pre_tax_cost - cost) as tax_amount,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
+  cost_type = 'AmortizedCost'
+  and pre_tax_cost is not null
+  and pre_tax_cost != cost
 order by
-  reservation_savings desc;
+  tax_amount desc;
 ```
 
 ```sql+sqlite
 select
   service_name,
   usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  pre_tax_cost,
+  cost,
+  (pre_tax_cost - cost) as tax_amount,
+  currency
 from
   azure_cost_by_service_monthly
 where
-  amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
+  cost_type = 'AmortizedCost'
+  and pre_tax_cost is not null
+  and pre_tax_cost != cost
 order by
-  reservation_savings desc;
+  tax_amount desc;
 ```

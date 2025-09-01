@@ -14,58 +14,70 @@ The `azure_cost_by_service_daily` table provides insights into daily cost breakd
 
 **Important Notes:**
 
-- This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
-  - `scope` with supported operators `=`.
-  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
-  - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
-  - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+- You **_must_** specify `cost_type` (ActualCost or AmortizedCost) in a `where` clause in order to use this table.
+- For improved performance, it is advised that you use the optional quals `period_start` and `period_end` to limit the result set to a specific time period.
+- This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`. Default to current subscription. Possible value are see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
+  - `period_start` with supported operators `=`. Default: 1 year ago.
+  - `period_end` with supported operators `=`. Default: yesterday.
+  - `service_name` with supported operators `=`, `<>`.
 
 ## Examples
 
-### Basic daily cost info
+### Recent daily costs by service
 
-Explore daily costs across different Azure services to understand your spending patterns and identify the most expensive services.
+Get the most recent 7 days of daily costs across Azure services, showing the cost breakdown by service with currency details.
 
 ```sql+postgres
 select
-  usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  usage_date,
+  cost,
+  currency
 from
   azure_cost_by_service_daily
+where
+  cost_type = 'ActualCost'
+  and usage_date >= NOW() - INTERVAL '7 days'
 order by
   usage_date desc,
-  pre_tax_cost_amount desc;
+  cost desc
+limit 10;
 ```
 
 ```sql+sqlite
 select
-  usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  usage_date,
+  cost,
+  currency
 from
   azure_cost_by_service_daily
+where
+  cost_type = 'ActualCost'
+  and usage_date >= date('now', '-7 days')
 order by
   usage_date desc,
-  pre_tax_cost_amount desc;
+  cost desc
+limit 10;
 ```
 
-### Daily costs for a specific service
+### Historical daily costs for a specific service
 
-Analyze the daily cost trend for a specific Azure service to understand its usage patterns and cost fluctuations.
+Analyze the complete historical daily cost trend for a specific Azure service to understand its usage patterns and cost evolution over time.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  pre_tax_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  service_name = 'Storage'
+  cost_type = 'ActualCost'
+  and service_name = 'Microsoft Defender for Cloud'
 order by
   usage_date desc;
 ```
@@ -74,71 +86,78 @@ order by
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  pre_tax_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  service_name = 'Storage'
+  cost_type = 'ActualCost'
+  and service_name = 'Microsoft Defender for Cloud'
 order by
   usage_date desc;
 ```
 
-### Query costs for a specific period
+### Costs for a specific billing period
 
-Use period_start and period_end parameters to query costs for a specific time range.
+Use period_start and period_end parameters to query costs for a specific time range, showing both actual cost and pre-tax cost with period metadata.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
+  cost,
+  pre_tax_cost,
+  currency,
   period_start,
   period_end
 from
   azure_cost_by_service_daily
 where
-  period_start = '2024-08-01'
-  and period_end = '2024-08-31'
+  cost_type = 'ActualCost'
+  and period_start = '2025-08-01'
+  and period_end = '2025-08-31'
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
+  cost,
+  pre_tax_cost,
+  currency,
   period_start,
   period_end
 from
   azure_cost_by_service_daily
 where
-  period_start = '2024-08-01'
-  and period_end = '2024-08-31'
+  cost_type = 'ActualCost'
+  and period_start = '2025-08-01'
+  and period_end = '2025-08-31'
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
-### Top 5 most expensive services yesterday
+### Service cost aggregation analysis
 
-Identify the most expensive Azure services from the previous day to focus cost optimization efforts.
+Identify the top 5 most expensive Azure services over the last 30 days with total costs and average daily spending to focus optimization efforts.
 
 ```sql+postgres
 select
   service_name,
-  sum(pre_tax_cost_amount) as total_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  avg(cost) as avg_daily_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date >= current_date - interval '1 day'
-  and usage_date < current_date
+  cost_type = 'ActualCost'
+  and usage_date >= NOW() - INTERVAL '30 days'
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc
 limit 5;
@@ -147,157 +166,212 @@ limit 5;
 ```sql+sqlite
 select
   service_name,
-  sum(pre_tax_cost_amount) as total_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  avg(cost) as avg_daily_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date >= date('now', '-1 day')
-  and usage_date < date('now')
+  cost_type = 'ActualCost'
+  and usage_date >= date('now', '-30 days')
 group by
   service_name,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc
 limit 5;
 ```
 
-### Weekly cost trend for all services
+### Daily total spending trends
 
-Analyze the weekly cost trend to understand spending patterns and identify cost spikes.
+Analyze the aggregated daily cost trends across all services to identify spending patterns and cost spikes over the last 30 days.
 
 ```sql+postgres
 select
-  date_trunc('week', usage_date) as week_start,
-  sum(pre_tax_cost_amount) as weekly_cost,
-  pre_tax_cost_unit
+  usage_date,
+  sum(cost) as daily_total_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date >= current_date - interval '30 days'
+  cost_type = 'ActualCost'
+  and usage_date >= NOW() - INTERVAL '30 days'
 group by
-  date_trunc('week', usage_date),
-  pre_tax_cost_unit
+  usage_date,
+  currency
 order by
-  week_start desc;
+  usage_date desc;
 ```
 
 ```sql+sqlite
 select
-  date(usage_date, 'weekday 0', '-6 days') as week_start,
-  sum(pre_tax_cost_amount) as weekly_cost,
-  pre_tax_cost_unit
+  usage_date,
+  sum(cost) as daily_total_cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date >= date('now', '-30 days')
+  cost_type = 'ActualCost'
+  and usage_date >= date('now', '-30 days')
 group by
-  date(usage_date, 'weekday 0', '-6 days'),
-  pre_tax_cost_unit
+  usage_date,
+  currency
 order by
-  week_start desc;
+  usage_date desc;
 ```
 
-### Daily cost by service for a specific date range
+### Service costs within a date range
 
-Get detailed daily cost breakdown for all services within a specific date range.
+Get detailed daily cost breakdown for all services within a specific 7-day period, ordered by usage date and cost amount.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date between '2025-01-01' and '2025-01-07'
+  cost_type = 'ActualCost'
+  and usage_date between '2025-08-25' and '2025-08-31'
 order by
   usage_date,
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  usage_date between '2025-01-01' and '2025-01-07'
+  cost_type = 'ActualCost'
+  and usage_date between '2025-08-25' and '2025-08-31'
 order by
   usage_date,
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
-### Services with cost above threshold
+### High-cost services above threshold
 
-Find services that exceeded a specific cost threshold on any given day for cost monitoring and alerting.
+Identify services that exceeded a specific cost threshold ($0.50) on any given day, useful for cost monitoring and budget alerting.
 
 ```sql+postgres
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  pre_tax_cost_amount > 100
+  cost_type = 'ActualCost'
+  and cost > 0.5
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
 ```sql+sqlite
 select
   usage_date,
   service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_by_service_daily
 where
-  pre_tax_cost_amount > 100
+  cost_type = 'ActualCost'
+  and cost > 0.5
 order by
-  pre_tax_cost_amount desc;
+  cost desc;
 ```
 
-### Compare pre-tax vs amortized costs
+### Reservation savings analysis
 
-Analyze the difference between pre-tax costs and amortized costs to understand reservation impacts.
+Compare actual costs vs amortized costs to identify reservation savings by joining ActualCost and AmortizedCost data for each service and day.
 
 ```sql+postgres
+with actual_costs as (
+  select
+    service_name,
+    usage_date,
+    cost as actual_cost,
+    currency
+  from
+    azure_cost_by_service_daily
+  where
+    cost_type = 'ActualCost'
+),
+amortized_costs as (
+  select
+    service_name,
+    usage_date,
+    cost as amortized_cost,
+    currency
+  from
+    azure_cost_by_service_daily
+  where
+    cost_type = 'AmortizedCost'
+)
 select
-  service_name,
-  usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  a.service_name,
+  a.usage_date,
+  a.actual_cost,
+  am.amortized_cost,
+  (a.actual_cost - am.amortized_cost) as reservation_savings,
+  a.currency
 from
-  azure_cost_by_service_daily
+  actual_costs a
+  join amortized_costs am on a.service_name = am.service_name
+  and a.usage_date = am.usage_date
+  and a.currency = am.currency
 where
-  amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
+  a.actual_cost != am.amortized_cost
 order by
   reservation_savings desc;
 ```
 
 ```sql+sqlite
+with actual_costs as (
+  select
+    service_name,
+    usage_date,
+    cost as actual_cost,
+    currency
+  from
+    azure_cost_by_service_daily
+  where
+    cost_type = 'ActualCost'
+),
+amortized_costs as (
+  select
+    service_name,
+    usage_date,
+    cost as amortized_cost,
+    currency
+  from
+    azure_cost_by_service_daily
+  where
+    cost_type = 'AmortizedCost'
+)
 select
-  service_name,
-  usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  a.service_name,
+  a.usage_date,
+  a.actual_cost,
+  am.amortized_cost,
+  (a.actual_cost - am.amortized_cost) as reservation_savings,
+  a.currency
 from
-  azure_cost_by_service_daily
+  actual_costs a
+  join amortized_costs am on a.service_name = am.service_name
+  and a.usage_date = am.usage_date
+  and a.currency = am.currency
 where
-  amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
+  a.actual_cost != am.amortized_cost
 order by
   reservation_savings desc;
 ```

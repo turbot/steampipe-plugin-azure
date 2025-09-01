@@ -6,7 +6,7 @@ folder: "Cost Management"
 
 # Table: azure_cost_usage - Query Azure Cost and Usage Data using SQL
 
-Azure Cost Management provides cost analytics to help you understand and manage your Azure spending. The cost usage table allows you to query cost data with flexible dimensions, providing insights into Azure costs broken down by any combination of supported dimensions such as service name, resource group, location, resource type, subscription, and more. This enables custom cost analysis tailored to your specific organizational needs.
+Azure Cost Management provides cost analytics to help you understand and manage your Azure spending. The cost usage table allows you to query cost data with flexible dimensions, providing insights into Azure costs broken down by any combination of supported dimensions such as service name, resource group, location, resource type, subscription, and more. This enables custom cost analysis tailored to your organizational needs.
 
 ## Table Usage Guide
 
@@ -14,35 +14,38 @@ The `azure_cost_usage` table provides insights into cost and usage data within M
 
 **Important Notes:**
 
-- This table requires three key qualifiers: `granularity` (DAILY or MONTHLY), `dimension_type_1`, and `dimension_type_2`. Supported dimension types include: ResourceGroup, ResourceGroupName, ResourceLocation, ConsumedService, ResourceType, ServiceName, SubscriptionName, MeterCategory, and many others.
-- This table supports optional quals. Queries with optional quals are optimised to reduce query time and improve performance. Optional quals are supported for the following columns:
-  - `scope` with supported operators `=`.
-  - `type` with supported operators `=`. Valid values are 'ActualCost' (default) and 'AmortizedCost'.
-  - `period_start` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
-  - `period_end` with supported operators `=`, `>=`, `>`, `<=`, and `<`.
+- You **_must_** specify `cost_type` (ActualCost or AmortizedCost), `granularity` (DAILY or MONTHLY), and at least one dimension qualifier — either `dimension_type_1` and/or `dimension_type_2` or `dimension_types` — in a `where` clause in order to use this table.
+- For improved performance, it is advised that you use the optional quals `period_start` and `period_end` to limit the result set to a specific time period.
+- This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:
+  - `scope` with supported operators `=`. Default to current subscription. Possible value are see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
+  - `period_start` with supported operators `=`. Default: 1 year ago.
+  - `period_end` with supported operators `=`. Default: yesterday.
 
 ## Examples
 
-### Basic cost breakdown by service and resource group
+### Recent daily costs by service and resource group
 
-Explore daily costs broken down by service name and resource group to understand which services are costing the most in each resource group.
+Get the last 7 days of daily costs broken down by service name and resource group to understand which services are costing the most in each resource group.
 
 ```sql+postgres
 select
   usage_date,
   dimension_1 as service_name,
   dimension_2 as resource_group,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
   and dimension_type_1 = 'ServiceName'
   and dimension_type_2 = 'ResourceGroupName'
+  and usage_date >= NOW() - INTERVAL '7 days'
 order by
   usage_date desc,
-  pre_tax_cost_amount desc;
+  cost desc
+limit 5;
 ```
 
 ```sql+sqlite
@@ -50,160 +53,174 @@ select
   usage_date,
   dimension_1 as service_name,
   dimension_2 as resource_group,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
+  cost,
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
   and dimension_type_1 = 'ServiceName'
   and dimension_type_2 = 'ResourceGroupName'
-order by
-  usage_date desc,
-  pre_tax_cost_amount desc;
-```
-
-### Monthly costs by location and service
-
-Analyze monthly costs broken down by resource location and service to understand geographical spending patterns.
-
-```sql+postgres
-select
-  usage_date,
-  dimension_1 as location,
-  dimension_2 as service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
-from
-  azure_cost_usage
-where
-  granularity = 'MONTHLY'
-  and dimension_type_1 = 'ResourceLocation'
-  and dimension_type_2 = 'ServiceName'
-order by
-  usage_date desc,
-  pre_tax_cost_amount desc;
-```
-
-```sql+sqlite
-select
-  usage_date,
-  dimension_1 as location,
-  dimension_2 as service_name,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
-from
-  azure_cost_usage
-where
-  granularity = 'MONTHLY'
-  and dimension_type_1 = 'ResourceLocation'
-  and dimension_type_2 = 'ServiceName'
-order by
-  usage_date desc,
-  pre_tax_cost_amount desc;
-```
-
-### Query costs for a specific period
-
-Use period_start and period_end parameters to query costs for a specific time range with flexible dimensions.
-
-```sql+postgres
-select
-  usage_date,
-  dimension_1 as service_name,
-  dimension_2 as resource_group,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
-  period_start,
-  period_end
-from
-  azure_cost_usage
-where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ServiceName'
-  and dimension_type_2 = 'ResourceGroupName'
-  and period_start = '2024-08-01'
-  and period_end = '2024-08-31'
-order by
-  pre_tax_cost_amount desc;
-```
-
-```sql+sqlite
-select
-  usage_date,
-  dimension_1 as service_name,
-  dimension_2 as resource_group,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit,
-  period_start,
-  period_end
-from
-  azure_cost_usage
-where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ServiceName'
-  and dimension_type_2 = 'ResourceGroupName'
-  and period_start = '2024-08-01'
-  and period_end = '2024-08-31'
-order by
-  pre_tax_cost_amount desc;
-```
-
-### Resource type and consumed service analysis
-
-Understand costs by resource type and the services that consume them for detailed infrastructure cost analysis.
-
-```sql+postgres
-select
-  usage_date,
-  dimension_1 as resource_type,
-  dimension_2 as consumed_service,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
-from
-  azure_cost_usage
-where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ResourceType'
-  and dimension_type_2 = 'ConsumedService'
-  and usage_date >= current_date - interval '7 days'
-order by
-  pre_tax_cost_amount desc;
-```
-
-```sql+sqlite
-select
-  usage_date,
-  dimension_1 as resource_type,
-  dimension_2 as consumed_service,
-  pre_tax_cost_amount,
-  pre_tax_cost_unit
-from
-  azure_cost_usage
-where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ResourceType'
-  and dimension_type_2 = 'ConsumedService'
   and usage_date >= date('now', '-7 days')
 order by
-  pre_tax_cost_amount desc;
+  usage_date desc,
+  cost desc
+limit 5;
 ```
 
-### Subscription and service cost breakdown
+### Location-based cost analysis (last 6 months)
 
-Track costs across different subscriptions and services to understand multi-subscription spending patterns.
+Analyze the last 6 months of costs broken down by resource location to understand geographical spending patterns and identify the most expensive regions.
+
+```sql+postgres
+select
+  dimension_1 as resource_location,
+  sum(cost) as total_cost,
+  currency
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Monthly'
+  and dimension_type_1 = 'ResourceLocation'
+  and usage_date >= NOW() - INTERVAL '6 months'
+group by
+  dimension_1,
+  currency
+order by
+  total_cost desc
+limit 10;
+```
+
+```sql+sqlite
+select
+  dimension_1 as resource_location,
+  sum(cost) as total_cost,
+  currency
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Monthly'
+  and dimension_type_1 = 'ResourceLocation'
+  and usage_date >= date('now', '-6 months')
+group by
+  dimension_1,
+  currency
+order by
+  total_cost desc
+limit 10;
+```
+
+### Costs for a specific billing period
+
+Use period_start and period_end parameters to query costs for a specific monthly billing period (August 2025), showing service and resource group breakdown.
+
+```sql+postgres
+select
+  usage_date,
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  cost,
+  currency,
+  period_start,
+  period_end
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and period_start = '2025-08-01'
+  and period_end = '2025-08-31'
+order by
+  cost desc;
+```
+
+```sql+sqlite
+select
+  usage_date,
+  dimension_1 as service_name,
+  dimension_2 as resource_group,
+  cost,
+  currency,
+  period_start,
+  period_end
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and period_start = '2025-08-01'
+  and period_end = '2025-08-31'
+order by
+  cost desc;
+```
+
+### Daily service cost breakdown
+
+Analyze the last 7 days of costs broken down by service name to understand which services are generating the highest costs.
+
+```sql+postgres
+select
+  dimension_type_1,
+  dimension_1,
+  cost,
+  currency,
+  usage_date
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
+  and dimension_type_1 = 'ServiceName'
+  and usage_date >= NOW() - INTERVAL '7 days'
+order by
+  usage_date desc,
+  cost desc
+limit 10;
+```
+
+```sql+sqlite
+select
+  dimension_type_1,
+  dimension_1,
+  cost,
+  currency,
+  usage_date
+from
+  azure_cost_usage
+where
+  cost_type = 'ActualCost'
+  and granularity = 'Daily'
+  and dimension_type_1 = 'ServiceName'
+  and usage_date >= date('now', '-7 days')
+order by
+  usage_date desc,
+  cost desc
+limit 10;
+```
+
+### Multi-subscription daily cost tracking
+
+Track daily costs across different subscriptions and services over the last 30 days to understand multi-subscription spending patterns.
 
 ```sql+postgres
 select
   usage_date,
   dimension_1 as subscription_name,
   dimension_2 as service_name,
-  sum(pre_tax_cost_amount) as total_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
   and dimension_type_1 = 'SubscriptionName'
   and dimension_type_2 = 'ServiceName'
   and usage_date >= current_date - interval '30 days'
@@ -211,7 +228,7 @@ group by
   usage_date,
   dimension_1,
   dimension_2,
-  pre_tax_cost_unit
+  currency
 order by
   usage_date desc,
   total_cost desc;
@@ -222,12 +239,13 @@ select
   usage_date,
   dimension_1 as subscription_name,
   dimension_2 as service_name,
-  sum(pre_tax_cost_amount) as total_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
   and dimension_type_1 = 'SubscriptionName'
   and dimension_type_2 = 'ServiceName'
   and usage_date >= date('now', '-30 days')
@@ -235,34 +253,35 @@ group by
   usage_date,
   dimension_1,
   dimension_2,
-  pre_tax_cost_unit
+  currency
 order by
   usage_date desc,
   total_cost desc;
 ```
 
-### Top cost combinations for specific date range
+### Top service and resource group costs for January 2025
 
-Find the highest cost combinations for any dimension pair within a specific date range.
+Find the highest cost service and resource group combinations within January 2025, showing total costs and number of usage days.
 
 ```sql+postgres
 select
   dimension_1,
   dimension_2,
-  sum(pre_tax_cost_amount) as total_cost,
+  sum(cost) as total_cost,
   count(*) as usage_days,
-  pre_tax_cost_unit
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
   and dimension_type_1 = 'ServiceName'
   and dimension_type_2 = 'ResourceGroupName'
   and usage_date between '2025-01-01' and '2025-01-31'
 group by
   dimension_1,
   dimension_2,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc
 limit 10;
@@ -272,44 +291,46 @@ limit 10;
 select
   dimension_1,
   dimension_2,
-  sum(pre_tax_cost_amount) as total_cost,
+  sum(cost) as total_cost,
   count(*) as usage_days,
-  pre_tax_cost_unit
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
   and dimension_type_1 = 'ServiceName'
   and dimension_type_2 = 'ResourceGroupName'
   and usage_date between '2025-01-01' and '2025-01-31'
 group by
   dimension_1,
   dimension_2,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc
 limit 10;
 ```
 
-### Cost trend analysis by meter category
+### Monthly cost trends by meter category and service
 
-Analyze cost trends by meter category and service to understand detailed billing patterns.
+Analyze monthly cost trends by meter category and service using window functions to compare current and previous period costs.
 
 ```sql+postgres
 select
   usage_date,
   dimension_1 as meter_category,
   dimension_2 as service_name,
-  pre_tax_cost_amount,
-  lag(pre_tax_cost_amount) over (
+  cost,
+  lag(cost) over (
     partition by dimension_1, dimension_2
     order by usage_date
   ) as previous_period_cost,
-  pre_tax_cost_unit
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'MONTHLY'
+  cost_type = 'ActualCost'
+  and granularity = 'MONTHLY'
   and dimension_type_1 = 'MeterCategory'
   and dimension_type_2 = 'ServiceName'
 order by
@@ -323,16 +344,17 @@ select
   usage_date,
   dimension_1 as meter_category,
   dimension_2 as service_name,
-  pre_tax_cost_amount,
-  lag(pre_tax_cost_amount) over (
+  cost,
+  lag(cost) over (
     partition by dimension_1, dimension_2
     order by usage_date
   ) as previous_period_cost,
-  pre_tax_cost_unit
+  currency
 from
   azure_cost_usage
 where
-  granularity = 'MONTHLY'
+  cost_type = 'ActualCost'
+  and granularity = 'MONTHLY'
   and dimension_type_1 = 'MeterCategory'
   and dimension_type_2 = 'ServiceName'
 order by
@@ -341,9 +363,9 @@ order by
   usage_date desc;
 ```
 
-### Cross-dimensional cost summary
+### Weekly cost statistics by service and resource group
 
-Get a summary of costs across different dimension combinations to understand overall spending distribution.
+Get statistical summary (count, sum, average, max) of costs for service and resource group dimensions over the last 7 days.
 
 ```sql+postgres
 select
@@ -351,19 +373,23 @@ select
   dimension_type_2,
   granularity,
   count(*) as total_records,
-  sum(pre_tax_cost_amount) as total_cost,
-  avg(pre_tax_cost_amount) as avg_cost,
-  max(pre_tax_cost_amount) as max_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  avg(cost) as avg_cost,
+  max(cost) as max_cost,
+  currency
 from
   azure_cost_usage
 where
-  usage_date >= current_date - interval '7 days'
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and usage_date >= current_date - interval '7 days'
 group by
   dimension_type_1,
   dimension_type_2,
   granularity,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc;
 ```
@@ -374,65 +400,159 @@ select
   dimension_type_2,
   granularity,
   count(*) as total_records,
-  sum(pre_tax_cost_amount) as total_cost,
-  avg(pre_tax_cost_amount) as avg_cost,
-  max(pre_tax_cost_amount) as max_cost,
-  pre_tax_cost_unit
+  sum(cost) as total_cost,
+  avg(cost) as avg_cost,
+  max(cost) as max_cost,
+  currency
 from
   azure_cost_usage
 where
-  usage_date >= date('now', '-7 days')
+  cost_type = 'ActualCost'
+  and granularity = 'DAILY'
+  and dimension_type_1 = 'ServiceName'
+  and dimension_type_2 = 'ResourceGroupName'
+  and usage_date >= date('now', '-7 days')
 group by
   dimension_type_1,
   dimension_type_2,
   granularity,
-  pre_tax_cost_unit
+  currency
 order by
   total_cost desc;
 ```
 
-### Compare pre-tax vs amortized costs
+### Reservation savings analysis
 
-Analyze the difference between pre-tax costs and amortized costs across different dimensions to understand reservation impacts.
+Compare actual costs vs amortized costs across service and resource group dimensions to identify reservation savings and understand cost optimization opportunities.
 
 ```sql+postgres
+with actual_costs as (
+  select
+    dimension_1 as service_name,
+    dimension_2 as resource_group,
+    usage_date,
+    cost as actual_cost,
+    currency
+  from
+    azure_cost_usage
+  where
+    cost_type = 'ActualCost'
+    and granularity = 'DAILY'
+    and dimension_type_1 = 'ServiceName'
+    and dimension_type_2 = 'ResourceGroupName'
+),
+amortized_costs as (
+  select
+    dimension_1 as service_name,
+    dimension_2 as resource_group,
+    usage_date,
+    cost as amortized_cost,
+    currency
+  from
+    azure_cost_usage
+  where
+    cost_type = 'AmortizedCost'
+    and granularity = 'DAILY'
+    and dimension_type_1 = 'ServiceName'
+    and dimension_type_2 = 'ResourceGroupName'
+)
 select
-  dimension_1 as service_name,
-  dimension_2 as resource_group,
-  usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  a.service_name,
+  a.resource_group,
+  a.usage_date,
+  a.actual_cost,
+  am.amortized_cost,
+  (a.actual_cost - am.amortized_cost) as reservation_savings,
+  a.currency
 from
-  azure_cost_usage
+  actual_costs a
+  join amortized_costs am on a.service_name = am.service_name
+  and a.resource_group = am.resource_group
+  and a.usage_date = am.usage_date
+  and a.currency = am.currency
 where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ServiceName'
-  and dimension_type_2 = 'ResourceGroupName'
-  and amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
+  a.actual_cost != am.amortized_cost
 order by
   reservation_savings desc;
 ```
 
 ```sql+sqlite
+with actual_costs as (
+  select
+    dimension_1 as service_name,
+    dimension_2 as resource_group,
+    usage_date,
+    cost as actual_cost,
+    currency
+  from
+    azure_cost_usage
+  where
+    cost_type = 'ActualCost'
+    and granularity = 'DAILY'
+    and dimension_type_1 = 'ServiceName'
+    and dimension_type_2 = 'ResourceGroupName'
+),
+amortized_costs as (
+  select
+    dimension_1 as service_name,
+    dimension_2 as resource_group,
+    usage_date,
+    cost as amortized_cost,
+    currency
+  from
+    azure_cost_usage
+  where
+    cost_type = 'AmortizedCost'
+    and granularity = 'DAILY'
+    and dimension_type_1 = 'ServiceName'
+    and dimension_type_2 = 'ResourceGroupName'
+)
 select
-  dimension_1 as service_name,
-  dimension_2 as resource_group,
+  a.service_name,
+  a.resource_group,
+  a.usage_date,
+  a.actual_cost,
+  am.amortized_cost,
+  (a.actual_cost - am.amortized_cost) as reservation_savings,
+  a.currency
+from
+  actual_costs a
+  join amortized_costs am on a.service_name = am.service_name
+  and a.resource_group = am.resource_group
+  and a.usage_date = am.usage_date
+  and a.currency = am.currency
+where
+  a.actual_cost != am.amortized_cost
+order by
+  reservation_savings desc;
+```
+
+### Monthly amortized cost across multiple dimensions
+
+Show monthly aggregated amortized cost with a multi-dimension breakdown; returns cost, usage_date (month-end), and a pretty-printed dimensions JSON.
+
+```sql+postgres
+select
+  cost,
   usage_date,
-  pre_tax_cost_amount,
-  amortized_cost_amount,
-  (pre_tax_cost_amount - amortized_cost_amount) as reservation_savings,
-  pre_tax_cost_unit
+  jsonb_pretty(dimensions)
 from
   azure_cost_usage
 where
-  granularity = 'DAILY'
-  and dimension_type_1 = 'ServiceName'
-  and dimension_type_2 = 'ResourceGroupName'
-  and amortized_cost_amount is not null
-  and pre_tax_cost_amount != amortized_cost_amount
-order by
-  reservation_savings desc;
+  granularity = 'MONTHLY'
+  and cost_type = 'AmortizedCost'
+  and dimension_types = '["ResourceGroupName", "ServiceName", "ResourceLocation", "ResourceId", "MeterCategory", "ResourceType", "ChargeType"]';
+```
+
+```sql+sqlite
+select
+  cost,
+  usage_date,
+  json_pretty(dimensions) as dimensions
+from
+  azure_cost_usage
+where
+  granularity = 'MONTHLY'
+  and cost_type = 'AmortizedCost'
+  and dimension_types = '["ResourceGroupName", "ServiceName", "ResourceLocation", "ResourceId", "MeterCategory", "ResourceType", "ChargeType"]';
 ```
