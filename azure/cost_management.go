@@ -71,17 +71,6 @@ func getCostTypeFromString(costType string) armcostmanagement.ExportType {
 	}
 }
 
-// AllCostMetrics returns all available cost metrics for Azure Cost Management (like AWS)
-func AllCostMetrics() []string {
-	return append([]string{}, CostMetrics...)
-}
-
-// getMetricsByQueryContext dynamically determines which metrics to fetch based on query columns
-func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
-	// Currently we only request the metrics defined in CostMetrics (e.g., PreTaxCost)
-	return append([]string{}, CostMetrics...)
-}
-
 // getColumnsFromQueryContext determines which columns to request from Azure API
 func getColumnsFromQueryContext(qc *plugin.QueryContext) []*string {
 	var columns []*string
@@ -154,7 +143,7 @@ func buildFilterExpression(d *plugin.QueryData, dimensionName string) *armcostma
 	var filters []*armcostmanagement.QueryFilter
 	// Process dimension-specific quals (like service_name = 'Storage')
 	for _, keyQual := range d.Table.List.KeyColumns {
-		if keyQual.Name == "usage_date" || keyQual.Name == "scope" || keyQual.Name == "type" || keyQual.Name == "period_start" || keyQual.Name == "period_end" {
+		if keyQual.Name == "usage_date" || keyQual.Name == "scope" || keyQual.Name == "cost_type" || keyQual.Name == "period_start" || keyQual.Name == "period_end" {
 			continue // Skip time, scope, type quals
 		}
 
@@ -261,10 +250,10 @@ func costManagementColumns(columns []*plugin.Column) []*plugin.Column {
 			Transform:   transform.FromField("Scope"),
 		},
 		{
-			Name:        "type",
+			Name:        "cost_type",
 			Description: "The cost type for the query. Valid values are 'ActualCost' and 'AmortizedCost'.",
 			Type:        proto.ColumnType_STRING,
-			Transform:   transform.FromQual("type"),
+			Transform:   transform.FromQual("cost_type"),
 		},
 	}
 
@@ -281,7 +270,7 @@ func costManagementKeyColumns() plugin.KeyColumnSlice {
 			Operators: []string{"="},
 		},
 		{
-			Name:      "type",
+			Name:      "cost_type",
 			Require:   plugin.Required,
 			Operators: []string{"="},
 		},

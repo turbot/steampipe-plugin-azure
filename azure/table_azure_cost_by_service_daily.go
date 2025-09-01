@@ -57,7 +57,7 @@ func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (arm
 	}
 
 	// Get cost type from quals, default to ActualCost
-	costType := d.EqualsQualString("type")
+	costType := d.EqualsQualString("cost_type")
 	if costType == "" {
 		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("missing required qual 'type' (ActualCost | AmortizedCost)")
 	}
