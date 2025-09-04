@@ -2,11 +2,7 @@ package azure
 
 import (
 	"context"
-	"fmt"
-	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/costmanagement/armcostmanagement/v2"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -42,95 +38,9 @@ func tableAzureCostByServiceDaily(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listCostByServiceDaily(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	queryDef, scope, err := buildCostByServiceDailyInput(ctx, d)
+	queryDef, scope, err := buildCostQueryInput(ctx, d, "DAILY", []string{"ServiceName"})
 	if err != nil {
 		return nil, err
 	}
 	return streamCostAndUsage(ctx, d, queryDef, scope, "ServiceName")
-}
-
-func buildCostByServiceDailyInput(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, error) {
-	// Get scope from quals, default to placeholder if not provided
-	scope := d.EqualsQualString("scope")
-	if scope == "" {
-		scope = "/subscriptions/placeholder" // Will be resolved in streamCostAndUsage
-	}
-
-	// Get cost type from quals, default to ActualCost
-	costType := d.EqualsQualString("cost_type")
-	if costType == "" {
-		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("missing required qual 'type' (ActualCost | AmortizedCost)")
-	}
-
-	// Set timeframe and time period using new usage_date logic
-	timeframe := armcostmanagement.TimeframeTypeCustom
-	timePeriod := &armcostmanagement.QueryTimePeriod{}
-
-	// Get time range from period_start/period_end quals
-	startTime, endTime := getPeriodTimeRange(d, "DAILY")
-
-	startDate, err := time.Parse("2006-01-02", startTime)
-	if err != nil {
-		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse start date: %v", err)
-	}
-	endDate, err := time.Parse("2006-01-02", endTime)
-	if err != nil {
-		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse end date: %v", err)
-	}
-
-	timePeriod.From = to.Ptr(startDate)
-	timePeriod.To = to.Ptr(endDate)
-
-	// Daily granularity
-	azureGranularity := getGranularityFromString("DAILY")
-
-	// Service name grouping
-	groupBy := &armcostmanagement.QueryGrouping{
-		Type: to.Ptr(armcostmanagement.QueryColumnTypeDimension),
-		Name: to.Ptr("ServiceName"),
-	}
-
-	// Build filter for service_name if provided
-	filter := buildFilterExpression(d, "ServiceName")
-
-	
-	// Build aggregation based on requested columns
-	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
-
-	metrics := getMetricsByQueryContext(d.QueryContext)
-	for i, metric := range metrics {
-		if i >= 2 {
-			break
-		}
-		aggregation[metric] = &armcostmanagement.QueryAggregation{
-			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
-			Name:     to.Ptr(metric),
-		}
-	}
-
-	// Create dataset with grouping
-	dataset := &armcostmanagement.QueryDataset{
-		Granularity: &azureGranularity,
-		Aggregation: aggregation,
-		Grouping:    []*armcostmanagement.QueryGrouping{groupBy},
-	}
-
-	// Add filter if specified
-	if filter != nil {
-		dataset.Filter = filter
-	}
-
-	// Create QueryDefinition
-	queryDef := armcostmanagement.QueryDefinition{
-		Type:      to.Ptr(getCostTypeFromString(costType)),
-		Timeframe: to.Ptr(timeframe),
-		Dataset:   dataset,
-	}
-
-	// Set TimePeriod if using Custom timeframe
-	if timeframe == armcostmanagement.TimeframeTypeCustom && timePeriod != nil {
-		queryDef.TimePeriod = timePeriod
-	}
-
-	return queryDef, scope, nil
 }

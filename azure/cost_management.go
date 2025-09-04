@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -70,7 +71,6 @@ func getCostTypeFromString(costType string) armcostmanagement.ExportType {
 		return armcostmanagement.ExportTypeActualCost
 	}
 }
-
 
 // getMetricsByQueryContext determines which metrics to fetch based on selected columns
 func getMetricsByQueryContext(qc *plugin.QueryContext) []string {
@@ -531,4 +531,134 @@ func processQueryResults(result *armcostmanagement.QueryResult, scope string, ro
 			costRow.Scope = &scope
 		}
 	}
+}
+
+// buildCostQueryInput is a common function to build input parameters for all cost tables
+func buildCostQueryInput(ctx context.Context, d *plugin.QueryData, granularity string, groupingNames []string) (armcostmanagement.QueryDefinition, string, error) {
+	// Get scope from quals, default to placeholder if not provided
+	scope := d.EqualsQualString("scope")
+	if scope == "" {
+		scope = "/subscriptions/placeholder" // Will be resolved in streamCostAndUsage
+	}
+
+	// Get cost type from quals, required
+	costType := d.EqualsQualString("cost_type")
+	if costType == "" {
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("missing required qual 'cost_type' (ActualCost | AmortizedCost)")
+	}
+
+	// Set timeframe and time period
+	timeframe := armcostmanagement.TimeframeTypeCustom
+	timePeriod := &armcostmanagement.QueryTimePeriod{}
+
+	// Get time range from period_start/period_end quals
+	startTime, endTime := getPeriodTimeRange(d, granularity)
+
+	startDate, err := time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse start date: %v", err)
+	}
+	endDate, err := time.Parse("2006-01-02", endTime)
+	if err != nil {
+		return armcostmanagement.QueryDefinition{}, "", fmt.Errorf("failed to parse end date: %v", err)
+	}
+
+	timePeriod.From = to.Ptr(startDate)
+	timePeriod.To = to.Ptr(endDate)
+
+	azureGranularity := getGranularityFromString(granularity)
+
+	// Build GroupBy for specified grouping names
+	var groupings []*armcostmanagement.QueryGrouping
+	for _, groupName := range groupingNames {
+		groupings = append(groupings, &armcostmanagement.QueryGrouping{
+			Type: to.Ptr(armcostmanagement.QueryColumnTypeDimension),
+			Name: to.Ptr(groupName),
+		})
+	}
+
+	// Build filter expressions from quals (use first grouping name for filter)
+	var filter *armcostmanagement.QueryFilter
+	if len(groupingNames) > 0 {
+		filter = buildFilterExpression(d, groupingNames[0])
+	}
+
+	// Build aggregation based on requested columns
+	aggregation := make(map[string]*armcostmanagement.QueryAggregation)
+
+	metrics := getMetricsByQueryContext(d.QueryContext)
+	for i, metric := range metrics {
+		if i >= 2 {
+			break
+		}
+		aggregation[metric] = &armcostmanagement.QueryAggregation{
+			Function: to.Ptr(armcostmanagement.FunctionTypeSum),
+			Name:     to.Ptr(metric),
+		}
+	}
+
+	// Create dataset with grouping
+	dataset := &armcostmanagement.QueryDataset{
+		Granularity: &azureGranularity,
+		Aggregation: aggregation,
+	}
+
+	// Add grouping if specified
+	if len(groupings) > 0 {
+		dataset.Grouping = groupings
+	}
+
+	// Add filter if specified
+	if filter != nil {
+		dataset.Filter = filter
+	}
+
+	// Create QueryDefinition
+	queryDef := armcostmanagement.QueryDefinition{
+		Type:      to.Ptr(getCostTypeFromString(costType)),
+		Timeframe: to.Ptr(timeframe),
+		Dataset:   dataset,
+	}
+
+	// Set TimePeriod for custom timeframe
+	queryDef.TimePeriod = timePeriod
+
+	return queryDef, scope, nil
+}
+
+// buildCostUsageInput is a specialized function for the flexible azure_cost_usage table
+func buildCostUsageInput(ctx context.Context, d *plugin.QueryData) (armcostmanagement.QueryDefinition, string, []string, error) {
+	granularity := strings.ToUpper(d.EqualsQuals["granularity"].GetStringValue())
+	if granularity == "" {
+		return armcostmanagement.QueryDefinition{}, "", nil, fmt.Errorf("missing required qual 'granularity' (DAILY | MONTHLY)")
+	}
+
+	// Get dimensions
+	dim1 := d.EqualsQuals["dimension_type_1"].GetStringValue()
+	dim2 := d.EqualsQuals["dimension_type_2"].GetStringValue()
+	dims := d.EqualsQuals["dimension_types"].GetJsonbValue()
+
+	var groupingNames []string
+	if dim1 != "" {
+		groupingNames = append(groupingNames, dim1)
+	}
+	if dim2 != "" {
+		groupingNames = append(groupingNames, dim2)
+	}
+
+	var dimensions []string
+	if dims != "" {
+		err := json.Unmarshal([]byte(dims), &dimensions)
+		if err != nil {
+			return armcostmanagement.QueryDefinition{}, "", nil, fmt.Errorf("failed to parse dimensions: %v", err)
+		}
+		groupingNames = append(groupingNames, dimensions...)
+	}
+
+	queryDef, scope, err := buildCostQueryInput(ctx, d, granularity, groupingNames)
+	if err != nil {
+		return armcostmanagement.QueryDefinition{}, "", nil, err
+	}
+
+	return queryDef, scope, groupingNames, nil
 }
