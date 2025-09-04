@@ -1,3 +1,26 @@
+## v1.7.0 [2025-09-04]
+
+_What's new?_
+
+- New tables added: ([#923](https://github.com/turbot/steampipe-plugin-azure/pull/923))
+  - [azure_cost_by_resource_group_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_by_resource_group_daily)
+  - [azure_cost_by_resource_group_monthly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_by_resource_group_daily)
+  - [azure_cost_by_service_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_by_service_daily)
+  - [azure_cost_by_service_monthly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_by_service_monthly)
+  - [azure_cost_usage](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_usage)
+
+_Enhancements_
+
+- Added default rate limiter configuration for the following tables: ([#942](https://github.com/turbot/steampipe-plugin-azure/pull/942))
+  - `azure_compute_virtual_machine`
+  - `azure_key_vault_key`
+  - `azure_key_vault_secret`
+  - `azure_monitor_activity_log`
+  - `azure_resource_group`
+  - `azure_storage_account`
+  - `azure_storage_blob`
+  - `azure_subscription`
+
 ## v1.6.0 [2025-08-06]
 
 _Enhancements_
