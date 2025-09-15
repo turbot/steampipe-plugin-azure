@@ -135,7 +135,7 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "aad_profile",
 				Description: "Profile of Azure Active Directory configuration.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("Properties.AadProfile"),
+				Transform:   transform.FromField("Properties.AADProfile"),
 			},
 			{
 				Name:        "addon_profiles",
