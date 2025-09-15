@@ -102,6 +102,12 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("ManagedClusterProperties.KubernetesVersion"),
 			},
 			{
+				Name:        "support_plan",
+				Description: "The support plan for the Managed Cluster.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("ManagedClusterProperties.SupportPlan"),
+			},
+			{
 				Name:        "max_agent_pools",
 				Description: "The max number of agent pools for the managed cluster.",
 				Type:        proto.ColumnType_INT,
