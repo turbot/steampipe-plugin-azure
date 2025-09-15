@@ -212,6 +212,7 @@ func tableAzureKubernetesCluster(_ context.Context) *plugin.Table {
 				Name:        "sku",
 				Description: "The managed cluster SKU.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("SKU"),
 			},
 			{
 				Name:        "windows_profile",
