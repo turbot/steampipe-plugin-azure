@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/subscriptions"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/memoize"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -54,7 +55,18 @@ func getSubscriptionIDUncached(ctx context.Context, d *plugin.QueryData, h *plug
 	if err != nil {
 		return nil, err
 	}
-	return session.SubscriptionID, nil
+
+	client := subscriptions.NewClientWithBaseURI(session.ResourceManagerEndpoint)
+	client.Authorizer = session.Authorizer
+	subscriptionID := session.SubscriptionID
+
+	op, err := client.Get(ctx, subscriptionID)
+	if err != nil {
+		plugin.Logger(ctx).Error("getSubscriptionIDUncached", "error", err)
+		return nil, err
+	}
+
+	return op.SubscriptionID, nil
 }
 
 // if the caching is required other than per connection, build a cache key for the call and use it in Memoize.
