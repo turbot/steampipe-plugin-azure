@@ -305,6 +305,6 @@ func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h 
 	// If the value is not returned as a string, queries that filter on subscription_id in the WHERE clause
 	// (e.g., "SELECT id, subscription_id FROM azure_resource WHERE subscription_id = 'd46d7416...'")
 	// will produce empty results due to a type mismatch during query evaluation.
-	subscriptionIDStr := subscriptionID.(*string)
-	return *subscriptionIDStr, nil
+	subscriptionIDStr := subscriptionID.(string)
+	return subscriptionIDStr, nil
 }

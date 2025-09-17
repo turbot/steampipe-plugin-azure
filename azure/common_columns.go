@@ -66,7 +66,7 @@ func getSubscriptionIDUncached(ctx context.Context, d *plugin.QueryData, h *plug
 		return nil, err
 	}
 
-	return op.SubscriptionID, nil
+	return *op.SubscriptionID, nil
 }
 
 // if the caching is required other than per connection, build a cache key for the call and use it in Memoize.
