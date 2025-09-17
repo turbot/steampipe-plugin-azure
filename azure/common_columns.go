@@ -60,6 +60,12 @@ func getSubscriptionIDUncached(ctx context.Context, d *plugin.QueryData, h *plug
 	client.Authorizer = session.Authorizer
 	subscriptionID := session.SubscriptionID
 
+	// Always fetch the subscription ID via an API call instead of relying on session.SubscriptionID.
+	// The session value cannot be guaranteed to be consistent, particularly because `subscription_id`
+	// is used as a connection-level key qualifier. Subscription ID may differ in letter casing,
+	// which causes mismatches during query evaluation. To ensure consistency, we normalize the process
+	// by retrieving the subscription ID through the API and reusing that value across connection-level
+	// key quals and table-level columns.
 	op, err := client.Get(ctx, subscriptionID)
 	if err != nil {
 		plugin.Logger(ctx).Error("getSubscriptionIDUncached", "error", err)
