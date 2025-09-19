@@ -2,7 +2,7 @@
 
 _Enhancements_
 
-- Added column `support_plan` to the `azure_kubernetes_cluster` table. ([#944](https://github.com/turbot/steampipe-plugin-azure/pull/944))
+- Added column `support_plan` to the `azure_kubernetes_cluster` table. ([#944](https://github.com/turbot/steampipe-plugin-azure/pull/944)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
 
 _Bug fixes_
 
