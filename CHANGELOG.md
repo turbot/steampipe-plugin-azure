@@ -1,3 +1,13 @@
+## v1.8.0 [2025-09-19]
+
+_Enhancements_
+
+- Added column `support_plan` to the `azure_kubernetes_cluster` table. ([#944](https://github.com/turbot/steampipe-plugin-azure/pull/944))
+
+_Bug fixes_
+
+- Fixed the common `subscription_id` column across all Azure tables to always fetch the value from the API, ensuring consistency and avoiding mismatches with subscription IDs set via connection config arguments or environment variables. ([#948](https://github.com/turbot/steampipe-plugin-azure/pull/948))
+
 ## v1.7.0 [2025-09-04]
 
 _What's new?_
