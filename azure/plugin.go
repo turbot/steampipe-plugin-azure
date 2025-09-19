@@ -92,7 +92,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			// ~2,000 GET/10s per vault
 			{
 				Name:       "azure_key_vault_secret",
-				FillRate:   40, 
+				FillRate:   40,
 				BucketSize: 400,
 				Scope:      []string{"connection", "subscription", "vault"},
 				Where:      "service = 'Microsoft.KeyVault' and action = 'vaults/secrets/read'",
@@ -300,5 +300,11 @@ func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h 
 	if err != nil {
 		return nil, err
 	}
-	return subscriptionID, nil
+	
+	// The value must be returned as a string because connection-level quals do not support transform functions.
+	// If the value is not returned as a string, queries that filter on subscription_id in the WHERE clause
+	// (e.g., "SELECT id, subscription_id FROM azure_resource WHERE subscription_id = 'd46d7416...'")
+	// will produce empty results due to a type mismatch during query evaluation.
+	subscriptionIDStr := subscriptionID.(string)
+	return subscriptionIDStr, nil
 }
