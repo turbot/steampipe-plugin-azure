@@ -174,6 +174,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_cost_by_resource_group_monthly":                         tableAzureCostByResourceGroupMonthly(ctx),
 			"azure_cost_by_service_daily":                                  tableAzureCostByServiceDaily(ctx),
 			"azure_cost_by_service_monthly":                                tableAzureCostByServiceMonthly(ctx),
+			"azure_cost_forecast_daily":                                    tableCostForecastDaily(ctx),
+			"azure_cost_forecast_monthly":                                  tableCostForecastMonthly(ctx),
 			"azure_cost_usage":                                             tableAzureCostUsage(ctx),
 			"azure_data_factory":                                           tableAzureDataFactory(ctx),
 			"azure_data_factory_dataset":                                   tableAzureDataFactoryDataset(ctx),
@@ -300,7 +302,7 @@ func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// The value must be returned as a string because connection-level quals do not support transform functions.
 	// If the value is not returned as a string, queries that filter on subscription_id in the WHERE clause
 	// (e.g., "SELECT id, subscription_id FROM azure_resource WHERE subscription_id = 'd46d7416...'")

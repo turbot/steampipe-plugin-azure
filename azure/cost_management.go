@@ -314,6 +314,21 @@ func getCostManagementClient(ctx context.Context, d *plugin.QueryData, h *plugin
 	return client, nil
 }
 
+// getForecastClient creates a new forecast client
+func getForecastClient(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (*armcostmanagement.ForecastClient, error) {
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := armcostmanagement.NewForecastClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 // streamCostAndUsage is the generic function for streaming cost data (like AWS)
 func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, queryDef armcostmanagement.QueryDefinition, scope string, groupingNames ...string) (interface{}, error) {
 	client, err := getCostManagementClient(ctx, d, nil)
@@ -530,6 +545,178 @@ func processQueryResults(result *armcostmanagement.QueryResult, scope string, ro
 			costRow.Scope = &scope
 		}
 	}
+}
+
+// buildForecastQueryInput builds input parameters specifically for forecast tables
+func buildForecastQueryInput(ctx context.Context, d *plugin.QueryData, granularity string) (armcostmanagement.ForecastDefinition, string, error) {
+	// Get scope from quals
+	scope := d.EqualsQualString("scope")
+	if scope == "" {
+		// Get subscription ID
+		subscriptionID, err := getSubscriptionID(ctx, d, nil)
+		if err != nil {
+			return armcostmanagement.ForecastDefinition{}, "", err
+		}
+		scope = "/subscriptions/" + subscriptionID.(string)
+	}
+
+	// Get cost type from quals
+	costType := d.EqualsQualString("cost_type")
+	if costType == "" {
+		return armcostmanagement.ForecastDefinition{}, "", fmt.Errorf("missing required qual 'cost_type' (ActualCost | AmortizedCost)")
+	}
+
+	// Set timeframe and forecast period
+	timeframe := armcostmanagement.TimeframeTypeCustom
+	startDate := time.Now().UTC()
+	var endDate time.Time
+
+	// Set forecast period based on granularity
+	switch granularity {
+	case "Monthly":
+		endDate = startDate.AddDate(1, 0, 0) // 1 year forecast for monthly
+	case "Daily":
+		endDate = startDate.AddDate(0, 3, 0) // 3 months forecast for daily
+	}
+
+	// Handle user-provided dates
+	if d.Quals["period_start"] != nil {
+		for _, q := range d.Quals["period_start"].Quals {
+			ts := q.Value.GetTimestampValue().AsTime()
+			switch q.Operator {
+			case "=", ">=", ">":
+				if ts.After(startDate) {
+					startDate = ts
+				}
+			}
+		}
+	}
+	if d.Quals["period_end"] != nil {
+		for _, q := range d.Quals["period_end"].Quals {
+			ts := q.Value.GetTimestampValue().AsTime()
+			switch q.Operator {
+			case "=", "<=", "<":
+				if ts.Before(endDate) {
+					endDate = ts
+				}
+			}
+		}
+	}
+
+	// Ensure we're not forecasting in the past
+	if startDate.Before(time.Now().UTC()) {
+		startDate = time.Now().UTC()
+	}
+	if endDate.Before(startDate) {
+		switch granularity {
+		case "Monthly":
+			endDate = startDate.AddDate(1, 0, 0)
+		case "Daily":
+			endDate = startDate.AddDate(0, 3, 0)
+		}
+	}
+
+	// Create forecast definition
+	forecastDef := armcostmanagement.ForecastDefinition{
+		Type:      to.Ptr(armcostmanagement.ForecastType(costType)),
+		Timeframe: to.Ptr(armcostmanagement.ForecastTimeframe(timeframe)),
+		TimePeriod: &armcostmanagement.ForecastTimePeriod{
+			From: to.Ptr(startDate),
+			To:   to.Ptr(endDate),
+		},
+		Dataset: &armcostmanagement.ForecastDataset{
+			Granularity: to.Ptr(armcostmanagement.GranularityType(granularity)),
+			Aggregation: map[string]*armcostmanagement.ForecastAggregation{
+				"PreTaxCost": {
+					Name:     to.Ptr(armcostmanagement.FunctionNameCost),
+					Function: to.Ptr(armcostmanagement.FunctionTypeSum),
+				},
+			},
+		},
+	}
+
+	return forecastDef, scope, nil
+}
+
+// streamForecastResults handles forecast API results specifically
+func streamForecastResults(ctx context.Context, d *plugin.QueryData, result *armcostmanagement.ForecastClientUsageResponse, scope string, granularity string) error {
+	if result.Properties == nil || result.Properties.Rows == nil {
+		return nil
+	}
+
+	for _, row := range result.Properties.Rows {
+		if len(row) < 4 {
+			continue
+		}
+
+		// Parse the forecast row
+		costRow := &CostManagementRow{
+			Scope: &scope,
+		}
+
+		// Parse date - can be either YYYYMMDD format (daily) or RFC3339/BillingMonth (monthly)
+		var usageDate time.Time
+
+		// Try string format first (RFC3339 or BillingMonth)
+		if dateStr, ok := row[1].(string); ok {
+			// Try RFC3339 first
+			if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+				usageDate = t
+			} else {
+				// Try BillingMonth format (2025-09-01T00:00:00)
+				if t, err := time.Parse("2006-01-02T15:04:05", dateStr); err == nil {
+					usageDate = t
+				}
+			}
+		} else if dateNum, ok := row[1].(float64); ok {
+			// Try YYYYMMDD format
+			dateStr := fmt.Sprintf("%.0f", dateNum)
+			if t, err := time.Parse("20060102", dateStr); err == nil {
+				usageDate = t
+			}
+		}
+
+		if !usageDate.IsZero() {
+			// Set usage date based on granularity
+			if strings.HasSuffix(granularity, "Monthly") {
+				// For monthly, set to start of month
+				startOfMonth := time.Date(usageDate.Year(), usageDate.Month(), 1, 0, 0, 0, 0, usageDate.Location())
+				costRow.UsageDate = &startOfMonth
+			} else {
+				// For daily, set to start of day
+				startOfDay := time.Date(usageDate.Year(), usageDate.Month(), usageDate.Day(), 0, 0, 0, 0, usageDate.Location())
+				costRow.UsageDate = &startOfDay
+			}
+		}
+
+		// Parse cost
+		if cost, ok := row[0].(float64); ok {
+			costRow.PreTaxCostAmount = &cost
+			costRow.CostAmount = &cost // For forecast, both values are the same
+		}
+
+		// Parse currency
+		if currency, ok := row[3].(string); ok {
+			costRow.Currency = &currency
+		}
+
+		// Extract subscription details from scope
+		if strings.HasPrefix(scope, "/subscriptions/") {
+			subID := strings.TrimPrefix(scope, "/subscriptions/")
+			if idx := strings.Index(subID, "/"); idx != -1 {
+				subID = subID[:idx]
+			}
+			costRow.SubscriptionID = &subID
+		}
+
+		d.StreamListItem(ctx, costRow)
+
+		if d.RowsRemaining(ctx) == 0 {
+			return nil
+		}
+	}
+
+	return nil
 }
 
 // buildCostQueryInput is a common function to build input parameters for all cost tables
