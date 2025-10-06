@@ -74,7 +74,27 @@ func structToMap(val reflect.Value) map[string]interface{} {
 		field := val.Type().Field(i)
 		fieldValue := val.Field(i)
 
-		// Check if field is a struct and not a zero value
+		// Skip unexported fields
+		if !field.IsExported() {
+			continue
+		}
+
+		// Handle pointer fields
+		if fieldValue.Kind() == reflect.Ptr {
+			if !fieldValue.IsNil() {
+				elem := fieldValue.Elem()
+				if elem.Kind() == reflect.Struct {
+					result[field.Name] = structToMap(elem)
+				} else {
+					result[field.Name] = elem.Interface()
+				}
+			} else {
+				result[field.Name] = nil
+			}
+			continue
+		}
+
+		// Handle struct fields
 		if fieldValue.Kind() == reflect.Struct && !fieldValue.IsZero() {
 			result[field.Name] = structToMap(fieldValue)
 		} else if !fieldValue.IsZero() {
