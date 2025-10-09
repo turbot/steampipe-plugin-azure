@@ -314,21 +314,6 @@ func getCostManagementClient(ctx context.Context, d *plugin.QueryData, h *plugin
 	return client, nil
 }
 
-// getForecastClient creates a new forecast client
-func getForecastClient(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (*armcostmanagement.ForecastClient, error) {
-	session, err := GetNewSessionUpdated(ctx, d)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := armcostmanagement.NewForecastClient(session.Cred, session.ClientOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
 // streamCostAndUsage is the generic function for streaming cost data (like AWS)
 func streamCostAndUsage(ctx context.Context, d *plugin.QueryData, queryDef armcostmanagement.QueryDefinition, scope string, groupingNames ...string) (interface{}, error) {
 	client, err := getCostManagementClient(ctx, d, nil)
