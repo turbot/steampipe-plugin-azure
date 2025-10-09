@@ -28,7 +28,7 @@ Get the predicted costs for the next 6 months, showing the forecast value.
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_monthly
@@ -43,7 +43,7 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_monthly
@@ -61,7 +61,7 @@ Use period_start and period_end parameters to get forecasts for a specific time 
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency,
   period_start,
   period_end
@@ -78,7 +78,7 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency,
   period_start,
   period_end
@@ -98,10 +98,10 @@ Compare next month's forecast with current month's costs.
 ```sql+postgres
 select
   f.usage_date as forecast_month,
-  round(f.mean_value::numeric, 2) as forecasted_cost,
+  round(f.pre_tax_cost::numeric, 2) as forecasted_cost,
   round(h.pre_tax_cost::numeric, 2) as current_month_cost,
-  round((f.mean_value - h.pre_tax_cost)::numeric, 2) as cost_difference,
-  round(((f.mean_value - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100)::numeric, 2) as percentage_change,
+  round((f.pre_tax_cost - h.pre_tax_cost)::numeric, 2) as cost_difference,
+  round(((f.pre_tax_cost - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100)::numeric, 2) as percentage_change,
   f.currency
 from
   azure_cost_forecast_monthly f
@@ -119,10 +119,10 @@ order by
 ```sql+sqlite
 select
   f.usage_date as forecast_month,
-  round(f.mean_value, 2) as forecasted_cost,
+  round(f.pre_tax_cost, 2) as forecasted_cost,
   round(h.pre_tax_cost, 2) as current_month_cost,
-  round((f.mean_value - h.pre_tax_cost), 2) as cost_difference,
-  round(((f.mean_value - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100), 2) as percentage_change,
+  round((f.pre_tax_cost - h.pre_tax_cost), 2) as cost_difference,
+  round(((f.pre_tax_cost - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100), 2) as percentage_change,
   f.currency
 from
   azure_cost_forecast_monthly f
@@ -144,7 +144,7 @@ Get cost forecasts broken down by resource group for the next 3 months.
 select
   scope,
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_monthly
@@ -154,14 +154,14 @@ where
   and period_start = current_date
   and period_end = current_date + interval '3 months'
 order by
-  mean_value desc;
+  pre_tax_cost desc;
 ```
 
 ```sql+sqlite
 select
   scope,
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_monthly
@@ -171,7 +171,7 @@ where
   and period_start = date('now')
   and period_end = date('now', '+3 months')
 order by
-  mean_value desc;
+  pre_tax_cost desc;
 ```
 
 ### Monthly forecast trend analysis for next 6 months
@@ -180,10 +180,10 @@ Analyze how the forecast changes over time by comparing consecutive months.
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
-  round(lag(mean_value) over (order by usage_date)::numeric, 2) as previous_month_forecast,
-  round(((mean_value - lag(mean_value) over (order by usage_date)) / 
-    nullif(lag(mean_value) over (order by usage_date), 0) * 100)::numeric, 2) 
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
+  round(lag(pre_tax_cost) over (order by usage_date)::numeric, 2) as previous_month_forecast,
+  round(((pre_tax_cost - lag(pre_tax_cost) over (order by usage_date)) / 
+    nullif(lag(pre_tax_cost) over (order by usage_date), 0) * 100)::numeric, 2) 
     as month_over_month_change
 from
   azure_cost_forecast_monthly
@@ -198,10 +198,10 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
-  round(lag(mean_value) over (order by usage_date), 2) as previous_month_forecast,
-  round(((mean_value - lag(mean_value) over (order by usage_date)) / 
-    nullif(lag(mean_value) over (order by usage_date), 0) * 100), 2) 
+  round(pre_tax_cost, 2) as forecasted_cost,
+  round(lag(pre_tax_cost) over (order by usage_date), 2) as previous_month_forecast,
+  round(((pre_tax_cost - lag(pre_tax_cost) over (order by usage_date)) / 
+    nullif(lag(pre_tax_cost) over (order by usage_date), 0) * 100), 2) 
     as month_over_month_change
 from
   azure_cost_forecast_monthly
@@ -221,8 +221,8 @@ select
   subscription_id,
   min(usage_date) as forecast_start,
   max(usage_date) as forecast_end,
-  round(avg(mean_value)::numeric, 2) as avg_monthly_forecast,
-  round(sum(mean_value)::numeric, 2) as total_forecast,
+  round(avg(pre_tax_cost)::numeric, 2) as avg_monthly_forecast,
+  round(sum(pre_tax_cost)::numeric, 2) as total_forecast,
   currency
 from
   azure_cost_forecast_monthly
@@ -242,8 +242,8 @@ select
   subscription_id,
   min(usage_date) as forecast_start,
   max(usage_date) as forecast_end,
-  round(avg(mean_value), 2) as avg_monthly_forecast,
-  round(sum(mean_value), 2) as total_forecast,
+  round(avg(pre_tax_cost), 2) as avg_monthly_forecast,
+  round(sum(pre_tax_cost), 2) as total_forecast,
   currency
 from
   azure_cost_forecast_monthly

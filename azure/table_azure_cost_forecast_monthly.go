@@ -4,9 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/costmanagement/armcostmanagement/v2"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 func tableCostForecastMonthly(_ context.Context) *plugin.Table {
@@ -19,14 +17,7 @@ func tableCostForecastMonthly(_ context.Context) *plugin.Table {
 			Tags:       map[string]string{"service": "Microsoft.CostManagement", "action": "Forecast"},
 		},
 		Columns: azureColumns(
-			costManagementColumns([]*plugin.Column{
-				{
-					Name:        "mean_value",
-					Description: "The forecasted cost value.",
-					Type:        proto.ColumnType_DOUBLE,
-					Transform:   transform.FromField("PreTaxCostAmount"),
-				},
-			}),
+			costManagementColumns([]*plugin.Column{}),
 		),
 	}
 }

@@ -28,7 +28,7 @@ Get the predicted costs for the next 30 days, showing the forecast value.
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_daily
@@ -43,7 +43,7 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_daily
@@ -61,7 +61,7 @@ Use period_start and period_end parameters to get forecasts for a specific time 
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency,
   period_start,
   period_end
@@ -78,7 +78,7 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency,
   period_start,
   period_end
@@ -98,10 +98,10 @@ Compare tomorrow's forecast with today's costs.
 ```sql+postgres
 select
   f.usage_date as forecast_date,
-  round(f.mean_value::numeric, 2) as forecasted_cost,
+  round(f.pre_tax_cost::numeric, 2) as forecasted_cost,
   round(h.pre_tax_cost::numeric, 2) as current_day_cost,
-  round((f.mean_value - h.pre_tax_cost)::numeric, 2) as cost_difference,
-  round(((f.mean_value - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100)::numeric, 2) as percentage_change,
+  round((f.pre_tax_cost - h.pre_tax_cost)::numeric, 2) as cost_difference,
+  round(((f.pre_tax_cost - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100)::numeric, 2) as percentage_change,
   f.currency
 from
   azure_cost_forecast_daily f
@@ -119,10 +119,10 @@ order by
 ```sql+sqlite
 select
   f.usage_date as forecast_date,
-  round(f.mean_value, 2) as forecasted_cost,
+  round(f.pre_tax_cost, 2) as forecasted_cost,
   round(h.pre_tax_cost, 2) as current_day_cost,
-  round((f.mean_value - h.pre_tax_cost), 2) as cost_difference,
-  round(((f.mean_value - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100), 2) as percentage_change,
+  round((f.pre_tax_cost - h.pre_tax_cost), 2) as cost_difference,
+  round(((f.pre_tax_cost - h.pre_tax_cost) / nullif(h.pre_tax_cost, 0) * 100), 2) as percentage_change,
   f.currency
 from
   azure_cost_forecast_daily f
@@ -144,7 +144,7 @@ Get cost forecasts broken down by resource group for the next 7 days.
 select
   scope,
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_daily
@@ -154,14 +154,14 @@ where
   and period_start = current_date
   and period_end = current_date + interval '7 days'
 order by
-  mean_value desc;
+  pre_tax_cost desc;
 ```
 
 ```sql+sqlite
 select
   scope,
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
+  round(pre_tax_cost, 2) as forecasted_cost,
   currency
 from
   azure_cost_forecast_daily
@@ -171,7 +171,7 @@ where
   and period_start = date('now')
   and period_end = date('now', '+7 days')
 order by
-  mean_value desc;
+  pre_tax_cost desc;
 ```
 
 ### Weekly forecast aggregation
@@ -180,8 +180,8 @@ Aggregate daily forecasts into weekly totals for easier trend analysis.
 ```sql+postgres
 select
   date_trunc('week', usage_date) as week_start,
-  round(sum(mean_value)::numeric, 2) as weekly_forecast,
-  round(avg(mean_value)::numeric, 2) as avg_daily_forecast,
+  round(sum(pre_tax_cost)::numeric, 2) as weekly_forecast,
+  round(avg(pre_tax_cost)::numeric, 2) as avg_daily_forecast,
   currency
 from
   azure_cost_forecast_daily
@@ -199,8 +199,8 @@ order by
 ```sql+sqlite
 select
   strftime('%Y-%m-%d', date(usage_date, 'weekday 0', '-7 days')) as week_start,
-  round(sum(mean_value), 2) as weekly_forecast,
-  round(avg(mean_value), 2) as avg_daily_forecast,
+  round(sum(pre_tax_cost), 2) as weekly_forecast,
+  round(avg(pre_tax_cost), 2) as avg_daily_forecast,
   currency
 from
   azure_cost_forecast_daily
@@ -221,10 +221,10 @@ Analyze how the forecast changes over time by comparing consecutive days.
 ```sql+postgres
 select
   usage_date,
-  round(mean_value::numeric, 2) as forecasted_cost,
-  round(lag(mean_value) over (order by usage_date)::numeric, 2) as previous_day_forecast,
-  round(((mean_value - lag(mean_value) over (order by usage_date)) / 
-    nullif(lag(mean_value) over (order by usage_date), 0) * 100)::numeric, 2) 
+  round(pre_tax_cost::numeric, 2) as forecasted_cost,
+  round(lag(pre_tax_cost) over (order by usage_date)::numeric, 2) as previous_day_forecast,
+  round(((pre_tax_cost - lag(pre_tax_cost) over (order by usage_date)) / 
+    nullif(lag(pre_tax_cost) over (order by usage_date), 0) * 100)::numeric, 2) 
     as day_over_day_change
 from
   azure_cost_forecast_daily
@@ -239,10 +239,10 @@ order by
 ```sql+sqlite
 select
   usage_date,
-  round(mean_value, 2) as forecasted_cost,
-  round(lag(mean_value) over (order by usage_date), 2) as previous_day_forecast,
-  round(((mean_value - lag(mean_value) over (order by usage_date)) / 
-    nullif(lag(mean_value) over (order by usage_date), 0) * 100), 2) 
+  round(pre_tax_cost, 2) as forecasted_cost,
+  round(lag(pre_tax_cost) over (order by usage_date), 2) as previous_day_forecast,
+  round(((pre_tax_cost - lag(pre_tax_cost) over (order by usage_date)) / 
+    nullif(lag(pre_tax_cost) over (order by usage_date), 0) * 100), 2) 
     as day_over_day_change
 from
   azure_cost_forecast_daily
@@ -263,7 +263,7 @@ select
     when extract(dow from usage_date) in (0, 6) then 'Weekend'
     else 'Weekday'
   end as day_type,
-  round(avg(mean_value)::numeric, 2) as avg_forecast,
+  round(avg(pre_tax_cost)::numeric, 2) as avg_forecast,
   currency
 from
   azure_cost_forecast_daily
@@ -284,7 +284,7 @@ select
     when cast(strftime('%w', usage_date) as integer) in (0, 6) then 'Weekend'
     else 'Weekday'
   end as day_type,
-  round(avg(mean_value), 2) as avg_forecast,
+  round(avg(pre_tax_cost), 2) as avg_forecast,
   currency
 from
   azure_cost_forecast_daily
