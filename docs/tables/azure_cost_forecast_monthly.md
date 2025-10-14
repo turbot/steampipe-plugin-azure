@@ -16,7 +16,7 @@ The `azure_cost_forecast_monthly` table provides insights into predicted future 
 - You **_must_** specify `cost_type` (ActualCost or AmortizedCost) in a `where` clause in order to use this table.
 - By default, forecasts are generated for the next 12 months from the current date.
 - This table supports optional quals. Queries with optional quals are optimised to use Azure Cost Management filters. Optional quals are supported for the following columns:
-  - `scope` with supported operators `=`. Default to current subscription. Possible values are see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
+  - `scope` with supported operators `=`. Default to current subscription. For possible values, see: [Supported Scope](https://learn.microsoft.com/en-gb/rest/api/cost-management/query/usage?view=rest-cost-management-2025-03-01&tabs=HTTP#uri-parameters)
   - `period_start` with supported operators `=`. Default: current date.
   - `period_end` with supported operators `=`. Default: 12 months from current date.
 
