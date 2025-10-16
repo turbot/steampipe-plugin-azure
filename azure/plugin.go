@@ -284,6 +284,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_stream_analytics_job":                                   tableAzureStreamAnalyticsJob(ctx),
 			"azure_subnet":                                                 tableAzureSubnet(ctx),
 			"azure_subscription":                                           tableAzureSubscription(ctx),
+			"azure_subscription_tenant_policy":                             tableAzureSubscriptionTenantPolicy(ctx),
 			"azure_synapse_workspace":                                      tableAzureSynapseWorkspace(ctx),
 			"azure_tenant":                                                 tableAzureTenant(ctx),
 			"azure_virtual_network":                                        tableAzureVirtualNetwork(ctx),
@@ -300,7 +301,7 @@ func getSubscriptionIdForConnection(ctx context.Context, d *plugin.QueryData, h 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// The value must be returned as a string because connection-level quals do not support transform functions.
 	// If the value is not returned as a string, queries that filter on subscription_id in the WHERE clause
 	// (e.g., "SELECT id, subscription_id FROM azure_resource WHERE subscription_id = 'd46d7416...'")
