@@ -3,7 +3,6 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/costmanagement/armcostmanagement/v2"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -30,30 +29,5 @@ func listCostForecastMonthly(ctx context.Context, d *plugin.QueryData, _ *plugin
 		return nil, err
 	}
 
-	// Get session
-	session, err := GetNewSessionUpdated(ctx, d)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_cost_forecast_monthly.listCostForecastMonthly", "connection_error", err)
-		return nil, err
-	}
-
-	// Get forecast client
-	client, err := armcostmanagement.NewForecastClient(session.Cred, session.ClientOptions)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_cost_forecast_monthly.listCostForecastMonthly", "client_error", err)
-		return nil, err
-	}
-
-	// Get forecast
-	result, err := client.Usage(ctx, scope, forecastDef, nil)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_cost_forecast_monthly.listCostForecastMonthly", "api_error", err)
-		return nil, err
-	}
-
-	err = streamForecastResults(ctx, d, &result, scope, "Monthly")
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+	return streamForecastUsage(ctx, d, forecastDef, scope, "Monthly")
 }

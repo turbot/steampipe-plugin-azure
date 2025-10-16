@@ -34,8 +34,7 @@ from
   azure_cost_forecast_monthly
 where
   cost_type = 'ActualCost'
-  and period_start = current_date
-  and period_end = current_date + interval '6 months'
+  and usage_date <= current_date + interval '6 months'
 order by
   usage_date;
 ```
@@ -49,8 +48,7 @@ from
   azure_cost_forecast_monthly
 where
   cost_type = 'ActualCost'
-  and period_start = date('now')
-  and period_end = date('now', '+6 months')
+  and usage_date <= date('now', '+6 months')  -- Filter after getting results
 order by
   usage_date;
 ```

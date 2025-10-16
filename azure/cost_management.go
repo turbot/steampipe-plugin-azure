@@ -623,6 +623,37 @@ func buildForecastQueryInput(ctx context.Context, d *plugin.QueryData, granulari
 	return forecastDef, scope, nil
 }
 
+// streamForecastUsage is the generic function for streaming forecast data
+func streamForecastUsage(ctx context.Context, d *plugin.QueryData, forecastDef armcostmanagement.ForecastDefinition, scope string, granularity string) (interface{}, error) {
+	// Get session
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_cost_forecast.streamForecastUsage", "connection_error", err)
+		return nil, err
+	}
+
+	// Get forecast client
+	client, err := armcostmanagement.NewForecastClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_cost_forecast.streamForecastUsage", "client_error", err)
+		return nil, err
+	}
+
+	// Get forecast
+	result, err := client.Usage(ctx, scope, forecastDef, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_cost_forecast.streamForecastUsage", "api_error", err)
+		return nil, err
+	}
+
+	err = streamForecastResults(ctx, d, &result, scope, granularity)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_cost_forecast.streamForecastUsage", "stream_error", err)
+		return nil, err
+	}
+	return nil, nil
+}
+
 // streamForecastResults handles forecast API results specifically
 func streamForecastResults(ctx context.Context, d *plugin.QueryData, result *armcostmanagement.ForecastClientUsageResponse, scope string, granularity string) error {
 	if result.Properties == nil || result.Properties.Rows == nil {

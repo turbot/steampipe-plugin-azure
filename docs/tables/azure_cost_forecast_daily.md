@@ -34,8 +34,7 @@ from
   azure_cost_forecast_daily
 where
   cost_type = 'ActualCost'
-  and period_start = current_date
-  and period_end = current_date + interval '30 days'
+  and usage_date <= current_date + interval '30 days'
 order by
   usage_date;
 ```
@@ -49,8 +48,7 @@ from
   azure_cost_forecast_daily
 where
   cost_type = 'ActualCost'
-  and period_start = date('now')
-  and period_end = date('now', '+30 days')
+  and usage_date <= date('now', '+30 days')  -- Filter after getting results
 order by
   usage_date;
 ```
