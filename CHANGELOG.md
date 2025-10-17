@@ -3,8 +3,8 @@
 _What's new?_
 
 - New tables added: ([#950](https://github.com/turbot/steampipe-plugin-azure/pull/950))
-  - [azure_cost_forecast_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/table_azure_cost_forecast_daily)
-  - [azure_cost_forecast_monthly](https://hub.steampipe.io/plugins/turbot/azure/tables/table_azure_cost_forecast_monthly)
+  - [azure_cost_forecast_daily](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_forecast_daily)
+  - [azure_cost_forecast_monthly](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cost_forecast_monthly)
 
 ## v1.8.1 [2025-10-13]
 
