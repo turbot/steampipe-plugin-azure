@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/consumption/mgmt/consumption"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -83,7 +84,11 @@ func structToMap(val reflect.Value) map[string]interface{} {
 		if fieldValue.Kind() == reflect.Ptr {
 			if !fieldValue.IsNil() {
 				elem := fieldValue.Elem()
-				if elem.Kind() == reflect.Struct {
+				// Special handling for MeterDetailsResponse type - this needs to be mapped to extract nested fields
+				// All other pointer fields (time.Time, decimal.Decimal, uuid.UUID etc.) should just return their values
+				// This prevents empty struct representations like {Time: {}} for time.Time fields
+				// TODO: If additional response types need similar struct mapping in future, add them here
+				if elem.Type() == reflect.TypeOf(consumption.MeterDetailsResponse{}) {
 					result[field.Name] = structToMap(elem)
 				} else {
 					result[field.Name] = elem.Interface()
@@ -106,6 +111,26 @@ func structToMap(val reflect.Value) map[string]interface{} {
 
 	return result
 }
+
+// func structToMap(val reflect.Value) map[string]interface{} {
+// 	result := make(map[string]interface{})
+
+// 	for i := 0; i < val.NumField(); i++ {
+// 		field := val.Type().Field(i)
+// 		fieldValue := val.Field(i)
+
+// 		// Check if field is a struct and not a zero value
+// 		if fieldValue.Kind() == reflect.Struct && !fieldValue.IsZero() {
+// 			result[field.Name] = structToMap(fieldValue)
+// 		} else if !fieldValue.IsZero() {
+// 			result[field.Name] = fieldValue.Interface()
+// 		} else {
+// 			result[field.Name] = nil
+// 		}
+// 	}
+
+// 	return result
+// }
 
 func convertDateUnixToTime(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	dateValue := d.Value.(*date.UnixTime)
