@@ -166,7 +166,17 @@ func listConsumptionUsage(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 	expand := ""
 	if d.EqualsQualString("expand") != "" {
-		expand = d.EqualsQualString("expand")
+		// The expand parameter needs to be prefixed with "properties/" for each field
+		expandFields := strings.Split(d.EqualsQualString("expand"), ",")
+		var prefixedFields []string
+		for _, field := range expandFields {
+			field = strings.TrimSpace(field)
+			if !strings.HasPrefix(field, "properties/") {
+				field = "properties/" + field
+			}
+			prefixedFields = append(prefixedFields, field)
+		}
+		expand = strings.Join(prefixedFields, ",")
 	}
 
 	/**
