@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/databricks/mgmt/databricks"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/databricks/armdatabricks"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -75,67 +75,79 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 				Name:        "managed_resource_group_id",
 				Description: "The managed resource group ID.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceProperties.ManagedResourceGroupID"),
+				Transform:   transform.FromField("Properties.ManagedResourceGroupID"),
 			},
 			{
 				Name:        "parameters",
 				Description: "The workspace's custom parameters.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkspaceProperties.Parameters"),
+				Transform:   transform.FromField("Properties.Parameters"),
 			},
 			{
 				Name:        "provisioning_state",
 				Description: "The workspace provisioning state.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceProperties.ProvisioningState"),
+				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
 			{
 				Name:        "ui_definition_uri",
 				Description: "The blob URI where the UI definition file is located.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceProperties.UIDefinitionURI"),
+				Transform:   transform.FromField("Properties.UIDefinitionURI"),
 			},
 			{
 				Name:        "authorizations",
 				Description: "The workspace provider authorizations.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkspaceProperties.Authorizations"),
+				Transform:   transform.FromField("Properties.Authorizations"),
 			},
 			{
 				Name:        "created_by",
 				Description: "Indicates the Object ID, PUID and Application ID of entity that created the workspace.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkspaceProperties.CreatedBy"),
+				Transform:   transform.FromField("Properties.CreatedBy"),
 			},
 			{
 				Name:        "updated_by",
 				Description: "Indicates the Object ID, PUID and Application ID of entity that last updated the workspace.",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkspaceProperties.UpdatedBy"),
+				Transform:   transform.FromField("Properties.UpdatedBy"),
 			},
 			{
 				Name:        "created_date_time",
 				Description: "Specifies the date and time when the workspace is created.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("WorkspaceProperties.CreatedDateTime").Transform(convertDateToTime),
+				Transform:   transform.FromField("Properties.CreatedDateTime"),
 			},
 			{
 				Name:        "workspace_id",
 				Description: "The unique identifier of the databricks workspace in databricks control plane.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceProperties.WorkspaceID"),
+				Transform:   transform.FromField("Properties.WorkspaceID"),
 			},
 			{
 				Name:        "workspace_url",
 				Description: "The workspace URL which is of the format 'adb-{workspaceId}.{random}.azuredatabricks.net'.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("WorkspaceProperties.WorkspaceURL"),
+				Transform:   transform.FromField("Properties.WorkspaceURL"),
 			},
 			{
 				Name:        "storage_account_identity",
 				Description: "The details of Managed Identity of Storage Account",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("WorkspaceProperties.StorageAccountIdentity"),
+				Transform:   transform.FromField("Properties.StorageAccountIdentity"),
+			},
+			{
+				Name:        "public_network_access",
+				Description: "The network access type for accessing workspace. Possible values include: 'Enabled', 'Disabled'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.PublicNetworkAccess"),
+			},
+			{
+				Name:        "required_nsg_rules",
+				Description: "A value indicating whether the workspace requires compliance with NSG rules. Possible values include: 'AllRules', 'NoAzureDatabricksRules', 'NoAzureServiceRules'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.RequiredNsgRules"),
 			},
 			{
 				Name:        "diagnostic_settings",
@@ -185,48 +197,43 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 
 func listDatabricksWorkspaces(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("listDatabricksWorkspaces")
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "session_error", err)
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	workspaceClient := databricks.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	workspaceClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
-
-	result, err := workspaceClient.ListBySubscription(ctx)
+	client, err := armdatabricks.NewWorkspacesClient(subscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "ListBySubscription", err)
+		plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "client_error", err)
 		return nil, err
 	}
-	for _, workspace := range result.Values() {
-		d.StreamListItem(ctx, workspace)
-	}
 
-	for result.NotDone() {
-		// Wait for rate limiting
-		d.WaitForListRateLimit(ctx)
-
-		err = result.NextWithContext(ctx)
+	pager := client.NewListBySubscriptionPager(nil)
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "ListBySubscription_pagination", err)
+			plugin.Logger(ctx).Error("azure_databricks_workspace.listDatabricksWorkspaces", "api_error", err)
 			return nil, err
 		}
-		for _, device := range result.Values() {
-			d.StreamListItem(ctx, device)
-		}
 
+		for _, workspace := range page.Value {
+			d.StreamListItem(ctx, workspace)
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
 	}
-	return nil, err
+
+	return nil, nil
 }
 
 //// HYDRATE FUNCTIONS
 
 func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Debug("getDatabricksWorkspace")
+	plugin.Logger(ctx).Trace("azure_databricks_workspace.getDatabricksWorkspace")
 
 	workspaceName := d.EqualsQualString("name")
 	resourceGroup := d.EqualsQualString("resource_group")
@@ -237,29 +244,30 @@ func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 
 	// Create session
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		return nil, err
 	}
 	subscriptionID := session.SubscriptionID
 
-	workspaceClient := databricks.NewWorkspacesClientWithBaseURI(session.ResourceManagerEndpoint, subscriptionID)
-	workspaceClient.Authorizer = session.Authorizer
-
-	// Apply Retry rule
-	ApplyRetryRules(ctx, &workspaceClient, d.Connection)
-
-	op, err := workspaceClient.Get(ctx, resourceGroup, workspaceName)
+	client, err := armdatabricks.NewWorkspacesClient(subscriptionID, session.Cred, session.ClientOptions)
 	if err != nil {
+		plugin.Logger(ctx).Error("azure_databricks_workspace.getDatabricksWorkspace", "client_error", err)
 		return nil, err
 	}
 
-	return op, nil
+	op, err := client.Get(ctx, resourceGroup, workspaceName, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_databricks_workspace.getDatabricksWorkspace", "api_error", err)
+		return nil, err
+	}
+
+	return op.Workspace, nil
 }
 
 func listDatabricksWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("listDatabricksWorkspaceDiagnosticSettings")
-	data := h.Item.(databricks.Workspace)
+	data := h.Item.(*armdatabricks.Workspace)
 	id := *data.ID
 
 	// Create session
