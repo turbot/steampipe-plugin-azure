@@ -98,6 +98,12 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.Subnets"),
 			},
+			{
+				Name:        "dhcp_options",
+				Description: "DHCP Properties of the Virtual Network, contains DNS properties",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.DhcpOptions"),
+			},
 
 			// Steampipe standard columns
 			{
