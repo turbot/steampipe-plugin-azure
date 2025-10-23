@@ -99,10 +99,10 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.Subnets"),
 			},
 			{
-				Name:        "dns",
+				Name:        "dhcp_options",
 				Description: "A list of dns in a Virtual Network",
 				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.DhcpOptions.DNSServers"),
+				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.DhcpOptions"),
 			},
 
 			// Steampipe standard columns
