@@ -1,3 +1,13 @@
+## v1.10.0 [2025-10-23]
+
+_Enhancements_
+
+- Added the column `dhcp_options` to `azure_virtual_network` table. ([#959](https://github.com/turbot/steampipe-plugin-azure/pull/959)) (Thanks [@manzomanze](https://github.com/manzomanze) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `legacy_usage_detail` column in `azure_consumption_usage` table which now correctly returns the `MeterDetails` metadata instead of `null`. ([#953](https://github.com/turbot/steampipe-plugin-azure/pull/953))
+
 ## v1.9.0 [2025-10-16]
 
 _What's new?_
