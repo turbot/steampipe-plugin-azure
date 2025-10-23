@@ -100,7 +100,7 @@ func tableAzureVirtualNetwork(_ context.Context) *plugin.Table {
 			},
 			{
 				Name:        "dhcp_options",
-				Description: "A list of dns in a Virtual Network",
+				Description: "DHCP Properties of the Virtual Network, contains DNS properties",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("VirtualNetworkPropertiesFormat.DhcpOptions"),
 			},
