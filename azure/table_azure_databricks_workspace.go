@@ -150,6 +150,30 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("Properties.RequiredNsgRules"),
 			},
 			{
+				Name:        "private_endpoint_connections",
+				Description: "Private endpoint connections created on the workspace.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
+			},
+			{
+				Name:        "disk_encryption_set_id",
+				Description: "The resource Id of the managed disk encryption set.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Properties.DiskEncryptionSetID"),
+			},
+			{
+				Name:        "managed_disk_identity",
+				Description: "The details of Managed Identity of Disk Encryption Set used for Managed Disk Encryption.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.ManagedDiskIdentity"),
+			},
+			{
+				Name:        "encryption",
+				Description: "Encryption properties for databricks workspace.",
+				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("Properties.Encryption"),
+			},
+			{
 				Name:        "diagnostic_settings",
 				Description: "A list of diagnostic settings for the databricks workspace.",
 				Type:        proto.ColumnType_JSON,

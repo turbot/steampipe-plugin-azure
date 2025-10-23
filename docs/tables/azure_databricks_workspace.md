@@ -165,6 +165,35 @@ where
   public_network_access = 'Disabled';
 ```
 
+### List workspaces with private endpoint connections
+Discover workspaces that have private endpoint connections configured for enhanced network security.
+
+```sql+postgres
+select
+  name,
+  id,
+  workspace_id,
+  public_network_access,
+  jsonb_pretty(private_endpoint_connections) as private_endpoint_connections
+from
+  azure_databricks_workspace
+where
+  private_endpoint_connections is not null;
+```
+
+```sql+sqlite
+select
+  name,
+  id,
+  workspace_id,
+  public_network_access,
+  private_endpoint_connections
+from
+  azure_databricks_workspace
+where
+  private_endpoint_connections is not null;
+```
+
 ### List workspaces that allow public IP
 Determine the areas in which Azure Databricks workspaces are configured to allow public IP access. This query can be used to identify potential security vulnerabilities and ensure best practices for data protection.
 
