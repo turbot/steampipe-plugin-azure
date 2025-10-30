@@ -2,12 +2,8 @@ package azure
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -88,90 +84,29 @@ func tableAzureSubscriptionTenantPolicy(_ context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listSubscriptionTenantPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	session, err := GetNewSession(ctx, d, "MANAGEMENT")
+	// Get the session with credentials
+	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "session_error", err)
 		return nil, err
 	}
 
-	// Build the request URL
-	apiVersion := "2021-10-01"
-	url := fmt.Sprintf("%s/providers/Microsoft.Subscription/policies/default?api-version=%s", session.ResourceManagerEndpoint, apiVersion)
-
-	// Create the HTTP request
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	// Create the policy client
+	client, err := armsubscription.NewPolicyClient(session.Cred, session.ClientOptions)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "prepare_error", err)
+		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "client_error", err)
 		return nil, err
 	}
 
-	// Add authorization header
-	preparer := autorest.CreatePreparer(session.Authorizer.WithAuthorization())
-	req, err = preparer.Prepare(req)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "auth_error", err)
-		return nil, err
-	}
-
-	// Send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Get the tenant policy
+	result, err := client.GetPolicyForTenant(ctx, nil)
 	if err != nil {
 		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "api_error", err)
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	// Check response status
-	if resp.StatusCode != http.StatusOK {
-		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "status_code", resp.StatusCode)
-		return nil, fmt.Errorf("API request failed with status code: %d", resp.StatusCode)
-	}
-
-	// Read the response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "read_error", err)
-		return nil, err
-	}
-
-	// Parse the response
-	var policy GetTenantPolicyResponse
-	err = json.Unmarshal(body, &policy)
-	if err != nil {
-		plugin.Logger(ctx).Error("azure_subscription_tenant_policy.listSubscriptionTenantPolicy", "unmarshal_error", err)
-		return nil, err
-	}
-
-	d.StreamListItem(ctx, policy)
+	// Stream the result
+	d.StreamListItem(ctx, result.GetTenantPolicyResponse)
 
 	return nil, nil
-}
-
-//// HYDRATE FUNCTIONS
-
-// Response structs for Subscription Tenant Policy API
-
-// GetTenantPolicyResponse represents the tenant policy information
-type GetTenantPolicyResponse struct {
-	// ID - Policy Id
-	ID *string `json:"id,omitempty"`
-	// Name - Policy name
-	Name *string `json:"name,omitempty"`
-	// Type - Resource type
-	Type *string `json:"type,omitempty"`
-	// Properties - Tenant policy properties
-	Properties *TenantPolicyProperties `json:"properties,omitempty"`
-}
-
-// TenantPolicyProperties represents tenant policy properties
-type TenantPolicyProperties struct {
-	// PolicyID - Policy Id
-	PolicyID *string `json:"policyId,omitempty"`
-	// BlockSubscriptionsLeavingTenant - Blocks the leaving of subscriptions from user's tenant
-	BlockSubscriptionsLeavingTenant *bool `json:"blockSubscriptionsLeavingTenant,omitempty"`
-	// BlockSubscriptionsIntoTenant - Blocks the entering of subscriptions into user's tenant
-	BlockSubscriptionsIntoTenant *bool `json:"blockSubscriptionsIntoTenant,omitempty"`
-	// ExemptedPrincipals - List of user objectIds that are exempted from the set subscription tenant policies for the user's tenant
-	ExemptedPrincipals *[]string `json:"exemptedPrincipals,omitempty"`
 }
