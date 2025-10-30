@@ -60,6 +60,7 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 				Name:        "sku",
 				Description: "The SKU of the resource.",
 				Type:        proto.ColumnType_JSON,
+				Transform:   transform.FromField("SKU"),
 			},
 			{
 				Name:        "type",
@@ -154,12 +155,6 @@ func tableAzureDatabricksWorkspace(_ context.Context) *plugin.Table {
 				Description: "Private endpoint connections created on the workspace.",
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.PrivateEndpointConnections"),
-			},
-			{
-				Name:        "disk_encryption_set_id",
-				Description: "The resource Id of the managed disk encryption set.",
-				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DiskEncryptionSetID"),
 			},
 			{
 				Name:        "managed_disk_identity",
@@ -291,9 +286,8 @@ func getDatabricksWorkspace(ctx context.Context, d *plugin.QueryData, h *plugin.
 
 func listDatabricksWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Debug("listDatabricksWorkspaceDiagnosticSettings")
-	data := h.Item.(*armdatabricks.Workspace)
-	id := *data.ID
 
+	id := getDatabricksWorkspaceID(h.Item)
 	// Create session
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
@@ -336,4 +330,14 @@ func listDatabricksWorkspaceDiagnosticSettings(ctx context.Context, d *plugin.Qu
 		}
 	}
 	return diagnosticSettings, nil
+}
+
+func getDatabricksWorkspaceID(item interface{}) string {
+	switch item := item.(type) {
+	case *armdatabricks.Workspace:
+		return *item.ID
+	case armdatabricks.Workspace:
+		return *item.ID
+	}
+	return ""
 }
