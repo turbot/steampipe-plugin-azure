@@ -284,7 +284,6 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_stream_analytics_job":                                   tableAzureStreamAnalyticsJob(ctx),
 			"azure_subnet":                                                 tableAzureSubnet(ctx),
 			"azure_subscription":                                           tableAzureSubscription(ctx),
-			"azure_subscription_tenant_policy":                             tableAzureSubscriptionTenantPolicy(ctx),
 			"azure_synapse_workspace":                                      tableAzureSynapseWorkspace(ctx),
 			"azure_tenant":                                                 tableAzureTenant(ctx),
 			"azure_virtual_network":                                        tableAzureVirtualNetwork(ctx),

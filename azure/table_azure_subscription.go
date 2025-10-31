@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 
@@ -69,6 +70,13 @@ func tableAzureSubscription(_ context.Context) *plugin.Table {
 				Description: "The subscription policies.",
 				Type:        proto.ColumnType_JSON,
 			},
+			{
+				Name:        "default_tenant_policy",
+				Description: "The tenant policy for the subscription, including properties like BlockSubscriptionsLeavingTenant, BlockSubscriptionsIntoTenant, and ExemptedPrincipals.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     getSubscriptionTenantPolicy,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -123,4 +131,31 @@ func listSubscriptions(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	d.StreamListItem(ctx, op)
 
 	return nil, nil
+}
+
+//// HYDRATE FUNCTION
+
+func getSubscriptionTenantPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	// Get the session with credentials
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_subscription.getSubscriptionTenantPolicy", "session_error", err)
+		return nil, err
+	}
+
+	// Create the policy client
+	client, err := armsubscription.NewPolicyClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_subscription.getSubscriptionTenantPolicy", "client_error", err)
+		return nil, err
+	}
+
+	// Get the tenant policy
+	result, err := client.GetPolicyForTenant(ctx, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_subscription.getSubscriptionTenantPolicy", "api_error", err)
+		return nil, err
+	}
+
+	return result.GetTenantPolicyResponse, nil
 }
