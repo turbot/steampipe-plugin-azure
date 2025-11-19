@@ -1,3 +1,10 @@
+## v1.11.0 [2025-11-19]
+
+_Enhancements_
+
+- Added the column `subscription_policy` to `azure_tenant` table. ([#957](https://github.com/turbot/steampipe-plugin-azure/pull/957))
+- Added the columns `public_network_access` and `required_nsg_rules` to `azure_databricks_workspace` table. ([#961](https://github.com/turbot/steampipe-plugin-azure/pull/961))
+
 ## v1.10.0 [2025-10-23]
 
 _Enhancements_
