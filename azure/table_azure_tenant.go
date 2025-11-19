@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -62,13 +63,20 @@ func tableAzureTenant(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_STRING,
 				Description: "The list of domains for the tenant.",
 			},
-			{
-				Name:        "domains",
-				Type:        proto.ColumnType_JSON,
-				Description: "The list of domains for the tenant.",
-			},
+		{
+			Name:        "domains",
+			Type:        proto.ColumnType_JSON,
+			Description: "The list of domains for the tenant.",
+		},
+		{
+			Name:        "subscription_policy",
+			Type:        proto.ColumnType_JSON,
+			Description: "The subscription policy for the tenant, including properties like BlockSubscriptionsLeavingTenant, BlockSubscriptionsIntoTenant, and ExemptedPrincipals.",
+			Hydrate:     getTenantSubscriptionPolicy,
+			Transform:   transform.FromValue(),
+		},
 
-			// Steampipe standard columns
+		// Steampipe standard columns
 			{
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
@@ -109,6 +117,33 @@ func listTenants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	}
 
 	return nil, nil
+}
+
+//// HYDRATE FUNCTION
+
+func getTenantSubscriptionPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	// Get the session with credentials
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_tenant.getTenantSubscriptionPolicy", "session_error", err)
+		return nil, err
+	}
+
+	// Create the policy client
+	client, err := armsubscription.NewPolicyClient(session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_tenant.getTenantSubscriptionPolicy", "client_error", err)
+		return nil, err
+	}
+
+	// Get the tenant policy
+	result, err := client.GetPolicyForTenant(ctx, nil)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_tenant.getTenantSubscriptionPolicy", "api_error", err)
+		return nil, err
+	}
+
+	return result.GetTenantPolicyResponse, nil
 }
 
 //// TRANSFORM FUNCTION

@@ -42,30 +42,3 @@ select
 from
   azure_subscription;
 ```
-
-### Get tenant policy settings for subscriptions
-Retrieve the tenant policy configuration to understand restrictions on subscription transfers. This helps identify whether subscriptions are blocked from leaving or entering the tenant, and which principals are exempted from these policies.
-
-```sql+postgres
-select
-  subscription_id,
-  display_name,
-  default_tenant_policy ->> 'id' as policy_id,
-  default_tenant_policy -> 'properties' ->> 'blockSubscriptionsLeavingTenant' as block_leaving_tenant,
-  default_tenant_policy -> 'properties' ->> 'blockSubscriptionsIntoTenant' as block_into_tenant,
-  default_tenant_policy -> 'properties' -> 'exemptedPrincipals' as exempted_principals
-from
-  azure_subscription;
-```
-
-```sql+sqlite
-select
-  subscription_id,
-  display_name,
-  json_extract(default_tenant_policy, '$.id') as policy_id,
-  json_extract(default_tenant_policy, '$.properties.blockSubscriptionsLeavingTenant') as block_leaving_tenant,
-  json_extract(default_tenant_policy, '$.properties.blockSubscriptionsIntoTenant') as block_into_tenant,
-  json_extract(default_tenant_policy, '$.properties.exemptedPrincipals') as exempted_principals
-from
-  azure_subscription;
-```
