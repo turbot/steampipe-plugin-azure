@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/monitor/mgmt/insights"
@@ -791,7 +792,7 @@ func getAzureStorageAccountTableProperties(ctx context.Context, d *plugin.QueryD
 	if accountData.Account.Sku.Tier == "Premium" && accountData.Account.PrimaryEndpoints.Table == nil {
 		return nil, nil
 	}
-	
+
 	// Blob is not supported for the account if storage type is FileStorage
 	if accountData.Account.Kind == "FileStorage" {
 		return nil, nil
@@ -918,6 +919,10 @@ func listAzureStorageAccountAccessKeys(ctx context.Context, d *plugin.QueryData,
 			}
 			if key.Permissions != "" {
 				keyMap["Permissions"] = key.Permissions
+			}
+			if key.CreationTime != nil {
+				keyMap["CreationTime"] = key.CreationTime.ToTime().Format(time.RFC3339)
+				keyMap["LastRotated"] = key.CreationTime.ToTime().Format(time.RFC3339)
 			}
 			keysMap = append(keysMap, keyMap)
 		}
