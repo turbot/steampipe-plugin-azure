@@ -922,7 +922,6 @@ func listAzureStorageAccountAccessKeys(ctx context.Context, d *plugin.QueryData,
 			}
 			if key.CreationTime != nil {
 				keyMap["CreationTime"] = key.CreationTime.ToTime().Format(time.RFC3339)
-				keyMap["LastRotated"] = key.CreationTime.ToTime().Format(time.RFC3339)
 			}
 			keysMap = append(keysMap, keyMap)
 		}
