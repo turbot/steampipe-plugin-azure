@@ -1,3 +1,9 @@
+## v1.12.0 [2025-12-05]
+
+_Enhancements_
+
+- Added `CreationTime` details to the `access_keys` column in `azure_storage_account` table. ([#965](https://github.com/turbot/steampipe-plugin-azure/pull/965))
+
 ## v1.11.0 [2025-11-19]
 
 _Enhancements_
