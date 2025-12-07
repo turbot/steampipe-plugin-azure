@@ -13,6 +13,7 @@ type azureConfig struct {
 	CertificatePassword   *string  `hcl:"certificate_password"`
 	Username              *string  `hcl:"username"`
 	Password              *string  `hcl:"password"`
+	AccessToken           *string  `hcl:"access_token"`
 	Environment           *string  `hcl:"environment"`
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
