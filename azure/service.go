@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -26,6 +27,11 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+)
+
+const (
+	envAccessToken = "AZURE_ACCESS_TOKEN"
+	envEnvironment = "AZURE_ENVIRONMENT"
 )
 
 // Session info
@@ -54,7 +60,8 @@ type Session struct {
 2. Client certificate
 3. Username and password
 4. Managed identity
-5. CLI
+5. Access token
+6. CLI
 */
 func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
 	logger := plugin.Logger(ctx)
@@ -66,13 +73,13 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 
 	logger.Debug("Auth session not found in cache, creating new session")
 
-	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment string
+	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, accessToken, environment string
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.Environment != nil {
 		environment = *azureConfig.Environment
 	} else {
-		environment = os.Getenv("AZURE_ENVIRONMENT")
+		environment = os.Getenv(envEnvironment)
 	}
 
 	if azureConfig.TenantID != nil {
@@ -115,6 +122,12 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		password = *azureConfig.Password
 	} else {
 		password = os.Getenv(auth.Password)
+	}
+
+	if azureConfig.AccessToken != nil {
+		accessToken = *azureConfig.AccessToken
+	} else {
+		accessToken = os.Getenv(envAccessToken)
 	}
 
 	//  It's important to note that Microsoft has since integrated these isolated German cloud regions into the global Azure cloud infrastructure. This means that Azure Germany Cloud services are now provided through the global Azure regions with the same high standards of security, privacy, and compliance.
@@ -203,6 +216,8 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "managed_identity_credential_error", err)
 			return nil, err
 		}
+	} else if tenantID != "" && subscriptionID != "" && accessToken != "" { // Access token authentication
+		cred = NewAccessTokenCredential(accessToken)
 	} else { // CLI Authentication
 		cred, err = azidentity.NewAzureCLICredential(nil)
 		if err != nil {
@@ -397,6 +412,12 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		settings.Values[auth.CertificatePassword] = os.Getenv(auth.CertificatePassword)
 	}
 
+	if azureConfig.AccessToken != nil {
+		settings.Values[envAccessToken] = *azureConfig.AccessToken
+	} else {
+		settings.Values[envAccessToken] = os.Getenv(envAccessToken)
+	}
+
 	if azureConfig.Username != nil {
 		settings.Values[auth.Username] = *azureConfig.Username
 	} else {
@@ -443,6 +464,8 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 
 	// so if it was not in cache - create session
 	switch authMethod {
+	case "AccessToken":
+		authorizer = NewAccessTokenCredential(settings.Values[envAccessToken])
 	case "Environment":
 		logger.Trace("Creating new session authorizer from environment")
 		authorizer, err = settings.GetAuthorizer()
@@ -526,6 +549,8 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	subscriptionID := settings.Values[auth.SubscriptionID]
 	tenantID := settings.Values[auth.TenantID]
 	clientID := settings.Values[auth.ClientID]
+	accessToken := settings.Values[envAccessToken]
+
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
 
@@ -536,6 +561,8 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
 		// Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
 		authMethod = "Environment"
+	} else if subscriptionID != "" && tenantID != "" && accessToken != "" {
+		authMethod = "AccessToken"
 	}
 
 	logger.Debug("getApplicableAuthorizationDetails", "auth_method", authMethod)
@@ -630,5 +657,39 @@ func ApplyRetryRules(ctx context.Context, client interface{}, connection *plugin
 		field.SetInt(int64(*retryRules.MinErrorRetryDelay))
 	} else if field := v.FieldByName("RetryDuration"); !field.IsValid() || !field.CanSet() {
 		plugin.Logger(ctx).Warn("'RetryDuration' could not be set")
+	}
+}
+
+func NewAccessTokenCredential(accessToken string) *AccessTokenCredential {
+	if accessToken == "" {
+		return nil
+	}
+	return &AccessTokenCredential{
+		accessToken,
+		time.Now().Add(time.Hour),
+	}
+}
+
+type AccessTokenCredential struct {
+	accessToken string
+	expiresOn   time.Time
+}
+
+func (c *AccessTokenCredential) GetToken(ctx context.Context, options cloudPolicy.TokenRequestOptions) (azcore.AccessToken, error) {
+	return azcore.AccessToken{
+		Token:     c.accessToken,
+		ExpiresOn: c.expiresOn,
+	}, nil
+}
+
+func (c *AccessTokenCredential) WithAuthorization() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err == nil {
+				return autorest.Prepare(r, autorest.WithHeader("Authorization", fmt.Sprintf("Bearer %s", c.accessToken)))
+			}
+			return r, err
+		})
 	}
 }
