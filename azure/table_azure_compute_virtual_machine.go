@@ -696,7 +696,7 @@ func listComputeVirtualMachineGuestConfigurationAssignments(ctx context.Context,
 		return nil, err
 	}
 
-	environment := os.Getenv("AZURE_ENVIRONMENT")
+	environment := os.Getenv(envEnvironment)
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.Environment != nil {

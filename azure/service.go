@@ -29,6 +29,11 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
+const (
+	envAccessToken = "AZURE_ACCESS_TOKEN"
+	envEnvironment = "AZURE_ENVIRONMENT"
+)
+
 // Session info
 type SessionNew struct {
 	Cred           azcore.TokenCredential
@@ -74,7 +79,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 	if azureConfig.Environment != nil {
 		environment = *azureConfig.Environment
 	} else {
-		environment = os.Getenv("AZURE_ENVIRONMENT")
+		environment = os.Getenv(envEnvironment)
 	}
 
 	if azureConfig.TenantID != nil {
@@ -122,7 +127,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 	if azureConfig.AccessToken != nil {
 		accessToken = *azureConfig.AccessToken
 	} else {
-		accessToken = os.Getenv("AZURE_ACCESS_TOKEN")
+		accessToken = os.Getenv(envAccessToken)
 	}
 
 	//  It's important to note that Microsoft has since integrated these isolated German cloud regions into the global Azure cloud infrastructure. This means that Azure Germany Cloud services are now provided through the global Azure regions with the same high standards of security, privacy, and compliance.
@@ -211,7 +216,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "managed_identity_credential_error", err)
 			return nil, err
 		}
-	} else if accessToken != "" { // Access token authentication
+	} else if tenantID != "" && subscriptionID != "" && accessToken != "" { // Access token authentication
 		cred = NewAccessTokenCredential(accessToken)
 	} else { // CLI Authentication
 		cred, err = azidentity.NewAzureCLICredential(nil)
@@ -408,9 +413,9 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	if azureConfig.AccessToken != nil {
-		settings.Values["AZURE_ACCESS_TOKEN"] = *azureConfig.AccessToken
+		settings.Values[envAccessToken] = *azureConfig.AccessToken
 	} else {
-		settings.Values["AZURE_ACCESS_TOKEN"] = os.Getenv("AZURE_ACCESS_TOKEN")
+		settings.Values[envAccessToken] = os.Getenv(envAccessToken)
 	}
 
 	if azureConfig.Username != nil {
@@ -460,7 +465,7 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	// so if it was not in cache - create session
 	switch authMethod {
 	case "AccessToken":
-		authorizer = NewAccessTokenCredential(settings.Values["AZURE_ACCESS_TOKEN"])
+		authorizer = NewAccessTokenCredential(settings.Values[envAccessToken])
 	case "Environment":
 		logger.Trace("Creating new session authorizer from environment")
 		authorizer, err = settings.GetAuthorizer()
@@ -544,7 +549,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	subscriptionID := settings.Values[auth.SubscriptionID]
 	tenantID := settings.Values[auth.TenantID]
 	clientID := settings.Values[auth.ClientID]
-	accessToken := settings.Values["AZURE_ACCESS_TOKEN"]
+	accessToken := settings.Values[envAccessToken]
 
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
@@ -656,15 +661,25 @@ func ApplyRetryRules(ctx context.Context, client interface{}, connection *plugin
 }
 
 func NewAccessTokenCredential(accessToken string) *AccessTokenCredential {
-	return &AccessTokenCredential{accessToken}
+	if accessToken == "" {
+		return nil
+	}
+	return &AccessTokenCredential{
+		accessToken,
+		time.Now().Add(time.Hour),
+	}
 }
 
 type AccessTokenCredential struct {
 	accessToken string
+	expiresOn   time.Time
 }
 
 func (c *AccessTokenCredential) GetToken(ctx context.Context, options cloudPolicy.TokenRequestOptions) (azcore.AccessToken, error) {
-	return azcore.AccessToken{Token: c.accessToken}, nil
+	return azcore.AccessToken{
+		Token:     c.accessToken,
+		ExpiresOn: c.expiresOn,
+	}, nil
 }
 
 func (c *AccessTokenCredential) WithAuthorization() autorest.PrepareDecorator {
