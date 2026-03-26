@@ -536,7 +536,6 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	return networkRules, nil
 }
 
-
 func listSQLServerLongTermBackups(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listSQLServerLongTermBackups")
 	server := h.Item.(armsql.Server)
@@ -555,7 +554,7 @@ func listSQLServerLongTermBackups(ctx context.Context, d *plugin.QueryData, h *p
 		return nil, err
 	}
 
-	var LongTermRetentionBackups []*armsql.LongTermRetentionBackup
+	var longTermRetentionBackups []*armsql.LongTermRetentionBackup
 	pager := client.NewListByResourceGroupServerPager(resourceGroupName, location, serverName, nil)
 	for pager.More() {
 		result, err := pager.NextPage(ctx)
@@ -563,8 +562,8 @@ func listSQLServerLongTermBackups(ctx context.Context, d *plugin.QueryData, h *p
 			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerLongTermBackups", "api_error", err)
 			return nil, err
 		}
-		LongTermRetentionBackups = append(LongTermRetentionBackups, result.Value...)
+		longTermRetentionBackups = append(longTermRetentionBackups, result.Value...)
 	}
 
-	return LongTermRetentionBackups, nil
+	return longTermRetentionBackups, nil
 }
