@@ -234,7 +234,7 @@ func tableAzureSqlDatabase(_ context.Context) *plugin.Table {
 				Description: "Long term Retention policy Property.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getSqlDatabaseLongTermRetentionPolicies,
-				Transform:   transform.FromField("BaseLongTermRetentionPolicyProperties"),
+				Transform:   transform.FromField("Properties"),
 			},
 			{
 				Name:        "sample_name",
