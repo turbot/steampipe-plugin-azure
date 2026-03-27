@@ -166,6 +166,13 @@ func tableAzureSQLServer(_ context.Context) *plugin.Table {
 				Hydrate:     listSQLServerVirtualNetworkRules,
 				Transform:   transform.FromValue(),
 			},
+			{
+				Name:        "long_term_retention_backups",
+				Description: "A list of long term retention backups for this server.",
+				Type:        proto.ColumnType_JSON,
+				Hydrate:     listSQLServerLongTermBackups,
+				Transform:   transform.FromValue(),
+			},
 
 			// Steampipe standard columns
 			{
@@ -527,4 +534,36 @@ func listSQLServerVirtualNetworkRules(ctx context.Context, d *plugin.QueryData, 
 	}
 
 	return networkRules, nil
+}
+
+func listSQLServerLongTermBackups(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("listSQLServerLongTermBackups")
+	server := h.Item.(armsql.Server)
+	serverName := *server.Name
+	location := *server.Location
+	resourceGroupName := strings.Split(string(*server.ID), "/")[4]
+
+	session, err := GetNewSessionUpdated(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerLongTermBackups", "session_error", err)
+		return nil, err
+	}
+	client, err := armsql.NewLongTermRetentionBackupsClient(session.SubscriptionID, session.Cred, session.ClientOptions)
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_sql_server.listSQLServerLongTermBackups", "client_error", err)
+		return nil, err
+	}
+
+	var longTermRetentionBackups []*armsql.LongTermRetentionBackup
+	pager := client.NewListByResourceGroupServerPager(resourceGroupName, location, serverName, nil)
+	for pager.More() {
+		result, err := pager.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("azure_sql_server.listSQLServerLongTermBackups", "api_error", err)
+			return nil, err
+		}
+		longTermRetentionBackups = append(longTermRetentionBackups, result.Value...)
+	}
+
+	return longTermRetentionBackups, nil
 }
