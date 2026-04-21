@@ -160,6 +160,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_backup_policy":                                          tableAzureBackupPolicy(ctx),
 			"azure_bastion_host":                                           tableAzureBastionHost(ctx),
 			"azure_batch_account":                                          tableAzureBatchAccount(ctx),
+			"azure_capacity_reservation":                                   tableAzureCapacityReservation(ctx),
+			"azure_capacity_reservation_order":                             tableAzureCapacityReservationOrder(ctx),
 			"azure_cdn_frontdoor_custom_domain":                            tableAzureCDNFrontDoorCustomDomain(ctx),
 			"azure_cdn_frontdoor_profile":                                  tableAzureCDNFrontDoorProfile(ctx),
 			"azure_cognitive_account":                                      tableAzureCognitiveAccount(ctx),
