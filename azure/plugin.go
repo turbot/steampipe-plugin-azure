@@ -116,6 +116,15 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 				Scope:      []string{"connection", "subscription", "region"},
 				Where:      "service = 'Microsoft.Insights' and action = 'activityLogs/read'",
 			},
+			// https://learn.microsoft.com/en-us/azure/governance/resource-graph/concepts/guidance-for-throttled-requests
+			// 15 requests/5s per subscription, 150 requests/5s per tenant
+			{
+				Name:       "azure_resource_graph",
+				FillRate:   10,
+				BucketSize: 100,
+				Scope:      []string{"connection", "service", "action"},
+				Where:      "service = 'Microsoft.ResourceGraph' and action = 'resources/read'",
+			},
 		},
 		TableMap: map[string]*plugin.Table{
 			"azure_alert_management":                                       tableAzureAlertMangement(ctx),
@@ -255,6 +264,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_recovery_services_vault":                                tableAzureRecoveryServicesVault(ctx),
 			"azure_redis_cache":                                            tableAzureRedisCache(ctx),
 			"azure_resource":                                               tableAzureResourceResource(ctx),
+			"azure_resource_graph":                                         tableAzureResourceGraph(ctx),
 			"azure_resource_group":                                         tableAzureResourceGroup(ctx),
 			"azure_resource_link":                                          tableAzureResourceLink(ctx),
 			"azure_role_assignment":                                        tableAzureIamRoleAssignment(ctx),
