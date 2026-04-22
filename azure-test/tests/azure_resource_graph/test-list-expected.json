@@ -1,0 +1,8 @@
+[
+  {
+    "id": "/subscriptions/{{ output.subscription_id.value }}",
+    "name": "{{ output.current_subscription_display_name.value }}",
+    "query": "ResourceContainers | where type == \"microsoft.resources/subscriptions\" | limit 1",
+    "type": "microsoft.resources/subscriptions"
+  }
+]

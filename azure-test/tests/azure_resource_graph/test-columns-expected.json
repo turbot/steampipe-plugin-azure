@@ -1,0 +1,9 @@
+[
+  {
+    "akas": ["azure:///subscriptions/{{ output.subscription_id.value }}"],
+    "query": "ResourceContainers | where type == \"microsoft.resources/subscriptions\" | limit 1",
+    "region": "",
+    "resource_group": null,
+    "title": "{{ output.current_subscription_display_name.value }}"
+  }
+]
