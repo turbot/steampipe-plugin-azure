@@ -1,7 +1,7 @@
 package azure
 
 import (
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 type azureConfig struct {
@@ -25,9 +25,13 @@ func ConfigInstance() interface{} {
 
 // GetConfig :: retrieve and cast connection config from query data
 func GetConfig(connection *plugin.Connection) azureConfig {
-	if connection == nil || connection.Config == nil {
+	if connection == nil {
 		return azureConfig{}
 	}
-	config, _ := connection.Config.(azureConfig)
+	raw := connection.GetConfig()
+	if raw == nil {
+		return azureConfig{}
+	}
+	config, _ := raw.(azureConfig)
 	return config
 }

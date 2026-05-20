@@ -1,3 +1,13 @@
+## v1.12.1 [2026-05-20]
+
+_Bug fixes_
+
+- Fixed `ExpiredToken`-style errors on long-running queries when Turbot Pipes rotates Azure AD credentials mid-query. The plugin now reads the connection config via the SDK's `GetConfig` accessor (which holds a read lock) on every signing operation, so in-flight goroutines pick up rotated credentials. ([#<PR>](https://github.com/turbot/steampipe-plugin-azure/pull/<PR>))
+
+_Dependencies_
+
+- Upgraded `steampipe-plugin-sdk` to v6.0.0, which adds the `Connection.GetConfig` / `SetConfig` accessors and the per-connection `sync.RWMutex` that the rotation fix above depends on. Plugin builds now require Go 1.26.
+
 ## v1.12.0 [2025-12-05]
 
 _Enhancements_
