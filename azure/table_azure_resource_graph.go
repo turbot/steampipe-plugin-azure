@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resourcegraph/mgmt/resourcegraph"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
@@ -197,12 +198,16 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		rawBytes, err := json.Marshal(resp.Data)
 		if err != nil {
 			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "marshal_error", err)
-			break
+			return nil, err
 		}
 		var table resourcegraph.Table
-		if err := json.Unmarshal(rawBytes, &table); err != nil || table.Columns == nil || table.Rows == nil {
+		if err := json.Unmarshal(rawBytes, &table); err != nil {
 			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "unmarshal_table_error", err)
-			break
+			return nil, err
+		}
+		if table.Columns == nil || table.Rows == nil {
+			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "unmarshal_table_error", "response data missing columns or rows")
+			return nil, fmt.Errorf("response data missing columns or rows")
 		}
 
 		// Build a slice of column names from the API-returned column descriptors.
