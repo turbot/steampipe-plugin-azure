@@ -3,10 +3,8 @@ package azure
 import (
 	"context"
 	"encoding/json"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resourcegraph/mgmt/resourcegraph"
-	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -130,7 +128,7 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Type:        proto.ColumnType_STRING,
 				Description: ColumnDescriptionResourceGroup,
-				Transform:   transform.FromField("id").Transform(extractResourceGroupFromIDSafe),
+				Transform:   transform.FromField("resourceGroup", "id"),
 			},
 
 			// Steampipe standard columns
@@ -243,31 +241,4 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	return nil, nil
-}
-
-func extractResourceGroupFromIDSafe(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	id := types.SafeString(d.Value)
-	if id == "" {
-		return nil, nil
-	}
-
-	// Azure resource IDs follow the pattern:
-	// /subscriptions/{subId}/resourceGroups/{rg}/providers/...
-	// Index:  0      1        2              3    4
-	splitID := strings.Split(id, "/")
-	if len(splitID) < 5 {
-		return nil, nil
-	}
-
-	// Index 3 must be "resourceGroups" (case-insensitive)
-	if !strings.EqualFold(splitID[3], "resourceGroups") {
-		return nil, nil
-	}
-
-	resourceGroup := strings.ToLower(splitID[4])
-	if resourceGroup == "" {
-		return nil, nil
-	}
-
-	return resourceGroup, nil
 }

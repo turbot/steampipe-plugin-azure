@@ -1,7 +1,7 @@
 ---
-title: "Steampipe Table: azure_resource_graph - Query Azure Resources using KQL via SQL"
+title: "Steampipe Table: azure_resource_graph - Query Azure Resource Graph using SQL"
 description: "Allows users to execute Azure Resource Graph KQL queries and retrieve results as SQL rows."
-folder: "Resource Manager"
+folder: "Resource Graph"
 ---
 
 # Table: azure_resource_graph - Query Azure Resources using KQL via SQL
@@ -17,8 +17,6 @@ Each row returned corresponds to one row from the KQL result set. The table prov
 **Important notes:**
 - The `query` column is required. Omitting `WHERE query = '...'` will result in an error.
 - Columns are **null** when the KQL query does not project the corresponding fields (e.g., aggregation queries) or when the resource does not have that property.
-- The `subscription_id` column reads the `subscriptionId` field from the row when available, falling back to the session subscription ID.
-- The `resource_group` column reads the `resourceGroup` field from the row when available, falling back to extraction from the `id` field.
 
 ## Columns
 
@@ -122,5 +120,23 @@ select
 from
   azure_resource_graph
 where
+  query = 'Resources | where type == "microsoft.hybridcompute/machines" | project name, id, kind, properties';
+```
+
+```sql+sqlite
+SELECT
+  name,
+  id,
+  resource_group,
+  subscription_id,
+  kind,
+  properties ->> 'osType' AS os_type,
+  properties ->> 'osVersion' AS os_version,
+  properties ->> 'osSku' AS os_sku,
+  properties ->> 'status' AS status,
+  properties ->> 'agentVersion' AS agent_version
+FROM
+  azure_resource_graph
+WHERE
   query = 'Resources | where type == "microsoft.hybridcompute/machines" | project name, id, kind, properties';
 ```

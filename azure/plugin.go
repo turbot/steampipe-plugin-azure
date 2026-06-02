@@ -136,9 +136,9 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			// 15 requests/5s per subscription, 150 requests/5s per tenant
 			{
 				Name:       "azure_resource_graph",
-				FillRate:   10,
-				BucketSize: 100,
-				Scope:      []string{"connection", "service", "action"},
+				FillRate:   3,
+				BucketSize: 15,
+				Scope:      []string{"connection", "subscription"},
 				Where:      "service = 'Microsoft.ResourceGraph' and action = 'resources/read'",
 			},
 		},
