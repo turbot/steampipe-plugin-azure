@@ -220,18 +220,12 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 		// Stream one Steampipe row per result-set row.
 		for _, row := range *table.Rows {
-			rowMap := make(map[string]interface{}, len(row)+1)
+			rowMap := make(map[string]interface{}, len(row))
 			for i, cell := range row {
 				if i < len(colNames) {
 					rowMap[colNames[i]] = cell
 				}
 			}
-			// Store total_records under a sentinel key to avoid collisions with
-			// user-projected columns that might be named "total_records".
-			if resp.TotalRecords != nil {
-				rowMap["__total_records"] = *resp.TotalRecords
-			}
-
 			d.StreamListItem(ctx, rowMap)
 
 			if d.RowsRemaining(ctx) == 0 {
