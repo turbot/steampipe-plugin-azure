@@ -57,7 +57,7 @@ func tableAzureCDNFrontDoorCustomDomain(_ context.Context) *plugin.Table {
 				Name:        "profile_name",
 				Description: "The name of the CDN front door profile this custom domain belongs to.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.ProfileName"),
+				Transform:   transform.FromField("ID").Transform(extractCDNProfileNameFromID),
 			},
 			{
 				Name:        "host_name",

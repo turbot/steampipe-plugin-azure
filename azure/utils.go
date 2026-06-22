@@ -39,6 +39,17 @@ func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData)
 	return resourceGroup, nil
 }
 
+// extractCDNProfileNameFromID extracts the CDN profile name from a resource ID of the form:
+// /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Cdn/profiles/{profileName}/...
+func extractCDNProfileNameFromID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	id := types.SafeString(d.Value)
+	splitID := strings.Split(id, "/")
+	if len(splitID) < 9 {
+		return nil, nil
+	}
+	return splitID[8], nil
+}
+
 func lastPathElement(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	return getLastPathElement(types.SafeString(d.Value)), nil
 }
