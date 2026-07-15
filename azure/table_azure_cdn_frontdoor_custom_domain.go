@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/cdn/mgmt/cdn"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cdn/armcdn/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cdn/armcdn/v2"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -69,19 +69,19 @@ func tableAzureCDNFrontDoorCustomDomain(_ context.Context) *plugin.Table {
 				Name:        "provisioning_state",
 				Description: "Provisioning status of the custom domain.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.ProvisioningState").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.ProvisioningState"),
 			},
 			{
 				Name:        "deployment_status",
 				Description: "Deployment status of the custom domain.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DeploymentStatus").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.DeploymentStatus"),
 			},
 			{
 				Name:        "domain_validation_state",
 				Description: "Provisioning substate showing the progress of the custom HTTPS enabling/disabling process.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DomainValidationState").Transform(transform.ToString),
+				Transform:   transform.FromField("Properties.DomainValidationState"),
 			},
 			{
 				Name:        "azure_dns_zone_id",
@@ -154,6 +154,15 @@ func listAzureCDNFrontDoorCustomDomains(ctx context.Context, d *plugin.QueryData
 	}
 
 	if profile.ID == nil || profile.Name == nil {
+		return nil, nil
+	}
+
+	// Only process Azure Front Door profiles; skip classic CDN profiles
+	if profile.Sku == nil {
+		return nil, nil
+	}
+	skuName := string(profile.Sku.Name)
+	if skuName != "Standard_AzureFrontDoor" && skuName != "Premium_AzureFrontDoor" {
 		return nil, nil
 	}
 
