@@ -113,13 +113,6 @@ func tableAzureCDNFrontDoorCustomDomain(_ context.Context) *plugin.Table {
 				Type:        proto.ColumnType_JSON,
 				Transform:   transform.FromField("Properties.ExtendedProperties"),
 			},
-			{
-				Name:        "system_data",
-				Description: "Azure Resource Manager metadata containing createdBy and modifiedBy information.",
-				Type:        proto.ColumnType_JSON,
-				Transform:   transform.FromField("SystemData"),
-			},
-
 			// Steampipe standard columns
 			{
 				Name:        "title",
