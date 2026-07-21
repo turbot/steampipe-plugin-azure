@@ -124,7 +124,7 @@ where
 ```
 
 ```sql+sqlite
-SELECT
+select
   name,
   id,
   resource_group,
@@ -135,8 +135,8 @@ SELECT
   properties ->> 'osSku' AS os_sku,
   properties ->> 'status' AS status,
   properties ->> 'agentVersion' AS agent_version
-FROM
+from
   azure_resource_graph
-WHERE
+where
   query = 'Resources | where type == "microsoft.hybridcompute/machines" | project name, id, kind, properties';
 ```
