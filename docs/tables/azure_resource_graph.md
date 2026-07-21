@@ -17,6 +17,7 @@ Each row returned corresponds to one row from the KQL result set. The table prov
 **Important notes:**
 - The `query` column is required. Omitting `WHERE query = '...'` will result in an error.
 - Columns are **null** when the KQL query does not project the corresponding fields (e.g., aggregation queries) or when the resource does not have that property.
+- If you are only querying for Azure resources, consider using the azure_resource table instead; this table is better suited for aggregation, projection, and join queries via KQL.
 
 ## Columns
 
