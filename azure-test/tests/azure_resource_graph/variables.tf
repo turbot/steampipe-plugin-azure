@@ -16,13 +16,6 @@ variable "azure_subscription" {
   description = "Azure environment used for the test."
 }
 
-provider "azuread" {
-  # Cannot be passed as a variable
-  environment = var.azure_environment
-}
-
-data "azuread_client_config" "current" {}
-
 provider "azurerm" {
   features {}
 }
