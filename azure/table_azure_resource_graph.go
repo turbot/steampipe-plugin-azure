@@ -134,7 +134,7 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Name:        "resource_group",
 				Type:        proto.ColumnType_STRING,
 				Description: ColumnDescriptionResourceGroup,
-				Transform:   transform.FromField("resourceGroup", "id"),
+				Transform:   transform.FromField("id").Transform(extractResourceGroupFromID),
 			},
 
 		}),
