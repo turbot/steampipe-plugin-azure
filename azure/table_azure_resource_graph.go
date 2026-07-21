@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resourcegraph/mgmt/resourcegraph"
@@ -111,12 +110,18 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Description: "The extended location info of the resource, if available.",
 				Transform:   transform.FromField("extendedLocation"),
 			},
-			{
-				Name:        "query",
-				Type:        proto.ColumnType_STRING,
-				Description: "The KQL query executed against Azure Resource Graph.",
-				Transform:   transform.FromQual("query"),
-			},
+		{
+			Name:        "data",
+			Type:        proto.ColumnType_JSON,
+			Description: "The full row data as returned by the Resource Graph query. Useful for accessing computed columns from aggregations, projections, and joins.",
+			Transform:   transform.FromValue(),
+		},
+		{
+			Name:        "query",
+			Type:        proto.ColumnType_STRING,
+			Description: "The KQL query executed against Azure Resource Graph.",
+			Transform:   transform.FromQual("query"),
+		},
 
 			// Azure standard columns
 			{
@@ -132,19 +137,6 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("resourceGroup", "id"),
 			},
 
-			// Steampipe standard columns
-			{
-				Name:        "title",
-				Type:        proto.ColumnType_STRING,
-				Description: ColumnDescriptionTitle,
-				Transform:   transform.FromField("name"),
-			},
-			{
-				Name:        "akas",
-				Type:        proto.ColumnType_JSON,
-				Description: ColumnDescriptionAkas,
-				Transform:   transform.FromField("id").Transform(idToAkas),
-			},
 		}),
 	}
 }
@@ -175,7 +167,7 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	options := resourcegraph.QueryRequestOptions{
-		ResultFormat: resourcegraph.ResultFormatTable,
+		ResultFormat: resourcegraph.ResultFormatObjectArray,
 		Top:          &top,
 	}
 
@@ -195,39 +187,14 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 			return nil, err
 		}
 
-		rawBytes, err := json.Marshal(resp.Data)
-		if err != nil {
-			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "marshal_error", err)
-			return nil, err
-		}
-		var table resourcegraph.Table
-		if err := json.Unmarshal(rawBytes, &table); err != nil {
-			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "unmarshal_table_error", err)
-			return nil, err
-		}
-		if table.Columns == nil || table.Rows == nil {
-			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "unmarshal_table_error", "response data missing columns or rows")
-			return nil, fmt.Errorf("response data missing columns or rows")
+		rows, ok := resp.Data.([]interface{})
+		if !ok {
+			plugin.Logger(ctx).Error("azure_resource_graph.listAzureResourceGraph", "unexpected_data_type", fmt.Sprintf("%T", resp.Data))
+			return nil, fmt.Errorf("unexpected Resource Graph response data type: %T", resp.Data)
 		}
 
-		// Build a slice of column names from the API-returned column descriptors.
-		colNames := make([]string, len(*table.Columns))
-		for i, col := range *table.Columns {
-			if col.Name != nil {
-				colNames[i] = *col.Name
-			}
-		}
-
-		// Stream one Steampipe row per result-set row.
-		for _, row := range *table.Rows {
-			rowMap := make(map[string]interface{}, len(row))
-			for i, cell := range row {
-				if i < len(colNames) {
-					rowMap[colNames[i]] = cell
-				}
-			}
-			d.StreamListItem(ctx, rowMap)
-
+		for _, row := range rows {
+			d.StreamListItem(ctx, row)
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
