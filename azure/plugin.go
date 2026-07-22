@@ -270,6 +270,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"azure_recovery_services_backup_job":                           tableAzureRecoveryServicesBackupJob(ctx),
 			"azure_recovery_services_vault":                                tableAzureRecoveryServicesVault(ctx),
 			"azure_redis_cache":                                            tableAzureRedisCache(ctx),
+			"azure_redis_enterprise_cluster":                               tableAzureRedisEnterpriseCluster(ctx),
+			"azure_redis_enterprise_database":                              tableAzureRedisEnterpriseDatabase(ctx),
 			"azure_resource":                                               tableAzureResourceResource(ctx),
 			"azure_resource_group":                                         tableAzureResourceGroup(ctx),
 			"azure_resource_link":                                          tableAzureResourceLink(ctx),
