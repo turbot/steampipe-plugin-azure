@@ -185,7 +185,7 @@ func ptrToString(_ context.Context, d *transform.TransformData) (interface{}, er
 		return nil, nil
 	}
 	v := reflect.ValueOf(d.Value)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		if v.IsNil() {
 			return nil, nil
 		}
