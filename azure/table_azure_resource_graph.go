@@ -149,7 +149,7 @@ func listAzureResourceGraph(ctx context.Context, d *plugin.QueryData, _ *plugin.
 		return nil, err
 	}
 
-	kqlQuery := d.EqualsQuals["query"].GetStringValue()
+	kqlQuery := d.EqualsQuals["query"]
 	if kqlQuery == "" {
 		return nil, nil
 	}
