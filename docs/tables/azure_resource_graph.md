@@ -88,7 +88,7 @@ select
 from
   azure_resource_graph
 where
-  query = 'patchassessmentresources | where type == "microsoft.compute/virtualmachines/patchassessmentresults/softwarepatches"';
+  query = 'patchassessmentresources | where type == "microsoft.compute/virtualmachines/patchinstallationresults/softwarepatches"';
 ```
 
 ```sql+sqlite
@@ -101,7 +101,7 @@ select
 from
   azure_resource_graph
 where
-  query = 'patchassessmentresources | where type == "microsoft.compute/virtualmachines/patchassessmentresults/softwarepatches"';
+  query = 'patchassessmentresources | where type == "microsoft.compute/virtualmachines/patchinstallationresults/softwarepatches"';
 ```
 
 ### Find Azure Arc-enabled servers
