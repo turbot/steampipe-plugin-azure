@@ -19,30 +19,6 @@ Each row returned corresponds to one row from the KQL result set. The table prov
 - Columns are **null** when the KQL query does not project the corresponding fields (e.g., aggregation queries) or when the resource does not have that property.
 - If you are only querying for Azure resources, consider using the azure_resource table instead; this table is better suited for aggregation, projection, and join queries via KQL.
 
-## Columns
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `query` | `text` | The KQL query executed against Azure Resource Graph. **Required.** |
-| `id` | `text` | The resource ID, if projected by the query. |
-| `name` | `text` | The resource name, if projected by the query. |
-| `type` | `text` | The resource type, if projected by the query. |
-| `kind` | `text` | The kind of the resource, if available. |
-| `identity` | `jsonb` | The managed identity info of the resource, if available. |
-| `managed_by` | `text` | The ID of the resource that manages this resource, if available. |
-| `plan` | `jsonb` | The plan info of the resource, if available. |
-| `properties` | `jsonb` | The resource properties as returned by the graph query. |
-| `sku` | `jsonb` | The SKU of the resource, if available. |
-| `tenant_id` | `text` | The tenant ID of the resource, if available. |
-| `zones` | `jsonb` | The availability zones of the resource, if available. |
-| `extended_location` | `jsonb` | The extended location info of the resource, if available. |
-| `tags` | `jsonb` | A map of tags for the resource. |
-| `region` | `text` | The Azure region/location in which the resource is located. |
-| `resource_group` | `text` | The resource group which holds this resource. |
-| `title` | `text` | Title of the resource. |
-| `akas` | `jsonb` | Array of globally unique identifier strings (also known as) for the resource. |
-| `subscription_id` | `text` | The Azure Subscription ID in which the resource is located. |
-| `cloud_environment` | `text` | The Azure Cloud Environment. |
 
 ## Examples
 
