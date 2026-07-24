@@ -131,11 +131,11 @@ select
   resource_group,
   subscription_id,
   kind,
-  properties ->> 'osType' AS os_type,
-  properties ->> 'osVersion' AS os_version,
-  properties ->> 'osSku' AS os_sku,
-  properties ->> 'status' AS status,
-  properties ->> 'agentVersion' AS agent_version
+  properties ->> 'osType' as os_type,
+  properties ->> 'osVersion' as os_version,
+  properties ->> 'osSku' as os_sku,
+  properties ->> 'status' as status,
+  properties ->> 'agentVersion' as agent_version
 from
   azure_resource_graph
 where
