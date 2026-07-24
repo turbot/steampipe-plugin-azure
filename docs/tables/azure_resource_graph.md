@@ -4,7 +4,7 @@ description: "Allows users to execute Azure Resource Graph KQL queries and retri
 folder: "Resource Graph"
 ---
 
-# Table: azure_resource_graph - Query Azure Resources using KQL via SQL
+# Table: azure_resource_graph - Query Azure Resource Graph using SQL
 
 Azure Resource Graph is a service that allows efficient and performant resource exploration across your Azure subscriptions using Kusto Query Language (KQL). This table executes a KQL query against the Azure Resource Graph API and returns the results as SQL rows.
 
