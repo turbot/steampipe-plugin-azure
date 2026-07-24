@@ -110,18 +110,18 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Description: "The extended location info of the resource, if available.",
 				Transform:   transform.FromField("extendedLocation"),
 			},
-		{
-			Name:        "data",
-			Type:        proto.ColumnType_JSON,
-			Description: "The full row data as returned by the Resource Graph query. Useful for accessing computed columns from aggregations, projections, and joins.",
-			Transform:   transform.FromValue(),
-		},
-		{
-			Name:        "query",
-			Type:        proto.ColumnType_STRING,
-			Description: "The KQL query executed against Azure Resource Graph.",
-			Transform:   transform.FromQual("query"),
-		},
+			{
+				Name:        "data",
+				Type:        proto.ColumnType_JSON,
+				Description: "The full row data as returned by the Resource Graph query. Useful for accessing computed columns from aggregations, projections, and joins.",
+				Transform:   transform.FromValue(),
+			},
+			{
+				Name:        "query",
+				Type:        proto.ColumnType_STRING,
+				Description: "The KQL query executed against Azure Resource Graph.",
+				Transform:   transform.FromQual("query"),
+			},
 
 			// Azure standard columns
 			{
@@ -136,7 +136,6 @@ func tableAzureResourceGraph(_ context.Context) *plugin.Table {
 				Description: ColumnDescriptionResourceGroup,
 				Transform:   transform.FromField("id").Transform(extractResourceGroupFromID),
 			},
-
 		}),
 	}
 }
