@@ -46,6 +46,33 @@ Each row returned corresponds to one row from the KQL result set. The table prov
 
 ## Examples
 
+### Basic info
+List the first 10 resources in your Azure subscriptions.
+
+```sql+postgres
+select 
+    id, 
+    name, 
+    type, 
+    region 
+from 
+    azure_resource_graph 
+where 
+    query = 'Resources | limit 10';
+```
+
+```sql+sqlite
+select 
+    id, 
+    name, 
+    type, 
+    region 
+from 
+    azure_resource_graph 
+where 
+    query = 'Resources | limit 10';
+```
+
 ### List OS packages pending update
 
 ```sql+postgres
