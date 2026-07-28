@@ -1,3 +1,35 @@
+## v1.13.0 [2026-07-28]
+
+_What's new?_
+
+- New tables added
+  - [azure_cdn_frontdoor_custom_domain](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_cdn_frontdoor_custom_domain) ([#1005](https://github.com/turbot/steampipe-plugin-azure/pull/1005)) (Thanks [@Shr3ps](https://github.com/Shr3ps) for the contribution!)
+  - [azure_resource_graph](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_resource_graph) ([#988](https://github.com/turbot/steampipe-plugin-azure/pull/988)) (Thanks [@jmapro](https://github.com/jmapro) for the contribution!)
+
+_Enhancements_
+
+- Added a default rate limiter for the `azure_storage_share_file` table to avoid ARM 429 throttling errors. ([#1007](https://github.com/turbot/steampipe-plugin-azure/pull/1007)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `retention_policy_property` and `transparent_data_encryption` columns in `azure_sql_database` table to correctly return data instead of `null`.
+
+_Dependencies_
+
+- Recompiled plugin with steampipe-plugin-sdk v6.0.0 and Go v1.26.0.
+- Bumped `github.com/Azure/azure-sdk-for-go/sdk/azcore` from v1.21.0 to v1.21.1. ([#1000](https://github.com/turbot/steampipe-plugin-azure/pull/1000))
+- Bumped `github.com/Azure/azure-storage-blob-go` from v0.12.0 to v0.15.0. ([#998](https://github.com/turbot/steampipe-plugin-azure/pull/998))
+- Bumped `github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mysql/armmysqlflexibleservers/v2` from v2.0.0-beta.3 to v2.0.0-beta.5. ([#989](https://github.com/turbot/steampipe-plugin-azure/pull/989))
+- Bumped `github.com/turbot/go-kit` from v1.1.0 to v1.3.1. ([#990](https://github.com/turbot/steampipe-plugin-azure/pull/990))
+- Bumped `github.com/hashicorp/go-getter` from v1.7.9 to v1.8.6. ([#984](https://github.com/turbot/steampipe-plugin-azure/pull/984))
+- Bumped `go.opentelemetry.io/otel/sdk` from v1.26.0 to v1.43.0. ([#983](https://github.com/turbot/steampipe-plugin-azure/pull/983))
+- Bumped `github.com/go-jose/go-jose/v4` from v4.1.3 to v4.1.4. ([#993](https://github.com/turbot/steampipe-plugin-azure/pull/993))
+- Bumped `github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream` from v1.7.7 to v1.7.8. ([#994](https://github.com/turbot/steampipe-plugin-azure/pull/994))
+- Bumped `github.com/aws/aws-sdk-go-v2/service/s3` from v1.97.1 to v1.97.3.
+- Bumped `lodash` from v4.17.21 to v4.18.1 in `/azure-test`. ([#982](https://github.com/turbot/steampipe-plugin-azure/pull/982))
+- Bumped `diff` from v4.0.2 to v4.0.4 in `/azure-test`. ([#980](https://github.com/turbot/steampipe-plugin-azure/pull/980))
+- Bumped `picomatch` from v2.3.1 to v2.3.2 in `/azure-test`. ([#979](https://github.com/turbot/steampipe-plugin-azure/pull/979))
+
 ## v1.12.0 [2025-12-05]
 
 _Enhancements_
