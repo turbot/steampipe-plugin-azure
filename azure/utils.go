@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -29,14 +30,18 @@ func idToAkas(ctx context.Context, d *transform.TransformData) (interface{}, err
 	return akas, nil
 }
 
+// armIDResourceGroupRegexp matches Azure ARM IDs and captures the resource group name.
+// Format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}[/...]
+var armIDResourceGroupRegexp = regexp.MustCompile(`(?i)/subscriptions/[^/]+/resourceGroups/([^/]+)`)
+
 func extractResourceGroupFromID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	id := types.SafeString(d.Value)
 
-	// Common resource properties
-	splitID := strings.Split(id, "/")
-	resourceGroup := splitID[4]
-	resourceGroup = strings.ToLower(resourceGroup)
-	return resourceGroup, nil
+	matches := armIDResourceGroupRegexp.FindStringSubmatch(id)
+	if len(matches) < 2 {
+		return nil, nil
+	}
+	return strings.ToLower(matches[1]), nil
 }
 
 // extractCDNProfileNameFromID extracts the CDN profile name from a resource ID of the form:
