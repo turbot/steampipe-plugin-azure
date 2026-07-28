@@ -31,7 +31,6 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/tombuildsstuff/giovanni v0.15.1
 	github.com/turbot/go-kit v1.3.1
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.14.1
 )
 
 require (
@@ -147,6 +146,7 @@ require (
 	github.com/spiffe/go-spiffe/v2 v2.6.0 // indirect
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
+	github.com/turbot/steampipe-plugin-sdk/v6 v6.0.0
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

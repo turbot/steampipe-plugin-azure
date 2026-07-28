@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 func tableCostForecastMonthly(_ context.Context) *plugin.Table {
