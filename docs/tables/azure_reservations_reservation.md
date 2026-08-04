@@ -142,6 +142,35 @@ where
   renew = 1;
 ```
 
+### Filter reservations by provisioning state (server-side)
+Filter reservations server-side by provisioning state to quickly find active, failed, or cancelled reservations. The `provisioning_state`, `reserved_resource_type`, and `applied_scope_type` columns are pushed down to the Azure API as filter parameters, reducing the amount of data transferred.
+
+```sql+postgres
+select
+  display_name,
+  reservation_order_id,
+  provisioning_state,
+  sku_name,
+  quantity
+from
+  azure_reservations_reservation
+where
+  provisioning_state = 'Succeeded';
+```
+
+```sql+sqlite
+select
+  display_name,
+  reservation_order_id,
+  provisioning_state,
+  sku_name,
+  quantity
+from
+  azure_reservations_reservation
+where
+  provisioning_state = 'Succeeded';
+```
+
 ### Get utilization details for reservations
 Analyze the utilization of your reserved VM to identify underutilized reservations that may be candidates for resizing, consolidation, or cancellation.
 

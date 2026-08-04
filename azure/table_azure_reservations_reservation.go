@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/reservations/armreservations"
@@ -28,7 +29,8 @@ func tableAzureReservationsReservation(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureReservationsReservations,
+			KeyColumns: plugin.OptionalColumns([]string{"provisioning_state", "reserved_resource_type", "applied_scope_type"}),
+			Hydrate:    listAzureReservationsReservations,
 			Tags: map[string]string{
 				"service": "Microsoft.Capacity",
 				"action":  "reservations/read",
@@ -272,7 +274,14 @@ func listAzureReservationsReservations(ctx context.Context, d *plugin.QueryData,
 		return nil, err
 	}
 
-	pager := client.NewListAllPager(nil)
+	// Build server-side filter from optional key columns.
+	// The Reservation ListAll API supports 'eq', 'or', and 'and' (not 'ne') on:
+	//   properties/provisioningState, properties/reservedResourceType, properties/appliedScopeType
+	filter := buildReservationsListFilter(d.Quals)
+
+	pager := client.NewListAllPager(&armreservations.ReservationClientListAllOptions{
+		Filter: &filter,
+	})
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
@@ -353,4 +362,34 @@ func extractReservationID(_ context.Context, d *transform.TransformData) (interf
 		return nil, nil
 	}
 	return parts[1], nil
+}
+
+// buildReservationsListFilter constructs an OData filter string for the Reservation
+// ListAll API from optional key column quals. Only 'eq' operators are supported by
+// the API (no 'ne', 'gt', etc.).
+func buildReservationsListFilter(quals plugin.KeyColumnQualMap) string {
+	filterQuals := map[string]string{
+		"provisioning_state":     "properties/provisioningState",
+		"reserved_resource_type": "properties/reservedResourceType",
+		"applied_scope_type":     "properties/appliedScopeType",
+	}
+
+	var filters []string
+	for columnName, filterValue := range filterQuals {
+		if quals[columnName] == nil {
+			continue
+		}
+		for _, q := range quals[columnName].Quals {
+			if q.Operator != "=" {
+				continue
+			}
+			val := q.Value.GetStringValue()
+			if val == "" {
+				continue
+			}
+			filters = append(filters, fmt.Sprintf("%s eq '%s'", filterValue, val))
+		}
+	}
+
+	return strings.Join(filters, " and ")
 }
