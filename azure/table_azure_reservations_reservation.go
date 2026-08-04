@@ -276,13 +276,6 @@ func listAzureReservationsReservations(ctx context.Context, d *plugin.QueryData,
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {
-			// Azure API sometimes returns "value": "" (string) instead of "value": []
-			// for tenants with no reservations. Treat as empty result.
-			if strings.Contains(err.Error(), "cannot unmarshal string into Go value of type []*armreservations.ReservationResponse") {
-				plugin.Logger(ctx).Warn("azure_reservations_reservation.listAzureReservationsReservations",
-					"msg", "Azure API returned malformed response for empty reservation list, treating as empty")
-				return nil, nil
-			}
 			plugin.Logger(ctx).Error("azure_reservations_reservation.listAzureReservationsReservations", "list_error", err)
 			return nil, err
 		}
