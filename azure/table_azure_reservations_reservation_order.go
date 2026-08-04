@@ -5,20 +5,20 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/reservations/armreservations"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
 //// TABLE DEFINITION
 
-func tableAzureCapacityReservationOrder(_ context.Context) *plugin.Table {
+func tableAzureReservationsReservationOrder(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_capacity_reservation_order",
-		Description: "Azure Capacity Reservation Order",
+		Name:        "azure_reservations_reservation_order",
+		Description: "Azure Reservations Order",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("name"),
-			Hydrate:    getAzureCapacityReservationOrder,
+			Hydrate:    getAzureReservationsReservationOrder,
 			Tags: map[string]string{
 				"service": "Microsoft.Capacity",
 				"action":  "reservationOrders/read",
@@ -28,7 +28,7 @@ func tableAzureCapacityReservationOrder(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureCapacityReservationOrders,
+			Hydrate: listAzureReservationsReservationOrders,
 			Tags: map[string]string{
 				"service": "Microsoft.Capacity",
 				"action":  "reservationOrders/read",
@@ -90,25 +90,25 @@ func tableAzureCapacityReservationOrder(_ context.Context) *plugin.Table {
 				Name:        "benefit_start_time",
 				Description: "The time when the reservation order benefit starts.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.BenefitStartTime").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.BenefitStartTime"),
 			},
 			{
 				Name:        "created_date_time",
 				Description: "The date and time the reservation order was created.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.CreatedDateTime").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.CreatedDateTime"),
 			},
 			{
 				Name:        "expiry_date",
 				Description: "The date when the reservation order expires.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.ExpiryDate").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.ExpiryDate"),
 			},
 			{
 				Name:        "request_date_time",
 				Description: "The date and time the reservation order was requested.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.RequestDateTime").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.RequestDateTime"),
 			},
 			{
 				Name:        "plan_information",
@@ -148,10 +148,10 @@ func tableAzureCapacityReservationOrder(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listAzureCapacityReservationOrders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listAzureReservationsReservationOrders(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation_order.listAzureCapacityReservationOrders", "session_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation_order.listAzureReservationsReservationOrders", "session_error", err)
 		return nil, err
 	}
 
@@ -160,7 +160,7 @@ func listAzureCapacityReservationOrders(ctx context.Context, d *plugin.QueryData
 		session.ClientOptions,
 	)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation_order.listAzureCapacityReservationOrders", "client_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation_order.listAzureReservationsReservationOrders", "client_error", err)
 		return nil, err
 	}
 
@@ -171,11 +171,11 @@ func listAzureCapacityReservationOrders(ctx context.Context, d *plugin.QueryData
 			// Azure API sometimes returns "value": "" (string) instead of "value": []
 			// for tenants with no reservation orders. Treat as empty result.
 			if strings.Contains(err.Error(), "cannot unmarshal string into Go value of type []*armreservations.ReservationOrderResponse") {
-				plugin.Logger(ctx).Warn("azure_capacity_reservation_order.listAzureCapacityReservationOrders",
+				plugin.Logger(ctx).Warn("azure_reservations_reservation_order.listAzureReservationsReservationOrders",
 					"msg", "Azure API returned malformed response for empty reservation order list, treating as empty")
 				return nil, nil
 			}
-			plugin.Logger(ctx).Error("azure_capacity_reservation_order.listAzureCapacityReservationOrders", "list_error", err)
+			plugin.Logger(ctx).Error("azure_reservations_reservation_order.listAzureReservationsReservationOrders", "list_error", err)
 			return nil, err
 		}
 		for _, item := range page.Value {
@@ -191,7 +191,7 @@ func listAzureCapacityReservationOrders(ctx context.Context, d *plugin.QueryData
 
 //// GET FUNCTION
 
-func getAzureCapacityReservationOrder(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getAzureReservationsReservationOrder(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	reservationOrderID := d.EqualsQualString("name")
 
 	if reservationOrderID == "" {
@@ -200,7 +200,7 @@ func getAzureCapacityReservationOrder(ctx context.Context, d *plugin.QueryData, 
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation_order.getAzureCapacityReservationOrder", "session_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation_order.getAzureReservationsReservationOrder", "session_error", err)
 		return nil, err
 	}
 
@@ -209,7 +209,7 @@ func getAzureCapacityReservationOrder(ctx context.Context, d *plugin.QueryData, 
 		session.ClientOptions,
 	)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation_order.getAzureCapacityReservationOrder", "client_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation_order.getAzureReservationsReservationOrder", "client_error", err)
 		return nil, err
 	}
 
@@ -219,7 +219,7 @@ func getAzureCapacityReservationOrder(ctx context.Context, d *plugin.QueryData, 
 		Expand: &expand,
 	})
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation_order.getAzureCapacityReservationOrder", "get_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation_order.getAzureReservationsReservationOrder", "get_error", err)
 		return nil, err
 	}
 

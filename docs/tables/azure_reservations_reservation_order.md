@@ -1,21 +1,21 @@
 ---
-title: "Steampipe Table: azure_capacity_reservation_order - Query Azure Capacity Reservation Orders using SQL"
-description: "Allows users to query Azure Capacity Reservation Orders, providing details on reservation order lifecycle, billing plans, term durations, and associated reservations."
-folder: "Cost Management"
+title: "Steampipe Table: azure_reservations_reservation_order - Query Azure Reservation Orders using SQL"
+description: "Allows users to query Azure Reservation Orders, providing details on reservation order lifecycle, billing plans, term durations, and associated reservations."
+folder: "Reservations"
 ---
 
-# Table: azure_capacity_reservation_order - Query Azure Capacity Reservation Orders using SQL
+# Table: azure_reservations_reservation_order - Query Azure Reservation Orders using SQL
 
-Azure Capacity Reservation Orders are the top-level container for one or more Azure Capacity Reservations. A reservation order tracks the overall purchase, billing plan (Upfront or Monthly), term (1 or 3  years), and expiration of the reserved capacity commitment. Reservation orders are tenant-level resources and are not associated with any resource group or region.
+Azure Reservation Orders are the top-level container for one or more Azure Reservations. A reservation order tracks the overall purchase, billing plan (Upfront or Monthly), term (1 or 3  years), and expiration of the reserved capacity commitment. Reservation orders are tenant-level resources and are not associated with any resource group or region.
 
 ## Table Usage Guide
 
-The `azure_capacity_reservation_order` table provides insights into reservation orders within Azure. As a FinOps engineer or cloud administrator, use this table to audit reservation orders, track billing plans and expiration timelines, monitor provisioning state, and review the list of individual reservations contained within each order.
+The `azure_reservations_reservation_order` table provides insights into reservation orders within Azure. As a FinOps engineer or cloud administrator, use this table to audit reservation orders, track billing plans and expiration timelines, monitor provisioning state, and review the list of individual reservations contained within each order.
 
 ## Examples
 
 ### Basic info
-Get an overview of your Azure capacity reservation orders, including their current provisioning state, billing plan, term length, and the total quantity of SKUs originally purchased.
+Get an overview of your Azure reservation orders, including their current provisioning state, billing plan, term length, and the total quantity of SKUs originally purchased.
 
 ```sql+postgres
 select
@@ -28,7 +28,7 @@ select
   original_quantity,
   created_date_time
 from
-  azure_capacity_reservation_order;
+  azure_reservations_reservation_order;
 ```
 
 ```sql+sqlite
@@ -42,7 +42,7 @@ select
   original_quantity,
   created_date_time
 from
-  azure_capacity_reservation_order;
+  azure_reservations_reservation_order;
 ```
 
 ### List reservation orders expiring within the next 90 days
@@ -58,7 +58,7 @@ select
   benefit_start_time,
   expiry_date
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   expiry_date <= now() + interval '90 days'
 order by
@@ -75,7 +75,7 @@ select
   benefit_start_time,
   expiry_date
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   expiry_date <= date('now', '+90 days')
 order by
@@ -94,7 +94,7 @@ select
   created_date_time,
   expiry_date
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   billing_plan = 'Monthly';
 ```
@@ -108,7 +108,7 @@ select
   created_date_time,
   expiry_date
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   billing_plan = 'Monthly';
 ```
@@ -124,7 +124,7 @@ select
   billing_plan,
   jsonb_array_length(reservations) as reservation_count
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 order by
   reservation_count desc;
 ```
@@ -137,7 +137,7 @@ select
   billing_plan,
   json_array_length(reservations) as reservation_count
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 order by
   reservation_count desc;
 ```
@@ -153,7 +153,7 @@ select
   original_quantity,
   jsonb_pretty(plan_information) as payment_schedule
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   billing_plan = 'Monthly';
 ```
@@ -166,7 +166,7 @@ select
   original_quantity,
   plan_information as payment_schedule
 from
-  azure_capacity_reservation_order
+  azure_reservations_reservation_order
 where
   billing_plan = 'Monthly';
 ```

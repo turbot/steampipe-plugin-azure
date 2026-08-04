@@ -3,23 +3,22 @@ package azure
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/reservations/armreservations"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
 //// TABLE DEFINITION
 
-func tableAzureCapacityReservation(_ context.Context) *plugin.Table {
+func tableAzureReservationsReservation(_ context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "azure_capacity_reservation",
-		Description: "Azure Capacity Reservation",
+		Name:        "azure_reservations_reservation",
+		Description: "Azure Reservations",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.AllColumns([]string{"reservation_order_id", "reservation_id"}),
-			Hydrate:    getAzureCapacityReservation,
+			Hydrate:    getAzureReservationsReservation,
 			Tags: map[string]string{
 				"service": "Microsoft.Capacity",
 				"action":  "reservations/read",
@@ -29,7 +28,7 @@ func tableAzureCapacityReservation(_ context.Context) *plugin.Table {
 			},
 		},
 		List: &plugin.ListConfig{
-			Hydrate: listAzureCapacityReservations,
+			Hydrate: listAzureReservationsReservations,
 			Tags: map[string]string{
 				"service": "Microsoft.Capacity",
 				"action":  "reservations/read",
@@ -84,7 +83,7 @@ func tableAzureCapacityReservation(_ context.Context) *plugin.Table {
 				Name:        "display_name",
 				Description: "Friendly name for user to easily identify the reservation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DisplayName"),
+				Transform:   transform.FromField("Properties.DisplayName", "Name"),
 			},
 			{
 				Name:        "provisioning_state",
@@ -150,25 +149,25 @@ func tableAzureCapacityReservation(_ context.Context) *plugin.Table {
 				Name:        "benefit_start_time",
 				Description: "The time when the reservation benefit starts.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.BenefitStartTime").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.BenefitStartTime"),
 			},
 			{
 				Name:        "purchase_date",
 				Description: "The date when the reservation was purchased.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.PurchaseDate").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.PurchaseDate"),
 			},
 			{
 				Name:        "expiry_date",
 				Description: "The date when the reservation expires.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.ExpiryDate").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.ExpiryDate"),
 			},
 			{
 				Name:        "last_updated_date_time",
 				Description: "The date and time the reservation was last updated.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("Properties.LastUpdatedDateTime").Transform(reservationTimeToTimestamp),
+				Transform:   transform.FromField("Properties.LastUpdatedDateTime"),
 			},
 			{
 				Name:        "renew",
@@ -257,10 +256,10 @@ func tableAzureCapacityReservation(_ context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listAzureCapacityReservations(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listAzureReservationsReservations(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation.listAzureCapacityReservations", "session_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation.listAzureReservationsReservations", "session_error", err)
 		return nil, err
 	}
 
@@ -269,7 +268,7 @@ func listAzureCapacityReservations(ctx context.Context, d *plugin.QueryData, _ *
 		session.ClientOptions,
 	)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation.listAzureCapacityReservations", "client_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation.listAzureReservationsReservations", "client_error", err)
 		return nil, err
 	}
 
@@ -280,11 +279,11 @@ func listAzureCapacityReservations(ctx context.Context, d *plugin.QueryData, _ *
 			// Azure API sometimes returns "value": "" (string) instead of "value": []
 			// for tenants with no reservations. Treat as empty result.
 			if strings.Contains(err.Error(), "cannot unmarshal string into Go value of type []*armreservations.ReservationResponse") {
-				plugin.Logger(ctx).Warn("azure_capacity_reservation.listAzureCapacityReservations",
+				plugin.Logger(ctx).Warn("azure_reservations_reservation.listAzureReservationsReservations",
 					"msg", "Azure API returned malformed response for empty reservation list, treating as empty")
 				return nil, nil
 			}
-			plugin.Logger(ctx).Error("azure_capacity_reservation.listAzureCapacityReservations", "list_error", err)
+			plugin.Logger(ctx).Error("azure_reservations_reservation.listAzureReservationsReservations", "list_error", err)
 			return nil, err
 		}
 		for _, item := range page.Value {
@@ -300,7 +299,7 @@ func listAzureCapacityReservations(ctx context.Context, d *plugin.QueryData, _ *
 
 //// GET FUNCTION
 
-func getAzureCapacityReservation(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getAzureReservationsReservation(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	reservationOrderID := d.EqualsQualString("reservation_order_id")
 	reservationID := d.EqualsQualString("reservation_id")
 
@@ -310,7 +309,7 @@ func getAzureCapacityReservation(ctx context.Context, d *plugin.QueryData, h *pl
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation.getAzureCapacityReservation", "session_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation.getAzureReservationsReservation", "session_error", err)
 		return nil, err
 	}
 
@@ -319,14 +318,14 @@ func getAzureCapacityReservation(ctx context.Context, d *plugin.QueryData, h *pl
 		session.ClientOptions,
 	)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation.getAzureCapacityReservation", "client_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation.getAzureReservationsReservation", "client_error", err)
 		return nil, err
 	}
 
 	// Note: Get signature is Get(ctx, reservationID, reservationOrderID, options)
 	result, err := client.Get(ctx, reservationID, reservationOrderID, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("azure_capacity_reservation.getAzureCapacityReservation", "get_error", err)
+		plugin.Logger(ctx).Error("azure_reservations_reservation.getAzureReservationsReservation", "get_error", err)
 		return nil, err
 	}
 
@@ -361,16 +360,4 @@ func extractReservationID(_ context.Context, d *transform.TransformData) (interf
 		return nil, nil
 	}
 	return parts[1], nil
-}
-
-// reservationTimeToTimestamp converts a *time.Time to RFC3339 string for Steampipe.
-func reservationTimeToTimestamp(_ context.Context, d *transform.TransformData) (interface{}, error) {
-	if d.Value == nil {
-		return nil, nil
-	}
-	t, ok := d.Value.(*time.Time)
-	if !ok || t == nil {
-		return nil, nil
-	}
-	return t.UTC().Format(time.RFC3339), nil
 }
