@@ -83,7 +83,7 @@ func tableAzureReservationsReservation(_ context.Context) *plugin.Table {
 				Name:        "display_name",
 				Description: "Friendly name for user to easily identify the reservation.",
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DisplayName", "Name"),
+				Transform:   transform.FromField("Properties.DisplayName"),
 			},
 			{
 				Name:        "provisioning_state",
@@ -234,7 +234,7 @@ func tableAzureReservationsReservation(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DisplayName"),
+				Transform:   transform.FromField("Properties.DisplayName", "Name"),
 			},
 			{
 				Name:        "akas",

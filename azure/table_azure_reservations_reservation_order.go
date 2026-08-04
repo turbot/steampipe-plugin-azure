@@ -133,7 +133,7 @@ func tableAzureReservationsReservationOrder(_ context.Context) *plugin.Table {
 				Name:        "title",
 				Description: ColumnDescriptionTitle,
 				Type:        proto.ColumnType_STRING,
-				Transform:   transform.FromField("Properties.DisplayName"),
+				Transform:   transform.FromField("Properties.DisplayName", "Name"),
 			},
 			{
 				Name:        "akas",
