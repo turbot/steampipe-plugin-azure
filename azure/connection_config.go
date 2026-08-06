@@ -14,6 +14,8 @@ type azureConfig struct {
 	Username              *string  `hcl:"username"`
 	Password              *string  `hcl:"password"`
 	Environment           *string  `hcl:"environment"`
+	ClientAssertion       *string  `hcl:"client_assertion"`
+	ClientAssertionPath   *string  `hcl:"client_assertion_path"`
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
