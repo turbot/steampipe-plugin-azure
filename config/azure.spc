@@ -34,6 +34,15 @@ connection "azure" {
   # subscription_id = "00000000-0000-0000-0000-000000000000"
   # client_id       = "00000000-0000-0000-0000-000000000000"
 
+  # Use OIDC federated identity (https://learn.microsoft.com/entra/workload-id/workload-identity-federation)
+  # This method is useful for CI/CD systems like GitHub Actions, GitLab CI, etc.
+  # tenant_id             = "00000000-0000-0000-0000-000000000000"
+  # subscription_id       = "00000000-0000-0000-0000-000000000000"
+  # client_id             = "00000000-0000-0000-0000-000000000000"
+  # client_assertion      = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  # or
+  # client_assertion_path = "/path/to/oidc-token.txt"
+
   # If no credentials are specified, the plugin will use Azure CLI authentication
 
   # The maximum number of attempts (including the initial call) Steampipe will
