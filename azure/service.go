@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -52,9 +53,10 @@ type Session struct {
 
 1. Client secret
 2. Client certificate
-3. Username and password
-4. Managed identity
-5. CLI
+3. Client assertion (OIDC)
+4. Username and password
+5. Managed identity
+6. CLI
 */
 func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
 	logger := plugin.Logger(ctx)
@@ -66,7 +68,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 
 	logger.Debug("Auth session not found in cache, creating new session")
 
-	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment string
+	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment, clientAssertion, clientAssertionPath string
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.Environment != nil {
@@ -115,6 +117,18 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		password = *azureConfig.Password
 	} else {
 		password = os.Getenv(auth.Password)
+	}
+
+	if azureConfig.ClientAssertion != nil {
+		clientAssertion = *azureConfig.ClientAssertion
+	} else {
+		clientAssertion = os.Getenv("AZURE_CLIENT_ASSERTION")
+	}
+
+	if azureConfig.ClientAssertionPath != nil {
+		clientAssertionPath = *azureConfig.ClientAssertionPath
+	} else {
+		clientAssertionPath = os.Getenv("AZURE_CLIENT_ASSERTION_PATH")
 	}
 
 	//  It's important to note that Microsoft has since integrated these isolated German cloud regions into the global Azure cloud infrastructure. This means that Azure Germany Cloud services are now provided through the global Azure regions with the same high standards of security, privacy, and compliance.
@@ -179,6 +193,12 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		)
 		if err != nil {
 			logger.Error("GetNewSessionUpdated", "client_certificate_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && clientID != "" && (clientAssertion != "" || clientAssertionPath != "") { // OIDC client assertion authentication
+		cred, err = newClientAssertionCredential(tenantID, clientID, clientAssertion, clientAssertionPath)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "client_assertion_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" && username != "" && password != "" { // Username password authentication
@@ -333,6 +353,60 @@ func WillExpireIn(t time.Time, d time.Duration) bool {
 	return !t.After(time.Now().Add(d))
 }
 
+// azcoreTokenAuthorizer bridges azcore.TokenCredential to autorest.Authorizer,
+// enabling OIDC credentials to be used with legacy SDK clients.
+type azcoreTokenAuthorizer struct {
+	cred  azcore.TokenCredential
+	scope string
+}
+
+// WithAuthorization returns an autorest.PrepareDecorator that adds a bearer
+// token from the azcore.TokenCredential to the request Authorization header.
+func (a *azcoreTokenAuthorizer) WithAuthorization() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			req, err := p.Prepare(r)
+			if err != nil {
+				return req, err
+			}
+			token, err := a.cred.GetToken(context.Background(), cloudPolicy.TokenRequestOptions{
+				Scopes: []string{a.scope},
+			})
+			if err != nil {
+				return req, err
+			}
+			return autorest.Prepare(req, autorest.WithBearerAuthorization(token.Token))
+		})
+	}
+}
+
+// newClientAssertionCredential creates an azidentity.ClientAssertionCredential
+// from either an inline assertion string or a file path containing the assertion.
+func newClientAssertionCredential(tenantID, clientID, assertion, assertionPath string) (azcore.TokenCredential, error) {
+	return azidentity.NewClientAssertionCredential(
+		tenantID,
+		clientID,
+		func(ctx context.Context) (string, error) {
+			if assertion != "" {
+				return assertion, nil
+			}
+			content, err := os.ReadFile(assertionPath)
+			if err != nil {
+				return "", fmt.Errorf("error reading client assertion from %s: %v", assertionPath, err)
+			}
+			return string(content), nil
+		},
+		nil,
+	)
+}
+
+// Custom settings keys for OIDC configuration passed through
+// auth.EnvironmentSettings.Values to getApplicableAuthorizationDetails.
+const (
+	settingClientAssertion     = "CLIENT_ASSERTION"
+	settingClientAssertionPath = "CLIENT_ASSERTION_PATH"
+)
+
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
 
@@ -409,6 +483,19 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		settings.Values[auth.Password] = os.Getenv(auth.Password)
 	}
 
+	// OIDC configuration
+	if azureConfig.ClientAssertion != nil {
+		settings.Values[settingClientAssertion] = *azureConfig.ClientAssertion
+	} else {
+		settings.Values[settingClientAssertion] = os.Getenv("AZURE_CLIENT_ASSERTION")
+	}
+
+	if azureConfig.ClientAssertionPath != nil {
+		settings.Values[settingClientAssertionPath] = *azureConfig.ClientAssertionPath
+	} else {
+		settings.Values[settingClientAssertionPath] = os.Getenv("AZURE_CLIENT_ASSERTION_PATH")
+	}
+
 	if azureConfig.Environment != nil {
 		env, err := azure.EnvironmentFromName(*azureConfig.Environment)
 		if err != nil {
@@ -473,6 +560,23 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
+
+	case "OIDC":
+		logger.Trace("Creating authorizer from OIDC client assertion credential")
+		tenantID := settings.Values[auth.TenantID]
+		clientID := settings.Values[auth.ClientID]
+		clientAssertion := settings.Values[settingClientAssertion]
+		clientAssertionPath := settings.Values[settingClientAssertionPath]
+
+		cred, err := newClientAssertionCredential(tenantID, clientID, clientAssertion, clientAssertionPath)
+		if err != nil {
+			logger.Error("GetNewSession", "oidc_credential_error", err)
+			return nil, err
+		}
+
+		scope := resource + "/.default"
+		authorizer = &azcoreTokenAuthorizer{cred: cred, scope: scope}
+
 	default:
 		return nil, fmt.Errorf("invalid Azure authentication method: %s", authMethod)
 	}
@@ -529,13 +633,21 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
 
-	// CLI is the default authentication method
-	authMethod = "CLI"
-	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
+	// OIDC fields
+	clientAssertion := settings.Values[settingClientAssertion]
+	clientAssertionPath := settings.Values[settingClientAssertionPath]
+
+	// OIDC takes priority over Environment and CLI
+	if tenantID != "" && clientID != "" && (clientAssertion != "" || clientAssertionPath != "") {
+		authMethod = "OIDC"
+	} else if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
+		// CLI is the default authentication method
 		authMethod = "CLI"
 	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
 		// Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
 		authMethod = "Environment"
+	} else {
+		authMethod = "CLI"
 	}
 
 	logger.Debug("getApplicableAuthorizationDetails", "auth_method", authMethod)
