@@ -33,6 +33,8 @@ require (
 	github.com/turbot/go-kit v1.3.1
 )
 
+require github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appcontainers/armappcontainers/v4 v4.0.0
+
 require (
 	cel.dev/expr v0.25.1 // indirect
 	cloud.google.com/go v0.123.0 // indirect
