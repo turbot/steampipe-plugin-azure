@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
@@ -339,6 +340,11 @@ func listPostgreSQLFlexibleServersConfigurations(ctx context.Context, d *plugin.
 	server := h.Item.(armmypostgresflexibleservers.Server)
 	resourceGroup := strings.Split(string(*server.ID), "/")[4]
 	serverName := *server.Name
+
+	// Azure rejects this call with ServerStoppedError/400 while the server is Stopping, Stopped or Updating.
+	if server.Properties != nil && slices.Contains([]string{"Stopping", "Stopped", "Updating"}, string(*server.Properties.State)) {
+		return nil, nil
+	}
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
