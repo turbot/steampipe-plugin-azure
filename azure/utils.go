@@ -192,3 +192,27 @@ func formatRegion(ctx context.Context, d *transform.TransformData) (interface{},
 	region := strings.ReplaceAll(valStr, " ", "")
 	return region, nil
 }
+
+// ptrToString dereferences pointer-to-named-string types (e.g. *Kind, *ProvisioningState)
+// that the standard transform.ToString cannot handle because it falls through to fmt.Sprintf("%v")
+// which prints the pointer address instead of the underlying string value.
+func ptrToString(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	if d.Value == nil {
+		return nil, nil
+	}
+	v := reflect.ValueOf(d.Value)
+	if v.Kind() == reflect.Pointer {
+		if v.IsNil() {
+			return nil, nil
+		}
+		v = v.Elem()
+	}
+	if v.Kind() == reflect.String {
+		s := v.String()
+		if s == "" {
+			return nil, nil
+		}
+		return s, nil
+	}
+	return nil, nil
+}
