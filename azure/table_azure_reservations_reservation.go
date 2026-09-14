@@ -279,9 +279,11 @@ func listAzureReservationsReservations(ctx context.Context, d *plugin.QueryData,
 	//   properties/provisioningState, properties/reservedResourceType, properties/appliedScopeType
 	filter := buildReservationsListFilter(d.Quals)
 
-	pager := client.NewListAllPager(&armreservations.ReservationClientListAllOptions{
-		Filter: &filter,
-	})
+	var opts *armreservations.ReservationClientListAllOptions
+	if filter != "" {
+		opts = &armreservations.ReservationClientListAllOptions{Filter: &filter}
+	}
+	pager := client.NewListAllPager(opts)
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
 		if err != nil {

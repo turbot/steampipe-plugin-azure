@@ -214,7 +214,7 @@ func getAzureReservationsReservationOrder(ctx context.Context, d *plugin.QueryDa
 	}
 
 	// Expand planInformation to get full billing schedule details
-	expand := "planInformation"
+	expand := "schedule"
 	result, err := client.Get(ctx, reservationOrderID, &armreservations.ReservationOrderClientGetOptions{
 		Expand: &expand,
 	})
