@@ -1,3 +1,9 @@
+## v1.14.1 [2026-09-14]
+
+_Bug fixes_
+
+- Fixed the Steampipe Anywhere Postgres FDW builds for Linux AMD64, which in v1.14.0 were linked against glibc 2.38 and failed to load on distributions with older glibc versions, such as Ubuntu 22.04 and Debian 12, with `version 'GLIBC_2.38' not found`. The Linux AMD64 Postgres FDW and SQLite extension artifacts are now built on Ubuntu 22.04. ([turbot/steampipe-workflows#110](https://github.com/turbot/steampipe-workflows/pull/110))
+
 ## v1.14.0 [2026-09-14]
 
 _What's new?_
