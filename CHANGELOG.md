@@ -1,3 +1,15 @@
+## v1.14.0 [2026-09-14]
+
+_What's new?_
+
+- New tables added
+  - [azure_reservations_reservation](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_reservations_reservation) ([#985](https://github.com/turbot/steampipe-plugin-azure/pull/985)) (Thanks [@jmapro](https://github.com/jmapro) for the contribution!)
+  - [azure_reservations_reservation_order](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_reservations_reservation_order) ([#985](https://github.com/turbot/steampipe-plugin-azure/pull/985)) (Thanks [@jmapro](https://github.com/jmapro) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `azure_postgresql_flexible_server` table to skip the `flexible_server_configurations` hydrate call when the server is in the `Stopping`, `Stopped`, or `Updating` state, since Azure rejects the call with a `ServerStoppedError` in those states. ([#1015](https://github.com/turbot/steampipe-plugin-azure/pull/1015)) (Thanks [@hakuno](https://github.com/hakuno) for the contribution!)
+
 ## v1.13.0 [2026-07-28]
 
 _What's new?_
