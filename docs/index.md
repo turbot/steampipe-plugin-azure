@@ -107,12 +107,12 @@ connection "azure" {
 
   # Use OIDC federated identity (https://learn.microsoft.com/entra/workload-id/workload-identity-federation)
   # This method is useful for CI/CD systems like GitHub Actions, GitLab CI, etc.
-  # tenant_id             = "00000000-0000-0000-0000-000000000000"
-  # subscription_id       = "00000000-0000-0000-0000-000000000000"
-  # client_id             = "00000000-0000-0000-0000-000000000000"
-  # client_assertion      = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  # tenant_id            = "00000000-0000-0000-0000-000000000000"
+  # subscription_id      = "00000000-0000-0000-0000-000000000000"
+  # client_id            = "00000000-0000-0000-0000-000000000000"
+  # client_assertion     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
   # or
-  # client_assertion_path = "/path/to/oidc-token.txt"
+  # federated_token_file = "/path/to/oidc-token.txt"
 
   # If no credentials are specified, the plugin will use Azure CLI authentication
 
@@ -322,7 +322,7 @@ Steampipe supports [Entra ID federated identity credentials](https://learn.micro
 - `subscription_id`: Specify the subscription to query.
 - `client_id`: Specify the app client ID to use.
 - `client_assertion`: The OIDC JWT assertion string (for CI/CD systems that provide the token as an environment variable).
-- `client_assertion_path`: Path to a file containing the OIDC JWT assertion (for CI/CD systems that write the token to a file).
+- `federated_token_file`: Path to a file containing the OIDC JWT assertion (for CI/CD systems that write the token to a file). This matches the `AZURE_FEDERATED_TOKEN_FILE` variable used by the Azure SDK.
 
 ```hcl
 connection "azure_oidc" {
@@ -338,11 +338,11 @@ Or using a file path:
 
 ```hcl
 connection "azure_oidc" {
-  plugin                = "azure"
-  tenant_id             = "00000000-0000-0000-0000-000000000000"
-  subscription_id       = "00000000-0000-0000-0000-000000000000"
-  client_id             = "00000000-0000-0000-0000-000000000000"
-  client_assertion_path = "/path/to/oidc-token.txt"
+  plugin               = "azure"
+  tenant_id            = "00000000-0000-0000-0000-000000000000"
+  subscription_id      = "00000000-0000-0000-0000-000000000000"
+  client_id            = "00000000-0000-0000-0000-000000000000"
+  federated_token_file = "/path/to/oidc-token.txt"
 }
 ```
 
@@ -371,7 +371,7 @@ export AZURE_CLIENT_SECRET="my plaintext secret"
 export AZURE_CERTIFICATE_PATH="path/to/file.pem"
 export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
 export AZURE_CLIENT_ASSERTION="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." # For OIDC federated identity
-export AZURE_CLIENT_ASSERTION_PATH="/path/to/oidc-token.txt" # For OIDC federated identity (file-based)
+export AZURE_FEDERATED_TOKEN_FILE="/path/to/oidc-token.txt" # For OIDC federated identity (file-based)
 ```
 
 ```hcl
