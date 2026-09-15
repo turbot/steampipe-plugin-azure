@@ -195,12 +195,6 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "client_certificate_credential_error", err)
 			return nil, err
 		}
-	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") { // OIDC client assertion authentication
-		cred, err = newClientAssertionCredential(tenantID, clientID, clientAssertion, federatedTokenFile)
-		if err != nil {
-			logger.Error("GetNewSessionUpdated", "client_assertion_credential_error", err)
-			return nil, err
-		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" && username != "" && password != "" { // Username password authentication
 		cred, err = azidentity.NewUsernamePasswordCredential(
 			tenantID,
@@ -211,6 +205,12 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		)
 		if err != nil {
 			logger.Error("GetNewSessionUpdated", "username_password_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") { // OIDC client assertion authentication
+		cred, err = newClientAssertionCredential(tenantID, clientID, clientAssertion, federatedTokenFile)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "client_assertion_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" { // Managed identity authentication
@@ -647,8 +647,12 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	clientAssertion := settings.Values[settingClientAssertion]
 	federatedTokenFile := settings.Values[settingFederatedTokenFile]
 
-	// OIDC takes priority over Environment and CLI
-	if tenantID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") {
+	// OIDC is picked only when no other explicit credential is set
+	explicitCredential := settings.Values[auth.ClientSecret] != "" ||
+		settings.Values[auth.CertificatePath] != "" ||
+		(settings.Values[auth.Username] != "" && settings.Values[auth.Password] != "")
+
+	if tenantID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") && !explicitCredential {
 		authMethod = "OIDC"
 	} else if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		// CLI is the default authentication method
