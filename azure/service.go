@@ -195,7 +195,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "client_certificate_credential_error", err)
 			return nil, err
 		}
-	} else if tenantID != "" && clientID != "" && (clientAssertion != "" || clientAssertionPath != "") { // OIDC client assertion authentication
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (clientAssertion != "" || clientAssertionPath != "") { // OIDC client assertion authentication
 		cred, err = newClientAssertionCredential(tenantID, clientID, clientAssertion, clientAssertionPath)
 		if err != nil {
 			logger.Error("GetNewSessionUpdated", "client_assertion_credential_error", err)
