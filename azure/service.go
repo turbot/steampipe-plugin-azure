@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -53,8 +54,9 @@ type Session struct {
 1. Client secret
 2. Client certificate
 3. Username and password
-4. Managed identity
-5. CLI
+4. Federated token (OIDC)
+5. Managed identity
+6. CLI
 */
 func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *SessionNew, err error) {
 	logger := plugin.Logger(ctx)
@@ -66,7 +68,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 
 	logger.Debug("Auth session not found in cache, creating new session")
 
-	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment string
+	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment, federatedToken, federatedTokenFile string
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.Environment != nil {
@@ -115,6 +117,18 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		password = *azureConfig.Password
 	} else {
 		password = os.Getenv(auth.Password)
+	}
+
+	if azureConfig.FederatedToken != nil {
+		federatedToken = *azureConfig.FederatedToken
+	} else {
+		federatedToken = os.Getenv(envFederatedToken)
+	}
+
+	if azureConfig.FederatedTokenFile != nil {
+		federatedTokenFile = *azureConfig.FederatedTokenFile
+	} else {
+		federatedTokenFile = os.Getenv(envFederatedTokenFile)
 	}
 
 	//  It's important to note that Microsoft has since integrated these isolated German cloud regions into the global Azure cloud infrastructure. This means that Azure Germany Cloud services are now provided through the global Azure regions with the same high standards of security, privacy, and compliance.
@@ -191,6 +205,12 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		)
 		if err != nil {
 			logger.Error("GetNewSessionUpdated", "username_password_credential_error", err)
+			return nil, err
+		}
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") { // OIDC federated identity authentication
+		cred, err = newFederatedTokenCredential(tenantID, clientID, federatedToken, federatedTokenFile)
+		if err != nil {
+			logger.Error("GetNewSessionUpdated", "federated_token_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" { // Managed identity authentication
@@ -333,6 +353,71 @@ func WillExpireIn(t time.Time, d time.Duration) bool {
 	return !t.After(time.Now().Add(d))
 }
 
+// azcoreTokenAuthorizer bridges azcore.TokenCredential to autorest.Authorizer,
+// enabling OIDC credentials to be used with legacy SDK clients.
+type azcoreTokenAuthorizer struct {
+	cred  azcore.TokenCredential
+	scope string
+}
+
+// WithAuthorization returns an autorest.PrepareDecorator that adds a bearer
+// token from the azcore.TokenCredential to the request Authorization header.
+func (a *azcoreTokenAuthorizer) WithAuthorization() autorest.PrepareDecorator {
+	return func(p autorest.Preparer) autorest.Preparer {
+		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			req, err := p.Prepare(r)
+			if err != nil {
+				return req, err
+			}
+			token, err := a.cred.GetToken(context.Background(), cloudPolicy.TokenRequestOptions{
+				Scopes: []string{a.scope},
+			})
+			if err != nil {
+				return req, err
+			}
+			return autorest.Prepare(req, autorest.WithBearerAuthorization(token.Token))
+		})
+	}
+}
+
+// newFederatedTokenCredential creates an azidentity.ClientAssertionCredential
+// from either an inline federated token or a file containing the token, as
+// configured by federated_token or federated_token_file respectively. The token
+// is sent to Entra ID as the OAuth 2.0 client_assertion parameter.
+func newFederatedTokenCredential(tenantID, clientID, token, tokenFile string) (azcore.TokenCredential, error) {
+	return azidentity.NewClientAssertionCredential(
+		tenantID,
+		clientID,
+		func(ctx context.Context) (string, error) {
+			if token != "" {
+				return token, nil
+			}
+			content, err := os.ReadFile(tokenFile)
+			if err != nil {
+				return "", fmt.Errorf("error reading federated token from %s: %v", tokenFile, err)
+			}
+			return string(content), nil
+		},
+		nil,
+	)
+}
+
+// OIDC authentication keys.
+//
+// settingFederatedToken and settingFederatedTokenFile are custom keys carried
+// through auth.EnvironmentSettings.Values to getApplicableAuthorizationDetails.
+// envFederatedToken and envFederatedTokenFile are the environment variables used
+// when the connection config does not set the value. AZURE_FEDERATED_TOKEN_FILE is
+// the name the Azure SDK uses (azidentity.WorkloadIdentityCredential); the SDK has
+// no env var for an inline token, so AZURE_FEDERATED_TOKEN is plugin specific.
+const (
+	settingFederatedToken     = "FEDERATED_TOKEN"
+	settingFederatedTokenFile = "FEDERATED_TOKEN_FILE"
+
+	envFederatedToken     = "AZURE_FEDERATED_TOKEN"
+	envFederatedTokenFile = "AZURE_FEDERATED_TOKEN_FILE"
+)
+
 func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience string) (session *Session, err error) {
 	logger := plugin.Logger(ctx)
 
@@ -409,6 +494,19 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		settings.Values[auth.Password] = os.Getenv(auth.Password)
 	}
 
+	// OIDC configuration
+	if azureConfig.FederatedToken != nil {
+		settings.Values[settingFederatedToken] = *azureConfig.FederatedToken
+	} else {
+		settings.Values[settingFederatedToken] = os.Getenv(envFederatedToken)
+	}
+
+	if azureConfig.FederatedTokenFile != nil {
+		settings.Values[settingFederatedTokenFile] = *azureConfig.FederatedTokenFile
+	} else {
+		settings.Values[settingFederatedTokenFile] = os.Getenv(envFederatedTokenFile)
+	}
+
 	if azureConfig.Environment != nil {
 		env, err := azure.EnvironmentFromName(*azureConfig.Environment)
 		if err != nil {
@@ -473,6 +571,23 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 			return nil, err
 		}
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
+
+	case "OIDC":
+		logger.Trace("Creating authorizer from OIDC federated token credential")
+		tenantID := settings.Values[auth.TenantID]
+		clientID := settings.Values[auth.ClientID]
+		federatedToken := settings.Values[settingFederatedToken]
+		federatedTokenFile := settings.Values[settingFederatedTokenFile]
+
+		cred, err := newFederatedTokenCredential(tenantID, clientID, federatedToken, federatedTokenFile)
+		if err != nil {
+			logger.Error("GetNewSession", "oidc_credential_error", err)
+			return nil, err
+		}
+
+		scope := resource + "/.default"
+		authorizer = &azcoreTokenAuthorizer{cred: cred, scope: scope}
+
 	default:
 		return nil, fmt.Errorf("invalid Azure authentication method: %s", authMethod)
 	}
@@ -529,13 +644,25 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	// Azure environment name
 	environmentName := settings.Values[auth.EnvironmentName]
 
-	// CLI is the default authentication method
-	authMethod = "CLI"
-	if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
+	// OIDC fields
+	federatedToken := settings.Values[settingFederatedToken]
+	federatedTokenFile := settings.Values[settingFederatedTokenFile]
+
+	// OIDC is picked only when no other explicit credential is set
+	explicitCredential := settings.Values[auth.ClientSecret] != "" ||
+		settings.Values[auth.CertificatePath] != "" ||
+		(settings.Values[auth.Username] != "" && settings.Values[auth.Password] != "")
+
+	if tenantID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") && !explicitCredential {
+		authMethod = "OIDC"
+	} else if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
+		// CLI is the default authentication method
 		authMethod = "CLI"
 	} else if subscriptionID != "" && tenantID != "" && clientID != "" {
 		// Works for client secret credentials, client certificate credentials, resource owner password, and managed identities
 		authMethod = "Environment"
+	} else {
+		authMethod = "CLI"
 	}
 
 	logger.Debug("getApplicableAuthorizationDetails", "auth_method", authMethod)

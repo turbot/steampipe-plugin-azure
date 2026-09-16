@@ -105,6 +105,15 @@ connection "azure" {
   # subscription_id = "00000000-0000-0000-0000-000000000000"
   # client_id       = "00000000-0000-0000-0000-000000000000"
 
+  # Use OIDC federated identity (https://learn.microsoft.com/entra/workload-id/workload-identity-federation)
+  # This method is useful for CI/CD systems like GitHub Actions, GitLab CI, etc.
+  # tenant_id            = "00000000-0000-0000-0000-000000000000"
+  # subscription_id      = "00000000-0000-0000-0000-000000000000"
+  # client_id            = "00000000-0000-0000-0000-000000000000"
+  # federated_token      = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  # or
+  # federated_token_file = "/path/to/oidc-token.txt"
+
   # If no credentials are specified, the plugin will use Azure CLI authentication
 
   # The maximum number of attempts (including the initial call) Steampipe will
@@ -220,7 +229,8 @@ The Azure plugin support multiple formats/authentication mechanisms and they are
 1. [Client Secret Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-saml-bearer-assertion#prerequisites) if set; otherwise
 2. [Client Certificate Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) if set; otherwise
 3. [Resource Owner Password](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) if set; otherwise
-4. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
+4. [OIDC Federated Identity](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) if `federated_token` or `federated_token_file` is set; otherwise
+5. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
 
 If connection arguments are provided, they will always take precedence over [Azure SDK environment variables](https://github.com/Azure/azure-sdk-for-go/blob/main/documentation/new-version-quickstart.md#setting-environment-variables), and they are tried in the below order:
 
@@ -304,6 +314,38 @@ connection "azure_msi" {
 }
 ```
 
+### OIDC Federated Identity (GitHub Actions, GitLab CI)
+
+Steampipe supports [Entra ID federated identity credentials](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) for OIDC-based authentication from CI/CD systems such as GitHub Actions, GitLab CI, or any external OIDC provider. The OIDC token (the OAuth 2.0 `client_assertion` parameter) can be provided inline or as a file path.
+
+- `tenant_id`: Specify the tenant to authenticate with.
+- `subscription_id`: Specify the subscription to query.
+- `client_id`: Specify the app client ID to use.
+- `federated_token`: The OIDC JWT issued by your identity provider (for CI/CD systems that provide the token as an environment variable). If not set, the plugin reads the `AZURE_FEDERATED_TOKEN` environment variable.
+- `federated_token_file`: Path to a file containing the OIDC JWT (for CI/CD systems that write the token to a file). This matches the `AZURE_FEDERATED_TOKEN_FILE` variable used by the Azure SDK, so on AKS with workload identity enabled the injected token is picked up automatically along with `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`.
+
+```hcl
+connection "azure_oidc" {
+  plugin           = "azure"
+  tenant_id        = "00000000-0000-0000-0000-000000000000"
+  subscription_id  = "00000000-0000-0000-0000-000000000000"
+  client_id        = "00000000-0000-0000-0000-000000000000"
+  federated_token  = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+Or using a file path:
+
+```hcl
+connection "azure_oidc" {
+  plugin               = "azure"
+  tenant_id            = "00000000-0000-0000-0000-000000000000"
+  subscription_id      = "00000000-0000-0000-0000-000000000000"
+  client_id            = "00000000-0000-0000-0000-000000000000"
+  federated_token_file = "/path/to/oidc-token.txt"
+}
+```
+
 ### Azure CLI
 
 If no credentials are specified and the SDK environment variables are not set, the plugin will use the active credentials from the Azure CLI. You can run `az login` to set up these credentials.
@@ -328,6 +370,8 @@ export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_SECRET="my plaintext secret"
 export AZURE_CERTIFICATE_PATH="path/to/file.pem"
 export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
+export AZURE_FEDERATED_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." # For OIDC federated identity
+export AZURE_FEDERATED_TOKEN_FILE="/path/to/oidc-token.txt" # For OIDC federated identity (file-based)
 ```
 
 ```hcl
