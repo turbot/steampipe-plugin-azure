@@ -14,7 +14,7 @@ type azureConfig struct {
 	Username              *string  `hcl:"username"`
 	Password              *string  `hcl:"password"`
 	Environment           *string  `hcl:"environment"`
-	ClientAssertion       *string  `hcl:"client_assertion"`
+	FederatedToken        *string  `hcl:"federated_token"`
 	FederatedTokenFile    *string  `hcl:"federated_token_file"`
 	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
 	MinErrorRetryDelay    *int32   `hcl:"min_error_retry_delay"`

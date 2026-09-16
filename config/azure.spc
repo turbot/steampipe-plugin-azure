@@ -39,7 +39,7 @@ connection "azure" {
   # tenant_id            = "00000000-0000-0000-0000-000000000000"
   # subscription_id      = "00000000-0000-0000-0000-000000000000"
   # client_id            = "00000000-0000-0000-0000-000000000000"
-  # client_assertion     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  # federated_token      = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
   # or
   # federated_token_file = "/path/to/oidc-token.txt"
 

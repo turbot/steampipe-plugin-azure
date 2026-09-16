@@ -321,8 +321,8 @@ Steampipe supports [Entra ID federated identity credentials](https://learn.micro
 - `tenant_id`: Specify the tenant to authenticate with.
 - `subscription_id`: Specify the subscription to query.
 - `client_id`: Specify the app client ID to use.
-- `client_assertion`: The OIDC JWT assertion string (for CI/CD systems that provide the token as an environment variable).
-- `federated_token_file`: Path to a file containing the OIDC JWT assertion (for CI/CD systems that write the token to a file). This matches the `AZURE_FEDERATED_TOKEN_FILE` variable used by the Azure SDK.
+- `federated_token`: The OIDC JWT issued by your identity provider (for CI/CD systems that provide the token as an environment variable).
+- `federated_token_file`: Path to a file containing the OIDC JWT (for CI/CD systems that write the token to a file). This matches the `AZURE_FEDERATED_TOKEN_FILE` variable used by the Azure SDK, so on AKS with workload identity enabled the injected token is picked up automatically along with `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`.
 
 ```hcl
 connection "azure_oidc" {

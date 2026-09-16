@@ -53,8 +53,8 @@ type Session struct {
 
 1. Client secret
 2. Client certificate
-3. Client assertion (OIDC)
-4. Username and password
+3. Username and password
+4. Federated token (OIDC)
 5. Managed identity
 6. CLI
 */
@@ -410,10 +410,10 @@ func newClientAssertionCredential(tenantID, clientID, assertion, tokenFile strin
 // the name the Azure SDK uses (azidentity.WorkloadIdentityCredential); the SDK has
 // no env var for an inline assertion, so AZURE_CLIENT_ASSERTION is plugin specific.
 const (
-	settingClientAssertion    = "CLIENT_ASSERTION"
+	settingFederatedToken     = "FEDERATED_TOKEN"
 	settingFederatedTokenFile = "FEDERATED_TOKEN_FILE"
 
-	envClientAssertion    = "AZURE_CLIENT_ASSERTION"
+	envFederatedToken     = "AZURE_FEDERATED_TOKEN"
 	envFederatedTokenFile = "AZURE_FEDERATED_TOKEN_FILE"
 )
 
