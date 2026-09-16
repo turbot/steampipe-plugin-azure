@@ -110,7 +110,7 @@ connection "azure" {
   # tenant_id            = "00000000-0000-0000-0000-000000000000"
   # subscription_id      = "00000000-0000-0000-0000-000000000000"
   # client_id            = "00000000-0000-0000-0000-000000000000"
-  # client_assertion     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  # federated_token      = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
   # or
   # federated_token_file = "/path/to/oidc-token.txt"
 
@@ -229,7 +229,7 @@ The Azure plugin support multiple formats/authentication mechanisms and they are
 1. [Client Secret Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-saml-bearer-assertion#prerequisites) if set; otherwise
 2. [Client Certificate Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) if set; otherwise
 3. [Resource Owner Password](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) if set; otherwise
-4. [OIDC Client Assertion](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) if `client_assertion` or `federated_token_file` is set; otherwise
+4. [OIDC Client Assertion](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) if `federated_token` or `federated_token_file` is set; otherwise
 5. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
 
 If connection arguments are provided, they will always take precedence over [Azure SDK environment variables](https://github.com/Azure/azure-sdk-for-go/blob/main/documentation/new-version-quickstart.md#setting-environment-variables), and they are tried in the below order:
@@ -330,7 +330,7 @@ connection "azure_oidc" {
   tenant_id        = "00000000-0000-0000-0000-000000000000"
   subscription_id  = "00000000-0000-0000-0000-000000000000"
   client_id        = "00000000-0000-0000-0000-000000000000"
-  client_assertion = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+  federated_token  = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -370,7 +370,7 @@ export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_SECRET="my plaintext secret"
 export AZURE_CERTIFICATE_PATH="path/to/file.pem"
 export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
-export AZURE_CLIENT_ASSERTION="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." # For OIDC federated identity
+export AZURE_FEDERATED_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." # For OIDC federated identity
 export AZURE_FEDERATED_TOKEN_FILE="/path/to/oidc-token.txt" # For OIDC federated identity (file-based)
 ```
 
