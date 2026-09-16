@@ -68,7 +68,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 
 	logger.Debug("Auth session not found in cache, creating new session")
 
-	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment, clientAssertion, federatedTokenFile string
+	var tenantID, subscriptionID, clientID, clientSecret, certificatePath, certificatePassword, username, password, environment, federatedToken, federatedTokenFile string
 	azureConfig := GetConfig(d.Connection)
 
 	if azureConfig.Environment != nil {
@@ -119,10 +119,10 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		password = os.Getenv(auth.Password)
 	}
 
-	if azureConfig.ClientAssertion != nil {
-		clientAssertion = *azureConfig.ClientAssertion
+	if azureConfig.FederatedToken != nil {
+		federatedToken = *azureConfig.FederatedToken
 	} else {
-		clientAssertion = os.Getenv(envClientAssertion)
+		federatedToken = os.Getenv(envFederatedToken)
 	}
 
 	if azureConfig.FederatedTokenFile != nil {
@@ -207,10 +207,10 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			logger.Error("GetNewSessionUpdated", "username_password_credential_error", err)
 			return nil, err
 		}
-	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") { // OIDC client assertion authentication
-		cred, err = newClientAssertionCredential(tenantID, clientID, clientAssertion, federatedTokenFile)
+	} else if tenantID != "" && subscriptionID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") { // OIDC federated identity authentication
+		cred, err = newFederatedTokenCredential(tenantID, clientID, federatedToken, federatedTokenFile)
 		if err != nil {
-			logger.Error("GetNewSessionUpdated", "client_assertion_credential_error", err)
+			logger.Error("GetNewSessionUpdated", "federated_token_credential_error", err)
 			return nil, err
 		}
 	} else if tenantID != "" && subscriptionID != "" && clientID != "" { // Managed identity authentication
@@ -380,20 +380,21 @@ func (a *azcoreTokenAuthorizer) WithAuthorization() autorest.PrepareDecorator {
 	}
 }
 
-// newClientAssertionCredential creates an azidentity.ClientAssertionCredential
-// from either an inline assertion string or a file containing the assertion,
-// as configured by client_assertion or federated_token_file respectively.
-func newClientAssertionCredential(tenantID, clientID, assertion, tokenFile string) (azcore.TokenCredential, error) {
+// newFederatedTokenCredential creates an azidentity.ClientAssertionCredential
+// from either an inline federated token or a file containing the token, as
+// configured by federated_token or federated_token_file respectively. The token
+// is sent to Entra ID as the OAuth 2.0 client_assertion parameter.
+func newFederatedTokenCredential(tenantID, clientID, token, tokenFile string) (azcore.TokenCredential, error) {
 	return azidentity.NewClientAssertionCredential(
 		tenantID,
 		clientID,
 		func(ctx context.Context) (string, error) {
-			if assertion != "" {
-				return assertion, nil
+			if token != "" {
+				return token, nil
 			}
 			content, err := os.ReadFile(tokenFile)
 			if err != nil {
-				return "", fmt.Errorf("error reading client assertion from %s: %v", tokenFile, err)
+				return "", fmt.Errorf("error reading federated token from %s: %v", tokenFile, err)
 			}
 			return string(content), nil
 		},
@@ -403,12 +404,12 @@ func newClientAssertionCredential(tenantID, clientID, assertion, tokenFile strin
 
 // OIDC authentication keys.
 //
-// settingClientAssertion and settingFederatedTokenFile are custom keys carried
+// settingFederatedToken and settingFederatedTokenFile are custom keys carried
 // through auth.EnvironmentSettings.Values to getApplicableAuthorizationDetails.
-// envClientAssertion and envFederatedTokenFile are the environment variables used
+// envFederatedToken and envFederatedTokenFile are the environment variables used
 // when the connection config does not set the value. AZURE_FEDERATED_TOKEN_FILE is
 // the name the Azure SDK uses (azidentity.WorkloadIdentityCredential); the SDK has
-// no env var for an inline assertion, so AZURE_CLIENT_ASSERTION is plugin specific.
+// no env var for an inline token, so AZURE_FEDERATED_TOKEN is plugin specific.
 const (
 	settingFederatedToken     = "FEDERATED_TOKEN"
 	settingFederatedTokenFile = "FEDERATED_TOKEN_FILE"
@@ -494,10 +495,10 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	// OIDC configuration
-	if azureConfig.ClientAssertion != nil {
-		settings.Values[settingClientAssertion] = *azureConfig.ClientAssertion
+	if azureConfig.FederatedToken != nil {
+		settings.Values[settingFederatedToken] = *azureConfig.FederatedToken
 	} else {
-		settings.Values[settingClientAssertion] = os.Getenv(envClientAssertion)
+		settings.Values[settingFederatedToken] = os.Getenv(envFederatedToken)
 	}
 
 	if azureConfig.FederatedTokenFile != nil {
@@ -572,13 +573,13 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 		authorizer = autorest.NewBearerAuthorizer(&adalToken)
 
 	case "OIDC":
-		logger.Trace("Creating authorizer from OIDC client assertion credential")
+		logger.Trace("Creating authorizer from OIDC federated token credential")
 		tenantID := settings.Values[auth.TenantID]
 		clientID := settings.Values[auth.ClientID]
-		clientAssertion := settings.Values[settingClientAssertion]
+		federatedToken := settings.Values[settingFederatedToken]
 		federatedTokenFile := settings.Values[settingFederatedTokenFile]
 
-		cred, err := newClientAssertionCredential(tenantID, clientID, clientAssertion, federatedTokenFile)
+		cred, err := newFederatedTokenCredential(tenantID, clientID, federatedToken, federatedTokenFile)
 		if err != nil {
 			logger.Error("GetNewSession", "oidc_credential_error", err)
 			return nil, err
@@ -644,7 +645,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 	environmentName := settings.Values[auth.EnvironmentName]
 
 	// OIDC fields
-	clientAssertion := settings.Values[settingClientAssertion]
+	federatedToken := settings.Values[settingFederatedToken]
 	federatedTokenFile := settings.Values[settingFederatedTokenFile]
 
 	// OIDC is picked only when no other explicit credential is set
@@ -652,7 +653,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 		settings.Values[auth.CertificatePath] != "" ||
 		(settings.Values[auth.Username] != "" && settings.Values[auth.Password] != "")
 
-	if tenantID != "" && clientID != "" && (clientAssertion != "" || federatedTokenFile != "") && !explicitCredential {
+	if tenantID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") && !explicitCredential {
 		authMethod = "OIDC"
 	} else if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		// CLI is the default authentication method

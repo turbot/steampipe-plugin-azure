@@ -229,7 +229,7 @@ The Azure plugin support multiple formats/authentication mechanisms and they are
 1. [Client Secret Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-saml-bearer-assertion#prerequisites) if set; otherwise
 2. [Client Certificate Credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) if set; otherwise
 3. [Resource Owner Password](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) if set; otherwise
-4. [OIDC Client Assertion](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) if `federated_token` or `federated_token_file` is set; otherwise
+4. [OIDC Federated Identity](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) if `federated_token` or `federated_token_file` is set; otherwise
 5. If no credentials are supplied, then the [az cli](https://docs.microsoft.com/en-us/cli/azure/#:~:text=The%20Azure%20command%2Dline%20interface,with%20an%20emphasis%20on%20automation.) credentials are used
 
 If connection arguments are provided, they will always take precedence over [Azure SDK environment variables](https://github.com/Azure/azure-sdk-for-go/blob/main/documentation/new-version-quickstart.md#setting-environment-variables), and they are tried in the below order:
@@ -316,12 +316,12 @@ connection "azure_msi" {
 
 ### OIDC Federated Identity (GitHub Actions, GitLab CI)
 
-Steampipe supports [Entra ID federated identity credentials](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) for OIDC-based authentication from CI/CD systems such as GitHub Actions, GitLab CI, or any external OIDC provider. The OIDC token (client assertion) can be provided inline or as a file path.
+Steampipe supports [Entra ID federated identity credentials](https://learn.microsoft.com/entra/workload-id/workload-identity-federation) for OIDC-based authentication from CI/CD systems such as GitHub Actions, GitLab CI, or any external OIDC provider. The OIDC token (the OAuth 2.0 `client_assertion` parameter) can be provided inline or as a file path.
 
 - `tenant_id`: Specify the tenant to authenticate with.
 - `subscription_id`: Specify the subscription to query.
 - `client_id`: Specify the app client ID to use.
-- `federated_token`: The OIDC JWT issued by your identity provider (for CI/CD systems that provide the token as an environment variable).
+- `federated_token`: The OIDC JWT issued by your identity provider (for CI/CD systems that provide the token as an environment variable). If not set, the plugin reads the `AZURE_FEDERATED_TOKEN` environment variable.
 - `federated_token_file`: Path to a file containing the OIDC JWT (for CI/CD systems that write the token to a file). This matches the `AZURE_FEDERATED_TOKEN_FILE` variable used by the Azure SDK, so on AKS with workload identity enabled the injected token is picked up automatically along with `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`.
 
 ```hcl
