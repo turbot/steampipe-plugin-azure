@@ -1,3 +1,12 @@
+## v1.15.0 [2026-09-16]
+
+_What's new?_
+
+- Added support for OIDC federated identity authentication via the new `federated_token` and `federated_token_file` connection arguments, along with the `AZURE_FEDERATED_TOKEN` and `AZURE_FEDERATED_TOKEN_FILE` environment variables. This enables authentication from CI/CD systems such as GitHub Actions and GitLab CI, and from AKS pods with workload identity enabled. For more information, please see [OIDC Federated Identity](https://hub.steampipe.io/plugins/turbot/azure#oidc-federated-identity-github-actions-gitlab-ci). ([#1013](https://github.com/turbot/steampipe-plugin-azure/pull/1013)) (Thanks [@jmapro](https://github.com/jmapro) for the contribution!)
+- New tables added
+  - [azure_container_app](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_container_app) ([#1018](https://github.com/turbot/steampipe-plugin-azure/pull/1018)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+  - [azure_container_app_environment](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_container_app_environment) ([#1018](https://github.com/turbot/steampipe-plugin-azure/pull/1018)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
 ## v1.14.1 [2026-09-14]
 
 _Bug fixes_
