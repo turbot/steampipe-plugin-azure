@@ -388,18 +388,25 @@ func newFederatedTokenCredential(tenantID, clientID, token, tokenFile string) (a
 	return azidentity.NewClientAssertionCredential(
 		tenantID,
 		clientID,
-		func(ctx context.Context) (string, error) {
-			if token != "" {
-				return token, nil
-			}
-			content, err := os.ReadFile(tokenFile)
-			if err != nil {
-				return "", fmt.Errorf("error reading federated token from %s: %v", tokenFile, err)
-			}
-			return string(content), nil
-		},
+		federatedTokenGetter(token, tokenFile),
 		nil,
 	)
+}
+
+// federatedTokenGetter returns the assertion callback used by
+// newFederatedTokenCredential. An inline token takes precedence over the file;
+// the file is read on every call so a rotated token is picked up.
+func federatedTokenGetter(token, tokenFile string) func(ctx context.Context) (string, error) {
+	return func(ctx context.Context) (string, error) {
+		if token != "" {
+			return token, nil
+		}
+		content, err := os.ReadFile(tokenFile)
+		if err != nil {
+			return "", fmt.Errorf("error reading federated token from %s: %v", tokenFile, err)
+		}
+		return string(content), nil
+	}
 }
 
 // OIDC authentication keys.
@@ -653,7 +660,7 @@ func getApplicableAuthorizationDetails(ctx context.Context, settings auth.Enviro
 		settings.Values[auth.CertificatePath] != "" ||
 		(settings.Values[auth.Username] != "" && settings.Values[auth.Password] != "")
 
-	if tenantID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") && !explicitCredential {
+	if subscriptionID != "" && tenantID != "" && clientID != "" && (federatedToken != "" || federatedTokenFile != "") && !explicitCredential {
 		authMethod = "OIDC"
 	} else if subscriptionID == "" || (subscriptionID == "" && tenantID == "") {
 		// CLI is the default authentication method
