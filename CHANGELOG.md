@@ -1,3 +1,10 @@
+## v1.16.0 [2026-10-12]
+
+_What's new?_
+
+- New tables added
+  - [azure_security_center_assessment](https://hub.steampipe.io/plugins/turbot/azure/tables/azure_security_center_assessment) ([#992](https://github.com/turbot/steampipe-plugin-azure/pull/992)) (Thanks [@dark-panda](https://github.com/dark-panda) for the contribution!)
+
 ## v1.15.0 [2026-09-16]
 
 _What's new?_
