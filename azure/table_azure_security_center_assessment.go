@@ -4,14 +4,15 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/security/mgmt/security"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/query_cache"
 
 	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
@@ -30,15 +31,22 @@ func tableAzureSecurityCenterAssessment(_ context.Context) *plugin.Table {
 			},
 			KeyColumns: plugin.KeyColumnSlice{
 				&plugin.KeyColumn{
-					Name:      "expand",
-					Operators: []string{"="},
-					Require:   plugin.Optional,
+					Name:       "expand",
+					Operators:  []string{"="},
+					Require:    plugin.Optional,
+					CacheMatch: query_cache.CacheMatchExact,
 				},
 			},
 		},
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("id"),
-			Hydrate:    getSecurityCenterAssessment,
+			KeyColumns: plugin.KeyColumnSlice{
+				{Name: "id", Require: plugin.Required},
+				{Name: "expand", Require: plugin.Optional, CacheMatch: query_cache.CacheMatchExact},
+			},
+			Hydrate: getSecurityCenterAssessment,
+			IgnoreConfig: &plugin.IgnoreConfig{
+				ShouldIgnoreErrorFunc: isNotFoundError([]string{"ResourceNotFound", "ResourceGroupNotFound", "404"}),
+			},
 			Tags: map[string]string{
 				"service": "Microsoft.Security",
 				"action":  "assessments/read",
@@ -89,13 +97,13 @@ func tableAzureSecurityCenterAssessment(_ context.Context) *plugin.Table {
 				Name:        "status_change_date",
 				Description: "Status change date of the assessment.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("AssessmentPropertiesResponse.Status.StatusChangeDate"),
+				Transform:   transform.FromField("AssessmentPropertiesResponse.Status.StatusChangeDate").Transform(convertDateToTime),
 			},
 			{
 				Name:        "status_first_evaluation_date",
 				Description: "The timestamp of the first evaluation of the assessment.",
 				Type:        proto.ColumnType_TIMESTAMP,
-				Transform:   transform.FromField("AssessmentPropertiesResponse.Status.FirstEvaluationDate"),
+				Transform:   transform.FromField("AssessmentPropertiesResponse.Status.FirstEvaluationDate").Transform(convertDateToTime),
 			},
 			{
 				Name:        "resource_details",
@@ -178,10 +186,10 @@ type securityCenterAssessment struct {
 		DisplayName *string `json:"displayName"`
 		Status      *struct {
 			Code                string     `json:"code"`
-			Cause               string     `json:"cause"`
-			Description         string     `json:"description"`
-			StatusChangeDate    *time.Time `json:"statusChangeDate"`
-			FirstEvaluationDate *time.Time `json:"firstEvaluationDate"`
+			Cause               *string    `json:"cause"`
+			Description         *string    `json:"description"`
+			StatusChangeDate    *date.Time `json:"statusChangeDate"`
+			FirstEvaluationDate *date.Time `json:"firstEvaluationDate"`
 		} `json:"status"`
 		ResourceDetails map[string]interface{} `json:"resourceDetails"`
 		AdditionalData  map[string]interface{} `json:"additionalData"`
@@ -315,14 +323,6 @@ func sendSecurityCenterAssessmentRequest(client *security.AssessmentsClient, req
 // getSecurityCenterAssessmentExpand builds the ExpandEnum value to send to the Security Center
 // API from the "expand" qual, e.g. expand = 'links' or expand = 'links,metadata'.
 func getSecurityCenterAssessmentExpand(d *plugin.QueryData) security.ExpandEnum {
-	// In the get path "expand" isn't a key column, so read it from the raw quals.
-	if q := d.Quals["expand"]; q != nil {
-		for _, qual := range q.Quals {
-			if qual.Operator == "=" && qual.Value != nil {
-				return security.ExpandEnum(qual.Value.GetStringValue())
-			}
-		}
-	}
 	return security.ExpandEnum(d.EqualsQualString("expand"))
 }
 
