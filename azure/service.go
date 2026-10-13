@@ -107,6 +107,12 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 		certificatePath = os.Getenv(auth.CertificatePath)
 	}
 
+	if azureConfig.CertificatePassword != nil {
+		certificatePassword = *azureConfig.CertificatePassword
+	} else {
+		certificatePassword = os.Getenv(auth.CertificatePassword)
+	}
+
 	if azureConfig.Username != nil {
 		username = *azureConfig.Username
 	} else {
