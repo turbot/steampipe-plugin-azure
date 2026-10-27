@@ -2,12 +2,19 @@ package azure
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"errors"
+	"math/big"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -15,6 +22,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/hashicorp/go-hclog"
 	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/context_key"
+	"software.sslmate.com/src/go-pkcs12"
 )
 
 func TestGetApplicableAuthorizationDetails_AuthMethod(t *testing.T) {
@@ -147,6 +155,73 @@ func TestFederatedTokenGetter(t *testing.T) {
 			t.Errorf("error %q does not name the file", err)
 		}
 	})
+}
+
+func TestParseClientCertificate(t *testing.T) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatal(err)
+	}
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: "steampipe-test"},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().Add(time.Hour),
+	}
+	certDER, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cert, err := x509.ParseCertificate(certDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keyDER, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pemData := append(
+		pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}),
+		pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})...,
+	)
+	pfxData, err := pkcs12.Legacy.Encode(key, cert, nil, "s3cret")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name     string
+		data     []byte
+		password string
+		wantErr  string
+	}{
+		{"PEM without password", pemData, "", ""},
+		{"PEM with password", pemData, "s3cret", ""},
+		{"PKCS#12 with password", pfxData, "s3cret", ""},
+		{"PKCS#12 with wrong password", pfxData, "wrong", "decryption password incorrect"},
+		{"PKCS#12 without password", pfxData, "", "decryption password incorrect"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			certs, pk, err := parseClientCertificate(tt.data, tt.password)
+			if tt.wantErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+					t.Fatalf("got error %v, want %q", err, tt.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(certs) != 1 || certs[0].Subject.CommonName != "steampipe-test" {
+				t.Errorf("got certs %v, want the test certificate", certs)
+			}
+			if pk == nil {
+				t.Error("got no private key")
+			}
+		})
+	}
 }
 
 type fakeTokenCredential struct {

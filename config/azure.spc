@@ -18,7 +18,7 @@ connection "azure" {
   # tenant_id            = "00000000-0000-0000-0000-000000000000"
   # subscription_id      = "00000000-0000-0000-0000-000000000000"
   # client_id            = "00000000-0000-0000-0000-000000000000"
-  # certificate_path     = "~/home/azure_cert.pem"
+  # certificate_path     = "~/home/azure_cert.pfx"
   # certificate_password = "notreal~pwd"
 
   # Use resource owner password authentication (https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)

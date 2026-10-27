@@ -6,6 +6,7 @@ import (
 	"crypto"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"os"
@@ -178,14 +179,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 			return nil, fmt.Errorf("error reading certificate from %s: %v", certificatePath, err)
 		}
 
-		var certs []*x509.Certificate
-		var key crypto.PrivateKey
-		if certificatePassword == "" {
-			certs, key, err = azidentity.ParseCertificates(loadFile, nil)
-		} else {
-			certs, key, err = azidentity.ParseCertificates(loadFile, []byte(certificatePassword))
-		}
-
+		certs, key, err := parseClientCertificate(loadFile, certificatePassword)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing certificate from %s: %v", certificatePath, err)
 		}
@@ -413,6 +407,18 @@ func federatedTokenGetter(token, tokenFile string) func(ctx context.Context) (st
 		}
 		return string(content), nil
 	}
+}
+
+// parseClientCertificate loads the certificate and private key from PEM or
+// PKCS#12 data. The password only applies to PKCS#12 and is dropped for PEM,
+// since azidentity.ParseCertificates skips PEM parsing whenever a password is
+// passed.
+func parseClientCertificate(data []byte, password string) ([]*x509.Certificate, crypto.PrivateKey, error) {
+	var pw []byte
+	if block, _ := pem.Decode(data); block == nil && password != "" {
+		pw = []byte(password)
+	}
+	return azidentity.ParseCertificates(data, pw)
 }
 
 // OIDC authentication keys.

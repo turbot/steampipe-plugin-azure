@@ -89,7 +89,7 @@ connection "azure" {
   # tenant_id            = "00000000-0000-0000-0000-000000000000"
   # subscription_id      = "00000000-0000-0000-0000-000000000000"
   # client_id            = "00000000-0000-0000-0000-000000000000"
-  # certificate_path     = "~/home/azure_cert.pem"
+  # certificate_path     = "~/home/azure_cert.pfx"
   # certificate_password = "notreal~pwd"
 
   # Use resource owner password authentication (https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
@@ -260,8 +260,8 @@ You may specify the tenant ID, subscription ID, client ID, certificate path, and
 - `tenant_id`: Specify the tenant to authenticate with.
 - `subscription_id`: Specify the subscription to query.
 - `client_id`: Specify the app client ID to use.
-- `certificate_path`: Specify the certificate path to use.
-- `certificate_password`: Specify the certificate password to use.
+- `certificate_path`: Specify the path to a PKCS#12 (`.pfx` or `.p12`) file containing the certificate and private key.
+- `certificate_password`: Specify the password for the PKCS#12 file, if it has one.
 
 ```hcl
 connection "azure_via_sp_cert" {
@@ -269,10 +269,12 @@ connection "azure_via_sp_cert" {
   tenant_id            = "00000000-0000-0000-0000-000000000000"
   subscription_id      = "00000000-0000-0000-0000-000000000000"
   client_id            = "00000000-0000-0000-0000-000000000000"
-  certificate_path     = "path/to/file.pem"
+  certificate_path     = "path/to/file.pfx"
   certificate_password = "my plaintext password"
 }
 ```
+
+**Note:** PKCS#12 files created with OpenSSL 3 must be exported with the `-legacy` flag, e.g., `openssl pkcs12 -export -legacy -in cert.pem -inkey key.pem -out cert.pfx`. Files created with the default OpenSSL 3 settings fail to load with `pkcs12: unknown digest algorithm`.
 
 ### Resource Owner Password
 
@@ -360,7 +362,7 @@ connection "azure" {
 
 ### Credentials from Environment Variables
 
-The Azure AD plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
+The Azure plugin will use the standard Azure environment variables to obtain credentials **only if other arguments (`tenant_id`, `client_id`, `client_secret`, `certificate_path`, etc..) are not specified** in the connection:
 
 ```sh
 export AZURE_ENVIRONMENT="AZUREPUBLICCLOUD" # Defaults to "AZUREPUBLICCLOUD". Valid environments are "AZUREPUBLICCLOUD", "AZURECHINACLOUD" and "AZUREUSGOVERNMENTCLOUD"
@@ -368,7 +370,7 @@ export AZURE_TENANT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
 export AZURE_CLIENT_SECRET="my plaintext secret"
-export AZURE_CERTIFICATE_PATH="path/to/file.pem"
+export AZURE_CERTIFICATE_PATH="path/to/file.pfx"
 export AZURE_CERTIFICATE_PASSWORD="my plaintext password"
 export AZURE_FEDERATED_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." # For OIDC federated identity
 export AZURE_FEDERATED_TOKEN_FILE="/path/to/oidc-token.txt" # For OIDC federated identity (file-based)
