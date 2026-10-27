@@ -1,3 +1,13 @@
+## v1.16.1 [2026-10-26]
+
+_Enhancements_
+
+- Updated the `docs/index.md` file to clarify that client certificate authentication requires a PKCS#12 (`.pfx`) file, and that files created with OpenSSL 3 must be exported with the `-legacy` flag.
+
+_Bug fixes_
+
+- Fixed client certificate authentication failing with `pkcs12: decryption password incorrect` for password-protected PKCS#12 (`.pfx`) certificates in some tables, as the `certificate_password` config argument and `AZURE_CERTIFICATE_PASSWORD` environment variable were being ignored. ([#1023](https://github.com/turbot/steampipe-plugin-azure/pull/1023)) (Thanks [@cristianchiriac](https://github.com/cristianchiriac) for the contribution!)
+
 ## v1.16.0 [2026-10-12]
 
 _What's new?_
