@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
@@ -281,7 +282,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 	for _, webApp := range result.Values() {
 		// Filtering out all the function apps
-		if string(*webApp.Kind) != "functionapp" {
+		if !isFunctionAppKind(webApp.Kind) {
 			d.StreamListItem(ctx, webApp)
 		}
 		// Check if context has been cancelled or if the limit has been hit (if specified)
@@ -302,7 +303,7 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 		for _, webApp := range result.Values() {
 			// Filtering out all the function apps
-			if string(*webApp.Kind) != "functionapp" {
+			if !isFunctionAppKind(webApp.Kind) {
 				d.StreamListItem(ctx, webApp)
 			}
 			// Check if context has been cancelled or if the limit has been hit (if specified)
@@ -313,6 +314,14 @@ func listAppServiceWebApps(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 		}
 	}
 	return nil, err
+}
+
+// isFunctionAppKind reports whether an app kind belongs to a function app.
+// Function apps come with combined kinds such as "functionapp,linux" and
+// "functionapp,workflowapp" (Logic App Standard); azure_app_service_function_app
+// lists all of them, so they are excluded here the same way.
+func isFunctionAppKind(kind *string) bool {
+	return kind != nil && strings.Contains(*kind, "functionapp")
 }
 
 //// HYDRATE FUNCTIONS
@@ -348,7 +357,7 @@ func getAppServiceWebApp(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
-	if op.ID != nil && string(*op.Kind) != "functionapp" {
+	if op.ID != nil && !isFunctionAppKind(op.Kind) {
 		return op, nil
 	}
 
