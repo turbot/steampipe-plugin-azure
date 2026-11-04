@@ -1,3 +1,17 @@
+## v1.17.0 [2026-11-04]
+
+_Enhancements_
+
+- Added `identity_principal_id` and `identity_tenant_id` columns to the `azure_cognitive_account` and `azure_machine_learning_workspace` tables. These expose the managed identity's principal and tenant IDs, which the `identity` column omits because the autorest SDK drops the read-only fields when serializing. ([#1024](https://github.com/turbot/steampipe-plugin-azure/pull/1024)) (Thanks [@cristianchiriac](https://github.com/cristianchiriac) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `azure_app_service_web_app` table to exclude all function app kinds, such as `functionapp,linux` and `functionapp,workflowapp` (Logic App Standard), which were previously returned alongside web apps. ([#1025](https://github.com/turbot/steampipe-plugin-azure/pull/1025)) (Thanks [@cristianchiriac](https://github.com/cristianchiriac) for the contribution!)
+
+_Dependencies_
+
+- Bumped `golang.org/x/crypto` from v0.50.0 to v0.52.0. ([#1008](https://github.com/turbot/steampipe-plugin-azure/pull/1008))
+
 ## v1.16.1 [2026-10-26]
 
 _Enhancements_
