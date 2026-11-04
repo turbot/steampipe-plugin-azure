@@ -160,6 +160,18 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Description: "The identity of the resource.",
 				Type:        proto.ColumnType_JSON,
 			},
+			{
+				Name:        "identity_principal_id",
+				Description: "The principal ID of the resource's managed identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.PrincipalID"),
+			},
+			{
+				Name:        "identity_tenant_id",
+				Description: "The tenant ID of the resource's managed identity.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("Identity.TenantID"),
+			},
 
 			// Steampipe standard columns
 			{

@@ -90,3 +90,28 @@ from
 where
   lower(m.key_vault) = lower(v.id) and not v.soft_delete_enabled;
 ```
+
+### List role assignments of each workspace's managed identity
+Find the roles granted to the managed identity of each workspace, by joining its principal ID with the role assignments.
+
+```sql+postgres
+select
+  a.name,
+  a.identity_principal_id,
+  r.role_definition_id,
+  r.scope
+from
+  azure_machine_learning_workspace as a
+  join azure_role_assignment as r on r.principal_id = a.identity_principal_id;
+```
+
+```sql+sqlite
+select
+  a.name,
+  a.identity_principal_id,
+  r.role_definition_id,
+  r.scope
+from
+  azure_machine_learning_workspace as a
+  join azure_role_assignment as r on r.principal_id = a.identity_principal_id;
+```

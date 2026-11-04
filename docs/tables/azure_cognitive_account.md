@@ -133,3 +133,28 @@ from
   azure_cognitive_account as a,
   json_each(diagnostic_settings) as settings;
 ```
+
+### List role assignments of each account's managed identity
+Find the roles granted to the managed identity of each account, by joining its principal ID with the role assignments.
+
+```sql+postgres
+select
+  a.name,
+  a.identity_principal_id,
+  r.role_definition_id,
+  r.scope
+from
+  azure_cognitive_account as a
+  join azure_role_assignment as r on r.principal_id = a.identity_principal_id;
+```
+
+```sql+sqlite
+select
+  a.name,
+  a.identity_principal_id,
+  r.role_definition_id,
+  r.scope
+from
+  azure_cognitive_account as a
+  join azure_role_assignment as r on r.principal_id = a.identity_principal_id;
+```
