@@ -160,6 +160,9 @@ func tableAzureMachineLearningWorkspace(_ context.Context) *plugin.Table {
 				Description: "The identity of the resource.",
 				Type:        proto.ColumnType_JSON,
 			},
+			// The autorest SDK's Identity.MarshalJSON omits the read-only principalId
+			// and tenantId, so they never appear in the "identity" JSON column above.
+			// These columns read the struct fields directly to surface them.
 			{
 				Name:        "identity_principal_id",
 				Description: "The principal ID of the resource's managed identity.",
