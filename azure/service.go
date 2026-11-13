@@ -63,7 +63,7 @@ func GetNewSessionUpdated(ctx context.Context, d *plugin.QueryData) (session *Se
 	logger := plugin.Logger(ctx)
 
 	cacheKey := "GetNewSessionUpdated"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*SessionNew), nil
 	}
 
@@ -441,11 +441,11 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	logger := plugin.Logger(ctx)
 
 	cacheKey := "GetNewSession" + tokenAudience
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		session = cachedData.(*Session)
 		if session.Expires != nil && WillExpireIn(*session.Expires, 0) {
 			logger.Trace("GetNewSession", "cache expired", "delete cache and obtain new session token")
-			d.ConnectionManager.Cache.Delete(cacheKey)
+			d.ConnectionCache.Delete(ctx, cacheKey)
 		} else {
 			return cachedData.(*Session), nil
 		}
@@ -650,7 +650,9 @@ func GetNewSession(ctx context.Context, d *plugin.QueryData, tokenAudience strin
 	}
 
 	logger.Debug("Session saved in cache", "expiration_time", expireMins)
-	d.ConnectionManager.Cache.SetWithTTL(cacheKey, sess, expireMins)
+	if err := d.ConnectionCache.SetWithTTL(ctx, cacheKey, sess, expireMins); err != nil {
+		logger.Warn("GetNewSession", "cache_key", cacheKey, "error", err)
+	}
 
 	return sess, err
 }
