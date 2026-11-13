@@ -113,3 +113,30 @@ from
 where
   client_cert_enabled = 0;
 ```
+
+### List function apps with their App Service plan
+Identify the App Service plan each function app runs on, and the pricing tier of that plan. This helps to understand which function apps share compute resources and what they cost.
+
+```sql+postgres
+select
+  a.name,
+  a.resource_group,
+  p.name as plan_name,
+  p.sku_tier,
+  p.sku_name
+from
+  azure_app_service_function_app as a
+  left join azure_app_service_plan as p on lower(p.id) = lower(a.server_farm_id);
+```
+
+```sql+sqlite
+select
+  a.name,
+  a.resource_group,
+  p.name as plan_name,
+  p.sku_tier,
+  p.sku_name
+from
+  azure_app_service_function_app as a
+  left join azure_app_service_plan as p on lower(p.id) = lower(a.server_farm_id);
+```
