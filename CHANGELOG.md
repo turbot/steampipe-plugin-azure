@@ -1,3 +1,15 @@
+## v1.17.1 [2026-11-13]
+
+_Dependencies_
+
+- Recompiled plugin with [steampipe-plugin-sdk v6.2.1](https://github.com/turbot/steampipe-plugin-sdk/blob/develop/CHANGELOG.md#v621-2026-11-12), which lowers plugin memory use, with the query cache fixes for missing or duplicate rows from [v6.2.0](https://github.com/turbot/steampipe-plugin-sdk/blob/develop/CHANGELOG.md#v620-2026-11-11). ([#1029](https://github.com/turbot/steampipe-plugin-azure/pull/1029))
+- Bumped `golang.org/x/crypto` from v0.52.0 to v0.57.0.
+- Bumped `google.golang.org/grpc` from v1.79.3 to v1.83.2.
+- Bumped `go.opentelemetry.io/otel/sdk` from v1.43.0 to v1.47.0.
+- Bumped `github.com/go-jose/go-jose/v4` from v4.1.4 to v4.1.6.
+- Bumped `github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream` from v1.7.8 to v1.7.27.
+- Bumped `github.com/aws/aws-sdk-go-v2/service/s3` from v1.97.3 to v1.114.10.
+
 ## v1.17.0 [2026-11-04]
 
 _Enhancements_
