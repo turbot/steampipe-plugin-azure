@@ -128,6 +128,12 @@ func tableAzureAppServiceFunctionApp(_ context.Context) *plugin.Table {
 				Transform:   transform.FromField("SiteProperties.PossibleOutboundIPAddresses"),
 			},
 			{
+				Name:        "server_farm_id",
+				Description: "Resource ID of the associated App Service plan, formatted as: '/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/{appServicePlanName}'.",
+				Type:        proto.ColumnType_STRING,
+				Transform:   transform.FromField("SiteProperties.ServerFarmID"),
+			},
+			{
 				Name:        "reserved",
 				Description: "Specify whether the app is reserved.",
 				Type:        proto.ColumnType_BOOL,

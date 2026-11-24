@@ -219,3 +219,30 @@ where
   resource_group = 'demo'
   and name = 'web-app-test-storage-info';
 ```
+
+### List web apps with their App Service plan
+Identify the App Service plan each web app runs on, and the pricing tier of that plan. This helps to understand which web apps share compute resources and what they cost.
+
+```sql+postgres
+select
+  a.name,
+  a.resource_group,
+  p.name as plan_name,
+  p.sku_tier,
+  p.sku_name
+from
+  azure_app_service_web_app as a
+  left join azure_app_service_plan as p on lower(p.id) = lower(a.server_farm_id);
+```
+
+```sql+sqlite
+select
+  a.name,
+  a.resource_group,
+  p.name as plan_name,
+  p.sku_tier,
+  p.sku_name
+from
+  azure_app_service_web_app as a
+  left join azure_app_service_plan as p on lower(p.id) = lower(a.server_farm_id);
+```
