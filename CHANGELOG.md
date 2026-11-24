@@ -1,3 +1,13 @@
+## v1.18.0 [2026-11-24]
+
+_Enhancements_
+
+- Added the `server_farm_id` column to the `azure_app_service_web_app` and `azure_app_service_function_app` tables. ([#1030](https://github.com/turbot/steampipe-plugin-azure/pull/1030)) (Thanks [@pdecat](https://github.com/pdecat) for the contribution!)
+
+_Bug fixes_
+
+- Fixed the `azure_kubernetes_cluster` table to return an error when listing clusters fails, such as for authentication errors, missing permissions or throttling, instead of returning zero rows. ([#1034](https://github.com/turbot/steampipe-plugin-azure/pull/1034)) (Thanks [@jangjaelee](https://github.com/jangjaelee) for the contribution!)
+
 ## v1.17.1 [2026-11-13]
 
 _Dependencies_
