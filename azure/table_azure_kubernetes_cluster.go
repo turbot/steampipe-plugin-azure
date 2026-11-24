@@ -264,7 +264,7 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("aazure_kubernetes_cluster.listAzureDataProtectionBackupJobs", "session_error", err)
+		plugin.Logger(ctx).Error("azure_kubernetes_cluster.listKubernetesClusters", "session_error", err)
 		return nil, err
 	}
 
@@ -275,25 +275,41 @@ func listKubernetesClusters(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	}
 
 	pager := clientFactory.NewListPager(&armcontainerservice.ManagedClustersClientListOptions{})
-	for pager.More() {
-		page, err := pager.NextPage(ctx)
-		if err != nil {
-			plugin.Logger(ctx).Error("aazure_kubernetes_cluster.listKubernetesClusters", "api_error", err)
-			return nil, nil
-		}
-
-		for _, v := range page.Value {
-			d.StreamListItem(ctx, v)
-
-			// Check if context has been cancelled or if the limit has been hit (if specified)
-			// if there is a limit, it will return the number of rows required to reach this limit
-			if d.RowsRemaining(ctx) == 0 {
-				return nil, nil
-			}
-		}
+	err = streamManagedClusters(ctx, pager, func(v *armcontainerservice.ManagedCluster) bool {
+		d.StreamListItem(ctx, v)
+		// Check if context has been cancelled or if the limit has been hit (if specified)
+		// if there is a limit, it will return the number of rows required to reach this limit
+		return d.RowsRemaining(ctx) != 0
+	})
+	if err != nil {
+		plugin.Logger(ctx).Error("azure_kubernetes_cluster.listKubernetesClusters", "api_error", err)
+		return nil, err
 	}
 
 	return nil, nil
+}
+
+// managedClustersPager is the subset of the SDK pager used by listKubernetesClusters.
+type managedClustersPager interface {
+	More() bool
+	NextPage(ctx context.Context) (armcontainerservice.ManagedClustersClientListResponse, error)
+}
+
+// streamManagedClusters walks every page and passes each cluster to emit until emit returns false.
+// A page error is returned to the caller so a failed list call is not reported as an empty table.
+func streamManagedClusters(ctx context.Context, pager managedClustersPager, emit func(*armcontainerservice.ManagedCluster) bool) error {
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return err
+		}
+		for _, v := range page.Value {
+			if !emit(v) {
+				return nil
+			}
+		}
+	}
+	return nil
 }
 
 //// HYDRATE FUNCTIONS
@@ -303,7 +319,7 @@ func getKubernetesCluster(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 	session, err := GetNewSessionUpdated(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("aazure_kubernetes_cluster.getKubernetesCluster", "session_error", err)
+		plugin.Logger(ctx).Error("azure_kubernetes_cluster.getKubernetesCluster", "session_error", err)
 		return nil, err
 	}
 
