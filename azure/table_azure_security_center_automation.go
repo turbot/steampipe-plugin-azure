@@ -142,7 +142,7 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 
 	result, err := automationClient.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, automation := range result.Values() {
@@ -160,7 +160,7 @@ func listSecurityCenterAutomations(ctx context.Context, d *plugin.QueryData, _ *
 
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 
 		for _, automation := range result.Values() {
@@ -195,7 +195,7 @@ func getSecurityCenterAutomation(ctx context.Context, d *plugin.QueryData, _ *pl
 
 	automation, err := automationClient.Get(ctx, resourceGroup, name)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return automation, nil

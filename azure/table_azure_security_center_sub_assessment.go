@@ -169,7 +169,7 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 	result, err := subAssessmentClient.ListAll(ctx, "subscriptions/"+subscriptionID)
 	if err != nil {
 		logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "query_error", err)
-		return err, nil
+		return nil, err
 	}
 
 	for _, subAssessments := range result.Values() {
@@ -188,7 +188,7 @@ func listSecurityCenterSubAssessments(ctx context.Context, d *plugin.QueryData, 
 		err = result.NextWithContext(ctx)
 		if err != nil {
 			logger.Error("azure_security_center_sub_assessment.listSecurityCenterSubAssessments", "query_error", err)
-			return err, nil
+			return nil, err
 		}
 		for _, subAssessments := range result.Values() {
 			d.StreamListItem(ctx, subAssessments)

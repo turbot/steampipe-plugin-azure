@@ -89,7 +89,7 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 
 	result, err := autoProvisioningClient.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, autoProvisioning := range result.Values() {
@@ -107,7 +107,7 @@ func listSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData
 
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		for _, contact := range result.Values() {
 			d.StreamListItem(ctx, contact)
@@ -137,7 +137,7 @@ func getSecurityCenterAutoProvisioning(ctx context.Context, d *plugin.QueryData,
 
 	autoProvisioning, err := autoProvisioningClient.Get(ctx, name)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return autoProvisioning, nil

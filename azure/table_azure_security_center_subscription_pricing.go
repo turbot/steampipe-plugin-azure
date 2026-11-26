@@ -97,7 +97,7 @@ func listSecurityCenterPricings(ctx context.Context, d *plugin.QueryData, _ *plu
 
 	result, err := settingClient.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, pricing := range *result.Value {
@@ -135,7 +135,7 @@ func getSecurityCenterPricing(ctx context.Context, d *plugin.QueryData, _ *plugi
 
 	setting, err := settingClient.Get(ctx, name)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return setting, nil

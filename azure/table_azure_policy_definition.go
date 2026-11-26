@@ -130,7 +130,7 @@ func listPolicyDefinitions(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	result, err := policyClient.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, policy := range result.Values() {

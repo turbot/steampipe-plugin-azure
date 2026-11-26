@@ -101,7 +101,7 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 
 	result, err := settingClient.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, setting := range result.Values() {
@@ -146,7 +146,7 @@ func listSecurityCenterSettings(ctx context.Context, d *plugin.QueryData, _ *plu
 
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		for _, setting := range result.Values() {
 
@@ -205,7 +205,7 @@ func getSecurityCenterSetting(ctx context.Context, d *plugin.QueryData, _ *plugi
 
 	setting, err := settingClient.Get(ctx, security.SettingName4(name))
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	if dataExportSettings, ok := setting.Value.AsDataExportSettings(); ok {
