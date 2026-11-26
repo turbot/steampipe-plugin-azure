@@ -92,7 +92,7 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 
 	result, err := client.List(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, jitNetworkAccessPolicy := range result.Values() {
@@ -110,7 +110,7 @@ func listSecurityCenterJITNetworkAccessPolicies(ctx context.Context, d *plugin.Q
 
 		err = result.NextWithContext(ctx)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		for _, jitNetworkAccessPolicy := range result.Values() {
 			d.StreamListItem(ctx, jitNetworkAccessPolicy)

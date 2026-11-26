@@ -150,7 +150,7 @@ func listPolicyAssignments(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 
 	result, err := policyClient.List(ctx, "")
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	for _, policy := range result.Values() {
@@ -202,7 +202,7 @@ func getPolicyAssignment(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 
 	policy, err := policyClient.GetByID(ctx, id)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return policy, nil
