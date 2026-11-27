@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
@@ -223,7 +222,7 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 	}
 	for _, functionApp := range result.Values() {
 		// Filtering out all the web apps
-		if strings.Contains(string(*functionApp.Kind), "functionapp") {
+		if isFunctionAppKind(functionApp.Kind) {
 			d.StreamListItem(ctx, functionApp)
 			// Check if context has been cancelled or if the limit has been hit (if specified)
 			// if there is a limit, it will return the number of rows required to reach this limit
@@ -241,7 +240,7 @@ func listAppServiceFunctionApps(ctx context.Context, d *plugin.QueryData, _ *plu
 
 		for _, functionApp := range result.Values() {
 			// Filtering out all the web apps
-			if strings.Contains(string(*functionApp.Kind), "functionapp") {
+			if isFunctionAppKind(functionApp.Kind) {
 				d.StreamListItem(ctx, functionApp)
 				// Check if context has been cancelled or if the limit has been hit (if specified)
 				// if there is a limit, it will return the number of rows required to reach this limit
@@ -288,7 +287,7 @@ func getAppServiceFunctionApp(ctx context.Context, d *plugin.QueryData, h *plugi
 
 	// In some cases resource does not give any notFound error
 	// instead of notFound error, it returns empty data
-	if op.ID != nil && strings.Contains(string(*op.Kind), "functionapp") {
+	if op.ID != nil && isFunctionAppKind(op.Kind) {
 		return op, nil
 	}
 
